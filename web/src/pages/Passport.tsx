@@ -61,7 +61,7 @@ export default function Passport({ p }: { p: P }) {
   return (
     <Page>
       <nav className="text-xs text-[var(--color-ink-3)] mb-3">
-        <a href="#/registry" className="text-[var(--color-accent)] hover:underline">Registry</a>
+        <a href="/registry/" className="text-[var(--color-accent)] hover:underline">Registry</a>
         <span className="mx-1.5">›</span>
         <span>{p.subject_id}</span>
       </nav>

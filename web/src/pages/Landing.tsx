@@ -4,6 +4,7 @@
 import { useEffect, useRef } from "react";
 import { Page, Strip } from "../components/Chrome";
 import { AbsentMark } from "../components/Measured";
+import { slug } from "../types";
 import type { Registry as R } from "../types";
 
 /** `reg` is null while the registry is still loading. Rendering a 0 or an invented row there
@@ -73,10 +74,10 @@ export default function Landing({ reg }: { reg: R | null }) {
           be measured.
         </p>
         <div className="mt-7 flex flex-wrap gap-3">
-          <a href="#/apply" className="border border-[var(--color-ink)] bg-[var(--color-ink)] text-[var(--color-paper)] px-4 py-2 text-sm">
+          <a href="/apply/" className="border border-[var(--color-ink)] bg-[var(--color-ink)] text-[var(--color-paper)] px-4 py-2 text-sm">
             Request verification
           </a>
-          <a href="#/registry" className="border border-[var(--color-line-2)] px-4 py-2 text-sm hover:bg-[var(--color-paper)]">
+          <a href="/registry/" className="border border-[var(--color-line-2)] px-4 py-2 text-sm hover:bg-[var(--color-paper)]">
             See the registry{count === null ? "" : ` (${count})`}
           </a>
         </div>
@@ -103,7 +104,7 @@ export default function Landing({ reg }: { reg: R | null }) {
               {preview.map((s2) => (
                 <li key={s2.subject_id} className="flex items-baseline justify-between gap-4 py-2.5">
                   <a
-                    href={`#/p/${encodeURIComponent(s2.subject_id)}`}
+                    href={`/p/${slug(s2.subject_id)}/`}
                     className="text-sm text-[var(--color-accent)] hover:underline truncate"
                   >
                     {s2.subject_id.split("/").pop()}
@@ -132,7 +133,7 @@ export default function Landing({ reg }: { reg: R | null }) {
                   reg.subjects.filter((x) => x.verifier_affiliation === "same_owner").length +
                   " are the operator\u2019s own and marked "}
               <span style={{ color: "var(--color-warn)" }}>affiliated</span>. Saying so is the point.{" "}
-              <a href="#/registry" className="text-[var(--color-accent)] hover:underline">
+              <a href="/registry/" className="text-[var(--color-accent)] hover:underline">
                 See all
               </a>
               .

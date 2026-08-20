@@ -88,3 +88,12 @@ export interface Fact {
   measured: boolean;
   reason: string | null;
 }
+
+/** The pipeline's slug, and deliberately the same derivation.
+ *
+ * `git:whiteknightonhorse/APIbase` -> `git_whiteknightonhorse_APIbase`. The passport JSON is
+ * written under this name by `FileTransport`, so a page URL and its machine record cannot drift
+ * apart: one rule, two consumers. */
+export function slug(subjectId: string): string {
+  return subjectId.replace(/[:/]/g, "_");
+}

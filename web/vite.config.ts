@@ -16,4 +16,10 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   plugins: [preact(), tailwindcss()],
   base: "/",
+  build: {
+    rollupOptions: {
+      // The client bundle keeps its own entry; the SSR bundle is built separately by `npm run
+      // prerender`, which is why nothing here needs to know about entry-server.
+    },
+  },
 });

@@ -7,6 +7,7 @@
 import { useMemo, useState } from "react";
 import { Page, Strip } from "../components/Chrome";
 import { AbsentMark } from "../components/Measured";
+import { slug } from "../types";
 import type { Registry as R } from "../types";
 
 function shortId(id: string) {
@@ -76,7 +77,7 @@ export default function Registry({ reg }: { reg: R }) {
               <tr key={s.subject_id} className="hover:bg-[var(--color-paper-2)]">
                 <td className="px-4 py-2.5">
                   <a
-                    href={`#/p/${encodeURIComponent(s.subject_id)}`}
+                    href={`/p/${slug(s.subject_id)}/`}
                     className="text-[var(--color-accent)] hover:underline"
                   >
                     {shortId(s.subject_id)}

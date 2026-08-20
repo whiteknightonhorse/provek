@@ -21,17 +21,17 @@ export function Masthead({ route }: { route: string }) {
     <header className="bg-[var(--color-paper)] border-b border-[var(--color-line)]">
       <div className="mx-auto max-w-[1180px] px-5">
         <div className="flex items-center justify-between py-3">
-          <a href="#/" className="flex items-baseline gap-2 min-h-11 py-2">
+          <a href="/" className="flex items-baseline gap-2 min-h-11 py-2">
             <span className="text-lg font-semibold tracking-tight">Provek</span>
             <span className="text-xs text-[var(--color-ink-3)]">evidence, not claims</span>
           </a>
-          <a href="#/apply" className="text-sm border border-[var(--color-line-2)] px-3.5 min-h-11 inline-flex items-center hover:bg-[var(--color-paper-2)]">
+          <a href="/apply/" className="text-sm border border-[var(--color-line-2)] px-3.5 min-h-11 inline-flex items-center hover:bg-[var(--color-paper-2)]">
             Request verification
           </a>
         </div>
         <nav className="flex gap-1 border-t border-[var(--color-line)] pt-1" aria-label="Main">
-          {link("#/registry", "Registry", route.startsWith("#/registry") || route.startsWith("#/p/"))}
-          {link("#/method", "Method", route === "#/method")}
+          {link("/registry/", "Registry", route.startsWith("/registry") || route.startsWith("/p/"))}
+          {link("/method/", "Method", route === "/method/")}
           {/* PHASE 2 SLOT - reserved, disabled, and NOT described as a coming feature. */}
           <span
             className="px-3 py-2.5 min-h-11 inline-flex items-center text-sm text-[var(--color-ink-disabled)] cursor-default select-none"
