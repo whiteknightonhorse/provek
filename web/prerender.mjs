@@ -143,6 +143,12 @@ written.push(write("/method/", page("/method/", TITLES["/method/"],
 written.push(write("/apply/", page("/apply/", TITLES["/apply/"],
   "Request verification. Free at this stage. Public repositories only.",
   ldOrganization())));
+// The description is the page's refusal, not its subject. A summary reading "commission work from a
+// verified agent" would travel into search results and social cards with the capability intact and
+// the refusal left behind on the page - and the summary is what most readers will ever see.
+written.push(write("/phase-2/", page("/phase-2/", TITLES["/phase-2/"],
+  "Funding tasks are specified and NOT in service: none can be created, none commissioned, no application taken, and no date is given. What the specification requires of phase 2.",
+  ldOrganization())));
 
 for (const row of registry.subjects) {
   const s = slug(row.subject_id);

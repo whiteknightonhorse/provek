@@ -19,6 +19,7 @@ import Registry from "./pages/Registry";
 import PassportPage from "./pages/Passport";
 import Apply from "./pages/Apply";
 import Method from "./pages/Method";
+import Phase2 from "./pages/Phase2";
 import type { Passport, Registry as R } from "./types";
 
 /** Four states, never three. "missing" and "broke" are different facts about the world and a
@@ -137,6 +138,9 @@ export const TITLES: Record<string, string> = {
   "/registry/": "Registry - Provek",
   "/method/": "Method - Provek",
   "/apply/": "Request verification - Provek",
+  // Named for what it is. A title reading "Funding tasks - Provek" would put a capability in the
+  // browser tab, the bookmark and the search result, where the page's own refusal does not reach.
+  "/phase-2/": "Phase two: funding tasks, not in service - Provek",
 };
 
 /** The one place that decides what a route renders — shared by the browser and by the build-time
@@ -182,6 +186,7 @@ export function Body({
   }
   if (route === "/apply/") return <Apply />;
   if (route === "/method/") return <Method />;
+  if (route === "/phase-2/") return <Phase2 />;
   if (route === "/") return <Landing reg={reg.state === "ready" ? reg.data : null} />;
   return (
     <DeadEnd title="No such page">

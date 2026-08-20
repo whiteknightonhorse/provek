@@ -1322,6 +1322,368 @@ function Method() {
 			/* @__PURE__ */ jsx("p", {
 				className: "mt-1 text-sm text-[var(--color-ink-2)]",
 				children: "Three absences are distinguished and never collapsed: the check ran and nothing qualified; the check did not run; the source could not be read. A missing measurement is not a violation, and a verifier that suspended a subject for its own blindness would be punishing someone for its own failure."
+			}),
+			/* @__PURE__ */ jsx("h2", {
+				className: "mt-8 text-lg font-semibold",
+				children: "What is specified and not built"
+			}),
+			/* @__PURE__ */ jsxs("p", {
+				className: "mt-1 text-sm text-[var(--color-ink-2)]",
+				children: [
+					"The specification also defines a second phase, in which a customer commissions work from a verified agent and we witness the fact of performance. None of it is in service and no application for it is being taken. It is written down here anyway, because what a specification forbids us to build is a fact about the product today:",
+					" ",
+					/* @__PURE__ */ jsx("a", {
+						href: "/phase-2/",
+						className: "text-[var(--color-accent)] hover:underline",
+						children: "phase two, and why it is not running"
+					}),
+					"."
+				]
+			})
+		]
+	}) });
+}
+//#endregion
+//#region src/pages/Phase2.tsx
+/** Phase two, announced as SPECIFIED and never as available.
+*
+* WHY THIS PAGE IS ALLOWED TO EXIST, AND WHAT IT MAY NOT BECOME. D-05 reserves space for phase 2
+* in the layout and forbids announcing a feature that does not exist. That boundary still holds
+* everywhere it was drawn: the registry's trailing column is still empty, the passport's task
+* history is still absent, the corpus nav slot is still disabled. What changed is narrower, and it
+* is recorded as D-16: the phase is DESCRIBED once, on a page of its own, because a specification
+* that constrains what we may build is a fact about the product today, whereas a "commission work"
+* control on a registry row would be an offer.
+*
+* The difference between a description and an offer has to survive a screenshot, because a
+* screenshot is how this page will be quoted. Hence the refusal at the top, the refusal at the
+* bottom, no control anywhere on the page that could be pressed, and no date anywhere in it.
+*
+* Every statement here is taken from SPEC.md section 4.1, "Phase 2 - what it is, and what it is
+* not", which in turn takes it from the project specification. Nothing is added. This is the one
+* page where an invented capability would be indistinguishable from the marketing this product
+* exists to detect, so the rule is stricter here than anywhere else: if a sentence cannot be traced
+* to a paragraph, it is not on the page. */
+var SPEC = "https://github.com/whiteknightonhorse/provek/blob/main/SPEC.md";
+/** From SPEC.md 4.1. `enforced` means a deployed contract makes it impossible; `evidenced` means it
+* can be shown and argued and nothing more. Presenting the second as the first is forbidden, and
+* the specification puts that obligation on the interface, not only on the schema - which is why
+* the status is a column here rather than a sentence somewhere below. */
+var CONSTRAINTS = [
+	["Ceiling on the amount", "enforced"],
+	["Permitted on-chain recipient", "enforced"],
+	["Release of a milestone against a machine-checkable criterion", "enforced"],
+	["Timeout, and return of whatever was not committed", "enforced"],
+	["“The money was spent on compute”", "evidenced"],
+	["“The work was done well”", "evidenced"],
+	["“The agent did not hand the task to a human”", "evidenced"]
+];
+/** `rejected` is on the diagram and not only in the sentence about terminal states below it. The
+* specification lists it as terminal while showing no arrow that reaches it, which is a small
+* version of the defect this whole surface exists to catch: a claim with nothing behind it in the
+* artefact. The transition is supplied by the policy gate, which refuses anything missing a
+* condition of creation.
+*
+* The seam that reconstruction leaves, named rather than smoothed over: the specification also says
+* such a task "is not created at all", which cannot both be true and leave it sitting in a terminal
+* state. The reading taken here - a DRAFT is refused at `policy_check` and never becomes a funded
+* task - satisfies both sentences, and it is recorded in SPEC.md 4.1 as a reconstruction rather
+* than presented as quotation. The durable fix belongs in the specification, not on this page. */
+var LIFECYCLE = [
+	"draft → policy_check → funded → executing",
+	"policy_check → rejected   (a condition of creation is missing)",
+	"executing → milestone_released → executing",
+	"executing → completed     (every acceptance criterion met)",
+	"executing → failed        (a failure criterion fired)",
+	"executing → timed_out     (the clock ran out, with no event)",
+	"failed | timed_out → settled"
+];
+function Phase2() {
+	return /* @__PURE__ */ jsx(Page, { children: /* @__PURE__ */ jsxs("div", {
+		className: "max-w-[46rem]",
+		children: [
+			/* @__PURE__ */ jsx("h1", {
+				className: "text-2xl font-semibold tracking-tight",
+				children: "Phase two: funding tasks"
+			}),
+			/* @__PURE__ */ jsx("p", {
+				className: "mt-2 text-sm text-[var(--color-ink-2)]",
+				children: "Specified. Not built. Not open. Everything below describes what the specification requires of phase 2 — it is not a description of anything that runs."
+			}),
+			/* @__PURE__ */ jsxs("div", {
+				className: "mt-5 space-y-3",
+				children: [/* @__PURE__ */ jsxs(Strip, {
+					tone: "warn",
+					children: [/* @__PURE__ */ jsx("strong", { children: "Nothing on this page is in service." }), " No funding task can be created, no work can be commissioned through us, and no application for one is being taken. Phase 2 is deferred by decision A-10 — projects first — because a registry is useful without the second side, and the second side is not useful without a registry. Deferred is not cancelled: the specification defines phase 2 so that it will not have to be designed twice."]
+				}), /* @__PURE__ */ jsxs(Strip, {
+					tone: "info",
+					children: [/* @__PURE__ */ jsx("strong", { children: "There is no date here, and there will not be one." }), " Nothing and nobody has committed to a date, so this page may not invent one. A promised date would be exactly the thing this product exists to detect: a claim stronger than the artefact behind it."]
+				})]
+			}),
+			/* @__PURE__ */ jsx("h2", {
+				className: "mt-9 text-lg font-semibold",
+				children: "Where this sits"
+			}),
+			/* @__PURE__ */ jsxs("ol", {
+				className: "mt-3 space-y-3 text-sm text-[var(--color-ink-2)]",
+				children: [
+					/* @__PURE__ */ jsxs("li", {
+						className: "border-l border-[var(--color-line-2)] pl-3.5",
+						children: [/* @__PURE__ */ jsx("strong", {
+							className: "text-[var(--color-ink)]",
+							children: "You ask to be verified."
+						}), " Nobody is assessed who did not ask, and without a mandate nothing in your production is touched. This part is open today."]
+					}),
+					/* @__PURE__ */ jsxs("li", {
+						className: "border-l border-[var(--color-line-2)] pl-3.5",
+						children: [
+							/* @__PURE__ */ jsx("strong", {
+								className: "text-[var(--color-ink)]",
+								children: "A passport is issued."
+							}),
+							" ",
+							"Machine-readable first: a level for each business operation, the evidence behind each level, and the reason for every operation that could not be measured. This part is open today."
+						]
+					}),
+					/* @__PURE__ */ jsxs("li", {
+						className: "border-l border-[var(--color-line-2)] pl-3.5",
+						children: [
+							/* @__PURE__ */ jsx("strong", {
+								className: "text-[var(--color-ink)]",
+								children: "In phase 2, a funding task can be addressed to a subject."
+							}),
+							" ",
+							"A customer commissions work, the agent performs it, and the incubator witnesses the fact of performance. ",
+							/* @__PURE__ */ jsx("strong", {
+								className: "text-[var(--color-ink)]",
+								children: "This part does not exist."
+							})
+						]
+					})
+				]
+			}),
+			/* @__PURE__ */ jsx("p", {
+				className: "mt-3 text-sm text-[var(--color-ink-2)]",
+				children: "The order is a dependency, not a sales funnel. Phase 2 stands on the registry, which is what decision A-10 means when it says the registry is useful without the second side while the reverse is false."
+			}),
+			/* @__PURE__ */ jsx("h2", {
+				className: "mt-9 text-lg font-semibold",
+				children: "What a funding task is, in the specification"
+			}),
+			/* @__PURE__ */ jsx("div", {
+				className: "mt-3 bg-[var(--color-paper)] border border-[var(--color-line)] px-5 py-1",
+				children: /* @__PURE__ */ jsx(Facts, { rows: [
+					["it is", "a contract for services — procurement"],
+					["it is not", "a grant, a donation, a pre-payment for a share, or an investment contract"],
+					["the funder", "is a customer, and takes delivery of the result"],
+					["a share of revenue", "excluded permanently — not deferred, excluded"],
+					["one task, in phase 2.0", "has exactly one principal"]
+				] })
+			}),
+			/* @__PURE__ */ jsxs("p", {
+				className: "mt-3 text-sm text-[var(--color-ink-2)]",
+				children: [
+					"The words ",
+					/* @__PURE__ */ jsx("span", {
+						className: "font-mono text-xs",
+						children: "investment"
+					}),
+					",",
+					" ",
+					/* @__PURE__ */ jsx("span", {
+						className: "font-mono text-xs",
+						children: "investor"
+					}),
+					",",
+					" ",
+					/* @__PURE__ */ jsx("span", {
+						className: "font-mono text-xs",
+						children: "equity"
+					}),
+					" and",
+					" ",
+					/* @__PURE__ */ jsx("span", {
+						className: "font-mono text-xs",
+						children: "secondary market"
+					}),
+					" are forbidden in the product. The specification records in the same breath that the prohibition is not itself a legal argument: classification follows substance, not vocabulary."
+				]
+			}),
+			/* @__PURE__ */ jsx("h2", {
+				className: "mt-9 text-lg font-semibold",
+				children: "Money never passes through us"
+			}),
+			/* @__PURE__ */ jsx("p", {
+				className: "mt-2 text-sm text-[var(--color-ink-2)]",
+				children: "Decision A-6, and it is permanent rather than deferred — which is why there is no payment step anywhere on this site, not in this phase and not in a later one. We hold and route no funds: no escrow, no treasury, no keys. In phase 2 a customer pays the agent directly. A commission on transfers is excluded forever."
+			}),
+			/* @__PURE__ */ jsx("p", {
+				className: "mt-3 text-sm text-[var(--color-ink-2)]",
+				children: "The milestone contract is deployed by the parties themselves. Our part is to publish the template and to hold no key to it. If we deployed that contract and kept an administrative key, the custodial risk decision A-6 removed would return through the back door, and “we are only infrastructure” would stop being true."
+			}),
+			/* @__PURE__ */ jsx("p", {
+				className: "mt-3 text-sm text-[var(--color-ink-2)]",
+				children: "What we would be paid for, when it exists, is a fixed fee for the witnessing itself — never a share of what passes between the parties."
+			}),
+			/* @__PURE__ */ jsx("h2", {
+				className: "mt-9 text-lg font-semibold",
+				children: "Enforced, or only evidenced — as specified"
+			}),
+			/* @__PURE__ */ jsxs("p", {
+				className: "mt-2 text-sm text-[var(--color-ink-2)]",
+				children: [
+					"This is the line where products of this kind most often lie, so the specification requires the interface to publish the status of every constraint rather than the constraints alone.",
+					" ",
+					/* @__PURE__ */ jsx("span", {
+						className: "font-mono text-xs",
+						children: "enforced"
+					}),
+					" means the deployed contract carries the constraint out itself. ",
+					/* @__PURE__ */ jsx("span", {
+						className: "font-mono text-xs",
+						children: "evidenced"
+					}),
+					" means it can be shown and argued, and nothing more. Neither word promises a contract free of defects: the template has not been through the review named at the foot of this page."
+				]
+			}),
+			/* @__PURE__ */ jsx("ul", {
+				className: "mt-3 divide-y divide-[var(--color-line)] border-y border-[var(--color-line)]",
+				children: CONSTRAINTS.map(([what, status]) => /* @__PURE__ */ jsxs("li", {
+					className: "flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-2.5",
+					children: [/* @__PURE__ */ jsx("span", {
+						className: "text-sm",
+						children: what
+					}), /* @__PURE__ */ jsx("span", {
+						className: "shrink-0 font-mono text-xs",
+						style: { color: status === "enforced" ? "var(--color-pass)" : "var(--color-warn)" },
+						children: status === "enforced" ? "enforced" : "evidenced only"
+					})]
+				}, what))
+			}),
+			/* @__PURE__ */ jsxs("p", {
+				className: "mt-3 text-sm text-[var(--color-ink-2)]",
+				children: [/* @__PURE__ */ jsx("span", {
+					className: "font-mono text-xs",
+					children: "enforced"
+				}), " means enforced by the contract the parties deploy between themselves. Not by us: we are not a party to it, and we could not enforce anything if we wanted to."]
+			}),
+			/* @__PURE__ */ jsx("h2", {
+				className: "mt-9 text-lg font-semibold",
+				children: "The lifecycle, as specified"
+			}),
+			/* @__PURE__ */ jsx("div", {
+				className: "mt-3 overflow-x-auto bg-[var(--color-paper)] border border-[var(--color-line)] p-4",
+				children: /* @__PURE__ */ jsx("pre", {
+					className: "font-mono text-xs leading-relaxed whitespace-pre",
+					children: LIFECYCLE.join("\n")
+				})
+			}),
+			/* @__PURE__ */ jsxs("p", {
+				className: "mt-3 text-sm text-[var(--color-ink-2)]",
+				children: [
+					"Terminal states are ",
+					/* @__PURE__ */ jsx("span", {
+						className: "font-mono text-xs",
+						children: "completed"
+					}),
+					",",
+					" ",
+					/* @__PURE__ */ jsx("span", {
+						className: "font-mono text-xs",
+						children: "settled"
+					}),
+					" and",
+					" ",
+					/* @__PURE__ */ jsx("span", {
+						className: "font-mono text-xs",
+						children: "rejected"
+					}),
+					". A funder cannot cancel. The only ways out of ",
+					/* @__PURE__ */ jsx("span", {
+						className: "font-mono text-xs",
+						children: "executing"
+					}),
+					" are completion, failure and timeout, and all three are performed by the contract rather than decided by a person. An undefined transition is impossible, not undocumented."
+				]
+			}),
+			/* @__PURE__ */ jsxs("p", {
+				className: "mt-3 text-sm text-[var(--color-ink-2)]",
+				children: [
+					"A draft that does not carry acceptance criteria, failure criteria, a timeout, milestones and a ceiling never becomes a task — the policy gate refuses it, and",
+					" ",
+					/* @__PURE__ */ jsx("span", {
+						className: "font-mono text-xs",
+						children: "rejected"
+					}),
+					" is where the refusal lands. That is a condition of creation, not a recommendation. In phase 2.0, financing a task out of the pooled funds of an agent acting for several principals is forbidden, and the check follows the chain from the funder through the delegation to the principal rather than stopping at the funder."
+				]
+			}),
+			/* @__PURE__ */ jsx("h2", {
+				className: "mt-9 text-lg font-semibold",
+				children: "What is unresolved"
+			}),
+			/* @__PURE__ */ jsx("p", {
+				className: "mt-2 text-sm text-[var(--color-ink-2)]",
+				children: "These are on the page because they are unresolved, not in spite of it."
+			}),
+			/* @__PURE__ */ jsxs("ul", {
+				className: "mt-3 space-y-3 text-sm text-[var(--color-ink-2)]",
+				children: [
+					/* @__PURE__ */ jsxs("li", {
+						className: "border-l border-[var(--color-line-2)] pl-3.5",
+						children: [
+							/* @__PURE__ */ jsx("strong", {
+								className: "text-[var(--color-ink)]",
+								children: "Only machine-checkable acceptance criteria are admitted."
+							}),
+							" ",
+							"A task whose acceptance is a matter of opinion is never created, which is also the reason we can never be asked to arbitrate one. We would be a witness recording a fact, and an observer holding no money cannot be an arbiter."
+						]
+					}),
+					/* @__PURE__ */ jsxs("li", {
+						className: "border-l border-[var(--color-line-2)] pl-3.5",
+						children: [/* @__PURE__ */ jsx("strong", {
+							className: "text-[var(--color-ink)]",
+							children: "Witnessing creates exposure."
+						}), " A party relies on our statement at the moment money moves. The specification marks this, and the milestone-contract template, as requiring a lawyer’s review before phase 2 — marked, and not yet resolved."]
+					}),
+					/* @__PURE__ */ jsxs("li", {
+						className: "border-l border-[var(--color-line-2)] pl-3.5",
+						children: [
+							/* @__PURE__ */ jsx("strong", {
+								className: "text-[var(--color-ink)]",
+								children: "“The agent did not hand this task to a human” is not verifiable at reasonable cost."
+							}),
+							" ",
+							"It is published as a probabilistic signal and never as a verdict — in phase 2 as much as today."
+						]
+					})
+				]
+			}),
+			/* @__PURE__ */ jsx("div", {
+				className: "mt-9",
+				children: /* @__PURE__ */ jsxs(Strip, {
+					tone: "info",
+					children: [
+						/* @__PURE__ */ jsx("strong", { children: "Nothing on this page is an offer." }),
+						" The only thing open today is verification, and it is a different thing:",
+						" ",
+						/* @__PURE__ */ jsx("a", {
+							href: "/apply/",
+							className: "text-[var(--color-accent)] hover:underline",
+							children: "request verification"
+						}),
+						". To check this page against its source rather than taking it from us, the phase-2 section is in",
+						" ",
+						/* @__PURE__ */ jsx("a", {
+							href: SPEC,
+							className: "text-[var(--color-accent)] hover:underline",
+							children: "SPEC.md"
+						}),
+						" ",
+						"in the repository."
+					]
+				})
 			})
 		]
 	}) });
@@ -1410,7 +1772,8 @@ var TITLES = {
 	"/": "Provek - evidence, not claims",
 	"/registry/": "Registry - Provek",
 	"/method/": "Method - Provek",
-	"/apply/": "Request verification - Provek"
+	"/apply/": "Request verification - Provek",
+	"/phase-2/": "Phase two: funding tasks, not in service - Provek"
 };
 /** The one place that decides what a route renders — shared by the browser and by the build-time
 * renderer, so a page cannot exist in one and not the other. */
@@ -1446,6 +1809,7 @@ function Body({ route, reg, passport }) {
 	}
 	if (route === "/apply/") return /* @__PURE__ */ jsx(Apply, {});
 	if (route === "/method/") return /* @__PURE__ */ jsx(Method, {});
+	if (route === "/phase-2/") return /* @__PURE__ */ jsx(Phase2, {});
 	if (route === "/") return /* @__PURE__ */ jsx(Landing, { reg: reg.state === "ready" ? reg.data : null });
 	return /* @__PURE__ */ jsxs(DeadEnd, {
 		title: "No such page",

@@ -137,7 +137,9 @@ belongs rather than eight pixels low forever.
 2. Contrast measured against **both** grounds, never white alone, and in both themes.
 3. Every number on screen exists in the emitted artefact. Nothing is computed for display.
 4. Reserved phase-2 surfaces stay disabled and unannounced. Retrofitting a column into a finished
-   table is a redesign, not an addition.
+   table is a redesign, not an addition. **Unchanged by D-16**, which permits one page that
+   *describes* phase 2 and gives no reserved surface a control, a label or a nav entry — the
+   pointer is here so that reading this rule alone cannot restore what D-16 qualified.
 5. No emblem or wordmark beyond the name set in type. An emblem earned before a method is the
    substitution this product exists to detect.
 

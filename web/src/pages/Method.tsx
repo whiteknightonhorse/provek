@@ -95,6 +95,24 @@ export default function Method() {
           punishing someone for its own failure.
         </p>
 
+        {/* The only route to the phase-2 page, and it is here rather than on the landing on
+            purpose. The landing's argument is built to hold at zero funders - that is the whole
+            point of it - so dangling a future second side there as a reason to apply would
+            reintroduce the dependency the specification deliberately removed. On the methodology
+            page the same page reads as what it is: a part of the specification that is written
+            down and not built. */}
+        <h2 className="mt-8 text-lg font-semibold">What is specified and not built</h2>
+        <p className="mt-1 text-sm text-[var(--color-ink-2)]">
+          The specification also defines a second phase, in which a customer commissions work from a
+          verified agent and we witness the fact of performance. None of it is in service and no
+          application for it is being taken. It is written down here anyway, because what a
+          specification forbids us to build is a fact about the product today:{" "}
+          <a href="/phase-2/" className="text-[var(--color-accent)] hover:underline">
+            phase two, and why it is not running
+          </a>
+          .
+        </p>
+
       </div>
     </Page>
   );

@@ -69,6 +69,12 @@ addition. Reserving the space costs nothing now.
 **Boundary.** Reserved space is not a promise on screen. Nothing announces a feature that does not
 exist.
 
+⚠️ **Narrowed by [D-16](#d-16-phase-2-is-described-on-one-page-d-05s-boundary-is-narrowed-not-repealed)
+on 2026-08-20**, and the pointer is here because a reader who opens only this entry would otherwise
+restore a rule that has been qualified — the mirror image of a rule surviving its own repeal (L-2).
+The narrowing is exact: phase 2 may be DESCRIBED on one page of its own. No reserved slot anywhere
+gains a control, a label or a nav entry, and this boundary continues to refuse every one of those.
+
 ## D-06. No pay button, in either phase — permanent
 
 **Decision.** The interface never collects or routes payment.
@@ -224,4 +230,84 @@ promise the site makes to every reader. The remedy is this entry.
 **Standing change to the working arrangement:** the server clone is synced before Fable is
 dispatched, and any change to the *shape* of published history is reported to him rather than left
 to be discovered.
+
+## D-16. Phase 2 is described on one page. D-05's boundary is narrowed, not repealed
+
+**Decision.** A single page at `/phase-2/` describes what the specification requires of phase 2,
+marked throughout as specified and not in service. Every reserved slot elsewhere stays exactly as
+D-05 left it: the registry's trailing column empty, the passport's task history absent, the corpus
+nav entry disabled and unlabelled as a coming feature.
+
+**The rule this collides with, stated before the justification.** D-05 ends: *"Reserved space is not
+a promise on screen. Nothing announces a feature that does not exist."* Read literally, that forbids
+this page. The operator instructed the page anyway, and the honest record is that a boundary written
+in August is being narrowed in the same month by the party who benefits from narrowing it — so the
+narrowing had better be principled rather than convenient.
+
+**The distinction claimed, and it is the whole of the argument.** D-05 governs *controls*: a
+"commission work" button on a registry row, an empty column that will fill with commerce, a nav item
+leading somewhere. A control that does nothing is a promise, because the only reason to render a
+control is that pressing it will one day do something. A *description* makes no such offer. What
+phase 2 forbids us to build — no funds held, no pay button ever, the milestone contract deployed by
+the parties and not by us — is a fact about the product **today**, and publishing the constraints we
+are under is the same act as publishing our own coverage gaps. Withholding them would be the more
+selective disclosure.
+
+**Where the distinction could fail, and what carries it.** It fails if the page reads as an offer to
+a hurried reader, or if a fragment of it travels without its refusal. So: the refusal is the first
+thing on the page and again the last; the page carries no pressable control except a link to
+verification, which is open; the browser title and the meta description both carry "not in service"
+rather than the capability, because a search result and a social card are what most readers will
+ever see of it; and no date appears anywhere, since a date is the one addition that would convert
+description into promise without adding a single verb. Rules 1–4 in SPEC §3.5 are the written form
+of this, and `tests/test_phase_two_promises_nothing.py` is the armed form — over the emitted HTML,
+not the component, because what a reader receives is the thing that has to hold.
+
+**The other half of the collision, recorded because it is the more likely failure.** Phase 2 is the
+feature a subject would most want to hear about, and the landing is where a subject decides. Putting
+it there would have been the obvious move and would have quietly broken specification §4.6: the
+pitch is constructed to hold at **zero funders**, and that is not decoration — decisions A-10 and
+A-9 together mean the registry grows at the speed of voluntary consent, so a benefit that needs a
+second side cannot be the reason anybody joins. Dangling a future second side on the landing would
+reintroduce the dependency the specification deliberately removed, and it would do so in the one
+place where a reader is deciding. The page is therefore reached from Method, where it reads as part
+of a published methodology rather than as an inducement.
+
+**Consequence.** A future request to add a phase-2 *control* anywhere is still refused by D-05. This
+entry does not license one, and the test names that boundary rather than leaving it to memory.
+
+**What the refutation changed, before anything was published.** Fable was sent the built page rather
+than the source and asked to refute it. He ruled the narrowing itself legitimate — on the grounds
+that the collision was quoted before the justification, that the choice was between repealing D-05
+and narrowing it rather than between narrowing it and doing nothing, and that the boundary is armed
+by a test rather than by prose — and then found seven things wrong with the execution. Four mattered
+enough to change the artefact:
+
+* **the one claim stronger than the specification.** The page defined `enforced` as "a deployed
+  contract makes the breach impossible". §8.5 says only "enforced by the contract", and spends the
+  word *impossible* on the state machine instead. An unaudited template awaiting the review §8.2
+  demands cannot carry a guarantee of impossibility. Now: the contract *carries the constraint out
+  itself*, and the sentence says in the same breath that neither word promises a contract free of
+  defects. This was the candidate for a fourth false statement on a live page, and it was found
+  because the brief asked for refutation rather than approval;
+* **a scope qualifier dropped in copying.** "One task has exactly one principal" is normative for
+  phase 2.0; the row above it, on shares of revenue, is permanent. The page had flattened the two,
+  which would have made it retroactively false the day 2.1 relaxed the norm;
+* **fragments travelling without their refusal.** The enforced/evidenced table and the lifecycle sat
+  under bare headings in the present tense: screenshot either one and it reads as documentation of a
+  running machine. Both headings now carry "as specified", which costs three words and travels with
+  the fragment. This is the failure mode this entry had already predicted, found in the artefact
+  anyway, which is the argument for adversarial review in one line;
+* **a rule broken by the page it governs on the day both were written.** SPEC §3.5 rule 4 demanded
+  that every sentence trace to §4.1, while the page's own opening step is phase 1 and its refusals
+  are rules 1–2. The rule is widened to what it meant. A rule tolerantly broken at birth teaches the
+  next editor to reinterpret gates instead of obeying them.
+
+Two of his remarks were about the specification rather than this surface, and are recorded here as
+open rather than silently closed: **§8.3 lists `rejected` as terminal while no arrow reaches it**,
+and §8.2 says such a task is not created at all — the page and SPEC §4.1 carry a reconstruction
+(a *draft* is refused and never becomes a task), named as a reconstruction, but the durable fix is
+an erratum in the specification. And **SPEC §4.1 can drift from a specification no test can read**;
+the revision it was derived from is now named in the text, and the re-derivation is an item for the
+operator, recorded as unarmed rather than dressed as a gate.
 

@@ -136,6 +136,10 @@ laws:
     text: "an enum is declared once; a duplicate compares equal by value and false by identity"
     gate: src/registry/lifecycle.py
     test: tests/test_threshold_and_blockdefault.py
+  - id: LAW-PHASE-2-DESCRIBES-NEVER-OFFERS
+    text: "the phase-2 surface names no date, takes no application, renders no control, and labels every constraint enforced or evidenced"
+    gate: web/src/pages/Phase2.tsx
+    test: tests/test_phase_two_promises_nothing.py
   - id: LAW-STALE-IS-COMPUTED-AT-READ-TIME
     text: "a verdict lapses by time with no event, and the surface computes it rather than printing a frozen word"
     gate: web/src/types.ts

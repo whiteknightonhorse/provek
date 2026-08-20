@@ -77,7 +77,123 @@ Repository URL, contact, and the mandate choice: passive verification only, or a
 for active probing. **Without a mandate we do not touch production** — this must be stated on the
 form, not in terms of service.
 
-## 4. Phase 2 must fit without a redesign — NEW
+### 3.5 Phase 2 (`/phase-2/`) — an announcement, and not an offer
+
+One page describes phase 2, and it is the only place on the surface that does. Four rules bind it,
+and each one is a rule because breaking it would manufacture exactly the defect the product exists
+to detect — a claim stronger than the artefact behind it:
+
+1. it states, on the face of the page and again at its foot, that **nothing described is in service**
+   and that **no application for it is being taken**;
+2. it carries **no date, and no word standing in for one**. Nothing and nobody has committed to a
+   date, so the page may not invent one;
+3. it carries **no payment control**, in this phase or a later one (A-6, §4.1);
+4. **every sentence on it traces to §4.1, to rules 1–3 above, or to the phase-1 screen it
+   describes** (§3.1–3.4). A sentence that does not is not on the page.
+
+   > Rule 4 first read "every sentence traces to §4.1", and the page it governs broke it on the day
+   > both were written: the step "you ask to be verified, a passport is issued" is phase 1, and the
+   > refusals are rules 1–2 of this section. Fable's objection is the one that matters here — a rule
+   > tolerantly broken at birth teaches the next editor to reinterpret gates rather than obey them,
+   > which is L-7 arriving from the other direction. The rule is widened to what it always meant.
+
+It is reached from Method rather than from the landing. The landing's argument is built to hold at
+zero funders — that is the point of it (specification §4.6) — and offering a future second side
+there as a reason to apply would reintroduce the dependency the specification deliberately removed.
+
+This page is a narrow exception to D-05, whose boundary otherwise stands: every reserved slot in the
+layout stays empty, disabled and unannounced. Describing a phase is not the same act as offering a
+capability, and the difference is recorded in D-16.
+
+## 4. Phase 2 — deferred by A-10, specified in full
+
+### 4.1 What a funding task is, and what it is not
+
+Taken from specification **v1.3**, §8 and §4.2. This subsection exists because a page now states
+these things in public (§3.5), and a public statement whose only address is a document on the
+operator's laptop is a claim the reader cannot check — which is the shape this product exists to
+reject.
+
+⚠️ **The revision is named because nothing can gate the drift.** The source document is not in this
+repository and no test can read it, so a v1.4 that changes §8 would leave this subsection quietly
+wrong and every check green. Saying so is the honest half; the other half is a rule with a human
+behind it rather than a machine — **an edit to specification §8 requires this subsection to be
+re-derived**, and that belongs on the operator's checklist. Naming an unarmed rule as unarmed is
+the practice of `tasks/lessons.md` L-8: a law with a fake anchor is worse than an honest note.
+
+**Deferred, not cancelled.** Decision A-10: projects first, because the registry is useful without
+the second side and the second side is not useful without the registry (§4.2). Specification §8
+defines phase 2 anyway, so that it will not have to be designed twice.
+
+**What it is.** A funding task is a **contract for services — procurement**. Not a grant, not a
+donation, not a pre-payment for a share, not an investment contract (§8.1). The funder is a
+**customer** and takes delivery of the result (A-2); a share of revenue is excluded permanently, not
+deferred (A-3). The terms `investment`, `investor`, `equity` and `secondary market` are forbidden in
+the product — and §8.1 records in the same breath that the prohibition is not itself a legal
+argument, because classification follows substance rather than vocabulary.
+
+**Money.** The incubator holds and routes no funds: no escrow, no treasury, no keys (A-6, §4.3
+non-goal 1). The customer pays the agent **directly**. The milestone contract is **deployed by the
+parties themselves** from a template the incubator publishes, and the incubator holds no
+administrative key to it — deploying it and holding keys would return the custodial risk A-6
+removed through the back door, and "we are only infrastructure" would stop being true (§8.2). A
+commission on transfers is excluded forever (§11.4). The phase-2 revenue stream is a fixed fee for
+the witnessing itself (§11.4, and §5 below).
+
+**Conditions of creation.** A draft missing `acceptance_criteria`, `failure_criteria`, `timeout`,
+`milestones` or `cap` never becomes a task — the policy gate refuses it, and that is a condition of
+creation rather than a recommendation (§8.2; on `rejected`, see the lifecycle note below). **One task, one principal:** financing out of the commingled funds of an agent acting for
+several principals is forbidden in phase 2.0, and the gate follows `funder → delegation → principal`
+rather than stopping at the funder (§8.2, §8.6).
+
+**Lifecycle** (§8.3):
+
+```
+draft → policy_check → funded → executing
+policy_check → rejected            (a condition of creation is missing, §8.2)
+executing → milestone_released → executing
+executing → completed | failed | timed_out
+failed | timed_out → settled
+```
+
+Terminal: `completed`, `settled`, `rejected`. **There is no cancellation by the funder** (A-4); all
+three exits from `executing` are performed by the contract rather than decided by a person. An
+undefined transition is impossible, not undocumented.
+
+⚠️ **The arrow into `rejected` is a reconstruction, not a quotation, and the seam is named rather
+than smoothed.** §8.3 lists `rejected` as terminal while its diagram shows nothing reaching it, and
+§8.2 says a task missing a condition of creation *is not created at all* — which cannot both be true
+and leave it sitting in a terminal state. The reading taken here: a **draft** is refused at
+`policy_check` and never becomes a funded task, which satisfies both sentences. The durable fix is
+an erratum in specification §8.3, not a public page carrying the ambiguity forward.
+
+**Enforced against evidenced** (§8.5) — "the most frequent place where such products lie", and §8.5
+puts the obligation on the interface: UI and documents must show the status of every constraint.
+`enforced` means the deployed contract **carries the constraint out itself**; `evidenced` means it
+can be shown and argued, and nothing more. Neither word promises a contract free of defects, and the
+surface may not upgrade `enforced` into a guarantee of impossibility: §8.5 says "enforced by the
+contract" and spends the word *impossible* only on the state machine (§8.3). The template has not
+been through the lawyer's review §8.2 requires.
+
+| constraint | status |
+|---|---|
+| ceiling on the amount | **enforced** by the contract |
+| permitted on-chain recipient | **enforced** |
+| release of a milestone against a machine-checkable criterion | **enforced** |
+| timeout and return of the uncommitted remainder | **enforced** |
+| "the money was spent on compute" | **evidenced only** |
+| "the work was done well" | **evidenced only** |
+| "the agent did not hand the task to a human" | **evidenced only**, probabilistic |
+
+**Unresolved, and published as unresolved.** Only machine-checkable acceptance criteria are
+admitted, so a dispute about quality is not admitted into such a task — it is never created, and an
+observer holding no money cannot be an arbiter (§8.5). Witnessing creates **reliance exposure**: a
+party relies on our statement at the moment funds move, and both that and the milestone-contract
+template are marked as requiring a lawyer's review before phase 2 (§8.2, §8.5). "The agent did not
+hand this task to a human" is not verifiable at reasonable cost (T1, §1.4) and is published as a
+probabilistic signal, never as a verdict.
+
+### 4.2 It must fit without a redesign — NEW
 
 The operator's explicit requirement. Phase 2 (Funding Tasks, 47 requirements, specification §8)
 is deferred by decision A-10, not cancelled. The layout must have a place for it from day one:

@@ -1,0 +1,47 @@
+=== RED RUN, LAW-PHASE-2-DESCRIBES-NEVER-OFFERS ===
+2026-08-20T10:48:28Z
+
+Six defects planted in the EMITTED page and in the component. Each is a shape the page could
+really take: the opening refusal deleted, a quarter promised, an evidenced-only constraint
+republished as enforced, a control and a payment route added, and a date in the source.
+
+
+    @emitted
+    def test_every_link_leads_to_one_of_the_two_permitted_destinations():
+        links = set(re.findall(r'<a\b[^>]*href="([^"]+)"', _main()))
+        assert links, "the page has no links at all, including the one to its own source"
+>       assert links <= PERMITTED_LINKS, f"unpermitted destination: {sorted(links - PERMITTED_LINKS)}"
+E       AssertionError: unpermitted destination: ['/checkout/']
+E       assert {'/apply/', '...main/SPEC.md'} <= {'/apply/', '...main/SPEC.md'}
+E         
+E         Extra items in the left set:
+E         '/checkout/'
+
+tests/test_phase_two_promises_nothing.py:153: AssertionError
+___ test_every_constraint_publishes_whether_it_is_enforced_or_only_evidenced ___
+
+    @emitted
+    def test_every_constraint_publishes_whether_it_is_enforced_or_only_evidenced():
+        main = _main()
+        for text, expected in CONSTRAINTS:
+            i = main.find(text)
+            assert i != -1, f"constraint missing from the page: {text!r}"
+            found = STATUS.search(main, i)
+            assert found, f"constraint carries no status: {text!r}"
+>           assert found.group(1) == expected, (
+                f"{text!r} is published as {found.group(1)!r}, specification 8.5 says {expected!r}")
+E           AssertionError: 'The money was spent on compute' is published as 'enforced', specification 8.5 says 'evidenced only'
+E           assert 'enforced' == 'evidenced only'
+E             
+E             - evidenced only
+E             + enforced
+
+tests/test_phase_two_promises_nothing.py:177: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_phase_two_promises_nothing.py::test_the_page_refuses_at_the_top_and_again_at_the_foot
+FAILED tests/test_phase_two_promises_nothing.py::test_the_emitted_page_names_no_date
+FAILED tests/test_phase_two_promises_nothing.py::test_the_component_names_no_date
+FAILED tests/test_phase_two_promises_nothing.py::test_the_page_carries_no_control_that_could_be_pressed
+FAILED tests/test_phase_two_promises_nothing.py::test_every_link_leads_to_one_of_the_two_permitted_destinations
+FAILED tests/test_phase_two_promises_nothing.py::test_every_constraint_publishes_whether_it_is_enforced_or_only_evidenced
+6 failed, 7 passed in 0.05s
