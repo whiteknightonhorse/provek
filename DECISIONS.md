@@ -154,3 +154,36 @@ The fix is a gate on the emitted document (`tests/test_no_bare_nulls.py`), in th
 test that proves scorer/transport independence — the invariant with a machine behind it has never
 slipped, and this one had none.
 
+## D-14. Measurement on the public surface: GA4, without a consent banner
+
+**Decision.** Google Analytics 4 (`G-QD2522TMYP`, property 550740129) is installed on
+`provek.dev`. No consent banner. The operator decided this on 2026-08-20, against a ruling.
+
+**The ruling it overrules.** Fable ruled GA4 out at this stage on three independent grounds: the
+operator's own standing law requires a consent mechanism before identifier-setting analytics runs
+for UK and EEA visitors, and this product's audience is disproportionately EEA counsel doing due
+diligence; a banner is the first thing a reader meets on a page whose thesis is that nothing
+happens behind their back; and — the argument with the most force here — consent-gated analytics
+records the consenting subset and presents it shaped like a total, which is a machine for turning
+`not_measured` into a number. He proposed Cloudflare Web Analytics instead: cookieless, no
+identifiers, no consent required.
+
+**Why it is recorded rather than quietly implemented.** The operator's rulings outrank Fable's, and
+this is his site and his exposure. But a decision taken against a reasoned objection is exactly the
+kind that gets rediscovered later as an oversight, so the objection is preserved here with it.
+
+**What was set beyond the instruction.** Google Signals and ad-personalisation signals are disabled.
+They feed advertising profiles rather than the audience counts this measurement exists to answer, so
+leaving them on would collect more than the decision covers. `send_page_view` is off and page views
+are emitted manually, because routing is by hash and gtag would otherwise count the first screen and
+miss every navigation after it.
+
+**Measured after installation:** Lighthouse 100 / 100 / 100 / 100 on the live domain at
+benchmarkIndex 2916; total blocking time 10 ms; transfer 73 KiB to 240 KiB, all of the increase
+being gtag.js.
+
+**Not verifiable from this machine.** The browser available here neutralises Analytics — `gtag/js`
+arrives with a zero-length body and a stub `ga` function is installed in its place — so client-side
+firing was confirmed only as far as the served markup and the property's existence. Realtime shows
+zero, which is the correct reading of a counter no unblocked browser has yet opened.
+

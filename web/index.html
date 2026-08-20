@@ -23,6 +23,43 @@
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="Provek — evidence, not claims" />
     <meta name="twitter:description" content="Per business operation, how much of a company runs without a human in the loop — with the evidence behind every number, including what could not be measured." />
+
+    <!-- GA4, operator's decision of 2026-08-20, recorded as D-14.
+         Fable ruled against measurement on this surface and the operator overruled it; the record
+         says so rather than presenting this as an unexamined default.
+
+         Two flags are set that the operator did not ask for and that do not alter what he chose to
+         collect: Google Signals and ad-personalisation signals are OFF. They feed advertising
+         profiles rather than the audience counts this is here to answer, so leaving them on would
+         collect more than the decision covers. `send_page_view` is false because routing is by
+         hash - gtag would otherwise count only the first screen and miss every navigation. -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QD2522TMYP"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-QD2522TMYP', {
+        send_page_view: false,
+        allow_google_signals: false,
+        allow_ad_personalization_signals: false
+      });
+      (function () {
+        var seen = null;
+        function view() {
+          var path = location.hash.replace(/^#/, '') || '/';
+          if (path === seen) return;
+          seen = path;
+          gtag('event', 'page_view', {
+            page_path: path,
+            page_location: location.origin + '/' + location.hash,
+            page_title: document.title
+          });
+        }
+        addEventListener('hashchange', view);
+        addEventListener('load', function () { setTimeout(view, 0); });
+        view();
+      })();
+    </script>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#f5f3ee" media="(prefers-color-scheme: light)" />
