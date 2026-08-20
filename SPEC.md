@@ -111,6 +111,11 @@ read that way even at eight rows.
 
 **Eight records exist. All are the operator's own systems, all carry `same_owner`.**
 
+The master specification's first cohort is eleven. The three that are not here are named
+in [`docs/COHORT_EXCLUSIONS.md`](docs/COHORT_EXCLUSIONS.md) with the §2.7 condition each
+one fails, because a registry that silently holds eight where its own specification says
+eleven has made an unexplained choice.
+
 ⚠️ **Corrected 2026-08-20.** This table listed a projection for all eight. It stopped being true
 when the pipeline moved to an anonymous channel: five of the eight subjects are private
 repositories and return 404 to a reader holding no credential, so their verdicts were never

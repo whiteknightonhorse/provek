@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-08-20T08:08:43.833244+00:00",
-    "valid_until": "2026-09-19T08:08:43.833244+00:00",
+    "issued_at": "2026-08-20T08:30:14.931533+00:00",
+    "valid_until": "2026-09-19T08:30:14.931533+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -45,6 +45,29 @@
       ],
       "projection": 40,
       "projection_absent_reason": null,
+      "observations": {
+        "signed_commit_share": {
+          "value": 0.0,
+          "measured": true,
+          "absent_reason": null
+        },
+        "distinct_authors": {
+          "value": 2,
+          "measured": true,
+          "absent_reason": null
+        },
+        "bot_author_share": {
+          "value": 0.0,
+          "measured": true,
+          "absent_reason": null
+        },
+        "workflow_runs": {
+          "value": 0,
+          "measured": true,
+          "absent_reason": null
+        },
+        "head_sha": "84deaf4de6d0b0e732c002ecc92df15b7af4b2f4"
+      },
       "control_map_valid": true,
       "control_map_cap": 5,
       "coverage": {
@@ -56,7 +79,8 @@
           "treasury": "outside MVP scope",
           "database": "no access through the chosen channel"
         },
-        "unknown_shape": "privileged access through a CI secret or account recovery"
+        "unknown_shape": "privileged access through a CI secret or account recovery",
+        "valid": true
       }
     },
     "self_reported": {

@@ -448,7 +448,23 @@ function Registry({ reg }) {
 			className: "mt-5 space-y-2",
 			children: /* @__PURE__ */ jsxs(Strip, {
 				tone: "info",
-				children: [/* @__PURE__ */ jsxs("strong", { children: [reg.count, " records."] }), " All of them are the operator’s own systems, marked as affiliated. A registry of trust that padded itself with invented entries would be doing the exact thing it exists to detect, so it stays this size until real subjects grant a mandate."]
+				children: [
+					/* @__PURE__ */ jsxs("strong", { children: [reg.count, " records."] }),
+					" ",
+					reg.subjects.every((s2) => s2.verifier_affiliation === "same_owner") ? "All of them are the operator’s own systems, marked as affiliated." : `${reg.subjects.filter((s2) => s2.verifier_affiliation === "same_owner").length} of them are the operator\u2019s own systems, marked as affiliated.`,
+					" ",
+					"A registry of trust that padded itself with invented entries would be doing the exact thing it exists to detect, so it stays this size until real subjects grant a mandate.",
+					reg.subjects.some((s2) => s2.projection_absent_reason === "unreadable") && /* @__PURE__ */ jsxs(Fragment, { children: [
+						" ",
+						/* @__PURE__ */ jsxs("strong", { children: [
+							reg.subjects.filter((s2) => s2.projection_absent_reason === "unreadable").length,
+							" ",
+							"could not be measured at all:"
+						] }),
+						" ",
+						"their sources do not answer a reader holding no credential. Evidence only we can reach is not evidence anyone else can recompute, so those rows carry no number rather than a number nobody could check."
+					] })
+				]
 			})
 		}),
 		/* @__PURE__ */ jsxs("div", {
@@ -594,6 +610,13 @@ function Registry({ reg }) {
 * never seen the landing page. So this page must stand alone, and it must still be readable a
 * year from now - which is why provenance and protocol version are ON the page rather than in
 * metadata. */
+var OBS_LABEL = {
+	signed_commit_share: "Share of commits with a verified signature",
+	distinct_authors: "Distinct commit authors",
+	bot_author_share: "Share of commits from bot or app accounts",
+	workflow_runs: "Automated CI runs observed",
+	head_sha: "Commit the reading was taken at"
+};
 var OP_LABEL = {
 	development_initiation: "Development initiation",
 	deployment: "Deployment",
@@ -702,6 +725,14 @@ function Passport({ p }) {
 					className: "mx-2 text-[var(--color-line-2)]",
 					children: "·"
 				}),
+				/* @__PURE__ */ jsx("span", {
+					className: "evidence-class",
+					children: effectiveStatus(p.status, p.valid_until)
+				}),
+				/* @__PURE__ */ jsx("span", {
+					className: "mx-2 text-[var(--color-line-2)]",
+					children: "·"
+				}),
 				/* @__PURE__ */ jsxs("strong", {
 					className: "font-medium",
 					children: [
@@ -729,6 +760,13 @@ function Passport({ p }) {
 					p.valid_until.slice(0, 10),
 					" and it has not been renewed. Nothing below is retracted — it was true when measured — but a verdict has a shelf life, and a reader deciding today should know they are reading a record rather than a current statement."
 				]
+			})
+		}),
+		v.projection === null && v.projection_absent_reason === "unreadable" && /* @__PURE__ */ jsx("div", {
+			className: "mt-3",
+			children: /* @__PURE__ */ jsxs(Strip, {
+				tone: "info",
+				children: [/* @__PURE__ */ jsx("strong", { children: "This subject has not presented itself publicly." }), " The repository does not answer a reader holding no credential, so nothing here could be measured. We hold a credential that would read it — and deliberately did not use one, because evidence only we can reach is not evidence anyone else can recompute, and a verdict nobody can check is worth nothing. This record stays as it is until the subject opens the source or offers a channel that anyone could use."]
 			})
 		}),
 		affiliated && /* @__PURE__ */ jsx("div", {
@@ -839,11 +877,7 @@ function Passport({ p }) {
 				}),
 				/* @__PURE__ */ jsxs("p", {
 					className: "mt-1 text-xs text-[var(--color-ink-3)] max-w-[46rem]",
-					children: [
-						"Deliberately outside the score. The ladder measures how little a human is required; it says nothing about who answers when something goes wrong, so an empty control map can yield maximum autonomy and no addressee at once — both truths side by side.",
-						" ",
-						/* @__PURE__ */ jsx("em", { children: "Nothing here has been inspected yet. That is why every row reads not measured rather than none: a field nobody looked at is not a business without an answer." })
-					]
+					children: ["Deliberately outside the score. The ladder measures how little a human is required; it says nothing about who answers when something goes wrong, so an empty control map can yield maximum autonomy and no addressee at once — both truths side by side.", Object.values(p.accountability).every((f) => !f.measured) && /* @__PURE__ */ jsxs(Fragment, { children: [" ", /* @__PURE__ */ jsx("em", { children: "Nothing here has been inspected yet. That is why every row reads not measured rather than none: a field nobody looked at is not a business without an answer." })] })]
 				}),
 				/* @__PURE__ */ jsx("div", {
 					className: "mt-3 bg-[var(--color-paper)] border border-[var(--color-line)] px-5 py-1",
@@ -857,6 +891,29 @@ function Passport({ p }) {
 						["Insurance", /* @__PURE__ */ jsx(AccFact, { f: p.accountability.insurance })],
 						["Dispute path", /* @__PURE__ */ jsx(AccFact, { f: p.accountability.dispute_path })]
 					] })
+				})
+			]
+		}),
+		Object.keys(v.observations || {}).length > 0 && /* @__PURE__ */ jsxs("section", {
+			className: "mt-6",
+			children: [
+				/* @__PURE__ */ jsx("h2", {
+					className: "text-sm font-semibold",
+					children: "What was actually observed"
+				}),
+				/* @__PURE__ */ jsx("p", {
+					className: "mt-1 text-xs text-[var(--color-ink-3)] max-w-[46rem]",
+					children: "The quantities the level above was computed from. They are published so the verdict can be recomputed rather than believed — and so a reader who disagrees with the reasoning can say where."
+				}),
+				/* @__PURE__ */ jsx("div", {
+					className: "mt-3 bg-[var(--color-paper)] border border-[var(--color-line)] px-5 py-1",
+					children: /* @__PURE__ */ jsx(Facts, { rows: Object.entries(v.observations).map(([key, o]) => [OBS_LABEL[key] ?? key, typeof o === "string" || o === null ? /* @__PURE__ */ jsx("span", {
+						className: "font-mono text-xs",
+						children: o ?? "—"
+					}) : o.measured ? /* @__PURE__ */ jsx("span", {
+						className: "tabular-nums",
+						children: o.value
+					}) : /* @__PURE__ */ jsx(AbsentMark, { reason: o.absent_reason })]) })
 				})
 			]
 		}),
@@ -1168,6 +1225,33 @@ function Apply() {
 					/* @__PURE__ */ jsx("p", {
 						className: "text-xs text-[var(--color-ink-3)]",
 						children: "Nothing is charged. There is no payment step anywhere on this site, in this phase or any later one — money does not pass through us by design."
+					}),
+					/* @__PURE__ */ jsxs("div", {
+						className: "border-t border-[var(--color-line)] pt-4",
+						children: [/* @__PURE__ */ jsx("h2", {
+							className: "text-sm font-medium",
+							children: "What happens to what you type here"
+						}), /* @__PURE__ */ jsxs("ul", {
+							className: "mt-2 space-y-1 text-xs text-[var(--color-ink-3)]",
+							children: [
+								/* @__PURE__ */ jsxs("li", { children: [/* @__PURE__ */ jsx("strong", {
+									className: "text-[var(--color-ink-2)]",
+									children: "Stored:"
+								}), " the repository URL, your address, the mandate you chose, the time, and the two-letter country your request arrived from. Nothing else — no cookie is set by this form and no identifier is created for you."] }),
+								/* @__PURE__ */ jsxs("li", { children: [/* @__PURE__ */ jsx("strong", {
+									className: "text-[var(--color-ink-2)]",
+									children: "Where:"
+								}), " Cloudflare key-value storage, plus a copy in the operator’s private message channel so a human sees it. Both are read by the operator alone."] }),
+								/* @__PURE__ */ jsxs("li", { children: [/* @__PURE__ */ jsx("strong", {
+									className: "text-[var(--color-ink-2)]",
+									children: "Used for:"
+								}), " deciding whether to run a verification and contacting you about it. Never for anything else, never sold, never passed on."] }),
+								/* @__PURE__ */ jsxs("li", { children: [/* @__PURE__ */ jsx("strong", {
+									className: "text-[var(--color-ink-2)]",
+									children: "Deleted:"
+								}), " whenever you ask, by opening an issue or replying to any message from us. There is nothing to unsubscribe from — we do not send anything you did not ask for."] })
+							]
+						})]
 					})
 				]
 			})

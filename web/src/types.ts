@@ -42,6 +42,9 @@ export interface Passport {
     /** null means NOT MEASURED. It is never a zero. */
     projection: number | null;
     projection_absent_reason: AbsentReason | null;
+    /** The measured quantities a level was built from. Publishing them is what makes
+     *  "the evidence behind every number" a true sentence rather than an aspiration. */
+    observations: Record<string, Observation | string | null>;
     control_map_valid: boolean;
     control_map_cap: number | null;
     coverage: Coverage;
@@ -120,4 +123,10 @@ export function effectiveStatus(status: string, validUntil: string, now: Date = 
 
 export function daysUntil(validUntil: string, now: Date = new Date()): number {
   return Math.ceil((new Date(validUntil).getTime() - now.getTime()) / 86_400_000);
+}
+
+export interface Observation {
+  value: number | null;
+  measured: boolean;
+  absent_reason: string | null;
 }

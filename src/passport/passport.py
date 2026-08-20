@@ -228,15 +228,27 @@ def _status(control_map_valid: bool, projection_value: Measurement) -> Status:
 
     One rule, one place, both artefacts derived from it.
     """
+    # THREE OUTCOMES, and the middle one is the subtle one.
+    #
+    # Nothing measured at all -> UNVERIFIED. Not "in progress": for a subject whose source refused
+    # to answer, nothing is running and nothing will run until the subject changes something. Saying
+    # "verification in progress" would promise activity that does not exist, which is a false claim
+    # about US rather than about them - and the least excusable kind.
+    #
+    # Something measured but the map cannot carry it -> IN_PROGRESS. There the word is true: we hold
+    # partial evidence and the missing piece is ours to obtain.
+    if not projection_value.is_measured:
+        return Status.UNVERIFIED
     if not control_map_valid:
         return Status.IN_PROGRESS
-    return Status.VERIFIED if projection_value.is_measured else Status.UNVERIFIED
+    return Status.VERIFIED
 
 
 def build(binding: Binding, scores: list[OperationScore], control_map: ControlMap,
           projection_value: Measurement, provenance: Provenance,
           accountability: Accountability, *, now: datetime | None = None,
           validity_days: int = 30, claims: dict | None = None,
+          observations: dict | None = None,
           mandate_ref: str | None = None,
           verifier_affiliation: str = "independent",
           access_channel: str = "anonymous") -> Passport:
@@ -261,13 +273,33 @@ def build(binding: Binding, scores: list[OperationScore], control_map: ControlMa
         "projection": projection_value.value if projection_value.is_measured else None,
         "projection_absent_reason": (None if projection_value.is_measured
                                      else projection_value.absent.value),
+        # THE MEASURED QUANTITIES A LEVEL WAS BUILT FROM. Without these the passport publishes a
+        # conclusion and its caveats but not its inputs, so "publishes the evidence behind every
+        # number" was a sentence the artefact did not support.
+        "observations": observations or {},
         "control_map_valid": ok,
         "control_map_cap": control_map.implied_level_cap() if ok else None,
-        "coverage": {
-            "inspected": [s.value for s in control_map.coverage.inspected] if ok else [],
-            "out_of_reach": control_map.coverage.out_of_reach if ok else {},
-            "unknown_shape": control_map.coverage.unknown_shape if ok else "",
-        },
+        # AN INVALID MAP IS NOT AN EMPTY ONE. This used to blank `out_of_reach` and `unknown_shape`
+        # whenever the map could not support a verdict - suppressing the reasons a source was
+        # unreachable at exactly the moment they are the only thing worth reading. Invalidity means
+        # "this map cannot carry a level", not "we know nothing"; the reasons stay true either way,
+        # and hiding them turns an honest limitation into an empty block.
+        # THREE STATES, not two. A map may carry coverage that lists nothing inspected - we looked
+        # and reached nothing - or carry no coverage object at all, which means the map was never
+        # given one. Those are different facts and the artefact says which, because collapsing them
+        # is the founding defect at yet another altitude.
+        "coverage": ({
+            "inspected": [s.value for s in control_map.coverage.inspected],
+            "out_of_reach": control_map.coverage.out_of_reach,
+            "unknown_shape": control_map.coverage.unknown_shape,
+            "valid": ok,
+        } if control_map.coverage is not None else {
+            "inspected": [],
+            "out_of_reach": {},
+            "unknown_shape": "",
+            "valid": False,
+            "absent_reason": "check_did_not_run",
+        }),
     }
     # KEYWORDS, not positions. Inserting `access_channel` above shifted every argument after it,
     # so the field silently took `mandate_ref`'s value and published a null where a channel name

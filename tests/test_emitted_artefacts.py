@@ -190,7 +190,46 @@ def test_a_published_verdict_is_anonymously_reproducible():
 def test_the_private_subject_rule_is_in_the_code_not_only_in_this_test():
     """A rule enforced only by a test that reads today's artefacts would pass on an empty corpus."""
     src = (ROOT / "scripts" / "cohort.py").read_text(encoding="utf-8")
-    assert "not ev.private" in src, "the cohort must refuse to publish what only a credential sees"
+    assert "def publishable_source" in src, "the rule must be a named predicate, not an inline and"
+    assert "ev.private is not True" in src, "a private subject must not enter a published verdict"
+
+
+def test_an_unread_subject_claims_nothing_on_its_own_behalf():
+    """Fable B2. `private: false` was published under 'claimed by the subject' for repositories
+    that answered 404 - the opposite of the truth, spoken in the subject's name by a template."""
+    for p in _passports():
+        if p["verified"]["projection"] is not None:
+            continue
+        assert "private" not in p["self_reported"], (
+            f"{p['subject_id']} publishes a claim its subject never made")
+
+
+def test_a_map_does_not_report_inspecting_what_it_could_not_read():
+    """Fable B2. Every subject carried the same coverage, so a passport whose source could not be
+    read still said 'Inspected: github' and a ceiling of L5 - two claims about one source, three
+    sections apart, in direct contradiction."""
+    for p in _passports():
+        v = p["verified"]
+        unread = any(o["level"] == "unreadable" for o in v["operations"])
+        if not unread:
+            continue
+        assert v["coverage"]["inspected"] == [], (
+            f"{p['subject_id']} reports an inspection it could not perform")
+        assert "github" in v["coverage"]["out_of_reach"], (
+            f"{p['subject_id']} does not say why the source is out of reach")
+        assert v["control_map_cap"] is None, (
+            f"{p['subject_id']} carries a ceiling derived from a map with no coverage")
+
+
+def test_every_accountability_fact_carries_its_register():
+    """R3's lesson at the next boundary: `Fact` gained `confidence` and nothing gated it there."""
+    for p in _passports():
+        for name, fact in p["accountability"].items():
+            assert "confidence" in fact, (p["subject_id"], name)
+            if fact["measured"]:
+                assert fact["confidence"] in ("measured", "inferred", "assumed"), (p["subject_id"], name)
+            else:
+                assert fact["confidence"] is None, (p["subject_id"], name)
 
 
 def test_a_403_is_not_assumed_to_be_our_own_rate_limit():

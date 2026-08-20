@@ -13,7 +13,10 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-sys.path.insert(0, "/home/incubator/incubator")
+# The repository root, wherever this clone happens to live. It was the server's absolute path,
+# which meant the pipeline only ran on one machine - a quiet contradiction of the anonymous
+# channel's whole point, that any reader can recompute a verdict.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.abs_profile.evidence import EvidenceClass
 from src.abs_profile.identity import Binding, BindingKind
@@ -21,7 +24,6 @@ from src.abs_profile.ladder import SMALL_TEAM_FOR_L3, SOLE_AUTHOR, L
 from src.abs_profile.measured import NotMeasured
 from src.collector.github import access_channel, collect_github
 from src.passport.passport import Accountability, Provenance, build
-from src.registry.lifecycle import Status
 from src.registry.public_registry import PublicRegistry, Row
 from src.transport.file_transport import FileTransport
 from src.verify.control_map import Capability, ControlMap, ControlPath, Coverage, Surface
@@ -71,12 +73,45 @@ COHORT = [
 
 tok = optional_token()
 
-out = Path("/home/incubator/incubator/public")
+out = Path(__file__).resolve().parents[1] / "public"
 transport = FileTransport(out / "passports")
 registry = PublicRegistry(out / "registry")
 now = datetime.now(timezone.utc)
 PROV = Provenance("1.0.0", "1.0.0", 30)
 SITE = "https://provek.dev"
+
+
+def observations(ev) -> dict:
+    """The measured quantities a level was actually built from.
+
+    The site says it "publishes the evidence behind every number" and it did not: the passport
+    carried verdicts, limiters and coverage, and never the observations underneath. Fable offered
+    two honest exits - weaken the sentence, or make it true. This is the second, because the
+    collector already holds these and withholding them was a choice nobody had made deliberately.
+
+    Every value keeps its own absence state; none of them collapses to a zero.
+    """
+    def m(x):
+        return {"value": x.value, "measured": x.is_measured,
+                "absent_reason": None if x.is_measured else x.absent.value}
+    return {
+        "signed_commit_share": m(ev.signed_commit_share),
+        "distinct_authors": m(ev.distinct_authors),
+        "bot_author_share": m(ev.bot_author_share),
+        "workflow_runs": m(ev.workflow_runs),
+        "head_sha": ev.head_sha,
+    }
+
+
+def publishable_source(ev) -> bool:
+    """May this subject's evidence enter a PUBLISHED verdict?
+
+    Two conditions, and they are different facts. `ev.read` says the source answered us. `private`
+    says it would not answer anyone without a credential - and evidence only we can reach is not
+    evidence a third party can recompute (ABI-5-3). Either failing means the same thing for
+    publication and different things for the record, which is why both are kept.
+    """
+    return bool(ev.read) and ev.private is not True
 
 print("%-42s %-7s %-9s %-6s %s" % ("subject", "level", "projection", "CI", "limiters"))
 print("-" * 96)
@@ -85,14 +120,32 @@ for full in COHORT:
     ev = collect_github(full, tok)
     binding = Binding(BindingKind.GIT, full)
 
-    cmap = ControlMap(
-        paths=[ControlPath(Surface.GITHUB, Capability.IMPROVE_OR_FIX, recorded=True)],
-        coverage=Coverage(
+    # THE MAP REPORTS WHAT WAS ACTUALLY INSPECTED (Fable, B2). It used to stamp the same coverage
+    # onto every subject, so a passport whose source could not be read still said "Inspected:
+    # github" and carried a control-map ceiling of L5 - two claims about one source, on one page,
+    # in direct contradiction, three sections apart.
+    #
+    # When nothing was read, nothing was inspected, and github moves to out_of_reach with the
+    # reason. The map is then INVALID by its own rule, which is correct: a map without coverage
+    # claims more than it knows, and the passport cannot stand on it.
+    if publishable_source(ev):
+        coverage = Coverage(
             inspected=[Surface.GITHUB],
             out_of_reach={"server": "runtime not presented by the subject",
                           "treasury": "outside MVP scope",
                           "database": "no access through the chosen channel"},
-            unknown_shape="privileged access through a CI secret or account recovery"))
+            unknown_shape="privileged access through a CI secret or account recovery")
+        paths = [ControlPath(Surface.GITHUB, Capability.IMPROVE_OR_FIX, recorded=True)]
+    else:
+        coverage = Coverage(
+            inspected=[],
+            out_of_reach={"github": "the repository did not answer a reader holding no credential",
+                          "server": "runtime not presented by the subject",
+                          "treasury": "outside MVP scope",
+                          "database": "no access through the chosen channel"},
+            unknown_shape="privileged access through a CI secret or account recovery")
+        paths = []
+    cmap = ControlMap(paths=paths, coverage=coverage)
 
     lvl = None
     if ev.signed_commit_share.is_measured and ev.distinct_authors.is_measured:
@@ -116,7 +169,7 @@ for full in COHORT:
     # subject is therefore unreadable FOR SCORING regardless of what we hold. The collector still
     # records honestly that it read - that is a fact about us - and the cohort refuses to publish
     # what only a credential could see, which is a fact about the verdict.
-    publishable = ev.read and not ev.private
+    publishable = publishable_source(ev)
     observed = (EvidenceClass.PLATFORM_OBSERVED,) if publishable else ()
     dev = (score_operation("development_initiation", lvl, observed, cmap.implied_level_cap(),
                            weak_mixed_signal=True, runtime_trace=ev.has_runtime_trace)
@@ -127,7 +180,13 @@ for full in COHORT:
               score_operation("treasury_control", None, ())]
     proj = projection(scores)
     p = build(binding, scores, cmap, proj, PROV, Accountability(),
-              now=now, claims={"source": "github", "private": ev.private},
+              # A self-reported block states what the SUBJECT said. When the source never
+              # answered, the subject said nothing, and an omitted key is the honest rendering of
+              # that - a `false` here was the template speaking in the subject's name.
+              now=now,
+              claims=({"source": "github", "private": ev.private} if ev.read
+                      else {"source": "github"}),
+              observations=observations(ev),
               mandate_ref="self-mandate-0001", verifier_affiliation="same_owner",
               access_channel=access_channel(tok))
     m = p.to_machine()
@@ -145,8 +204,12 @@ for full in COHORT:
     # A subject nothing was measured on is NOT verified. The registry said `verified` for five
     # rows whose projection was null - a status asserting a completed verification beside a field
     # saying none happened, in the same row.
-    status = Status.VERIFIED if m["verified"]["projection"] is not None else Status.UNVERIFIED
-    registry.upsert(Row(binding.as_subject_id(), status,
+    # THE PASSPORT'S OWN STATUS, not a second computation of it. This line derived its own answer
+    # from the projection and diverged the moment `_status` learned about invalid maps: the row
+    # said `unverified` while the document it links to said `verification_in_progress`. That is
+    # NEW-1 recurring, in the fix for NEW-1's sibling. One rule, one place, both artefacts reading
+    # from it.
+    registry.upsert(Row(binding.as_subject_id(), p.status,
                         m["verified"]["projection"], m["verified"]["projection_absent_reason"],
                         PROV.protocol_version, p.valid_until,
                         f"{SITE}/data/passports/{slug}.json",

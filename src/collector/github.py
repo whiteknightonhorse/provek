@@ -53,7 +53,8 @@ class GitHubEvidence:
     there and none of it counted; `unreadable` says the source did not answer us. Conflating them
     told readers that five subjects had been examined and found wanting, when in truth they could
     not be examined by anyone without a credential."""
-    private: bool
+    private: bool | None
+    """None when the source did not answer: unknown, which is not the same as False."""
     head_sha: str | None
     signed_commit_share: Measurement
     distinct_authors: Measurement
@@ -148,7 +149,12 @@ def collect_github(full_name: str, token: str | None = None) -> GitHubEvidence:
         )
     if code != 200 or not isinstance(repo, dict):
         notes.append(redact(f"repository not read, HTTP {code}"))
-        return GitHubEvidence(full_name, False, None, unread(), unread(), unread(), unread(),
+        # `private` was hardcoded False here (Fable, B2). For a repository that answered 404 to
+        # this reader, "private: false" is not a weaker claim - it is the OPPOSITE of the truth,
+        # and it travelled downstream into the passport's self-reported block under a heading that
+        # says "claimed by the subject". The subject claimed nothing; the template did. That is
+        # invariant 1 and R4's shape at once, and it is refutable by anyone who opens the URL.
+        return GitHubEvidence(full_name, None, None, unread(), unread(), unread(), unread(),
                               notes=notes, read=False)
 
     code, commits = _api(f"/repos/{full_name}/commits?per_page=50", token)

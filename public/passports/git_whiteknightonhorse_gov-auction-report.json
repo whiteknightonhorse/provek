@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-08-20T08:08:43.833244+00:00",
-    "valid_until": "2026-09-19T08:08:43.833244+00:00",
+    "issued_at": "2026-08-20T08:30:14.931533+00:00",
+    "valid_until": "2026-09-19T08:30:14.931533+00:00",
     "status": "unverified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -42,23 +42,45 @@
       ],
       "projection": null,
       "projection_absent_reason": "unreadable",
-      "control_map_valid": true,
-      "control_map_cap": 5,
+      "observations": {
+        "signed_commit_share": {
+          "value": null,
+          "measured": false,
+          "absent_reason": "unreadable"
+        },
+        "distinct_authors": {
+          "value": null,
+          "measured": false,
+          "absent_reason": "unreadable"
+        },
+        "bot_author_share": {
+          "value": null,
+          "measured": false,
+          "absent_reason": "unreadable"
+        },
+        "workflow_runs": {
+          "value": null,
+          "measured": false,
+          "absent_reason": "unreadable"
+        },
+        "head_sha": null
+      },
+      "control_map_valid": false,
+      "control_map_cap": null,
       "coverage": {
-        "inspected": [
-          "github"
-        ],
+        "inspected": [],
         "out_of_reach": {
+          "github": "the repository did not answer a reader holding no credential",
           "server": "runtime not presented by the subject",
           "treasury": "outside MVP scope",
           "database": "no access through the chosen channel"
         },
-        "unknown_shape": "privileged access through a CI secret or account recovery"
+        "unknown_shape": "privileged access through a CI secret or account recovery",
+        "valid": false
       }
     },
     "self_reported": {
-      "source": "github",
-      "private": false
+      "source": "github"
     },
     "accountability": {
       "emergency_stop": {

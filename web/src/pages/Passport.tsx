@@ -10,6 +10,14 @@ import { AbsentMark, LevelRail, Projection } from "../components/Measured";
 import { daysUntil, effectiveStatus } from "../types";
 import type { Fact, Passport as P } from "../types";
 
+const OBS_LABEL: Record<string, string> = {
+  signed_commit_share: "Share of commits with a verified signature",
+  distinct_authors: "Distinct commit authors",
+  bot_author_share: "Share of commits from bot or app accounts",
+  workflow_runs: "Automated CI runs observed",
+  head_sha: "Commit the reading was taken at",
+};
+
 const OP_LABEL: Record<string, string> = {
   development_initiation: "Development initiation",
   deployment: "Deployment",
@@ -115,6 +123,12 @@ export default function Passport({ p }: { p: P }) {
           {p.binding_strength} identity binding
         </span>
         <span className="mx-2 text-[var(--color-line-2)]">·</span>
+        {/* THE DOCUMENT'S OWN STATUS, which this page never stated (Fable). A reader who clicked
+            "unverified" in the registry arrived at a page showing a binding, a validity date and a
+            control map, with no word about what the document itself is - and "valid until, 30 days"
+            on an unverified record invites the question: valid as what? */}
+        <span className="evidence-class">{effectiveStatus(p.status, p.valid_until)}</span>
+        <span className="mx-2 text-[var(--color-line-2)]">·</span>
         <strong className="font-medium">
           {v.operations.length - unmeasured} of {v.operations.length} operations measured.
         </strong>{" "}
@@ -133,6 +147,22 @@ export default function Passport({ p }: { p: P }) {
             {p.valid_until.slice(0, 10)} and it has not been renewed. Nothing below is retracted —
             it was true when measured — but a verdict has a shelf life, and a reader deciding today
             should know they are reading a record rather than a current statement.
+          </Strip>
+        </div>
+      )}
+
+      {/* THE RULE, stated where a visitor meets its consequence. It lived in a code comment and in
+          a hover title - invisible on a phone - so four rows read as four failures instead of as
+          the method working. */}
+      {v.projection === null && v.projection_absent_reason === "unreadable" && (
+        <div className="mt-3">
+          <Strip tone="info">
+            <strong>This subject has not presented itself publicly.</strong> The repository does not
+            answer a reader holding no credential, so nothing here could be measured. We hold a
+            credential that would read it &mdash; and deliberately did not use one, because evidence
+            only we can reach is not evidence anyone else can recompute, and a verdict nobody can
+            check is worth nothing. This record stays as it is until the subject opens the source or
+            offers a channel that anyone could use.
           </Strip>
         </div>
       )}
@@ -226,11 +256,15 @@ export default function Passport({ p }: { p: P }) {
           Deliberately outside the score. The ladder measures how little a human is required; it says
           nothing about who answers when something goes wrong, so an empty control map can yield
           maximum autonomy and no addressee at once &mdash; both truths side by side.
-          {" "}
-          <em>
-            Nothing here has been inspected yet. That is why every row reads not measured rather
-            than none: a field nobody looked at is not a business without an answer.
-          </em>
+          {Object.values(p.accountability).every((f) => !f.measured) && (
+            <>
+              {" "}
+              <em>
+                Nothing here has been inspected yet. That is why every row reads not measured rather
+                than none: a field nobody looked at is not a business without an answer.
+              </em>
+            </>
+          )}
         </p>
         <div className="mt-3 bg-[var(--color-paper)] border border-[var(--color-line)] px-5 py-1">
           <Facts
@@ -243,6 +277,34 @@ export default function Passport({ p }: { p: P }) {
           />
         </div>
       </section>
+
+      {/* THE OBSERVATIONS. The site claims it publishes the evidence behind every number, and until
+          now it published the conclusion and its caveats but never the inputs. These are the raw
+          measured quantities the level was built from, each keeping its own absence state. */}
+      {Object.keys(v.observations || {}).length > 0 && (
+        <section className="mt-6">
+          <h2 className="text-sm font-semibold">What was actually observed</h2>
+          <p className="mt-1 text-xs text-[var(--color-ink-3)] max-w-[46rem]">
+            The quantities the level above was computed from. They are published so the verdict can
+            be recomputed rather than believed &mdash; and so a reader who disagrees with the
+            reasoning can say where.
+          </p>
+          <div className="mt-3 bg-[var(--color-paper)] border border-[var(--color-line)] px-5 py-1">
+            <Facts
+              rows={Object.entries(v.observations).map(([key, o]) => [
+                OBS_LABEL[key] ?? key,
+                typeof o === "string" || o === null ? (
+                  <span className="font-mono text-xs">{o ?? "—"}</span>
+                ) : o.measured ? (
+                  <span className="tabular-nums">{o.value}</span>
+                ) : (
+                  <AbsentMark reason={o.absent_reason} />
+                ),
+              ])}
+            />
+          </div>
+        </section>
+      )}
 
       {/* Identity binding strength - D-11. */}
       <section className="mt-6">

@@ -194,6 +194,37 @@ export default function Apply() {
             Nothing is charged. There is no payment step anywhere on this site, in this phase or any
             later one &mdash; money does not pass through us by design.
           </p>
+
+          {/* An operator who ruled that cookieless analytics needs care about consent will be asked
+              why intake data has no notice. It takes a paragraph, and a verification product that
+              is vague about what it does with your address has picked a strange thing to be vague
+              about. */}
+          <div className="border-t border-[var(--color-line)] pt-4">
+            <h2 className="text-sm font-medium">What happens to what you type here</h2>
+            <ul className="mt-2 space-y-1 text-xs text-[var(--color-ink-3)]">
+              <li>
+                <strong className="text-[var(--color-ink-2)]">Stored:</strong> the repository URL,
+                your address, the mandate you chose, the time, and the two-letter country your
+                request arrived from. Nothing else &mdash; no cookie is set by this form and no
+                identifier is created for you.
+              </li>
+              <li>
+                <strong className="text-[var(--color-ink-2)]">Where:</strong> Cloudflare key-value
+                storage, plus a copy in the operator&rsquo;s private message channel so a human sees
+                it. Both are read by the operator alone.
+              </li>
+              <li>
+                <strong className="text-[var(--color-ink-2)]">Used for:</strong> deciding whether to
+                run a verification and contacting you about it. Never for anything else, never sold,
+                never passed on.
+              </li>
+              <li>
+                <strong className="text-[var(--color-ink-2)]">Deleted:</strong> whenever you ask, by
+                opening an issue or replying to any message from us. There is nothing to unsubscribe
+                from &mdash; we do not send anything you did not ask for.
+              </li>
+            </ul>
+          </div>
         </form>
       </div>
     </Page>

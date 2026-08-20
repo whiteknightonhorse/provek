@@ -33,10 +33,27 @@ export default function Registry({ reg }: { reg: R }) {
       {/* The honest state, stated as method rather than apology. */}
       <div className="mt-5 space-y-2">
         <Strip tone="info">
-          <strong>{reg.count} records.</strong> All of them are the operator&rsquo;s own systems,
-          marked as affiliated. A registry of trust that padded itself with invented entries would be
-          doing the exact thing it exists to detect, so it stays this size until real subjects grant
-          a mandate.
+          {/* Derived, not asserted. The landing sentence was fixed to read from the rows and this
+              one was not - and it becomes a false accusation on the day the first independent
+              subject arrives, which is the day we are inviting people. */}
+          <strong>{reg.count} records.</strong>{" "}
+          {reg.subjects.every((s2) => s2.verifier_affiliation === "same_owner")
+            ? "All of them are the operator\u2019s own systems, marked as affiliated."
+            : `${reg.subjects.filter((s2) => s2.verifier_affiliation === "same_owner").length} of them are the operator\u2019s own systems, marked as affiliated.`}{" "}
+          A registry of trust that padded itself with invented entries would be doing the exact
+          thing it exists to detect, so it stays this size until real subjects grant a mandate.
+          {reg.subjects.some((s2) => s2.projection_absent_reason === "unreadable") && (
+            <>
+              {" "}
+              <strong>
+                {reg.subjects.filter((s2) => s2.projection_absent_reason === "unreadable").length}{" "}
+                could not be measured at all:
+              </strong>{" "}
+              their sources do not answer a reader holding no credential. Evidence only we can reach
+              is not evidence anyone else can recompute, so those rows carry no number rather than a
+              number nobody could check.
+            </>
+          )}
         </Strip>
       </div>
 
