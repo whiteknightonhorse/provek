@@ -16,6 +16,11 @@ echo "3/5 laws";     python3 scripts/ratchet_decisions.py
 echo "4/5 language"; python3 scripts/ratchet_language.py
 echo "5/5 tests";    python3 -m pytest tests -q | tail -1
 
+# Gates-only mode. The orchestra must judge the tree after EVERY task, not just before a push,
+# and a second copy of the gate list would drift from this one the first time the list changed.
+# One definition, two callers.
+if [ "${1:-}" = "--gates-only" ]; then echo "TREE GREEN (gates only, nothing pushed)"; exit 0; fi
+
 TOK=$(sudo grep -ohE 'gh[pous]_[A-Za-z0-9_]+' /home/audiobook2/.claude/gh.env | head -1)
 if [ -z "$TOK" ]; then echo "no token" >&2; exit 1; fi
 trap 'git remote set-url origin "https://github.com/whiteknightonhorse/provek.git" 2>/dev/null; unset TOK' EXIT
