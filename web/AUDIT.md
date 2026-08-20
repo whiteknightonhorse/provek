@@ -245,3 +245,112 @@ distribution channel this product actually has. There are no `og:` tags, so thos
 a bare URL. Deliberately deferred: they would be static across all routes on a hash-routed SPA, and
 a per-passport unfurl needs prerendering.
 
+## Phase 7 — Bing Webmaster: the site is registered, ownership is NOT proven
+
+`https://provek.dev/` is in the Bing Webmaster account and `GetUserSites` returns it with
+`IsVerified: false`. That second half is the whole status: **every per-site call is refused until
+ownership is proven**, so there is no sitemap submission, no URL submission and no quota reading
+for this domain yet.
+
+### What each call answered
+
+| call | subject `provek.dev` | control `defycard.com` |
+|---|---|---|
+| `GetUserSites` | present, `IsVerified: false` | present, `IsVerified: true` |
+| `VerifySite` | `false` — the check ran and returned a verdict | — |
+| `GetUrlSubmissionQuota` | `ErrorCode 14 / NotAuthorized` | `DailyQuota 0`, `MonthlyQuota 1100` |
+| `GetFeeds` | `ErrorCode 14 / NotAuthorized` | 4 feeds |
+| `GetQueryStats` | `ErrorCode 14 / NotAuthorized` | **0 rows, call OK** |
+| `GetLinkCounts` | `ErrorCode 14 / NotAuthorized` | **0 rows, call OK** |
+
+The control column is not decoration. Three of these calls can answer `200` with an empty body, and
+on a new site that is the truth — so a zero on the subject alone cannot be told apart from an
+instrument that sees nothing here. Running each call a second time against an old, verified site
+settles which it is. The quota numbers in that column are **`defycard.com`'s**, not this domain's;
+this domain's quota is `unreadable` and is recorded as such rather than being filled in with the
+neighbour's figure.
+
+`GetQueryStats` returning **0 rows on a verified site with a healthy call** is the trap this
+measurement was warned about, and it reproduced exactly: a zero there is a state of the source, not
+a defect. `GetLinkCounts` reads 0 on that same verified site.
+
+That second zero was worth the counter defect it exposed. The control column first read `1` there,
+because the counter scored the wrapping dict rather than the `Links` array inside it — a fabricated
+row in a table whose whole purpose is to prove the instrument can see. Once the subject becomes
+readable, a zero on both sides now correctly reports `instrument_blind` instead of a false
+`measured`.
+
+### Why ownership cannot be proven from here
+
+Bing accepts three proofs: an XML file at the site root, a `msvalidate.01` meta tag, or a CNAME.
+The first two are publications and the third is DNS at Porkbun — and **this host can publish
+neither**. It is the same missing channel that phase 6 recorded: the Pages project is direct
+upload, so nothing here turns a commit into a live URL. The fourth route, importing an already
+verified property from Google Search Console, only moves the same requirement: GSC verification is
+itself a publication or a DNS record, behind an OAuth step that is the operator's by standing rule.
+
+`VerifySite` returning `false` is a bare boolean and, on its own, cannot say *why* — an unpublished
+file, a CNAME that does not exist and an edge that refused Bing's fetcher all collapse into it. The
+verdict here rests on that boolean **together with** an independent reading: `GET
+https://provek.dev/BingSiteAuth.xml` answers `404` to a browser agent. One instrument corroborates
+the other; after a deploy, a lone `false` would no longer license the same conclusion.
+
+`web/public/BingSiteAuth.xml` therefore exists but is not in force. That directory is copied into
+the build verbatim — `favicon.svg` is byte-identical (698 B) in `web/public/` and at
+`https://provek.dev/favicon.svg`, and a local `vite build` puts `BingSiteAuth.xml` in `dist/`
+unchanged — so the file will take effect on the next deploy and not before. Until then
+`https://provek.dev/BingSiteAuth.xml` answers `404`, which is recorded as `absent`, a reading taken
+with a browser user agent for the reason in the next section.
+
+The code in that file is the account-level `AuthenticationCode`, which Bing expects to be served
+publicly at the site root; it is a claim of ownership, not a credential. The API key it belongs to
+stays in `~/.env` and appears in no file here.
+
+### The completion path, and who can walk it
+
+1. operator deploys — `BingSiteAuth.xml` goes live;
+2. `VerifySite` — an API call, so this step needs no browser. It is expected to turn `true`, and
+   that is an expectation rather than a result: it holds only if the edge admits Bing's fetcher.
+   The 403-to-non-browser-clients behaviour measured below applies to Bing's crawler as much as to
+   ours, and whether verified bots are allowlisted here has **not** been measured;
+3. `GetUserSites` → `IsVerified: true`, at which point the refused calls above start answering;
+4. sitemap `https://provek.dev/sitemap.xml` submitted via `SubmitFeed`, then URLs, against a quota
+   **read from `GetUrlSubmissionQuota`** rather than assumed.
+
+Only step 1 needs the operator. Steps 2–4 are API calls, which is worth stating precisely because
+the opposite assumption — that Bing verification needs a human in a portal — would have parked the
+whole task on the operator's desk instead of on one deploy. What is *not* claimed is that the deploy
+is sufficient; step 2 names the condition that has not been measured.
+
+### The instrument, for the fourth time
+
+The probe first read the live site with Python's default user agent and got `403` on **every** path
+including the homepage, where a browser agent gets `200`. That `403` was one step from being
+written into the log beside "verification file not published" — a statement about the site, built
+out of a refusal aimed at the client. It is L-10's shape in a new costume, produced by an instrument
+written *that same hour* to honour L-10. The fix is a browser user agent and a three-state verdict
+where `absent` is reserved for `404` alone; `403` and `5xx` are `unreadable`.
+
+Review then found the *same law* broken twice more inside the instrument written to honour it, which
+is the part worth keeping:
+
+- the live fetch read the first 4096 bytes and ruled on them. The homepage is ~16 kB with `</head>`
+  at ~5 kB, so a `msvalidate.01` tag — which belongs at the end of `head` — sat outside the window,
+  and `served_without_code` would have been a verdict about a page from a slice that could not have
+  contained the answer. Today's reading was accidentally right, which L-10 calls the dangerous kind.
+  The body is now read whole, and truncation is its own state rather than a silent absence;
+- the row counter returned `1` for any payload that was not a list. `GetLinkCounts` answers with a
+  dict wrapping a `Links` array, so an empty result scored `1`: the control could never read zero,
+  the `instrument_blind` state was unreachable, and an empty subject would have published as
+  `measured`. A counter that cannot return zero is not a counter. Shapes it cannot count are now
+  `uncountable_shape`, which is neither zero nor one.
+
+Three instances of one law in one file, none of them caught by the author. The transferable part is
+not "set a user agent" but: **before recording an absence, establish that the instrument could have
+seen a presence.**
+
+The state capture lives outside this repository, at `~/orchestra/logs/bing_state.json`, written by
+`~/orchestra/bing_probe.py`. It is outside deliberately: every `*.py` under `scripts/` must be bound
+to an `ABI-*` requirement, and a Bing client answers to none of them. Binding one to get it past the
+gate would be the rubber-stamp that ratchet exists to catch.
+

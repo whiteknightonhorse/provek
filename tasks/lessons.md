@@ -83,3 +83,26 @@ Anchor: no code gate for the general rule - a checker cannot know that an endpoi
 instance of it IS armed, and it is the model to copy: every passport publishes the `access_channel`
 its evidence arrived through, so a verdict carries the instrument beside the reading
 (LAW-GRANTED-CHANNEL-ONLY, `tests/test_granted_channel_only.py`).
+
+## L-11 The origin answers a different question depending on who asks
+
+The Bing probe read `https://provek.dev/BingSiteAuth.xml` with Python's default user agent and got
+`403` - as it did for the homepage, which a browser agent gets `200` for. Cloudflare was refusing
+the CLIENT, and the probe was one line from writing that refusal into the log as
+`carries_expected_code: false`, i.e. as a finding about whether the site publishes the file.
+
+What makes it worth a law of its own beside L-10 is WHEN it happened. The probe was written that
+same hour, deliberately, to honour L-10 - it already ran a control site beside every zero-capable
+API call. The lesson did not transfer, because it had been learned in the shape "ask the endpoint
+that carries the quantity" and this failure has a different mechanism: the right endpoint, asked
+correctly, returning a status that encodes the asker's identity rather than the resource's state.
+
+Rule: a status code is not a measurement until the client has been ruled out as its cause. `404` is
+absence. `403`, `429` and `5xx` are the server declining to say, and must land in a state named for
+not knowing - never in the same field as a measured `false`. The general form: **before recording
+absence, establish that the instrument would have been able to see presence.**
+
+Anchor: no code gate here - this repository does not own the probe, which lives at
+`~/orchestra/bing_probe.py` (a Bing client is bound to no `ABI-*` requirement, so `scripts/` would
+have to be rubber-stamped to hold it). Recorded in L-8's and L-9's form as a habit, not dressed as
+an enforced rule.
