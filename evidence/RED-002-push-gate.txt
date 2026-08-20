@@ -1,0 +1,9 @@
+=== PROOF: the gate stops a push ===
+2026-08-19T14:58:38Z
+1/4 secrets
+secret scan: clean
+2/4 scope
+
+X T-SCOPE-RATCHET:
+  - MODULE WITHOUT A REQUIREMENT: src/_probe.py
+rc=1

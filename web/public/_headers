@@ -1,0 +1,22 @@
+# Cloudflare Pages headers.
+#
+# The asset filenames carry a content hash, so they may be cached forever - a changed build gets a
+# changed name. The two things that keep their names must not be:
+#
+#   index.html    is how a reader reaches every new build at all;
+#   data/*.json   is the registry and the passports. A verdict that expires by time, sitting behind
+#                 a week-long cache, would show a reader a document the issuer has already
+#                 superseded. This project's own rule is that the served artefact is the artefact.
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/data/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin

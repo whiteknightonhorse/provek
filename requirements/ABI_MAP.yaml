@@ -1,0 +1,57 @@
+# Module-to-requirement mapping. An unbound module fails the build (T-SCOPE-RATCHET).
+# Format: module_path: [ABI identifiers]
+# Hanging everything on one broad requirement is FORBIDDEN - the rubber-stamp
+
+src/abs_profile/__init__.py:      [ABI-20-1]
+src/abs_profile/ladder.py:        [ABI-2-1, ABI-2-2, ABI-2-3, ABI-2-4]
+src/abs_profile/evidence.py:      [ABI-5-4]
+src/abs_profile/identity.py:      [ABI-12-7]
+src/abs_profile/measured.py:      [ABI-13-6, ABI-16-11, ABI-33-4]
+scripts/ratchet_scope.py:         [ABI-21-1, ABI-21-2, ABI-21-3, ABI-21-4]
+scripts/ratchet_decisions.py:     [ABI-16-8, ABI-16-9]
+src/__init__.py:                  [ABI-32-1]
+
+# T-2.3 evidence collection / T-2.4 repository-vs-runtime comparison
+src/collector/__init__.py:        [ABI-5-1]
+src/collector/repo.py:            [ABI-5-1, ABI-5-2, ABI-4-3]
+src/collector/divergence.py:      [ABI-16-5, ABI-3-2]
+
+# T-2.5 control map / T-2.6 scoring
+src/verify/__init__.py:           [ABI-13-1]
+src/verify/control_map.py:        [ABI-7-1, ABI-7-2, ABI-7-3, ABI-7-4, ABI-7-5]
+src/verify/scorer.py:             [ABI-13-1, ABI-13-3, ABI-13-5, ABI-13-6, ABI-2-3]
+
+# T-2.7 passport
+src/passport/__init__.py:         [ABI-14-3]
+src/passport/passport.py:         [ABI-14-1, ABI-14-2, ABI-14-3, ABI-15-5, ABI-4-7]
+
+# T-2.8 state machine / T-2.9 transport / T-2.9b public status registry
+src/registry/__init__.py:         [ABI-19-2]
+src/registry/lifecycle.py:        [ABI-4-5, ABI-15-1, ABI-15-3, ABI-15-4, ABI-15-6, ABI-19-3, ABI-19-4, ABI-33-2]
+src/registry/public_registry.py:  [ABI-19-2, ABI-4-6]
+src/transport/__init__.py:        [ABI-24-4]
+src/transport/base.py:            [ABI-24-4]
+src/transport/file_transport.py:  [ABI-5-3]
+
+# T-2.10 liveness / T-2.12 mandate
+src/liveness/__init__.py:         [ABI-16-1]
+src/liveness/obligations.py:      [ABI-16-2, ABI-16-3, ABI-16-4, ABI-16-5, ABI-16-6, ABI-16-7, ABI-16-10]
+src/mandate/__init__.py:          [ABI-6-4]
+src/mandate/mandate.py:           [ABI-6-4, ABI-22-4]
+
+# end-to-end pipeline
+src/pipeline.py:                  [ABI-5-1, ABI-5-3, ABI-22-1]
+scripts/self_apply.py:            [ABI-31-3, ABI-31-4]
+scripts/secret_scan.sh:           [ABI-4-4, ABI-30-7]
+scripts/run_budgeted.sh:          [ABI-33-1, ABI-16-4]
+scripts/push.sh:                  [ABI-32-1, ABI-4-4]
+src/collector/github.py:          [ABI-5-1, ABI-5-2, ABI-4-4, ABI-30-7]
+scripts/ratchet_language.py:      [ABI-32-1, ABI-32-3]
+scripts/cohort.py:                [ABI-18-3, ABI-31-4]
+src/transport/erc8004.py:         [ABI-24-4, ABI-12-7]
+scripts/measure_qm1.py:           [ABI-25-3]
+scripts/measure_qm2.py:           [ABI-5-5, ABI-29-5]
+src/governance/__init__.py:       [ABI-13-3]
+src/governance/thresholds.py:     [ABI-13-3, ABI-25-3, ABI-29-5]
+
+# CI configuration is data, not code, and carries no ABI mapping.

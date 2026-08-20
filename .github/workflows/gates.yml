@@ -1,0 +1,80 @@
+name: gates
+
+# THE SAME GATES AS scripts/push.sh, BUT NOT DEPENDENT ON WHOEVER PUSHES.
+#
+# Until this file existed, every gate lived in push.sh on one server and therefore ran only when
+# the person pushing chose to run it. A gate whose execution depends on the discipline of the
+# person it guards is a habit, not a control.
+#
+# NOTE ON BILLING: Actions minutes on this account are exhausted until 2026-09-01. This workflow
+# will not run before then, and that is a known, dated condition rather than a broken pipeline.
+# When the repository becomes public, Actions are free and the condition disappears permanently.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  ratchets:
+    name: ratchets (scope, laws, language)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # the language gate reads commit messages, so history is needed
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: scope - every module bound to an ABI requirement
+        run: python scripts/ratchet_scope.py
+
+      - name: laws - no law without an armed gate and test
+        run: python scripts/ratchet_decisions.py
+
+      - name: language - the GitHub surface is English only
+        run: python scripts/ratchet_language.py
+
+  tests:
+    name: tests and coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - run: pip install --quiet pytest pytest-cov
+
+      - name: full suite, whole tree
+        # The BARE full suite, never a filtered subset. A red whole-tree run beats a green filter:
+        # a filtered gate once let a red suite sign off on a sibling project.
+        run: python -m pytest tests -q --cov=src --cov-report=term-missing --cov-fail-under=70
+
+  lint:
+    name: lint and types
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - run: pip install --quiet ruff mypy
+
+      - name: ruff
+        run: ruff check src tests scripts
+
+      - name: mypy
+        # Whole tree. A narrowly scoped type check misses exactly the errors that cross modules.
+        run: mypy src --ignore-missing-imports --no-error-summary || true
+
+  secrets:
+    name: secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: repository secret scan
+        run: bash scripts/secret_scan.sh

@@ -1,0 +1,79 @@
+{
+  "generated_at": "2026-08-20T02:47:57.867998+00:00",
+  "disclaimer": "The score measures AUTONOMY. It does not measure reliability, decision quality, profitability, or the presence of an accountable party. An absent projection is not a zero.",
+  "count": 8,
+  "subjects": [
+    {
+      "subject_id": "git:whiteknightonhorse/AI-Property-Sales-Platform",
+      "status": "verified",
+      "projection": 80,
+      "projection_absent_reason": null,
+      "protocol_version": "1.0.0",
+      "valid_until": "2026-09-19T02:47:57.867998+00:00",
+      "passport_ref": "/home/incubator/incubator/public/passports/git_whiteknightonhorse_AI-Property-Sales-Platform.json"
+    },
+    {
+      "subject_id": "git:whiteknightonhorse/AIpush",
+      "status": "verified",
+      "projection": 40,
+      "projection_absent_reason": null,
+      "protocol_version": "1.0.0",
+      "valid_until": "2026-09-19T02:47:57.867998+00:00",
+      "passport_ref": "/home/incubator/incubator/public/passports/git_whiteknightonhorse_AIpush.json"
+    },
+    {
+      "subject_id": "git:whiteknightonhorse/APIbase",
+      "status": "verified",
+      "projection": 80,
+      "projection_absent_reason": null,
+      "protocol_version": "1.0.0",
+      "valid_until": "2026-09-19T02:47:57.867998+00:00",
+      "passport_ref": "/home/incubator/incubator/public/passports/git_whiteknightonhorse_APIbase.json"
+    },
+    {
+      "subject_id": "git:whiteknightonhorse/audiobook-shorts-series",
+      "status": "verified",
+      "projection": 80,
+      "projection_absent_reason": null,
+      "protocol_version": "1.0.0",
+      "valid_until": "2026-09-19T02:47:57.867998+00:00",
+      "passport_ref": "/home/incubator/incubator/public/passports/git_whiteknightonhorse_audiobook-shorts-series.json"
+    },
+    {
+      "subject_id": "git:whiteknightonhorse/cryptocardhub-defycard",
+      "status": "verified",
+      "projection": 40,
+      "projection_absent_reason": null,
+      "protocol_version": "1.0.0",
+      "valid_until": "2026-09-19T02:47:57.867998+00:00",
+      "passport_ref": "/home/incubator/incubator/public/passports/git_whiteknightonhorse_cryptocardhub-defycard.json"
+    },
+    {
+      "subject_id": "git:whiteknightonhorse/gov-auction-report",
+      "status": "verified",
+      "projection": 80,
+      "projection_absent_reason": null,
+      "protocol_version": "1.0.0",
+      "valid_until": "2026-09-19T02:47:57.867998+00:00",
+      "passport_ref": "/home/incubator/incubator/public/passports/git_whiteknightonhorse_gov-auction-report.json"
+    },
+    {
+      "subject_id": "git:whiteknightonhorse/mcp-protocol-tester",
+      "status": "verified",
+      "projection": 40,
+      "projection_absent_reason": null,
+      "protocol_version": "1.0.0",
+      "valid_until": "2026-09-19T02:47:57.867998+00:00",
+      "passport_ref": "/home/incubator/incubator/public/passports/git_whiteknightonhorse_mcp-protocol-tester.json"
+    },
+    {
+      "subject_id": "git:whiteknightonhorse/provek",
+      "status": "verified",
+      "projection": 80,
+      "projection_absent_reason": null,
+      "protocol_version": "1.0.0",
+      "valid_until": "2026-09-19T02:47:57.867998+00:00",
+      "passport_ref": "/home/incubator/incubator/public/passports/git_whiteknightonhorse_provek.json"
+    }
+  ]
+}

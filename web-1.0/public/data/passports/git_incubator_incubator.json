@@ -1,0 +1,65 @@
+{
+  "subject_id": "git:incubator/incubator",
+  "projection": 40,
+  "passport": {
+    "schema_version": "1.0.0",
+    "subject_id": "git:incubator/incubator",
+    "binding_strength": "weak",
+    "binding_flags": [
+      "revocable"
+    ],
+    "issued_at": "2026-08-19T15:17:52.479343+00:00",
+    "valid_until": "2026-09-18T15:17:52.479343+00:00",
+    "status": "verified",
+    "provenance": {
+      "protocol_version": "1.0.0",
+      "profile_version": "1.0.0",
+      "evidence_window_days": 30
+    },
+    "verified": {
+      "operations": [
+        {
+          "operation": "development_initiation",
+          "level": "L2",
+          "measured": true
+        },
+        {
+          "operation": "deployment",
+          "level": "unreadable",
+          "measured": false
+        },
+        {
+          "operation": "treasury_control",
+          "level": "unreadable",
+          "measured": false
+        }
+      ],
+      "projection": 40,
+      "projection_absent_reason": null,
+      "control_map_valid": true,
+      "control_map_cap": 5,
+      "coverage": {
+        "inspected": [
+          "github"
+        ],
+        "out_of_reach": {
+          "treasury": "outside MVP scope",
+          "server": "runtime not presented"
+        },
+        "unknown_shape": "privileged access through a CI secret or account recovery"
+      }
+    },
+    "self_reported": {
+      "self_description": "Proof of Autonomy - an ERC-8004 validator"
+    },
+    "accountability": {
+      "emergency_stop": null,
+      "claims_addressee": null,
+      "insurance": null,
+      "dispute_path": null
+    },
+    "mandate_ref": "self-mandate-0001",
+    "verifier_affiliation": "same_owner",
+    "disclaimer": "The score measures AUTONOMY. It does not measure reliability, decision quality, profitability, or the presence of an accountable party - see accountability."
+  }
+}

@@ -1,0 +1,6 @@
+=== GREEN RUN: T-0.5, T-2.3..T-2.7 ===
+2026-08-19T14:33:23Z
+...........................................                              [100%]
+43 passed in 0.13s
+T-SCOPE-RATCHET: clean
+T-DECISION-1: clean (9 laws, all armed)

@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.venv/
+evidence/*.log
+.env
+node_modules/
+web/dist/
+web/tsconfig.tsbuildinfo
+web/compare/

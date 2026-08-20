@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+/* CLONE STAGE PALETTE - deliberately neutral.
+   Phase 2 of the methodology builds structure; colour and identity arrive in Phase 4 as three
+   parallel variants. Choosing a palette now would mean choosing it without a comparison. */
+@theme {
+  --color-ink: #16181d;
+  --color-ink-2: #4a5060;
+  --color-ink-3: #767d8c;
+  --color-line: #e3e6ea;
+  --color-line-2: #cfd4db;
+  --color-paper: #ffffff;
+  --color-paper-2: #f7f8fa;
+  --color-accent: #1f4d8f;
+  --color-pass: #2f7a3d;
+  --color-warn: #9a6a12;
+  --color-fail: #a52c2c;
+  --color-unknown: #8b90a0;
+}
+
+html { color-scheme: light; }
+body { margin: 0; background: var(--color-paper-2); color: var(--color-ink); }
+
+/* Focus must be visible everywhere - WCAG AA is not optional here. */
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* Machine identifiers are unbroken strings by nature; they must wrap rather than
+   push the page sideways. */
+code, .font-mono { overflow-wrap: anywhere; }
+
+/* Below 640px a five-column table hides everything but the subject behind a
+   sideways scroll - including the verdict, which is the reason the page exists.
+   The row becomes a stack and no field is dropped: hiding the affiliation marker
+   on a small screen would be exactly the omission this product exists to detect. */
+@media (max-width: 639px) {
+  .stack-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .stack-table, .stack-table tbody, .stack-table tr, .stack-table td { display: block; width: 100%; }
+  .stack-table tr { padding: 0.5rem 0; }
+  .stack-table td { padding: 0.15rem 1rem; }
+  .stack-table td:empty { display: none; }
+  .stack-table td[data-label]::before {
+    content: attr(data-label);
+    display: inline-block;
+    width: 6.5rem;
+    color: var(--color-ink-3);
+  }
+}

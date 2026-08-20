@@ -1,0 +1,9 @@
+=== Q-M1 measurement run ===
+2026-08-19T15:24:49Z
+=== Q-M1 step 1: measured population ===
+highest existing token id: 50275
+RPC calls used: 32 of the declared ceiling 40
+
+WHAT THIS NUMBER IS: the count of ERC-8004 identities on Ethereum mainnet.
+WHAT IT IS NOT: the count of AI BUSINESSES per spec 2.7. An identity is an agent record;
+a subject needs an observable business operation. The filter is step 2 and is NOT done.

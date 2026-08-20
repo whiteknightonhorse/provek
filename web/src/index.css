@@ -1,0 +1,252 @@
+@import "tailwindcss";
+
+/* Self-hosted. No external font request: a standards page that phones a CDN on load has a
+   dependency it did not declare. */
+/* Latin subsets only. The full imports install every subset IBM Plex ships - cyrillic, greek,
+   vietnamese, latin-ext - and a browser fetches none of them for this content, so they were 700 KB
+   of build output that could never be served. A deployed artefact should contain what it serves.
+   A subject identifier outside latin would fall back to the system face; that is a legible
+   degradation, and the alternative is shipping nine times the bytes against the chance of it. */
+@import "@fontsource/ibm-plex-sans/latin-400.css";
+@import "@fontsource/ibm-plex-sans/latin-500.css";
+@import "@fontsource/ibm-plex-sans/latin-600.css";
+@import "@fontsource/ibm-plex-mono/latin-400.css";
+@import "@fontsource/ibm-plex-mono/latin-500.css";
+
+/* VARIANT M - a standards body with a real system.
+ *
+ * IBM Plex because it was drawn for technical documents and its mono is a sibling of its sans
+ * rather than a stranger: identifiers and prose sit on the same page without one looking pasted in.
+ * The category alternative - a geometric grotesque plus a random monospace - is what every AI
+ * product ships, and reads as a product rather than a record.
+ *
+ * Dark mode is a second palette, not an inversion. The use scene decides: this document is read in
+ * due diligence, often late, often beside a terminal. */
+
+@theme {
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --text-xs: 0.75rem;      --text-xs--line-height: 1.5;    --text-xs--letter-spacing: 0.01em;
+  --text-sm: 0.875rem;     --text-sm--line-height: 1.6;    --text-sm--letter-spacing: 0.002em;
+  --text-base: 1rem;       --text-base--line-height: 1.65;
+  --text-lg: 1.125rem;     --text-lg--line-height: 1.45;   --text-lg--letter-spacing: -0.008em;
+  --text-xl: 1.375rem;     --text-xl--line-height: 1.3;    --text-xl--letter-spacing: -0.014em;
+  --text-2xl: 1.75rem;     --text-2xl--line-height: 1.22;  --text-2xl--letter-spacing: -0.02em;
+  --text-3xl: 2.25rem;     --text-3xl--line-height: 1.15;  --text-3xl--letter-spacing: -0.026em;
+  --text-5xl: 3.25rem;     --text-5xl--line-height: 1.02;  --text-5xl--letter-spacing: -0.03em;
+}
+
+/* --- light: a warm paper, because a pure-white document under a desk lamp glares ---------- */
+:root {
+  --c-ink: #16171c;
+  --c-ink-2: #464b57;
+  --c-ink-3: #666c78;
+  --c-line: #e4e2dd;
+  --c-line-2: #cbc8c1;
+  --c-paper: #fffefb;
+  --c-paper-2: #f5f3ee;
+  --c-accent: #1b4b7a;
+  --c-pass: #2c6b3c;
+  --c-warn: #8a5b12;
+  --c-fail: #9b2b2b;
+  --c-unknown: #666c78;
+  --c-ink-disabled: #8e8a83;   /* 3.41 - inactive, exempt under 1.4.3, but kept above 3 */
+  --c-wash-pass: #f0f5f0;
+  --c-wash-warn: #f9f3e8;
+  --c-wash-info: #f1f0ec;
+  --c-select: #dbe4ef;
+  --c-slot: #8d8677;          /* 3.58 : 1 on paper, 3.26 : 1 on the page ground. A first pass
+                                 was set by eye at 2.19 and looked right; WCAG 1.4.11 puts the
+                                 floor for a non-text element at 3, and the slot is the one
+                                 mark on the page that carries an argument rather than a
+                                 decoration. Measured, not judged. */
+}
+
+/* --- dark: slate, not inverted paper. Lines lighten, ink never reaches pure white --------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --c-ink: #e8e6e1;
+    --c-ink-2: #b2b0aa;
+    --c-ink-3: #8f8d88;
+    --c-line: #2c2f36;
+    --c-line-2: #414650;
+    --c-paper: #191b20;
+    --c-paper-2: #121317;
+    --c-accent: #82b0e0;
+    --c-pass: #6fb37c;
+    --c-warn: #d9a85c;
+    --c-fail: #e08a8a;
+    --c-unknown: #8f8d88;
+    --c-ink-disabled: #6a6e78;   /* 3.38 in dark */
+    --c-wash-pass: #1a231c;
+    --c-wash-warn: #241f16;
+    --c-wash-info: #1c1e23;
+    --c-select: #26374b;
+    --c-slot: #6a707a;         /* 3.46 / 3.72 in dark */
+  }
+}
+
+@theme inline {
+  --color-ink: var(--c-ink);
+  --color-ink-2: var(--c-ink-2);
+  --color-ink-3: var(--c-ink-3);
+  --color-line: var(--c-line);
+  --color-line-2: var(--c-line-2);
+  --color-paper: var(--c-paper);
+  --color-paper-2: var(--c-paper-2);
+  --color-accent: var(--c-accent);
+  --color-pass: var(--c-pass);
+  --color-warn: var(--c-warn);
+  --color-fail: var(--c-fail);
+  --color-unknown: var(--c-unknown);
+  --color-ink-disabled: var(--c-ink-disabled);
+}
+
+html { color-scheme: light dark; -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--color-paper-2);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- THE UNFILLED SLOT (grafted from variant L) ------------------------------------------
+   A measured fact is set solid; an unmeasured one keeps its place as a ruled blank, exactly
+   where the value would have gone. Not a question mark and not a dash: a dash says "nothing
+   here", a slot says "something belongs here and nobody has filled it in", and only the second
+   is true. It is also the only element on the page that argues the product's thesis instead of
+   describing it, which is why it survived a variant that lost on everything else. */
+.slot {
+  display: inline-block;
+  min-width: 2.75ch;
+  height: 1em;
+  border-bottom: 2px solid var(--c-slot);
+  vertical-align: baseline;
+  margin-bottom: -0.1em;
+}
+.slot--label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-unknown);
+}
+
+::selection { background: var(--c-select); color: var(--color-ink); }
+:where(input, textarea) { caret-color: var(--color-accent); }
+a { text-underline-offset: 0.18em; text-decoration-thickness: from-font; }
+
+@supports (scrollbar-color: auto) {
+  html { scrollbar-color: var(--color-line-2) var(--color-paper-2); scrollbar-width: thin; }
+}
+
+table, dl, time, .tabular-nums { font-variant-numeric: tabular-nums; }
+h1, h2, h3 { text-wrap: balance; }
+p { text-wrap: pretty; }
+
+.max-w-\[46rem\] { max-width: 70ch; }
+.max-w-\[42rem\] { max-width: 62ch; }
+
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; border-radius: 1px; }
+
+/* --- MOTION --------------------------------------------------------------------------------
+ * Restraint is the brief. The passport is a document: nothing on it moves before the reader asks.
+ * Motion exists here to confirm that something happened - a press landed, a route changed, a
+ * filter took - and in exactly one place to pace an argument.
+ *
+ * Durations are 120-200ms with an exponential ease-out, which reads as arrival rather than travel.
+ * Nothing animates a layout property, so nothing can shift the page. */
+:root {
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --t-fast: 120ms;
+  --t-base: 170ms;
+}
+
+a, button, summary, tr, input {
+  transition: color var(--t-fast) var(--ease-out),
+              background-color var(--t-fast) var(--ease-out),
+              border-color var(--t-fast) var(--ease-out);
+}
+
+/* A press must land somewhere. One pixel, on the element only. */
+a[href]:active, button:active { transform: translateY(1px); }
+
+/* Content arrives at 0.75 opacity rather than 0: a fade from nothing is a flash of missing page,
+   and the skeleton it replaces already occupied this space. */
+@keyframes settle { from { opacity: 0.75; } to { opacity: 1; } }
+#main > * { animation: settle var(--t-base) var(--ease-out) both; }
+
+/* A skeleton must look like work in progress, not like an empty result. A slow breath says
+   "still going"; a shimmer sweep says "look at me", which is a different message. */
+@keyframes breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+.skeleton-bar { animation: breathe 1.8s ease-in-out infinite; }
+
+/* --- THE ONE AUTHORED MOMENT ---------------------------------------------------------------
+ * The limits section, and only it. Everywhere else on this site order is incidental; here the
+ * reader is walked through what the product refuses to claim, one refusal at a time, and pacing
+ * that IS the content. Each item arrives as it is reached.
+ *
+ * WHY NOT `animation-timeline: view()`. Honestly: I could not measure it. It reported support and
+ * produced no timeline progress at any scroll position - and so did a minimal isolated control,
+ * and so did a plain IntersectionObserver. The cause was the instrument, not the technique: the
+ * measuring tab was `visibilityState: "hidden"`, and Chrome suspends both scroll timelines and
+ * observer delivery while a document is hidden. Adjudicate the instrument before the subject.
+ * The observer stays because its failure mode is inspectable and releasable from script; the CSS
+ * timeline's is not. That is a decision about verifiability, not about the technique being wrong.
+ *
+ * THE FAILURE MODE IS THE DESIGN. The offset is applied BY script, never by default CSS, and a
+ * timer releases every item if the observer has not spoken. So a reader whose JavaScript never
+ * runs, and a reader whose observer never fires, both see the list where it belongs rather than
+ * eight pixels low forever. Travel only, never opacity: a reveal that fails to complete must not
+ * leave text below its contrast floor - least of all in the section listing what this product
+ * refuses to claim. */
+.paced--armed > * {
+  transition: transform 300ms var(--ease-out);
+}
+.paced--armed > *:not([data-seen]) {
+  transform: translateY(8px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* NOT a blanket kill. The 0.01ms sledgehammer removes the state change along with the motion,
+     which leaves the reader who asked for less motion with less information than everyone else.
+     What triggers vestibular symptoms is travel, not colour, so travel goes and feedback stays. */
+  #main > *, .skeleton-bar, .paced > * { animation: none !important; }
+  a[href]:active, button:active { transform: none; }
+  *, *::before, *::after {
+    transition-property: color, background-color, border-color, outline-color, box-shadow !important;
+  }
+  html { scroll-behavior: auto !important; }
+}
+
+code, .font-mono { overflow-wrap: anywhere; font-variant-ligatures: none; }
+
+/* An evidence class is a fact about forgery cost, so it is set as data: mono, uppercase-small,
+   ruled. Not a pill - a rounded coloured badge is a status chip, and these are not statuses. */
+.evidence-class {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-ink-2);
+  border-bottom: 1px solid var(--color-line-2);
+  padding-bottom: 0.05em;
+}
+
+@media (max-width: 639px) {
+  .stack-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .stack-table, .stack-table tbody, .stack-table tr, .stack-table td { display: block; width: 100%; }
+  .stack-table tr { padding: 0.5rem 0; }
+  .stack-table td { padding: 0.15rem 1rem; }
+  .stack-table td:empty { display: none; }
+  .stack-table td[data-label]::before {
+    content: attr(data-label);
+    display: inline-block;
+    width: 6.5rem;
+    color: var(--color-ink-3);
+  }
+}

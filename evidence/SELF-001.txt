@@ -1,0 +1,18 @@
+=== SELF-APPLICATION, live run ===
+2026-08-19T14:42:56Z
+=== PASSPORT OF THE INCUBATOR ITSELF ===
+subject: git:incubator/incubator
+binding: weak ['revocable']
+status: verified
+projection: 60 | absence reason: None
+control map cap: 5
+operations:
+   development_initiation   L3                   measured=True
+   deployment               unreadable           measured=False
+   treasury_control         unreadable           measured=False
+inspected: ['github']
+out of reach: ['treasury', 'server']
+disclaimer: The score measures AUTONOMY. It does not measure reliability, qual ...
+findings:
+   - deployed artefact not presented - comparison NOT PERFORMED, and that is not a fault of the subject
+published: /home/incubator/incubator/public/passports/git_incubator_incubator.json

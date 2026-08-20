@@ -1,0 +1,16 @@
+=== Q-M2 measurement run ===
+2026-08-19T15:29:18Z
+=== Q-M2: cost of ONE verification pass ===
+subject                        wall s    cpu s  calls    rss dKB
+gov-auction-report               2.98    0.007      3       1544
+mcp-protocol-tester              3.02    0.005      3        372
+AIpush                           2.85    0.004      3          0
+
+average per pass: wall 2.95 s | cpu 0.005 s | api calls 3.0
+
+at daily    re-verification: 30 passes/month -> 0.2 cpu-s, 90 api calls per project
+at weekly   re-verification: 4 passes/month -> 0.0 cpu-s, 13 api calls per project
+at monthly  re-verification: 1 passes/month -> 0.0 cpu-s, 3 api calls per project
+
+GitHub API budget: 5000 calls/hour for a token. At daily re-verification one project costs
+90 calls/month, so the token supports roughly 40000 projects before rate limits bind.

@@ -1,0 +1,30 @@
+[tool.ruff]
+line-length = 110
+# MATCHES THE RUNTIME (python 3.10.12 on this host). A target ahead of the interpreter is not a
+# preference, it is a bug: ruff's autofix once modernised `timezone.utc` into `UTC` and broke the
+# whole suite on import, because 3.10 has no such name.
+target-version = "py310"
+
+[tool.ruff.lint]
+# THE BASELINE IS WHAT WE CAN HOLD TODAY, NOT WHAT WE WISH WE HELD.
+# An aggressive selection produced 77 findings on day one. A gate that is red from day one gets
+# disabled by whoever meets it, so it would enforce nothing. This set is green now and therefore
+# actually holds the line.
+select = ["F", "E4", "E7", "E9", "I", "B"]
+
+# EXPANSION IS A DATED PROMISE, NOT AN INTENTION: after the front door lands, add one family at a
+# time - "E5" (line length), then "UP", "SIM", "C4", "BLE" - each with its own cleanup commit.
+# Recorded here so it cannot quietly become never.
+#
+# The SUBSTANTIVE findings from those families were fixed by hand rather than deferred: the blind
+# `except Exception` in the GitHub collector is narrow, and it stays narrow because a blind except
+# turns a programming error into "the API returned nothing" - one value for two states of the
+# world, which is the defect class this project exists to expose.
+
+[tool.ruff.lint.per-file-ignores]
+# Test fixtures deliberately assemble secret-shaped strings from fragments so no literal secret
+# exists in the tree - see tests/test_github_collector.py.
+"tests/*" = ["S105", "S106"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

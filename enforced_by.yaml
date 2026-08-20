@@ -1,0 +1,119 @@
+# Every law is anchored to a gate and a test. A dangling law fails the build.
+laws:
+  - id: LAW-NOT-MEASURED
+    text: "not_measured is a state of its own, never a zero or a default"
+    gate: src/abs_profile/measured.py
+    test: tests/test_measured.py
+  - id: LAW-SCOPE-RATCHET
+    text: "every module is bound to an ABI-* requirement"
+    gate: scripts/ratchet_scope.py
+    test: tests/test_ratchet_scope.py
+  - id: LAW-DECISION-RATCHET
+    text: "a ratified decision with no armed gate fails the build"
+    gate: scripts/ratchet_decisions.py
+    test: tests/test_ratchet_decisions.py
+  - id: LAW-LADDER-NAMING
+    text: "L0-L5 is the subject ladder; P0-P5 are agent permissions"
+    gate: src/abs_profile/ladder.py
+    test: tests/test_ladder.py
+  - id: LAW-MEASURE-SHIPPED
+    text: "measure the SHIPPED artefact, not the file in the repository"
+    gate: src/collector/divergence.py
+    test: tests/test_divergence.py
+  - id: LAW-READ-ONLY-COLLECT
+    text: "the collector only reads; clones are shallow and deleted after the audit"
+    gate: src/collector/repo.py
+    test: tests/test_collector_repo.py
+  - id: LAW-COVERAGE-OR-INVALID
+    text: "a control map without published coverage is invalid"
+    gate: src/verify/control_map.py
+    test: tests/test_control_map.py
+  - id: LAW-SCORER-NO-TRANSPORT
+    text: "scorer imports no transport - independence is machine-proven"
+    gate: src/verify/scorer.py
+    test: tests/test_scorer.py
+  - id: LAW-TWO-BRANCHES
+    text: "verified and self_reported are separate tree branches; the distinction survives copying"
+    gate: src/passport/passport.py
+    test: tests/test_passport.py
+  - id: LAW-NO-UNDEFINED-TRANSITION
+    text: "an undefined transition is impossible, not undocumented"
+    gate: src/registry/lifecycle.py
+    test: tests/test_lifecycle.py
+  - id: LAW-NEGATIVE-VERDICT-NEEDS-EVIDENCE
+    text: "a public negative verdict is a legal act and is not issued without evidence"
+    gate: src/registry/lifecycle.py
+    test: tests/test_lifecycle.py
+  - id: LAW-TRANSPORT-INDEPENDENT
+    text: "methodology modules import no transport - proven by a second transport"
+    gate: src/transport/file_transport.py
+    test: tests/test_transport_independence.py
+  - id: LAW-PUBLIC-STATUS-REGISTRY
+    text: "the status registry is ours and mandatory; an absent projection is not a zero"
+    gate: src/registry/public_registry.py
+    test: tests/test_public_registry.py
+  - id: LAW-SILENCE-IS-A-FINDING
+    text: "silence becomes a named finding, not missing data"
+    gate: src/liveness/obligations.py
+    test: tests/test_liveness.py
+  - id: LAW-FINITE-WATCHER-CHAIN
+    text: "the watcher chain is finite and its terminus is named"
+    gate: src/liveness/obligations.py
+    test: tests/test_liveness.py
+  - id: LAW-NO-PROBE-WITHOUT-MANDATE
+    text: "active probing without a valid mandate is forbidden; the refusal names its reason"
+    gate: src/mandate/mandate.py
+    test: tests/test_mandate.py
+  - id: LAW-ONE-ENTRY-POINT
+    text: "the pipeline is one entry point; transport is passed in from outside"
+    gate: src/pipeline.py
+    test: tests/test_pipeline.py
+  - id: LAW-SELF-APPLICATION
+    text: "the incubator runs its own procedure; a verifier that exempts itself publishes an opinion"
+    gate: scripts/self_apply.py
+    test: tests/test_pipeline.py
+  - id: LAW-GATE-MUST-BLOCK
+    text: "a gate that does not stop is not a gate: pushes go only through push.sh with set -e"
+    gate: scripts/push.sh
+    test: tests/test_ratchet_scope.py
+  - id: LAW-REDACT-BEFORE-ARTIFACT
+    text: "secrets are redacted BEFORE the text becomes an artefact"
+    gate: src/collector/github.py
+    test: tests/test_github_collector.py
+  - id: LAW-ENGLISH-ONLY-ON-GITHUB
+    text: "the entire GitHub surface is English-only: code, docs, commit messages"
+    gate: scripts/ratchet_language.py
+    test: tests/test_ratchet_language.py
+  - id: LAW-WEAK-SIGNAL-LIMITERS
+    text: "weak-signal limiters live in code: inferred confidence, L2 ceiling, refutation bias"
+    gate: src/verify/scorer.py
+    test: tests/test_weak_signal_limiters.py
+  - id: LAW-ADAPTER-IS-THE-BLAST-RADIUS
+    text: "only the adapter knows the standard; unconfigured registry yields not_measured with a reason"
+    gate: src/transport/erc8004.py
+    test: tests/test_erc8004.py
+  - id: LAW-UNMEASURED-NEVER-DECIDES
+    text: "an unmeasured input yields not_measured, never go and never stop"
+    gate: src/governance/thresholds.py
+    test: tests/test_thresholds.py
+  - id: LAW-NO-BARE-NULLS
+    text: "a null in the machine artefact must say which world it means, or be whitelisted with that meaning in code"
+    gate: src/passport/passport.py
+    test: tests/test_no_bare_nulls.py
+  - id: LAW-DEFAULTS-CLAIM-THE-LEAST
+    text: "the least-effort construction must make the weakest claim; a default that asserts a completed check is a loaded gun"
+    gate: src/passport/passport.py
+    test: tests/test_passport.py
+  - id: LAW-SERVED-EQUALS-LISTED
+    text: "the served artefact set equals the listed set, checked in both directions and against the current schema"
+    gate: scripts/cohort.py
+    test: tests/test_served_set_matches_registry.py
+  - id: LAW-GRANTED-CHANNEL-ONLY
+    text: "a subject is read through a token granted to this project, never through host privilege"
+    gate: scripts/cohort.py
+    test: tests/test_granted_channel_only.py
+  - id: LAW-EMITTED-ARTEFACT-IS-CHECKED
+    text: "gates read the document that ships, not the classes that build it"
+    gate: src/passport/passport.py
+    test: tests/test_emitted_artefacts.py
+

@@ -1,0 +1,23 @@
+=== RED RUN, T-DECISION-1, before the laws were implemented ===
+2026-08-19T14:23:03Z
+
+X T-DECISION-1:
+  - DANGLING LAW LAW-NOT-MEASURED: gate=src/abs_profile/measured.py DOES NOT EXIST
+  - DANGLING LAW LAW-NOT-MEASURED: test=tests/test_measured.py DOES NOT EXIST
+  - DANGLING LAW LAW-SCOPE-RATCHET: test=tests/test_ratchet_scope.py DOES NOT EXIST
+  - DANGLING LAW LAW-DECISION-RATCHET: test=tests/test_ratchet_decisions.py DOES NOT EXIST
+  - DANGLING LAW LAW-LADDER-NAMING: gate=src/abs_profile/ladder.py DOES NOT EXIST
+  - DANGLING LAW LAW-LADDER-NAMING: test=tests/test_ladder.py DOES NOT EXIST
+rc=1
+
+=== RED RUN, T-SCOPE-RATCHET ===
+
+X T-SCOPE-RATCHET:
+  - MODULE WITHOUT A REQUIREMENT: scripts/._ratchet_decisions.py
+  - MODULE WITHOUT A REQUIREMENT: scripts/._ratchet_scope.py
+  - BOUND TO A NON-EXISTENT module: src/abs_profile/__init__.py
+  - BOUND TO A NON-EXISTENT module: src/abs_profile/ladder.py
+  - BOUND TO A NON-EXISTENT module: src/abs_profile/evidence.py
+  - BOUND TO A NON-EXISTENT module: src/abs_profile/identity.py
+  - BOUND TO A NON-EXISTENT module: src/abs_profile/measured.py
+rc=1
