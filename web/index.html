@@ -31,8 +31,8 @@
          Two flags are set that the operator did not ask for and that do not alter what he chose to
          collect: Google Signals and ad-personalisation signals are OFF. They feed advertising
          profiles rather than the audience counts this is here to answer, so leaving them on would
-         collect more than the decision covers. `send_page_view` is false because routing is by
-         hash - gtag would otherwise count only the first screen and miss every navigation. -->
+         collect more than the decision covers. `send_page_view` is false because the router
+         is ours: gtag would count only the first screen and miss every navigation after it. -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-QD2522TMYP"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -43,19 +43,31 @@
         allow_google_signals: false,
         allow_ad_personalization_signals: false
       });
+      // ROUTING IS BY PATHNAME, not by hash. This counted `hashchange` for fourteen minutes
+      // before the static-emit change moved routing to pushState, and then kept counting it -
+      // so every visit recorded one view of "/" whatever page it was, and client-side
+      // navigations recorded nothing at all. A measurement decision that cost an argument and
+      // then returned garbage is worse than no measurement, so this reads the real route and
+      // hooks the same events the router does.
       (function () {
         var seen = null;
         function view() {
-          var path = location.hash.replace(/^#/, '') || '/';
+          var path = location.pathname || '/';
           if (path === seen) return;
           seen = path;
           gtag('event', 'page_view', {
             page_path: path,
-            page_location: location.origin + '/' + location.hash,
+            page_location: location.href,
             page_title: document.title
           });
         }
-        addEventListener('hashchange', view);
+        addEventListener('popstate', view);
+        // pushState fires no event of its own; the router calls it on every internal link.
+        var push = history.pushState;
+        history.pushState = function () {
+          push.apply(this, arguments);
+          setTimeout(view, 0);
+        };
         addEventListener('load', function () { setTimeout(view, 0); });
         view();
       })();

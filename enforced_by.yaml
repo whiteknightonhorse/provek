@@ -70,7 +70,7 @@ laws:
     test: tests/test_pipeline.py
   - id: LAW-SELF-APPLICATION
     text: "the incubator runs its own procedure; a verifier that exempts itself publishes an opinion"
-    gate: scripts/self_apply.py
+    gate: scripts/cohort.py
     test: tests/test_pipeline.py
   - id: LAW-GATE-MUST-BLOCK
     text: "a gate that does not stop is not a gate: pushes go only through push.sh with set -e"

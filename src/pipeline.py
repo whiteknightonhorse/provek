@@ -27,7 +27,6 @@ from src.abs_profile.measured import Measurement
 from src.collector.divergence import Divergence, compare
 from src.collector.repo import collect
 from src.passport.passport import Accountability, Passport, Provenance, build
-from src.registry.lifecycle import Status
 from src.registry.public_registry import PublicRegistry, Row
 from src.verify.control_map import ControlMap, Coverage, Surface
 from src.verify.scorer import OperationScore, projection, score_operation
@@ -110,7 +109,7 @@ def verify(remote: str, binding: Binding, transport, registry: PublicRegistry,
     ref = transport.publish(binding.as_subject_id(), machine,
                             machine["verified"]["projection"])
     registry.upsert(Row(subject_id=binding.as_subject_id(),
-                        status=p.status if p.status is not Status.VERIFIED else Status.VERIFIED,
+                        status=p.status,   # the passport's own; the row does not recompute it (NEW-1)
                         projection=machine["verified"]["projection"],
                         absent_reason=machine["verified"]["projection_absent_reason"],
                         protocol_version=PROTOCOL_VERSION,

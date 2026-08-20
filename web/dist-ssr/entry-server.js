@@ -1015,7 +1015,6 @@ function Passport({ p }) {
 * this has committed to one, so the page may not invent it. */
 var ISSUES = "https://github.com/whiteknightonhorse/provek/issues";
 function Apply() {
-	const [mandate, setMandate] = useState("passive");
 	const [sent, setSent] = useState({ state: "idle" });
 	async function submit(e) {
 		e.preventDefault();
@@ -1028,7 +1027,7 @@ function Apply() {
 				body: JSON.stringify({
 					repo: form.get("repo"),
 					contact: form.get("contact"),
-					mandate: form.get("mandate"),
+					mandate: "passive",
 					website: form.get("website")
 				})
 			});
@@ -1165,56 +1164,15 @@ function Apply() {
 						placeholder: "you@example.com",
 						className: "mt-2 w-full border border-[var(--color-line-2)] bg-[var(--color-paper)] px-3 py-2 text-base"
 					})] }),
-					/* @__PURE__ */ jsxs("fieldset", { children: [/* @__PURE__ */ jsx("legend", {
-						className: "text-sm font-medium",
-						children: "What we may do"
-					}), /* @__PURE__ */ jsxs("div", {
-						className: "mt-2 space-y-2",
-						children: [/* @__PURE__ */ jsxs("label", {
-							className: "flex gap-3 border border-[var(--color-line-2)] bg-[var(--color-paper)] p-3 cursor-pointer",
-							children: [/* @__PURE__ */ jsx("input", {
-								type: "radio",
-								name: "mandate",
-								value: "passive",
-								className: "mt-1",
-								checked: mandate === "passive",
-								onChange: () => setMandate("passive")
-							}), /* @__PURE__ */ jsxs("span", {
-								className: "text-sm",
-								children: [
-									/* @__PURE__ */ jsx("strong", { children: "Read only." }),
-									" We read what is already public and touch nothing.",
-									/* @__PURE__ */ jsx("span", {
-										className: "block text-xs text-[var(--color-ink-3)] mt-0.5",
-										children: "Fewer operations can be measured; the passport will say which."
-									})
-								]
-							})]
-						}), /* @__PURE__ */ jsxs("label", {
-							className: "flex gap-3 border border-[var(--color-line-2)] bg-[var(--color-paper)] p-3 cursor-pointer",
-							children: [/* @__PURE__ */ jsx("input", {
-								type: "radio",
-								name: "mandate",
-								value: "active",
-								className: "mt-1",
-								checked: mandate === "active",
-								onChange: () => setMandate("active")
-							}), /* @__PURE__ */ jsxs("span", {
-								className: "text-sm",
-								children: [
-									/* @__PURE__ */ jsx("strong", { children: "Read, plus an explicit mandate to probe." }),
-									" You name what we may touch, how often, what must not be affected, and how you revoke it.",
-									/* @__PURE__ */ jsx("span", {
-										className: "block text-xs text-[var(--color-ink-3)] mt-0.5",
-										children: "Stronger evidence. Requires a signed mandate before anything runs."
-									})
-								]
-							})]
+					/* @__PURE__ */ jsxs("div", {
+						className: "border border-[var(--color-line-2)] bg-[var(--color-paper)] p-3",
+						children: [/* @__PURE__ */ jsxs("p", {
+							className: "text-sm",
+							children: [/* @__PURE__ */ jsx("strong", { children: "Every verification at this stage is read-only." }), " We read what is already public and touch nothing. Fewer operations can be measured that way, and the passport says which ones and why."]
+						}), /* @__PURE__ */ jsx("p", {
+							className: "mt-1.5 text-xs text-[var(--color-ink-3)]",
+							children: "A probing mandate — where you name what we may touch, how often, what must not be affected and how you revoke it — becomes available when the prober exists. It will require a signed document before anything runs. It is not offered here yet because offering it would be a promise nobody could keep today."
 						})]
-					})] }),
-					mandate === "active" && /* @__PURE__ */ jsx(Strip, {
-						tone: "warn",
-						children: "A mandate is a document, not a checkbox: it names permitted actions, their limits, liability for collateral damage, abort conditions and revocation. We will send it before anything runs."
 					}),
 					/* @__PURE__ */ jsx("button", {
 						type: "submit",
@@ -1237,7 +1195,7 @@ function Apply() {
 								/* @__PURE__ */ jsxs("li", { children: [/* @__PURE__ */ jsx("strong", {
 									className: "text-[var(--color-ink-2)]",
 									children: "Stored:"
-								}), " the repository URL, your address, the mandate you chose, the time, and the two-letter country your request arrived from. Nothing else — no cookie is set by this form and no identifier is created for you."] }),
+								}), " the repository URL, your address, the time, and the two-letter country your request arrived from. Nothing else, and this form sets no cookie of its own."] }),
 								/* @__PURE__ */ jsxs("li", { children: [/* @__PURE__ */ jsx("strong", {
 									className: "text-[var(--color-ink-2)]",
 									children: "Where:"
@@ -1249,7 +1207,15 @@ function Apply() {
 								/* @__PURE__ */ jsxs("li", { children: [/* @__PURE__ */ jsx("strong", {
 									className: "text-[var(--color-ink-2)]",
 									children: "Deleted:"
-								}), " whenever you ask, by opening an issue or replying to any message from us. There is nothing to unsubscribe from — we do not send anything you did not ask for."] })
+								}), " whenever you ask, by opening an issue or replying to any message from us. There is nothing to unsubscribe from — we do not send anything you did not ask for."] }),
+								/* @__PURE__ */ jsxs("li", { children: [
+									/* @__PURE__ */ jsx("strong", {
+										className: "text-[var(--color-ink-2)]",
+										children: "Separately, about this whole site:"
+									}),
+									" ",
+									"Google Analytics runs on every page here, without a consent banner. It sets a cookie and creates an identifier for your browser, and what it records goes to Google. That is the operator’s decision and it is written down, with the argument against it, in the project’s decision log. Advertising and personalisation signals are switched off, which is the most that can be said for it."
+								] })
 							]
 						})]
 					})

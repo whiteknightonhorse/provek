@@ -61,7 +61,12 @@ export async function onRequestPost({ request, env }) {
   };
 
   if (!env.INTAKE) return bad("Intake storage is not configured on this deployment.", 503);
-  await env.INTAKE.put(`request:${received_at}:${id}`, JSON.stringify(record));
+  const key = `request:${received_at}:${id}`;
+  // Written BEFORE the notice, so a submission survives a failed announcement. The outcome is
+  // written back after, because a record that does not carry whether anyone was told gives a
+  // sweep nothing to key on - and an unwatched durable record is "received" drifting back
+  // towards "discarded", which is this project's founding defect in its operational form.
+  await env.INTAKE.put(key, JSON.stringify({ ...record, delivered: null }));
 
   // The notice. If this fails the submission is already durable, so the visitor is not told the
   // request was lost - but the claim we may make about it changes, and the response says which.
@@ -82,6 +87,7 @@ export async function onRequestPost({ request, env }) {
     }
   }
 
+  await env.INTAKE.put(key, JSON.stringify({ ...record, delivered }));
   return Response.json({ ok: true, id, delivered });
 }
 

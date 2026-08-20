@@ -9,7 +9,13 @@ a measurement of a population.
 
 ## Included — eight
 
-| subject | why it qualifies under §2.7 |
+> **These are membership facts, not measurements.** Whether a candidate qualifies under §2.7 is
+> decided from what the operator knows about his own systems; it is what admits a subject to the
+> cohort, and it is not a verdict. Four of the rows below have passports stating that nothing about
+> them could be measured, and both statements are true at once — one is why the subject was
+> submitted, the other is what the method could establish once it was.
+
+| subject | why it qualifies for submission under §2.7 |
 |---|---|
 | `AI-Property-Sales-Platform` | observable output (published listings), development initiation is machine-led, identity survives redeploy |
 | `audiobook-shorts-series` | observable output (published audiobooks and shorts), automated production pipeline |

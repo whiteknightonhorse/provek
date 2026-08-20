@@ -25,7 +25,6 @@ type Sent =
 const ISSUES = "https://github.com/whiteknightonhorse/provek/issues";
 
 export default function Apply() {
-  const [mandate, setMandate] = useState<"passive" | "active">("passive");
   const [sent, setSent] = useState<Sent>({ state: "idle" });
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
@@ -39,7 +38,7 @@ export default function Apply() {
         body: JSON.stringify({
           repo: form.get("repo"),
           contact: form.get("contact"),
-          mandate: form.get("mandate"),
+          mandate: "passive",
           website: form.get("website"),
         }),
       });
@@ -144,44 +143,25 @@ export default function Apply() {
             />
           </div>
 
-          <fieldset>
-            <legend className="text-sm font-medium">What we may do</legend>
-            <div className="mt-2 space-y-2">
-              <label className="flex gap-3 border border-[var(--color-line-2)] bg-[var(--color-paper)] p-3 cursor-pointer">
-                <input
-                  type="radio" name="mandate" value="passive" className="mt-1"
-                  checked={mandate === "passive"} onChange={() => setMandate("passive")}
-                />
-                <span className="text-sm">
-                  <strong>Read only.</strong> We read what is already public and touch nothing.
-                  <span className="block text-xs text-[var(--color-ink-3)] mt-0.5">
-                    Fewer operations can be measured; the passport will say which.
-                  </span>
-                </span>
-              </label>
-              <label className="flex gap-3 border border-[var(--color-line-2)] bg-[var(--color-paper)] p-3 cursor-pointer">
-                <input
-                  type="radio" name="mandate" value="active" className="mt-1"
-                  checked={mandate === "active"} onChange={() => setMandate("active")}
-                />
-                <span className="text-sm">
-                  <strong>Read, plus an explicit mandate to probe.</strong> You name what we may
-                  touch, how often, what must not be affected, and how you revoke it.
-                  <span className="block text-xs text-[var(--color-ink-3)] mt-0.5">
-                    Stronger evidence. Requires a signed mandate before anything runs.
-                  </span>
-                </span>
-              </label>
-            </div>
-          </fieldset>
-
-          {mandate === "active" && (
-            <Strip tone="warn">
-              A mandate is a document, not a checkbox: it names permitted actions, their limits,
-              liability for collateral damage, abort conditions and revocation. We will send it
-              before anything runs.
-            </Strip>
-          )}
+          {/* THE ACTIVE-MANDATE OPTION IS REMOVED, not hidden (Fable's ruling). It promised
+              "we will send it before anything runs" - and nobody would send it, because no prober
+              exists to honour it if it were signed. That is a false claim about US, which is the
+              least excusable kind, and it sat on the one page where a stranger commits to
+              something. It returns with T-2.12 and not before. The endpoint already coerces
+              anything that is not "active" to "passive", so nothing behind this changed. */}
+          <div className="border border-[var(--color-line-2)] bg-[var(--color-paper)] p-3">
+            <p className="text-sm">
+              <strong>Every verification at this stage is read-only.</strong> We read what is already
+              public and touch nothing. Fewer operations can be measured that way, and the passport
+              says which ones and why.
+            </p>
+            <p className="mt-1.5 text-xs text-[var(--color-ink-3)]">
+              A probing mandate &mdash; where you name what we may touch, how often, what must not be
+              affected and how you revoke it &mdash; becomes available when the prober exists. It
+              will require a signed document before anything runs. It is not offered here yet
+              because offering it would be a promise nobody could keep today.
+            </p>
+          </div>
 
           <button
             type="submit"
@@ -204,9 +184,8 @@ export default function Apply() {
             <ul className="mt-2 space-y-1 text-xs text-[var(--color-ink-3)]">
               <li>
                 <strong className="text-[var(--color-ink-2)]">Stored:</strong> the repository URL,
-                your address, the mandate you chose, the time, and the two-letter country your
-                request arrived from. Nothing else &mdash; no cookie is set by this form and no
-                identifier is created for you.
+                your address, the time, and the two-letter country your request arrived from.
+                Nothing else, and this form sets no cookie of its own.
               </li>
               <li>
                 <strong className="text-[var(--color-ink-2)]">Where:</strong> Cloudflare key-value
@@ -222,6 +201,20 @@ export default function Apply() {
                 <strong className="text-[var(--color-ink-2)]">Deleted:</strong> whenever you ask, by
                 opening an issue or replying to any message from us. There is nothing to unsubscribe
                 from &mdash; we do not send anything you did not ask for.
+              </li>
+              <li>
+                {/* This paragraph claimed "no identifier is created for you" while Google
+                    Analytics sets one on this very page. The first half of that sentence was
+                    scoped to the form and true; the second was unscoped and false - a false
+                    sentence in the one paragraph a stranger reads before handing over an address.
+                    The measurement decision is the operator's (D-14). A surface that contradicts
+                    it is a separate matter, and this is the correction. */}
+                <strong className="text-[var(--color-ink-2)]">Separately, about this whole site:</strong>{" "}
+                Google Analytics runs on every page here, without a consent banner. It sets a cookie
+                and creates an identifier for your browser, and what it records goes to Google. That
+                is the operator&rsquo;s decision and it is written down, with the argument against
+                it, in the project&rsquo;s decision log. Advertising and personalisation signals are
+                switched off, which is the most that can be said for it.
               </li>
             </ul>
           </div>
