@@ -1365,10 +1365,14 @@ function Method() {
 * exists to detect, so the rule is stricter here than anywhere else: if a sentence cannot be traced
 * to a paragraph, it is not on the page. */
 var SPEC = "https://github.com/whiteknightonhorse/provek/blob/main/SPEC.md";
-/** From SPEC.md 4.1. `enforced` means a deployed contract makes it impossible; `evidenced` means it
-* can be shown and argued and nothing more. Presenting the second as the first is forbidden, and
-* the specification puts that obligation on the interface, not only on the schema - which is why
-* the status is a column here rather than a sentence somewhere below. */
+/** From SPEC.md 4.1. `enforced` means the deployed contract carries the constraint out itself;
+* `evidenced` means it can be shown and argued and nothing more. Presenting the second as the first
+* is forbidden, and the specification puts that obligation on the interface, not only on the schema
+* - which is why the status is a column here rather than a sentence somewhere below.
+*
+* This comment said "makes it impossible" until Fable found it in the source AFTER the same phrase
+* had been corrected on the page. SPEC 4.1 now forbids that upgrade in normative terms, and a
+* comment contradicting the rule it explains is how the next editor learns which one to believe. */
 var CONSTRAINTS = [
 	["Ceiling on the amount", "enforced"],
 	["Permitted on-chain recipient", "enforced"],
@@ -1391,12 +1395,12 @@ var CONSTRAINTS = [
 * than presented as quotation. The durable fix belongs in the specification, not on this page. */
 var LIFECYCLE = [
 	"draft → policy_check → funded → executing",
-	"policy_check → rejected   (a condition of creation is missing)",
-	"executing → milestone_released → executing",
-	"executing → completed     (every acceptance criterion met)",
-	"executing → failed        (a failure criterion fired)",
-	"executing → timed_out     (the clock ran out, with no event)",
-	"failed | timed_out → settled"
+	"policy_check → rejected                     (a condition of creation is missing)",
+	"executing → milestone_released → executing  (partial release)",
+	"executing → completed                       (every acceptance criterion met)",
+	"executing → failed                          (a failure criterion fired)",
+	"executing → timed_out                       (the timeout expired — by time, with no event)",
+	"failed | timed_out → settled                (the uncommitted remainder returned by code)"
 ];
 function Phase2() {
 	return /* @__PURE__ */ jsx(Page, { children: /* @__PURE__ */ jsxs("div", {
@@ -1565,7 +1569,7 @@ function Phase2() {
 				children: [/* @__PURE__ */ jsx("span", {
 					className: "font-mono text-xs",
 					children: "enforced"
-				}), " means enforced by the contract the parties deploy between themselves. Not by us: we are not a party to it, and we could not enforce anything if we wanted to."]
+				}), " means enforced by the contract the parties deploy between themselves. Not by us: we are not a party to it."]
 			}),
 			/* @__PURE__ */ jsx("h2", {
 				className: "mt-9 text-lg font-semibold",
@@ -1655,7 +1659,7 @@ function Phase2() {
 								children: "“The agent did not hand this task to a human” is not verifiable at reasonable cost."
 							}),
 							" ",
-							"It is published as a probabilistic signal and never as a verdict — in phase 2 as much as today."
+							"It may be published as a probabilistic signal and never as a verdict. That rule is not waiting for phase 2; it binds every signal we publish now."
 						]
 					})
 				]

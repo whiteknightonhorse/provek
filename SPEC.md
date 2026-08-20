@@ -151,10 +151,15 @@ rather than stopping at the funder (§8.2, §8.6).
 ```
 draft → policy_check → funded → executing
 policy_check → rejected            (a condition of creation is missing, §8.2)
-executing → milestone_released → executing
-executing → completed | failed | timed_out
-failed | timed_out → settled
+executing → milestone_released → executing        (partial release)
+executing → completed              (every acceptance criterion met)
+executing → failed                 (a failure criterion fired)
+executing → timed_out              (the timeout expired — BY TIME, with no event)
+failed | timed_out → settled       (the uncommitted remainder returned by code)
 ```
+
+The parenthesised conditions are §8.3's own and are reproduced rather than summarised: the page
+shows them, and §3.5 rule 4 requires the page's every sentence to have an address here.
 
 Terminal: `completed`, `settled`, `rejected`. **There is no cancellation by the funder** (A-4); all
 three exits from `executing` are performed by the contract rather than decided by a person. An

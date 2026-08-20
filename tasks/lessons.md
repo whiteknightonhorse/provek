@@ -49,3 +49,37 @@ run from there.
 
 Anchor: no code gate. This is a working habit, and it is recorded as such rather than pretended to
 be enforced - a law with a fake anchor is worse than an honest note.
+
+## L-9 Trace the path to the acceptance criterion BEFORE taking the step
+
+A task whose gate is a live URL begins by establishing how a commit becomes that URL. This one did
+not: the page was built, reviewed, corrected and pushed before anyone asked what publishes it, and
+the answer turned out to be a manual `wrangler pages deploy` needing a credential this host does not
+hold. A push to `main` publishes nothing here.
+
+The path was readable in advance - `web/wrangler.toml`, a `.wrangler/cache` in the tree, and an
+`AUDIT.md` that names the Pages project while saying nothing about the mechanism. Cost was small
+(the push was needed anyway) and the damage was to the ORDER in which facts were discovered, which
+is exactly the damage that is invisible until it is large.
+
+Anchor: no code gate. A checker cannot know which of a task's criteria is the load-bearing one. It
+is recorded as a habit, in L-8's form, rather than dressed as an enforced rule.
+
+## L-10 A wrong instrument reports absence, and absence reads as a finding
+
+`/commits/{sha}/status` returned zero statuses for every commit in this repository, and that was
+read as "no deploy integration". The reading happened to be right; the measurement was empty.
+`/commits/{sha}/check-runs` returns four successful runs on the same commits - the legacy endpoint
+simply does not carry what the modern one does. A conclusion drawn from an instrument that cannot
+see the quantity is not evidence, and it is more dangerous when correct, because it will be repeated.
+
+This extends L-1 and specification 2.9 by a third sibling. Beside `nothing_qualified` and
+`unreadable` sits **the wrong source was asked** - a state that answers HTTP 200 with an empty list
+and is therefore indistinguishable from a true zero at the point of reading.
+
+Found by Fable while refuting a brief in which the empty measurement was offered as proof.
+
+Anchor: no code gate for the general rule - a checker cannot know that an endpoint is blind. One
+instance of it IS armed, and it is the model to copy: every passport publishes the `access_channel`
+its evidence arrived through, so a verdict carries the instrument beside the reading
+(LAW-GRANTED-CHANNEL-ONLY, `tests/test_granted_channel_only.py`).

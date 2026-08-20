@@ -6,9 +6,12 @@ name: gates
 # the person pushing chose to run it. A gate whose execution depends on the discipline of the
 # person it guards is a habit, not a control.
 #
-# NOTE ON BILLING: Actions minutes on this account are exhausted until 2026-09-01. This workflow
-# will not run before then, and that is a known, dated condition rather than a broken pipeline.
-# When the repository becomes public, Actions are free and the condition disappears permanently.
+# NOTE ON BILLING, NOW EXPIRED. This said Actions minutes were exhausted until 2026-09-01 and that
+# the workflow would not run before then. The escape clause in the same note is what happened: the
+# repository is public, so Actions are free and the condition is gone. Measured on 2026-08-20 rather
+# than assumed - `/commits/{sha}/check-runs` reports four successful runs of this workflow on each of
+# today's commits. A dated condition that has quietly expired is a false statement about the
+# pipeline, and a false green about a gate is the one this repository may least afford.
 
 on:
   push:

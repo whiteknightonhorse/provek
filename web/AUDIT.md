@@ -139,6 +139,23 @@ will not speak.
 
 Live at **https://provek.pages.dev**. Cloudflare Pages, project `provek`, production branch `main`.
 
+⚠️ **How a commit becomes a live page, written down because this line used to imply an answer it
+did not give.** The project is **direct upload**, not connected to the GitHub repository: publishing
+is a manual `wrangler pages deploy` of a locally built `dist`, run by whoever holds the Cloudflare
+credential. **A push to `main` publishes nothing.** Measured on 2026-08-20 rather than assumed: two
+pushes produced no Cloudflare activity in fifteen minutes; `/commits/{sha}/check-runs` returns four
+GitHub Actions runs and no Cloudflare app on the same commits; the repository's deployments list is
+empty (HTTP 200 and empty, which is a reading, not a refusal); and the live bundle
+`index-Bd67xZVW.js` does not match a fresh local build, so what is served descends from somebody's
+working copy rather than from a commit.
+
+Two consequences, and neither is fixed by this paragraph. **The gate chain guards `commit → push`
+and nothing guards `build → publish`** — the emitted-artefact half of every web test reads
+`web/dist`, which is not tracked, so it is skipped on CI and cannot see what is actually uploaded.
+And **an agent working from this host cannot complete a task whose acceptance criterion is a live
+URL.** The honest form of that is a BLOCKED report naming the missing channel, not a green tick over
+a built directory: a file in `dist` is not what the consumer receives.
+
 ### Lighthouse on the deployed site, mobile profile
 
 Repeat runs, because a single run here is not evidence. Every figure below comes from a run whose

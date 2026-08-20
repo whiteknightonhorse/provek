@@ -22,10 +22,14 @@ import { Facts, Page, Strip } from "../components/Chrome";
 
 const SPEC = "https://github.com/whiteknightonhorse/provek/blob/main/SPEC.md";
 
-/** From SPEC.md 4.1. `enforced` means a deployed contract makes it impossible; `evidenced` means it
- * can be shown and argued and nothing more. Presenting the second as the first is forbidden, and
- * the specification puts that obligation on the interface, not only on the schema - which is why
- * the status is a column here rather than a sentence somewhere below. */
+/** From SPEC.md 4.1. `enforced` means the deployed contract carries the constraint out itself;
+ * `evidenced` means it can be shown and argued and nothing more. Presenting the second as the first
+ * is forbidden, and the specification puts that obligation on the interface, not only on the schema
+ * - which is why the status is a column here rather than a sentence somewhere below.
+ *
+ * This comment said "makes it impossible" until Fable found it in the source AFTER the same phrase
+ * had been corrected on the page. SPEC 4.1 now forbids that upgrade in normative terms, and a
+ * comment contradicting the rule it explains is how the next editor learns which one to believe. */
 const CONSTRAINTS: Array<[string, "enforced" | "evidenced"]> = [
   ["Ceiling on the amount", "enforced"],
   ["Permitted on-chain recipient", "enforced"],
@@ -49,12 +53,12 @@ const CONSTRAINTS: Array<[string, "enforced" | "evidenced"]> = [
  * than presented as quotation. The durable fix belongs in the specification, not on this page. */
 const LIFECYCLE = [
   "draft → policy_check → funded → executing",
-  "policy_check → rejected   (a condition of creation is missing)",
-  "executing → milestone_released → executing",
-  "executing → completed     (every acceptance criterion met)",
-  "executing → failed        (a failure criterion fired)",
-  "executing → timed_out     (the clock ran out, with no event)",
-  "failed | timed_out → settled",
+  "policy_check → rejected                     (a condition of creation is missing)",
+  "executing → milestone_released → executing  (partial release)",
+  "executing → completed                       (every acceptance criterion met)",
+  "executing → failed                          (a failure criterion fired)",
+  "executing → timed_out                       (the timeout expired — by time, with no event)",
+  "failed | timed_out → settled                (the uncommitted remainder returned by code)",
 ];
 
 export default function Phase2() {
@@ -190,8 +194,7 @@ export default function Phase2() {
         </ul>
         <p className="mt-3 text-sm text-[var(--color-ink-2)]">
           <span className="font-mono text-xs">enforced</span> means enforced by the contract the
-          parties deploy between themselves. Not by us: we are not a party to it, and we could not
-          enforce anything if we wanted to.
+          parties deploy between themselves. Not by us: we are not a party to it.
         </p>
 
         <h2 className="mt-9 text-lg font-semibold">The lifecycle, as specified</h2>
@@ -242,8 +245,8 @@ export default function Phase2() {
               &ldquo;The agent did not hand this task to a human&rdquo; is not verifiable at
               reasonable cost.
             </strong>{" "}
-            It is published as a probabilistic signal and never as a verdict &mdash; in phase 2 as
-            much as today.
+            It may be published as a probabilistic signal and never as a verdict. That rule is not
+            waiting for phase 2; it binds every signal we publish now.
           </li>
         </ul>
 
