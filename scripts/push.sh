@@ -10,11 +10,23 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-echo "1/5 secrets";  ./scripts/secret_scan.sh
-echo "2/5 scope";    python3 scripts/ratchet_scope.py
-echo "3/5 laws";     python3 scripts/ratchet_decisions.py
-echo "4/5 language"; python3 scripts/ratchet_language.py
-echo "5/5 tests";    python3 -m pytest tests -q | tail -1
+echo "1/6 secrets";  ./scripts/secret_scan.sh
+echo "2/6 scope";    python3 scripts/ratchet_scope.py
+echo "3/6 laws";     python3 scripts/ratchet_decisions.py
+echo "4/6 language"; python3 scripts/ratchet_language.py
+# LINT IS HERE BECAUSE ITS ABSENCE WAS MEASURED, NOT BECAUSE IT IS TIDY.
+#
+# `gates.yml` opens "THE SAME GATES AS scripts/push.sh". It was not true: CI ran ruff and this
+# script never had. So a commit could pass every gate at the door and land red on main, and one
+# did - the commit that added the note tests carried five ruff violations, went out clean through
+# here, and turned `lint and types` red on `main` where the next reader sees a failing badge over a
+# repository whose subject is gates that hold.
+#
+# The divergence is the defect, not the five violations. Two gate lists that claim to be one list
+# are a rule written in more than one place (L-2), and this one had already survived its own
+# repeal: the header asserting the lists were identical stayed correct-sounding while they drifted.
+echo "5/6 lint";     python3 -m ruff check src tests scripts
+echo "6/6 tests";    python3 -m pytest tests -q | tail -1
 
 # Gates-only mode. The orchestra must judge the tree after EVERY task, not just before a push,
 # and a second copy of the gate list would drift from this one the first time the list changed.

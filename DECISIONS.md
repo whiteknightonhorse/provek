@@ -578,7 +578,12 @@ mechanism that produced them:
 - `.github/workflows/gates.yml` builds the site, so the sweep for links the build never emitted
   runs where gates do not depend on the pusher's discipline. It had skipped in CI since it was
   written;
-- `push.sh` refuses a dirty tree, so the gates judge the artefact that is pushed;
+- `push.sh` refuses a dirty tree, so the gates judge the artefact that is pushed, and it now
+  runs `ruff` — `gates.yml` opens "THE SAME GATES AS scripts/push.sh" and that had stopped
+  being true, so a commit could pass every gate at the door and land red on `main`. The first
+  version of THIS commit did exactly that. Two gate lists claiming to be one list are L-2 in
+  the load-bearing place, and the header asserting they were identical is what kept the drift
+  invisible;
 - an unmeasured `lastmod` is now OMITTED rather than defaulted, which is invariant 1 in a machine
   channel: `not_measured` is written by leaving the field out, never by substituting the clock.
 

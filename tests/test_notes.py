@@ -17,8 +17,7 @@ import re
 
 import pytest
 
-from .notes_support import (ROOT, emitted, keyword_base, ld_blocks, normalise, paragraphs,
-                            sources, strip_tags)
+from .notes_support import ROOT, emitted, keyword_base, ld_blocks, normalise, paragraphs, sources, strip_tags
 
 # ASSIGNED 2026-08-20. Ceilings are hard; the body FLOOR is deliberately far below where the prose
 # should land, because a floor is a number a model writes TO and a floor set at the target buys

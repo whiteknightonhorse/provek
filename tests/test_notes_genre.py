@@ -78,7 +78,7 @@ def test_the_route_never_names_the_genre_it_is_not():
 
 def test_prose_is_not_a_list_in_disguise():
     for front, body in sources():
-        listed = sum(len(l) for l in body.splitlines() if l.strip().startswith(("- ", "* ", "|")))
+        listed = sum(len(ln) for ln in body.splitlines() if ln.strip().startswith(("- ", "* ", "|")))
         share = listed / len(body)
         assert share <= LIST_SHARE_MAX, (
             f"{front['slug']}: {share:.0%} of the body is list or table rows (max {LIST_SHARE_MAX:.0%})")
@@ -87,7 +87,7 @@ def test_prose_is_not_a_list_in_disguise():
 def test_no_two_consecutive_paragraphs_open_on_the_same_word():
     for front, body in sources():
         starts = [p.split()[0].lower().strip(",.") for p in paragraphs(body) if p.split()]
-        for a, b in zip(starts, starts[1:]):
+        for a, b in zip(starts, starts[1:], strict=False):
             assert a != b, f"{front['slug']}: two paragraphs in a row open with {a!r}"
 
 
@@ -95,7 +95,7 @@ def test_every_note_says_what_drafted_it():
     """We measure how much of somebody else's business runs without a human in the loop. Publishing
     prose drafted by two models without saying so would be the same omission, committed by the
     party that named it."""
-    for front, body in sources():
+    for front, _body in sources():
         assert front["provenance"]["plan_model"] and front["provenance"]["prose_model"]
 
 

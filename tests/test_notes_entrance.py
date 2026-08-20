@@ -32,11 +32,16 @@ cannot see. The backstop for that case is
 href is a literal no matter how it was computed. That backstop needs a build, so
 `.github/workflows/gates.yml` now builds the site and runs it - before that it skipped in CI and
 this module was, in the only place gates do not depend on the pusher's discipline, one grep.
+
+AND THE BACKSTOP IS STILL NOT TOTAL, WHICH IS SAID HERE RATHER THAN LEFT TO BE DISCOVERED. It reads
+`href` attributes. A link built by JavaScript - an `onClick` that calls `pushState` - carries no
+href and is invisible to it, as is an entrance placed in a channel that is not markup. What it does
+cover is the whole of what this site emits today, which is static documents whose every link is an
+attribute.
 """
 from __future__ import annotations
 
 import re
-from pathlib import Path
 
 import pytest
 
@@ -139,10 +144,20 @@ def test_the_built_site_has_no_link_that_it_did_not_emit() -> None:
             r = p.parent.relative_to(DIST).as_posix()
             routes.add("/" if r == "." else f"/{r}/")
     dangling = set()
-    for p in sorted(DIST.rglob("index.html")):
+    # EVERY 404.html TOO, not just the routed documents - it is the page a reader receives for any
+    # address that does not exist, and a broken link on it is a broken link.
+    for p in sorted([*DIST.rglob("index.html"), *DIST.glob("404.html")]):
         r = p.parent.relative_to(DIST).as_posix()
         page = "/" if r == "." else f"/{r}/"
-        for href in set(re.findall(r'href="(/[^"#?]*)"', p.read_text(encoding="utf-8"))):
+        # THE QUERY AND THE FRAGMENT ARE STRIPPED AFTER MATCHING, NOT INSIDE THE CHARACTER CLASS.
+        # `href="(/[^"#?]*)"` required the quote to come straight after the path, so any href
+        # carrying `?` or `#` - `/method/notes/?src=m` - matched NOTHING AT ALL and passed unseen.
+        # A pattern meant to ignore the query was instead ignoring the link, which is the false
+        # green this whole module exists to prevent, sitting inside its own backstop.
+        for raw in set(re.findall(r'href="(/[^"]*)"', p.read_text(encoding="utf-8"))):
+            href = raw.split("#", 1)[0].split("?", 1)[0]
+            if not href:
+                continue          # a bare "#fragment" target names no address to resolve
             if href not in routes and href.lstrip("/") not in files:
                 dangling.add((page, href))
     assert not dangling, f"emitted pages link to addresses the build did not produce: {sorted(dangling)}"
