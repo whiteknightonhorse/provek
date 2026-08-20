@@ -111,10 +111,17 @@ read that way even at eight rows.
 
 **Eight records exist. All are the operator's own systems, all carry `same_owner`.**
 
-| subject | projection | why |
+⚠️ **Corrected 2026-08-20.** This table listed a projection for all eight. It stopped being true
+when the pipeline moved to an anonymous channel: five of the eight subjects are private
+repositories and return 404 to a reader holding no credential, so their verdicts were never
+reproducible by a third party. The numbers below are now read from the emitted registry rather
+than asserted here, because a specification that describes an artefact it has stopped matching is
+the drift this project exists to catch.
+
+| subject | state | why |
 |---|---|---|
-| AI-Property-Sales-Platform, audiobook-shorts-series, gov-auction-report, APIbase | 80 | runtime trace present (CI runs) |
-| AIpush, cryptocardhub-defycard, mcp-protocol-tester, provek | 40 | zero CI runs → limiter O2 capped the level at L2 |
+| AIpush, APIbase, mcp-protocol-tester, provek | verified, projection 40–80 | public, readable anonymously |
+| AI-Property-Sales-Platform, audiobook-shorts-series, cryptocardhub-defycard, gov-auction-report | **unverified, `unreadable`** | private repositories; no anonymous reader can recompute the verdict |
 
 Two of three operations on every subject are `not_measured` — runtime evidence is not collected
 yet, and the passport says so.

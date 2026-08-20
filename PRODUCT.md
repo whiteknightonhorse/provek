@@ -43,8 +43,9 @@ An ERC-8004 **validator**: the standard supplies identity and transport, the met
 The claim a neighbouring product could not truthfully copy is the methodology itself, published in
 full — including its own limits, and including the record of every check that did not run.
 
-The system is applied to itself. `provek` is row eight of its own registry and scores 80, not
-because that flatters it but because the same collector ran against it.
+The system is applied to itself. `provek` is row eight of its own registry, measured by the same
+collector as everything else — and it only became measurable when the repository was opened, which
+is the mechanism working rather than a courtesy.
 
 ## Operating Context
 
@@ -65,9 +66,10 @@ GitHub API, human-control map with mandatory coverage, scoring with three weak-s
 passport issuance, public registry, status lifecycle, liveness, mandate, two transports, an
 ERC-8004 read adapter, and self-application over eight subjects.
 
-**Does not work yet, and the surface must not imply otherwise:** no active probing, no runtime
-comparison, no runtime evidence collection. Two of three operations on every current subject are
-`not_measured`.
+**Does not work yet, and the surface must not imply otherwise:** no active probing (the mandate
+object and its fail-closed behaviour exist; the prober does not), no runtime comparison, no runtime
+evidence collection. Two of three operations on every current subject are `not_measured`, and the
+passport says which of the three absences applies rather than scoring them zero.
 
 **Vocabulary that must not drift:**
 
@@ -95,7 +97,9 @@ must have room for these from the start, but must not describe them as coming fe
   apologises for the size of the registry, and never pads it.
 - No logo or emblem exists, and none is required: an emblem earned before a method is exactly the
   substitution this product exists to detect.
-- Colour, typography and motion are **undecided** and are the subject of the current phase.
+- Colour, typography and motion are **decided and recorded** in `DESIGN.md`: IBM Plex, two
+  authored palettes, and one visual device — the unfilled slot, a ruled blank where an
+  unmeasured value would have gone.
 
 ## Evidence on Hand
 
@@ -104,12 +108,15 @@ Real, and honestly scarce.
 - **Eight passports**, all of the operator's own systems, all marked `same_owner` — an affiliated
   rehearsal of the protocol, not independent verification, and marked as such on every row and
   every document.
-- Projections: 80 for AI-Property-Sales-Platform, audiobook-shorts-series, gov-auction-report,
-  APIbase (runtime trace present); 40 for AIpush, cryptocardhub-defycard, mcp-protocol-tester,
-  provek (zero CI runs, so limiter O2 capped the level at L2).
+- **4 verified, 4 unreadable.** The unreadable four are private repositories: they
+  answer 404 to a reader holding no credential, and a verdict on a source no third party can read
+  is not reproducible. That is a measurement about the subject's public posture, not a judgement of
+  it, and it is the honest result of applying the method to ourselves. Exact numbers live in the
+  emitted registry; repeating them here is how this section drifted once already.
 - Two measured answers to open questions: the ERC-8004 identity population is **50,275**, measured
   on-chain; verification cost is **0.006 CPU-seconds** and three API calls.
-- 117 tests, 27 laws armed, four ratchets.
+- 196 tests, 35 laws armed, four ratchets. The count is quoted because it moves; the claim that
+  matters is that every load-bearing rule names the gate and the test enforcing it.
 
 **Absences that must not be fabricated:** no customers, no testimonials, no third-party subjects,
 no independent verifications, no pricing, no case studies, no press. The near-empty registry is a
