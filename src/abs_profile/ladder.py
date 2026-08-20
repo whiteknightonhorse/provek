@@ -40,3 +40,34 @@ NOT_MEASURED_BY_LADDER = (
     "decision quality", "profitability", "desirability of autonomy",
     "reliability", "presence of an accountable party",
 )
+
+# --- LEVEL-ASSIGNMENT POLICY -------------------------------------------------------------------
+# ABI-16-10, and these were literals inside comparisons until 2026-08-20 (T-THRESHOLD-1 found them
+# on the day it was written). A magic number at the point of comparison cannot be ratified, cannot
+# be found when it needs changing, and cannot be told apart from a measurement. This project has
+# already paid for that shape once, in another system, where a cap invented for a cost that did not
+# exist became the outage.
+#
+# ASSIGNED, NOT MEASURED, and labelled so. There is no experiment behind them: they are a stated
+# reading of what commit evidence can support, awaiting the operator's ratification the way the
+# go/no-go numbers were. Until ratified they are the author's proposal, and saying that here is the
+# difference between a policy and a leftover.
+
+SOLE_AUTHOR = 1
+"""ASSIGNED. One distinct author is the strongest signal a repository can give that no human
+rota is behind the commits. It is not proof - attack T1 is unimplementable - which is why a level
+built on it is capped and marked `inferred`."""
+
+SIGNED_SHARE_FOR_L4 = 0.9
+"""ASSIGNED. The share of commits carrying a verified signature required before a sole-author
+repository may reach L4. Below it the evidence is consistent with a human committing by hand."""
+
+FEW_AUTHORS_FOR_L3 = 2
+"""ASSIGNED. Above one author but few enough that a machine-led process remains the simplest
+explanation."""
+
+SMALL_TEAM_FOR_L3 = 3
+"""ASSIGNED. The cohort's own reading of the same question, and DELIBERATELY DIFFERENT from
+FEW_AUTHORS_FOR_L3 above: `pipeline.verify` weighs signatures as well, the cohort does not, so the
+cohort needs a wider band to reach the same conclusion from less. Two numbers because there are two
+procedures - not because one of them drifted."""

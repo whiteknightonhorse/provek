@@ -34,8 +34,20 @@ def owner_of(token_id: int):
     return None if not r or int(r, 16) == 0 else "0x" + r[-40:]
 
 
+SEARCH_CEILING = 10_000_000
+"""ASSIGNED, and it is a SAFETY STOP rather than a belief about the population.
+
+The doubling search would otherwise run until the RPC refused, and an unbounded loop against a
+paid endpoint is how a measurement turns into a bill. Ten million is chosen to sit far above any
+plausible identity count while still terminating; if a real registry ever approaches it, the
+correct response is to raise this deliberately, not to discover it as a silent truncation.
+
+Named because ABI-16-10 forbids a bare number at a comparison: a literal here could not be told
+apart from a measured bound, which is precisely the confusion that makes a guessed constant into
+a cause."""
+
 lo, hi = 1, 1
-while owner_of(hi) is not None and hi < 10_000_000:
+while owner_of(hi) is not None and hi < SEARCH_CEILING:
     lo, hi = hi, hi * 2
 while lo + 1 < hi:
     mid = (lo + hi) // 2

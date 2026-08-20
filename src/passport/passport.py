@@ -20,24 +20,23 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta, timezone
-from enum import Enum
 
 from src.abs_profile.identity import Binding
 from src.abs_profile.measured import Measurement, NotMeasured
+from src.registry.lifecycle import Status
 from src.verify.control_map import ControlMap
 from src.verify.scorer import OperationScore
 
 SCHEMA_VERSION = "2.0.0"
 
+# Status is imported, not redefined. Until 2026-08-20 this module declared its OWN `Status` enum
+# with identical members - so `passport.Status.VERIFIED is lifecycle.Status.VERIFIED` was FALSE
+# while `==` was true, because both subclass `str`. Every comparison across the boundary between
+# the passport and the registry was therefore correct by accident and would have stopped being so
+# the moment either enum gained a member the other lacked. One rule written in two places survives
+# its own repeal; this one had not been repealed yet, which is the only reason it had not bitten.
 
-class Status(str, Enum):
-    UNVERIFIED = "unverified"
-    IN_PROGRESS = "verification_in_progress"
-    VERIFIED = "verified"
-    STALE = "stale"
-    SUSPENDED = "suspended"
-    FAILED = "failed_or_rejected"
-    WITHDRAWN = "withdrawn"
+
 
 
 @dataclass(frozen=True)
@@ -62,6 +61,20 @@ class Fact:
     value: object | None = None
     measured: bool = False
     reason: NotMeasured | None = NotMeasured.CHECK_DID_NOT_RUN
+    confidence: str | None = None
+    """WHICH REGISTER a measured value belongs to (Fable, V4).
+
+    The master specification's `OperationScore` carries three registers - measured, inferred,
+    assumed - and every downstream paraphrase in this project narrowed it to two. `assumed` is not
+    an empty slot: it is the register for a value taken from the SUBJECT'S OWN DECLARATION,
+    participating in the record without independent verification and without contradiction.
+
+    Accountability is exactly that population. Who answers a claim, whether insurance exists, where
+    a dispute goes - none of it is observable from outside; §2.6 makes them self-declared by
+    construction. Publishing them as `measured` would say we checked, and we did not. If a future
+    pipeline ever verifies one against observed behaviour, that entry graduates.
+
+    None when nothing was measured: a register is a property of a value, and there is no value."""
 
     def __post_init__(self) -> None:
         if self.measured == (self.reason is not None):
@@ -70,6 +83,12 @@ class Fact:
                 "taken. Both and neither are the same defect wearing different clothes")
         if self.value is not None and not self.measured:
             raise ValueError("A value that nobody measured is not a fact about the subject")
+        if self.measured and self.confidence not in ("measured", "inferred", "assumed"):
+            raise ValueError(
+                "A measured accountability field must name its register: measured, inferred or "
+                "assumed. Omitting it publishes a self-declaration with the authority of a check")
+        if not self.measured and self.confidence is not None:
+            raise ValueError("A register is a property of a value, and there is no value here")
         if self.reason is NotMeasured.NOTHING_QUALIFIED:
             # Fable barred this reason for presence fields and asked for a test. The guard is here
             # as well, because the invariant that slipped in 1.0.0 was the one no machine proved:
@@ -90,19 +109,25 @@ class Fact:
         return Fact(measured=False, reason=NotMeasured.UNREADABLE)
 
     @staticmethod
-    def none_found() -> "Fact":
+    def none_found(confidence: str = "assumed") -> "Fact":
         """The check RAN and established that there is none. The honest `none`, now earned."""
-        return Fact(value=None, measured=True, reason=None)
+        return Fact(value=None, measured=True, reason=None, confidence=confidence)
 
     @staticmethod
-    def of(value: object) -> "Fact":
+    def of(value: object, confidence: str = "assumed") -> "Fact":
+        """`assumed` by default because this block is self-declared by construction (§2.6).
+
+        A caller that genuinely verified something against observed behaviour passes "measured"
+        deliberately. Making the weaker register the default means the cheapest call makes the
+        weakest claim - the rule D-13 was written for."""
         if value is None:
             raise ValueError("Use Fact.none_found() to state a measured absence")
-        return Fact(value=value, measured=True, reason=None)
+        return Fact(value=value, measured=True, reason=None, confidence=confidence)
 
     def to_machine(self) -> dict:
         return {"value": self.value, "measured": self.measured,
-                "reason": self.reason.value if self.reason else None}
+                "reason": self.reason.value if self.reason else None,
+                "confidence": self.confidence}
 
 
 @dataclass(frozen=True)

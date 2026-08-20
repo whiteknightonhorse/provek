@@ -87,6 +87,10 @@ export interface Fact {
   value: string | boolean | null;
   measured: boolean;
   reason: string | null;
+  /** Which register a measured value belongs to. `assumed` is the honest one for this block:
+   *  who answers a claim is not observable from outside, so a completed check establishes what
+   *  the subject SAYS, never what we verified. */
+  confidence: "measured" | "inferred" | "assumed" | null;
 }
 
 /** The pipeline's slug, and deliberately the same derivation.
@@ -96,4 +100,24 @@ export interface Fact {
  * apart: one rule, two consumers. */
 export function slug(subjectId: string): string {
   return subjectId.replace(/[:/]/g, "_");
+}
+
+/** Status BY TIME, computed at read time — and it has to be (A2).
+ *
+ * `Passport.effective_status` implements ABI-15-5 in Python: a verified record lapses to `stale`
+ * on its own, with no event. The web never computed it, so a static registry generated today would
+ * go on saying `verified` for ever. On 2026-09-19 every current row lapses in the machine sense
+ * while the page kept the older word — "no news" and "expired" rendered identically, which is the
+ * founding defect in its temporal form.
+ *
+ * DESIGN rule 3 says nothing is computed for display. This is the recorded carve-out: staleness is
+ * DEFINED as a read-time computation. A value that expires cannot be baked into the artefact that
+ * expires with it. */
+export function effectiveStatus(status: string, validUntil: string, now: Date = new Date()): string {
+  if (status !== "verified") return status;
+  return now >= new Date(validUntil) ? "stale" : "verified";
+}
+
+export function daysUntil(validUntil: string, now: Date = new Date()): number {
+  return Math.ceil((new Date(validUntil).getTime() - now.getTime()) / 86_400_000);
 }

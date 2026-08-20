@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-08-20T06:47:26.381511+00:00",
-    "valid_until": "2026-09-19T06:47:26.381511+00:00",
+    "issued_at": "2026-08-20T08:08:43.833244+00:00",
+    "valid_until": "2026-09-19T08:08:43.833244+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -67,22 +67,26 @@
       "emergency_stop": {
         "value": null,
         "measured": false,
-        "reason": "check_did_not_run"
+        "reason": "check_did_not_run",
+        "confidence": null
       },
       "claims_addressee": {
         "value": null,
         "measured": false,
-        "reason": "check_did_not_run"
+        "reason": "check_did_not_run",
+        "confidence": null
       },
       "insurance": {
         "value": null,
         "measured": false,
-        "reason": "check_did_not_run"
+        "reason": "check_did_not_run",
+        "confidence": null
       },
       "dispute_path": {
         "value": null,
         "measured": false,
-        "reason": "check_did_not_run"
+        "reason": "check_did_not_run",
+        "confidence": null
       }
     },
     "mandate_ref": "self-mandate-0001",

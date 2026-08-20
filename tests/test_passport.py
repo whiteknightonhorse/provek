@@ -52,7 +52,9 @@ def test_empty_control_map_gives_max_autonomy_AND_honest_no_addressee():
               Accountability(claims_addressee=Fact.none_found())).to_machine()
     assert m["verified"]["control_map_cap"] == 5
     assert m["accountability"]["claims_addressee"] == {
-        "value": None, "measured": True, "reason": None}
+        "value": None, "measured": True, "reason": None, "confidence": "assumed"}
+    # `assumed`, not `measured` (Fable, V4): who answers a claim is not observable from outside,
+    # so a completed check here establishes what the SUBJECT says, never what we verified.
 
 
 def test_an_emitter_that_inspected_nothing_cannot_claim_an_honest_none():
@@ -65,7 +67,8 @@ def test_an_emitter_that_inspected_nothing_cannot_claim_an_honest_none():
     m = _p().to_machine()
     for fieldname in ("emergency_stop", "claims_addressee", "insurance", "dispute_path"):
         assert m["accountability"][fieldname] == {
-            "value": None, "measured": False, "reason": "check_did_not_run"}, fieldname
+            "value": None, "measured": False, "reason": "check_did_not_run",
+            "confidence": None}, fieldname
 
 
 def test_a_fact_cannot_be_both_measured_and_excused():
@@ -120,3 +123,26 @@ def test_absent_projection_is_reported_with_its_REASON():
     m = p.to_machine()
     assert m["verified"]["projection"] is None
     assert m["verified"]["projection_absent_reason"] == "nothing_qualified"
+
+
+def test_a_measured_accountability_field_must_name_its_register():
+    """Fable V4. Omitting the register publishes a self-declaration with a check's authority."""
+    import pytest
+    with pytest.raises(ValueError):
+        Fact(value="Example Ltd", measured=True, reason=None, confidence=None)
+    with pytest.raises(ValueError):
+        Fact(value="Example Ltd", measured=True, reason=None, confidence="probably")
+    with pytest.raises(ValueError):
+        Fact(measured=False, reason=NotMeasured.UNREADABLE, confidence="assumed")
+
+
+def test_the_self_declared_register_is_the_DEFAULT_for_accountability():
+    """The cheapest call must make the weakest claim - the rule D-13 exists for.
+
+    Accountability is self-declared by construction (spec 2.6): who answers, whether insurance
+    exists, where a dispute goes. A caller who genuinely verified one against observed behaviour
+    says so deliberately; a caller who did not gets `assumed` without having to think about it.
+    """
+    assert Fact.of("Example Ltd").confidence == "assumed"
+    assert Fact.none_found().confidence == "assumed"
+    assert Fact.of(True, confidence="measured").confidence == "measured"

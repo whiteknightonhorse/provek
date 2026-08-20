@@ -7,6 +7,7 @@
 
 import { Facts, Page, Strip } from "../components/Chrome";
 import { AbsentMark, LevelRail, Projection } from "../components/Measured";
+import { daysUntil, effectiveStatus } from "../types";
 import type { Fact, Passport as P } from "../types";
 
 const OP_LABEL: Record<string, string> = {
@@ -44,13 +45,29 @@ const OP_DESC: Record<string, string> = {
  * and guessed differently in adjacent rows - which is what exposed the schema defect. */
 function AccFact({ f, yes, no }: { f: Fact; yes?: string; no?: string }) {
   if (!f.measured) return <AbsentMark reason={f.reason} />;
+  // The register travels with the value (V4). These fields are self-declared by construction, so
+  // `assumed` is the usual answer and saying so is the difference between "the subject states" and
+  // "we checked" - which the previous copy, "established, not assumed", got exactly backwards.
+  const register =
+    f.confidence === "assumed" ? (
+      <span className="evidence-class ml-2" title="Taken from the subject's own declaration; not independently verified.">
+        self-declared
+      </span>
+    ) : f.confidence ? (
+      <span className="evidence-class ml-2">{f.confidence}</span>
+    ) : null;
   if (f.value === null)
     return (
       <span className="text-[var(--color-ink-2)]">
-        {no ?? "none"} &mdash; established, not assumed
+        {no ?? "none"} &mdash; stated, not omitted{register}
       </span>
     );
-  return <span>{f.value === true ? (yes ?? "present") : String(f.value)}</span>;
+  return (
+    <span>
+      {f.value === true ? (yes ?? "present") : String(f.value)}
+      {register}
+    </span>
+  );
 }
 
 export default function Passport({ p }: { p: P }) {
@@ -71,14 +88,33 @@ export default function Passport({ p }: { p: P }) {
       {/* Provenance is the second thing on the page, as in SSL Labs and Scorecard. */}
       <p className="mt-1.5 text-xs text-[var(--color-ink-3)]">
         Issued {p.issued_at.slice(0, 19).replace("T", " ")} UTC &nbsp;|&nbsp; valid until{" "}
-        {p.valid_until.slice(0, 10)} &nbsp;|&nbsp; protocol {p.provenance.protocol_version}{" "}
+        {p.valid_until.slice(0, 10)}
+        {daysUntil(p.valid_until) > 0 && (
+          <span className="text-[var(--color-ink-3)]"> ({daysUntil(p.valid_until)} days)</span>
+        )} &nbsp;|&nbsp; protocol {p.provenance.protocol_version}{" "}
         &nbsp;|&nbsp; profile {p.provenance.profile_version} &nbsp;|&nbsp; evidence window{" "}
         {p.provenance.evidence_window_days} days
       </p>
 
       {/* THE SHARED THESIS, M's reading of it: coverage as a sentence, not a chart. A bar that
           restates a number beside it is decoration; a count of what was measured is the fact. */}
+      {/* BINDING STRENGTH SITS WITH THE VERDICT (A3, spec 2.8: "the buyer sees the strength of the
+          foundation TOGETHER WITH the verdict"). It used to appear six blocks down, after
+          accountability - by which point a reader has already formed a view of the number without
+          knowing that the identity under it is revocable. Fable upgraded this from taste to
+          requirement, and he is right: a weak binding changes how everything below it reads. */}
       <p className="mt-3 text-sm">
+        <span
+          className="evidence-class"
+          title={
+            p.binding_strength === "strong"
+              ? "The identity is bound by something that cannot be quietly reassigned."
+              : "A domain expires and can be resold; a signing key rotates."
+          }
+        >
+          {p.binding_strength} identity binding
+        </span>
+        <span className="mx-2 text-[var(--color-line-2)]">·</span>
         <strong className="font-medium">
           {v.operations.length - unmeasured} of {v.operations.length} operations measured.
         </strong>{" "}
@@ -88,6 +124,18 @@ export default function Passport({ p }: { p: P }) {
             : "The rest are stated as unmeasured, with the reason, rather than scored as zero."}
         </span>
       </p>
+
+      {/* A2. A verdict lapses by time with no event, and until now the surface never said so. */}
+      {effectiveStatus(p.status, p.valid_until) === "stale" && (
+        <div className="mt-3">
+          <Strip tone="warn">
+            <strong>This passport has lapsed.</strong> Its evidence window closed on{" "}
+            {p.valid_until.slice(0, 10)} and it has not been renewed. Nothing below is retracted —
+            it was true when measured — but a verdict has a shelf life, and a reader deciding today
+            should know they are reading a record rather than a current statement.
+          </Strip>
+        </div>
+      )}
 
       {affiliated && (
         <div className="mt-3">

@@ -120,4 +120,24 @@ laws:
     text: "teaching and verification are separate components; the surface references the corpus once, as provenance"
     gate: web/src/pages/Method.tsx
     test: tests/test_separation_single_reference.py
+  - id: T-PROFILE-2
+    text: "the profile is CC BY 4.0 and the schemas Apache-2.0, in files, with both halves named"
+    gate: LICENSE
+    test: tests/test_licence.py
+  - id: T-THRESHOLD-1
+    text: "a threshold is a named constant with a recorded origin, never a literal at a comparison"
+    gate: src/abs_profile/ladder.py
+    test: tests/test_threshold_and_blockdefault.py
+  - id: T-BLOCKDEFAULT-1
+    text: "a gate fails closed; a handler that swallows a failure and continues is not a gate"
+    gate: src/governance/thresholds.py
+    test: tests/test_threshold_and_blockdefault.py
+  - id: LAW-ONE-ENUM-ONE-PLACE
+    text: "an enum is declared once; a duplicate compares equal by value and false by identity"
+    gate: src/registry/lifecycle.py
+    test: tests/test_threshold_and_blockdefault.py
+  - id: LAW-STALE-IS-COMPUTED-AT-READ-TIME
+    text: "a verdict lapses by time with no event, and the surface computes it rather than printing a frozen word"
+    gate: web/src/types.ts
+    test: tests/test_stale_on_the_surface.py
 

@@ -17,7 +17,7 @@ sys.path.insert(0, "/home/incubator/incubator")
 
 from src.abs_profile.evidence import EvidenceClass
 from src.abs_profile.identity import Binding, BindingKind
-from src.abs_profile.ladder import L
+from src.abs_profile.ladder import SMALL_TEAM_FOR_L3, SOLE_AUTHOR, L
 from src.abs_profile.measured import NotMeasured
 from src.collector.github import access_channel, collect_github
 from src.passport.passport import Accountability, Provenance, build
@@ -96,9 +96,9 @@ for full in COHORT:
 
     lvl = None
     if ev.signed_commit_share.is_measured and ev.distinct_authors.is_measured:
-        if ev.distinct_authors.value == 1:
+        if ev.distinct_authors.value == SOLE_AUTHOR:
             lvl = L.L4
-        elif ev.distinct_authors.value <= 3:
+        elif ev.distinct_authors.value <= SMALL_TEAM_FOR_L3:
             lvl = L.L3
         else:
             lvl = L.L2

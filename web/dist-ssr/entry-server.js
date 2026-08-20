@@ -189,6 +189,24 @@ function LevelRail({ level, measured }) {
 function slug(subjectId) {
 	return subjectId.replace(/[:/]/g, "_");
 }
+/** Status BY TIME, computed at read time — and it has to be (A2).
+*
+* `Passport.effective_status` implements ABI-15-5 in Python: a verified record lapses to `stale`
+* on its own, with no event. The web never computed it, so a static registry generated today would
+* go on saying `verified` for ever. On 2026-09-19 every current row lapses in the machine sense
+* while the page kept the older word — "no news" and "expired" rendered identically, which is the
+* founding defect in its temporal form.
+*
+* DESIGN rule 3 says nothing is computed for display. This is the recorded carve-out: staleness is
+* DEFINED as a read-time computation. A value that expires cannot be baked into the artefact that
+* expires with it. */
+function effectiveStatus(status, validUntil, now = /* @__PURE__ */ new Date()) {
+	if (status !== "verified") return status;
+	return now >= new Date(validUntil) ? "stale" : "verified";
+}
+function daysUntil(validUntil, now = /* @__PURE__ */ new Date()) {
+	return Math.ceil((new Date(validUntil).getTime() - now.getTime()) / 864e5);
+}
 //#endregion
 //#region src/pages/Landing.tsx
 /** The only screen allowed air. Content follows docs/WHY_GET_VERIFIED.md, including its limits -
@@ -509,7 +527,14 @@ function Registry({ reg }) {
 							/* @__PURE__ */ jsx("td", {
 								"data-label": "Status",
 								className: "px-4 py-2.5",
-								children: s.status
+								children: (() => {
+									const eff = effectiveStatus(s.status, s.valid_until);
+									return eff === "stale" ? /* @__PURE__ */ jsx("span", {
+										style: { color: "var(--color-warn)" },
+										title: "The evidence window has closed. The verdict was true when issued and has not been renewed.",
+										children: "stale"
+									}) : eff;
+								})()
 							}),
 							/* @__PURE__ */ jsx("td", {
 								"data-label": "Autonomy",
@@ -596,11 +621,23 @@ var OP_DESC = {
 * and guessed differently in adjacent rows - which is what exposed the schema defect. */
 function AccFact({ f, yes, no }) {
 	if (!f.measured) return /* @__PURE__ */ jsx(AbsentMark, { reason: f.reason });
+	const register = f.confidence === "assumed" ? /* @__PURE__ */ jsx("span", {
+		className: "evidence-class ml-2",
+		title: "Taken from the subject's own declaration; not independently verified.",
+		children: "self-declared"
+	}) : f.confidence ? /* @__PURE__ */ jsx("span", {
+		className: "evidence-class ml-2",
+		children: f.confidence
+	}) : null;
 	if (f.value === null) return /* @__PURE__ */ jsxs("span", {
 		className: "text-[var(--color-ink-2)]",
-		children: [no ?? "none", " — established, not assumed"]
+		children: [
+			no ?? "none",
+			" — stated, not omitted",
+			register
+		]
 	});
-	return /* @__PURE__ */ jsx("span", { children: f.value === true ? yes ?? "present" : String(f.value) });
+	return /* @__PURE__ */ jsxs("span", { children: [f.value === true ? yes ?? "present" : String(f.value), register] });
 }
 function Passport({ p }) {
 	const v = p.verified;
@@ -634,6 +671,14 @@ function Passport({ p }) {
 				" UTC \xA0|\xA0 valid until",
 				" ",
 				p.valid_until.slice(0, 10),
+				daysUntil(p.valid_until) > 0 && /* @__PURE__ */ jsxs("span", {
+					className: "text-[var(--color-ink-3)]",
+					children: [
+						" (",
+						daysUntil(p.valid_until),
+						" days)"
+					]
+				}),
 				" \xA0|\xA0 protocol ",
 				p.provenance.protocol_version,
 				" ",
@@ -648,6 +693,15 @@ function Passport({ p }) {
 		/* @__PURE__ */ jsxs("p", {
 			className: "mt-3 text-sm",
 			children: [
+				/* @__PURE__ */ jsxs("span", {
+					className: "evidence-class",
+					title: p.binding_strength === "strong" ? "The identity is bound by something that cannot be quietly reassigned." : "A domain expires and can be resold; a signing key rotates.",
+					children: [p.binding_strength, " identity binding"]
+				}),
+				/* @__PURE__ */ jsx("span", {
+					className: "mx-2 text-[var(--color-line-2)]",
+					children: "·"
+				}),
 				/* @__PURE__ */ jsxs("strong", {
 					className: "font-medium",
 					children: [
@@ -663,6 +717,19 @@ function Passport({ p }) {
 					children: unmeasured === 0 ? "Every operation on this subject carries evidence." : "The rest are stated as unmeasured, with the reason, rather than scored as zero."
 				})
 			]
+		}),
+		effectiveStatus(p.status, p.valid_until) === "stale" && /* @__PURE__ */ jsx("div", {
+			className: "mt-3",
+			children: /* @__PURE__ */ jsxs(Strip, {
+				tone: "warn",
+				children: [
+					/* @__PURE__ */ jsx("strong", { children: "This passport has lapsed." }),
+					" Its evidence window closed on",
+					" ",
+					p.valid_until.slice(0, 10),
+					" and it has not been renewed. Nothing below is retracted — it was true when measured — but a verdict has a shelf life, and a reader deciding today should know they are reading a record rather than a current statement."
+				]
+			})
 		}),
 		affiliated && /* @__PURE__ */ jsx("div", {
 			className: "mt-3",

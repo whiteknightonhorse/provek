@@ -20,6 +20,9 @@ import subprocess
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+PARTS_IN_A_HEADER_LINE = 2
+"""Structural, not policy: a header line splits into a key and a value."""
+
 CYRILLIC = re.compile(r"[\u0400-\u04FF\u0500-\u052F]")
 """The range is written as escapes, not as literal characters.
 
@@ -80,7 +83,7 @@ def check_commit_messages(limit: int = 30) -> list[str]:
     seen_baseline = False
     for chunk in r.stdout.split("\n\n"):
         parts = chunk.split("\x00")
-        if len(parts) < 2:
+        if len(parts) < PARTS_IN_A_HEADER_LINE:
             continue
         if parts[0].startswith(GRANDFATHERED_BEFORE):
             seen_baseline = True

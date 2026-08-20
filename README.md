@@ -4,7 +4,7 @@
 company actually runs without a human in the loop — and publishes the evidence behind every number,
 including what could not be measured.
 
-🔗 **[provek.dev](https://provek.dev)** · [Public registry](https://provek.dev/#/registry) · [Method](https://provek.dev/#/method)
+🔗 **[provek.dev](https://provek.dev)** · [Public registry](https://provek.dev/registry/) · [Method](https://provek.dev/method/)
 
 ---
 
@@ -78,9 +78,10 @@ autonomy *and* an honest "no addressee", and a reader deserves both truths side 
 
 ## Current state, honestly
 
-Eight subjects, all the operator's own systems, all marked affiliated. **Three are verified; five
-are unreadable** — they are private repositories, and a verdict on a source no third party can read
-would not be reproducible, which under this project's own standard disqualifies it.
+Eight subjects, all the operator's own systems, all marked affiliated. **4 are verified; 4 are
+unreadable** — those are private repositories, and a verdict on a source no third party can read
+would not be reproducible, which under this project's own standard disqualifies it. The count moves
+as repositories open or close; it is read from the emitted registry, not asserted here.
 
 The registry is not padded. A registry of trust that invented entries would be doing the exact thing
 it exists to detect, so it stays this size until real subjects grant a mandate.
@@ -92,7 +93,7 @@ checkable by anyone, rather than by whoever holds a token.
 
 ```bash
 git clone https://github.com/whiteknightonhorse/provek && cd provek
-python3 -m pytest -q          # 169 tests
+python3 -m pytest -q          # 185 tests
 python3 scripts/cohort.py     # re-emits public/registry + public/passports
 ```
 
@@ -101,7 +102,7 @@ because a page that could drift from the machine record would stop being worth t
 
 ## How the rules are kept
 
-Every load-bearing rule in `enforced_by.yaml` names the gate and the test that enforce it — 29 of
+Every load-bearing rule in `enforced_by.yaml` names the gate and the test that enforce it — 31 of
 them. Rules that live only in prose are the ones that quietly stop being true, so a rule without a
 machine behind it is treated as unenforced.
 
@@ -123,16 +124,33 @@ src/verify/         the control map and the scorer, with the weak-signal limiter
 src/passport/       passport assembly; verified and self-reported stay separate branches
 src/registry/       status lifecycle and the public registry
 src/transport/      file transport and the ERC-8004 read adapter
-web/                the public surface (Preact + Vite), reading the same artefacts
+web/                the public surface (Preact + Vite), prerendered to static HTML
+web/functions/      the intake endpoint, writing to KV and announcing to the operator
 ```
 
 ## Status
 
-Phase 1, verification-first. Intake is not yet open — see [`docs/WHY_GET_VERIFIED.md`](docs/WHY_GET_VERIFIED.md)
-for what verification offers and what it deliberately does not.
+Phase 1, verification-first. **Intake is open** at
+[provek.dev/apply](https://provek.dev/apply/) — free, public repositories only, and the passport
+says what it could not measure. See [`docs/WHY_GET_VERIFIED.md`](docs/WHY_GET_VERIFIED.md) for what
+verification offers and what it deliberately does not.
 
 ## Licence
 
-Not yet declared, and that is a known gap rather than an oversight: the specification requires
-CC BY 4.0 for the profile text and Apache-2.0 for schemas and test vectors, because openness without
-a licence is legally undefined. Tracked and being fixed.
+Two, because there are two different kinds of thing here.
+
+- **The profile text** — the ladder, the evidence taxonomy, the absence vocabulary, and the
+  methodology prose in `SPEC.md`, `DECISIONS.md`, `docs/` and this file — is
+  **[CC BY 4.0](LICENSE-CC-BY-4.0)**. Quote it, adapt it, build on it; say where it came from.
+- **The schemas, implementation and test vectors** — `src/`, `tests/`, `scripts/`,
+  `requirements/`, `web/` — are **[Apache-2.0](LICENSE-APACHE-2.0)**. Run it, change it, ship it.
+
+A profile that asks others to adopt a vocabulary must let them quote it; an implementation that
+asks to be recomputed must let them run it. Different permissions, so different licences — and
+openness without a licence is legally undefined, which is why the specification names both.
+
+**Not licensed, deliberately:** the accumulated corpus of evidence and the reputation of the
+issuer. They do not travel with the text. Copying the profile gives you the method; it does not
+give you the record of what has been measured.
+
+See [`LICENSE`](LICENSE).

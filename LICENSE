@@ -1,0 +1,29 @@
+Provek is published under two licences, because it contains two different kinds of thing.
+
+  The ABS profile text — the ladder, the evidence taxonomy, the absence vocabulary,
+  the methodology prose in SPEC.md, DECISIONS.md, docs/ and README.md:
+
+      Creative Commons Attribution 4.0 International (CC BY 4.0)
+      SPDX-License-Identifier: CC-BY-4.0
+      https://creativecommons.org/licenses/by/4.0/
+
+  The schemas, the implementation and the test vectors — everything under src/,
+  tests/, scripts/, requirements/ and web/:
+
+      Apache License 2.0
+      SPDX-License-Identifier: Apache-2.0
+      https://www.apache.org/licenses/LICENSE-2.0
+
+Full texts: LICENSE-CC-BY-4.0 and LICENSE-APACHE-2.0 in this directory.
+
+WHY TWO. Specification 4.4-bis, requirement ABI-20-5: openness without a licence is legally
+undefined. A profile that asks other parties to adopt a vocabulary must let them quote and adapt
+it; an implementation that asks to be recomputed must let them run and modify it. Those are
+different permissions, so they are different licences.
+
+WHAT IS NOT LICENSED, and this is deliberate: the accumulated corpus of evidence and the
+reputation of the issuer. They do not travel with the text. Copying the profile gives you the
+method; it does not give you the record of what has been measured, and the record is where the
+moat is (A-8).
+
+Copyright (c) 2026 Provek.

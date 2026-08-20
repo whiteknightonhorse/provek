@@ -17,7 +17,12 @@ from datetime import datetime, timezone
 
 from src.abs_profile.evidence import EvidenceClass
 from src.abs_profile.identity import Binding
-from src.abs_profile.ladder import L
+from src.abs_profile.ladder import (
+    FEW_AUTHORS_FOR_L3,
+    SIGNED_SHARE_FOR_L4,
+    SOLE_AUTHOR,
+    L,
+)
 from src.abs_profile.measured import Measurement
 from src.collector.divergence import Divergence, compare
 from src.collector.repo import collect
@@ -48,9 +53,9 @@ def _observed_level(signed_share: Measurement, authors: Measurement) -> L | None
     """
     if not signed_share.is_measured or not authors.is_measured:
         return None
-    if authors.value == 1 and signed_share.value >= 0.9:
+    if authors.value == SOLE_AUTHOR and signed_share.value >= SIGNED_SHARE_FOR_L4:
         return L.L4
-    if authors.value <= 2:
+    if authors.value <= FEW_AUTHORS_FOR_L3:
         return L.L3
     return L.L2
 

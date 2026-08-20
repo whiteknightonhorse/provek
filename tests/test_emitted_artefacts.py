@@ -2,7 +2,8 @@
 
 Fable's diagnosis in the end-to-end ruling: every armed law held, and R1-R4 all live exactly where
 the machinery stops. Confidence and limiters were computed by a class, armed by a law, and dropped
-at the boundary; the registry's affiliation lived in the interface's copy; the protocol version was
+at the boundary
+the registry's affiliation lived in the interface's copy; the protocol version was
 populated with a differently-named quantity that happened to be a version string. None of it was
 catchable, because nothing inspected the document that ships.
 
@@ -193,7 +194,8 @@ def test_the_private_subject_rule_is_in_the_code_not_only_in_this_test():
 
 
 def test_a_403_is_not_assumed_to_be_our_own_rate_limit():
-    """NEW-4. GitHub returns 403 for blocked repositories too; aborting the cohort on one would
+    """NEW-4. GitHub returns 403 for blocked repositories too
+    aborting the cohort on one would
     announce a fact about us when the truth was one subject refusing."""
     src = (ROOT / "src" / "collector" / "github.py").read_text(encoding="utf-8")
     assert "_rate_limit_exhausted" in src
@@ -206,15 +208,22 @@ def test_these_gates_would_fire():
     p = dict(_passports()[0])
 
     p["status"] = "verified"
-    p["verified"] = dict(p["verified"]); p["verified"]["projection"] = None
+    p["verified"] = dict(p["verified"])
+    p["verified"]["projection"] = None
     assert p["status"] == "verified" and p["verified"]["projection"] is None
 
-    p2 = dict(_passports()[0]); p2.pop("access_channel", None)
+    p2 = dict(_passports()[0])
+
+    p2.pop("access_channel", None)
     assert p2.get("access_channel") is None
 
-    p3 = dict(_passports()[0]); p3["access_channel"] = "granted_token"
+    p3 = dict(_passports()[0])
+
+    p3["access_channel"] = "granted_token"
     assert p3["access_channel"] != "anonymous"
 
-    row = dict(reg["subjects"][0]); row["status"] = "verified"
+    row = dict(reg["subjects"][0])
+
+    row["status"] = "verified"
     assert row["status"] == "verified"
 

@@ -7,7 +7,7 @@
 import { useMemo, useState } from "react";
 import { Page, Strip } from "../components/Chrome";
 import { AbsentMark } from "../components/Measured";
-import { slug } from "../types";
+import { effectiveStatus, slug } from "../types";
 import type { Registry as R } from "../types";
 
 function shortId(id: string) {
@@ -84,7 +84,18 @@ export default function Registry({ reg }: { reg: R }) {
                   </a>
                   <div className="text-xs text-[var(--color-ink-3)] font-mono">{s.subject_id}</div>
                 </td>
-                <td data-label="Status" className="px-4 py-2.5">{s.status}</td>
+                <td data-label="Status" className="px-4 py-2.5">
+                  {(() => {
+                    const eff = effectiveStatus(s.status, s.valid_until);
+                    return eff === "stale" ? (
+                      <span style={{ color: "var(--color-warn)" }} title="The evidence window has closed. The verdict was true when issued and has not been renewed.">
+                        stale
+                      </span>
+                    ) : (
+                      eff
+                    );
+                  })()}
+                </td>
                 <td data-label="Autonomy" className="px-4 py-2.5 tabular-nums">
                   {s.projection === null ? (
                     <AbsentMark reason={s.projection_absent_reason} />
