@@ -1063,6 +1063,31 @@ function Method() {
 			/* @__PURE__ */ jsx("p", {
 				className: "mt-1 text-sm text-[var(--color-ink-2)]",
 				children: "Three absences are distinguished and never collapsed: the check ran and nothing qualified; the check did not run; the source could not be read. A missing measurement is not a violation, and a verifier that suspended a subject for its own blindness would be punishing someone for its own failure."
+			}),
+			/* @__PURE__ */ jsx("h2", {
+				className: "mt-8 text-lg font-semibold",
+				children: "Published in full, including our own workings"
+			}),
+			/* @__PURE__ */ jsxs("p", {
+				className: "mt-1 text-sm text-[var(--color-ink-2)]",
+				children: [
+					"The methodology, the scorer, every gate and every decision are open at",
+					" ",
+					/* @__PURE__ */ jsx("a", {
+						href: "https://github.com/whiteknightonhorse/provek",
+						className: "text-[var(--color-accent)] hover:underline",
+						children: "github.com/whiteknightonhorse/provek"
+					}),
+					", licensed for reuse, so a verdict can be recomputed by anyone from the same inputs. The operating documents that produced this instrument are recorded separately at",
+					" ",
+					/* @__PURE__ */ jsx("a", {
+						href: "https://github.com/whiteknightonhorse/provek-method",
+						className: "text-[var(--color-accent)] hover:underline",
+						children: "provek-method"
+					}),
+					" ",
+					"— provenance, not instruction. Following them has no effect on any verdict: the score is computed from measured operations, and the use of a method is not one of them."
+				]
 			})
 		]
 	}) });

@@ -62,6 +62,35 @@ export default function Method() {
           violation, and a verifier that suspended a subject for its own blindness would be
           punishing someone for its own failure.
         </p>
+
+        {/* THE ONLY REFERENCE to the provenance corpus, and it is deliberately one sentence of
+            prose rather than a nav entry (Fable's architecture ruling, ADR-0009). The
+            specification anticipated the conflict: a party that teaches people to pass its own
+            verification grades work it set itself, and its mitigation is that teaching and
+            verification stay separated as components. A nav item would make the corpus a component
+            OF this surface - integration, not separation - and DESIGN.md rule 4 forbids the
+            retrofit independently. A test over the emitted site asserts this stays the only
+            occurrence. */}
+        <h2 className="mt-8 text-lg font-semibold">Published in full, including our own workings</h2>
+        <p className="mt-1 text-sm text-[var(--color-ink-2)]">
+          The methodology, the scorer, every gate and every decision are open at{" "}
+          <a
+            href="https://github.com/whiteknightonhorse/provek"
+            className="text-[var(--color-accent)] hover:underline"
+          >
+            github.com/whiteknightonhorse/provek
+          </a>
+          , licensed for reuse, so a verdict can be recomputed by anyone from the same inputs. The
+          operating documents that produced this instrument are recorded separately at{" "}
+          <a
+            href="https://github.com/whiteknightonhorse/provek-method"
+            className="text-[var(--color-accent)] hover:underline"
+          >
+            provek-method
+          </a>{" "}
+          &mdash; provenance, not instruction. Following them has no effect on any verdict: the
+          score is computed from measured operations, and the use of a method is not one of them.
+        </p>
       </div>
     </Page>
   );

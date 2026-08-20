@@ -116,4 +116,8 @@ laws:
     text: "gates read the document that ships, not the classes that build it"
     gate: src/passport/passport.py
     test: tests/test_emitted_artefacts.py
+  - id: LAW-TEACHING-IS-SEPARATE
+    text: "teaching and verification are separate components; the surface references the corpus once, as provenance"
+    gate: web/src/pages/Method.tsx
+    test: tests/test_separation_single_reference.py
 
