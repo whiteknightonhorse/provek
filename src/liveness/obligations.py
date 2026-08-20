@@ -14,6 +14,12 @@ finding - otherwise silence is indistinguishable from health.
 THE WATCHER CHAIN IS FINITE and its terminus is named (ABI-16-7): components -> liveness ->
 external heartbeat. It does not continue past that, DELIBERATELY: an endless chain of watchers is
 not reliability, it is an unanswered question.
+
+THIS MODULE HELD NONE OF IT IN PRACTICE UNTIL 2026-08-20. Every `Registry` in the tree was built
+inside a test and filled by that same test, so the layer that exists to make silence observable had
+no obligation of its own and produced nothing anybody read - the fifth state above, turned on the
+component that defines it. `src/liveness/commitments.py` is where the incubator's own obligations
+are declared; this file stays a mechanism and knows nothing about which components exist.
 """
 from __future__ import annotations
 
@@ -27,10 +33,44 @@ class Interval(str, Enum):
     EVERY_TASK = "every_task"
     EVERY_DEPLOY = "every_deploy"
     DAILY = "daily"
+    BEFORE_REISSUE = "before_reissue"
+    """A verdict lapses by time with no event (ABI-15-5), so the obligation to re-measure has a
+    deadline set by the verdict rather than by a habit. Its max age is derived below."""
+
+
+RENEWAL_MARGIN = timedelta(days=7)
+"""How much still-valid time a re-issue finding must leave the operator.
+
+ORIGIN: the remedy's dependency chain, not a measurement of it. The last step of re-issuing is a
+MANUAL `wrangler pages deploy` that only the operator can perform (L-9, D-19), so the margin has to
+be long enough for the operator to be away, come back and still act before the rows lapse. Seven
+days is that estimate and it is stated as one. What would move it is a reading of how long the
+operator is actually absent between deploys, which nothing in this project records yet. The steps
+are enumerated once, in `docs/LIVENESS_OPERATIONS.md`, and not counted again here: a procedure
+described in two places drifts in one of them (L-2).
+
+IT ALSO ASSUMES THE FINDING IS SEEN ON THE DAY IT FIRES, which is a second estimate hiding inside
+the first. The sweep runs at the door and on a daily schedule in CI; between the run that goes red
+and a person reading it there is a lag this project does not measure either.
+
+A margin of zero is the failure this constant exists to prevent: a finding that arrives on the day
+of the lapse reports the loss instead of preventing it."""
+
+PASSPORT_VALIDITY = timedelta(days=30)
+"""The window `src/passport/passport.py` stamps into `valid_until` (`validity_days: int = 30`).
+
+This is a SECOND COPY of that number, which is the shape L-2 warns about, and it is not imported:
+liveness reading the constant would only establish that the two agree by construction. What is
+worth knowing is whether the deadline computed here lands before the lapse the SHIPPED rows
+actually carry, and `commitments.py` measures exactly that - so a drift becomes a named finding
+rather than a silently wrong deadline."""
 
 
 MAX_AGE = {Interval.DAILY: timedelta(days=1), Interval.EVERY_RUN: timedelta(hours=6),
-           Interval.EVERY_TASK: timedelta(days=3), Interval.EVERY_DEPLOY: timedelta(days=14)}
+           Interval.EVERY_TASK: timedelta(days=3), Interval.EVERY_DEPLOY: timedelta(days=14),
+           Interval.BEFORE_REISSUE: PASSPORT_VALIDITY - RENEWAL_MARGIN}
+"""Written as the subtraction rather than as `timedelta(days=23)`: the derivation is the rule, and
+a bare 23 would survive a change to either constant it came from."""
 
 
 class SleepState(str, Enum):
@@ -49,19 +89,52 @@ class Obligation:
     interval: Interval
     last_seen: datetime | None = None
     consumer: str | None = None        # who READS the result; None = the fifth state
+    evidence_unreadable: bool = False
+    """THE THIRD STATE OF `last_seen`, and it was missing until 2026-08-20.
 
-    def finding(self, now: datetime) -> str | None:
-        """A named finding, or None. `None` means "checked and clean", not "did not look"."""
-        if self.last_seen is None:
-            return (f"SILENCE: {self.component} has never presented evidence of participation "
-                    f"({self.expected_evidence}). This is a FINDING, not missing data")
-        if now - self.last_seen > MAX_AGE[self.interval]:
-            return (f"SILENCE: {self.component} has been silent longer than its "
-                    f"{self.interval.value} interval (last seen {self.last_seen.isoformat()})")
+    `None` meant "this component has never presented evidence" AND "we could not look" - one value
+    for two states of the world, invariant 1 inside the dataclass built to enforce it. The first
+    caller to read evidence off a file (`commitments.py`) hit it immediately: an absent registry
+    produced the message "has never presented evidence of participation ... This is a FINDING, not
+    missing data", which is exactly what an unreadable instrument may not conclude. Found by Fable.
+
+    IT MEANS "`last_seen` COULD NOT BE READ", not "something about the source was wrong". A caller
+    whose file parsed far enough to yield a timestamp must leave this False even if the rest of the
+    document was unusable - otherwise a measurement that WAS taken is thrown away and the sweep
+    reports UNKNOWN over a quantity it holds. That is the second thing Fable caught here.
+    """
+
+    def findings(self, now: datetime) -> list[str]:
+        """EVERY named finding that applies. An empty list means "checked and clean", not "did not
+        look".
+
+        THIS RETURNED ONE STRING UNTIL 2026-08-20, AND THAT WAS THE BUG UNDERNEATH TWO OTHERS.
+        Three of these conditions can be true at once, and a single return value made them race:
+        whichever was tested first silenced the rest. The race was found twice in one day, once in
+        each direction - first `SILENCE` hid a missing consumer, then reordering made a missing
+        consumer hide a four-hundred-day outage, which is the worse trade, because a string that
+        was never filled in would have silenced a measured fact. Neither ordering is right. The
+        argument for testing the declaration first - that it is knowable with no evidence read - is
+        an argument for REPORTING BOTH, and the second draft of this method mistook it for an
+        argument about precedence. Both found by Fable, one round apart.
+
+        The order below is now only the order they are printed in.
+        """
+        out: list[str] = []
         if self.consumer is None:
-            return (f"NO CONSUMER: {self.component} produces a result nobody reads - "
-                    f"the fifth state of sleeping code")
-        return None
+            out.append(f"NO CONSUMER: {self.component} produces a result nobody reads - "
+                       f"the fifth state of sleeping code")
+        if self.evidence_unreadable:
+            out.append(f"NOT ASSESSED: {self.component}'s evidence ({self.expected_evidence}) "
+                       f"could not be read, so whether it met its {self.interval.value} interval "
+                       f"IS UNKNOWN - which is neither silence nor health")
+        elif self.last_seen is None:
+            out.append(f"SILENCE: {self.component} has never presented evidence of participation "
+                       f"({self.expected_evidence}). This is a FINDING, not missing data")
+        elif now - self.last_seen > MAX_AGE[self.interval]:
+            out.append(f"SILENCE: {self.component} has been silent longer than its "
+                       f"{self.interval.value} interval (last seen {self.last_seen.isoformat()})")
+        return out
 
 
 class Registry:
@@ -77,7 +150,7 @@ class Registry:
         if not self._items:
             return ["EMPTY OBLIGATION REGISTRY: there was nothing to check - which is not the "
                     "same thing as everything being clean"]
-        return [f for f in (o.finding(now) for o in self._items.values()) if f]
+        return [f for o in self._items.values() for f in o.findings(now)]
 
     def watcher_chain(self) -> list[str]:
         """The chain is named explicitly and it ENDS. The terminus is justified in the docstring."""

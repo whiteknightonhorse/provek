@@ -19,6 +19,25 @@ on:
   pull_request:
   workflow_dispatch:
 
+  # A GATE THAT RUNS ONLY WHEN SOMEBODY PUSHES CANNOT SEE ABANDONMENT.
+  #
+  # T-F3 added an obligation that goes red when nobody re-runs the cohort inside its interval, and
+  # said so in four places - while every trigger above requires a person to act first. In the one
+  # state the obligation exists for, nobody acts, so nothing ran, nothing went red, and the eight
+  # published rows would have lapsed in silence. The tripwire needed a clock. Found by Fable, in
+  # the change that claimed the property.
+  #
+  # WHAT THIS DOES NOT PROVE, AND WHERE IT STOPS WORKING. Whether GitHub dispatches a scheduled run
+  # is not observable from the audit host, and scheduled workflows are queued rather than guaranteed
+  # at the minute named. And GitHub disables a public repository's schedules automatically after
+  # sixty days with no repository activity - so the clock eventually switches itself off in the same
+  # state it was added for, and says nothing when it does. The bound is worked out once, in
+  # docs/LIVENESS_OPERATIONS.md, and not restated here (L-2): the short of it is that the re-issue
+  # finding fires daily from day 23 and the rows lapse at day 30, so the obligation's whole
+  # lifecycle happens well inside the sixty.
+  schedule:
+    - cron: "17 7 * * *"
+
 jobs:
   ratchets:
     name: ratchets (scope, laws, language)

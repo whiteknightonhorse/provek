@@ -1,7 +1,7 @@
 """T-2.10 - silence as a finding, the fifth state, a finite watcher chain."""
 from datetime import datetime, timedelta, timezone
 
-from src.liveness.obligations import Interval, Obligation, Registry, SleepState
+from src.liveness.obligations import MAX_AGE, Interval, Obligation, Registry, SleepState
 
 NOW = datetime(2026, 8, 19, 12, tzinfo=timezone.utc)
 
@@ -48,3 +48,10 @@ def test_watcher_chain_is_finite_and_names_its_terminus():
 
 def test_five_sleep_states_are_distinct():
     assert len({s.value for s in SleepState}) == 5
+
+
+def test_every_interval_carries_a_bound():
+    """An interval with no MAX_AGE entry raises KeyError inside `finding()`, and a sweep that dies
+    part way through has reported nothing about the obligations it had not reached yet - silence
+    produced by the instrument built to end silence."""
+    assert set(MAX_AGE) == set(Interval)

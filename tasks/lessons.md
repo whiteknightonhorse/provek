@@ -285,3 +285,84 @@ the journal.** A step's promise is worth what its predecessors' success rate is.
 Anchor: no code gate. `notes_cron.py` is outside this repository (D-19) and reordering its steps is
 a change that cannot be exercised while the capture is red, so what was corrected is the sentence
 in D-19, not the code. Recorded in L-8's form rather than dressed as an enforced rule.
+
+## L-18 A test that builds its own subject can never find the subject missing
+
+`src/liveness/obligations.py` is the module that defines silence as a finding, names
+`produces_result_nobody_reads` as the fifth state of sleeping code, and reports an empty registry as
+suspicious rather than clean. It shipped with T-2.10, passed seven tests, and carried two laws in
+`enforced_by.yaml`. For its entire life nothing declared an obligation into it: every `Registry` in
+the repository was constructed inside a test and filled by the same test, three lines later. The
+layer whose subject is code that runs and is never read was code that ran and was never read, and
+`PRODUCT.md` listed it under *works today*.
+
+Seven passing tests could not see it, and the reason is the interesting part. Each one begins
+`r = Registry()` and then declares into it, so the empty case — the case that was actually true of
+the whole project — is a state those tests construct their way out of before asserting anything.
+`test_empty_registry_is_SUSPICIOUS_not_clean` even asserts the right thing about it, on a registry
+that exists for one line inside the test. The assertion is correct and the world it describes is
+not the world the code was in.
+
+This is L-16 one turn further round. There the suites SKIPPED in the state that shipped; here they
+run, pass, and are about a subject they manufactured. A fixture is a claim about the input, and a
+suite made entirely of fixtures has no way to notice that no real caller supplies one.
+
+The general form: **for any component, ask who constructs it in production. If the honest answer is
+"the tests do", the green suite is measuring a subject that exists only during the measurement.**
+That question is worth asking of the whole `src/` tree; it was asked of the liveness layer because
+a task went looking for the reissue commitment and found the registry empty.
+
+Anchor: no code gate for the general rule — a checker cannot tell a production caller from a test
+one without knowing what production means for each module. Naming a `LAW-*` for it would be the
+fake anchor L-8 refuses, and L-16's first draft committed exactly that mistake in exactly this
+place. The INSTANCE is armed and is the model to copy: `LAW-REISSUE-OR-FINDING`
+(`src/liveness/commitments.py`, `tests/test_reissue_obligation.py`) declares the incubator's own
+obligation outside any test and sweeps it against the real clock, so the gate goes red once the
+cohort has been silent past its interval. The red run is
+`evidence/RED-010-cohort-silence-is-not-a-finding.txt`.
+
+## L-19 A gate that runs only when somebody acts cannot observe inaction
+
+The gate above was written to fire when nobody re-runs the cohort, and four documents said it fires
+on its own. Every trigger that could have run it — `push`, `pull_request`, `workflow_dispatch` in
+`gates.yml`, and `scripts/push.sh` at the door — begins with a person doing something. So in the
+single state the obligation exists for, where nobody does anything, the suite would never have been
+executed, nothing would have gone red, and the eight published rows would have lapsed on 2026-09-19
+in exactly the silence the change was built to end. The test was correct, armed, unskippable, and
+unreached.
+
+Nothing about it looked wrong. The assertion is real, its red run is in `evidence/`, and running the
+suite by hand demonstrates the failure perfectly — which is the trap, because the demonstration is
+performed by the person whose absence is the thing being detected. A tripwire that only trips when
+you walk into it measures your presence.
+
+It is L-17's sibling. There the promise belonged to a step the run never reached; here it belongs to
+a run that never happens. Both are invisible in the logs, and for the same reason: what is missing
+produces no line.
+
+The general form: **for any check about something NOT happening, name the thing that will execute
+the check in the world where that something does not happen.** If the answer requires a person, the
+check measures the person.
+
+Found by Fable, refuting the change that claimed the property.
+
+There is a tail to it. The clock chosen was GitHub's `schedule:`, and GitHub disables a public
+repository's schedules after sixty days with no repository activity — so the fix has the same shape
+as the defect one layer out: it works until the inaction is total, and then it stops, quietly. Here
+it is harmless, and the arithmetic is the point rather than the worry: the finding fires daily from
+day 23 and the rows lapse at day 30, so the whole lifecycle runs inside the sixty. The first draft
+of this paragraph guessed instead — "the first alarm survives, everything after it does not" — and
+was wrong in the safe direction, which is still a stated limit that is not the measured one, written
+into the lesson about clocks. The bound is computed once, in `docs/LIVENESS_OPERATIONS.md`.
+
+Anchor: `LAW-REISSUE-OR-FINDING` covers the instance — `.github/workflows/gates.yml` carries a daily
+`schedule:`, and `test_the_gate_has_a_clock_and_not_only_a_door` fails the build if it is removed.
+That test earned its own instrument control the hard way: the first version asked whether the
+strings `schedule:` and `cron:` appeared anywhere in the file, which a commented-out trigger
+satisfies exactly as well as a live one — `present` reported as `armed`, L-16 committed inside the
+gate written to close this lesson. `test_the_clock_check_is_able_to_fail` now holds it.
+
+The general rule has no gate: a checker cannot tell which of a repository's tests are about absence.
+The limits on the instance are recorded once, in `docs/LIVENESS_OPERATIONS.md`, rather than listed
+again here — including the one in L-10's form, that the trigger being in the file is checkable from
+this host and its dispatch by GitHub is not.

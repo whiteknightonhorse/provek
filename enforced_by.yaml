@@ -60,6 +60,17 @@ laws:
     text: "the watcher chain is finite and its terminus is named"
     gate: src/liveness/obligations.py
     test: tests/test_liveness.py
+  - id: LAW-REISSUE-OR-FINDING
+    text: "the published rows are re-issued before they lapse, and a missed interval is a named finding rather than a stale registry nobody noticed"
+    # The two laws above are held by a MECHANISM that, until T-F3, no component had ever loaded an
+    # obligation into. This one is held by the declaration: the gate declares the incubator's own
+    # obligation and the test sweeps it against the clock, so it goes red with no commit and no
+    # event once the cohort has been silent past the interval. There is no state in which it skips.
+    # What RUNS it in that state is the daily `schedule:` in .github/workflows/gates.yml - every
+    # other trigger needs a person to act first, which is the one thing an obligation about
+    # abandonment may not assume.
+    gate: src/liveness/commitments.py
+    test: tests/test_reissue_obligation.py
   - id: LAW-NO-PROBE-WITHOUT-MANDATE
     text: "active probing without a valid mandate is forbidden; the refusal names its reason"
     gate: src/mandate/mandate.py

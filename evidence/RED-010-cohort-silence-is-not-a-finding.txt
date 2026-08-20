@@ -1,0 +1,43 @@
+# RED-010 - the cohort went silent and the registry said nothing
+#
+# Produced deliberately on 2026-08-20 to establish that
+# tests/test_reissue_obligation.py CAN fail (invariant 5), and that what it produces on
+# failure is the NAMED finding with its remedy rather than a bare assertion.
+#
+# The state reproduced is the one T-F3 exists for, and the one that arrives on its own if
+# nothing is done: nobody re-runs scripts/cohort.py, the interval elapses, and the
+# published rows go on reading `verified` until they lapse. Both registry copies - the one
+# cohort.py emits and the one that enters the build - had every timestamp moved back 31
+# days, so the tree is a coherent snapshot of 2026-09-20 with no re-issue in it. Both files
+# were restored from git immediately afterwards and the tree was checked clean.
+#
+# Note what does NOT appear below: every other assertion in the module passes. The suite is
+# not conditioned on its own subject and does not skip when the obligation is unmet (L-16)
+# - the one assertion about the world is the one that goes red. Under an equal shift of
+# both files it is also the only one that could have gone red, because an equal shift
+# leaves the published validity window at thirty days and the two copies in step.
+# Everything below this line is verbatim tool output.
+#
+# $ python3 -m pytest tests/test_reissue_obligation.py -q
+......................F.                                                 [100%]
+=================================== FAILURES ===================================
+___________ test_the_incubator_is_meeting_its_own_reissue_obligation ___________
+
+    def test_the_incubator_is_meeting_its_own_reissue_obligation():
+        """The one assertion here that is about the world rather than about the code.
+    
+        It reads the tree as it stands, at the real clock. When it fails, nothing is broken - the
+        obligation is simply unmet, and the finding is the point rather than the accident.
+        """
+        out = C.sweep(datetime.now(timezone.utc))
+>       assert out == [], "\n".join(out)
+E       AssertionError: SILENCE: cohort_reissue has been silent longer than its before_reissue interval (last seen 2026-07-20T08:30:14.931533+00:00). Remedy: `python3 scripts/cohort.py`, copy public/registry/ and public/passports/ into web/public/data/, `git commit -m ...` (push.sh refuses a dirty tree), `./scripts/push.sh`, then ask the operator to deploy - the full form, runnable unattended, is in docs/LIVENESS_OPERATIONS.md.
+E       assert ['SILENCE: co...ERATIONS.md.'] == []
+E         
+E         Left contains one more item: 'SILENCE: cohort_reissue has been silent longer than its before_reissue interval (last seen 2026-07-20T08:30:14.931533...pts/push.sh`, then ask the operator to deploy - the full form, runnable unattended, is in docs/LIVENESS_OPERATIONS.md.'
+E         Use -v to get more diff
+
+tests/test_reissue_obligation.py:406: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_reissue_obligation.py::test_the_incubator_is_meeting_its_own_reissue_obligation
+1 failed, 23 passed in 0.05s

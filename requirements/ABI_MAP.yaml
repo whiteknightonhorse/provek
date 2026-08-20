@@ -36,6 +36,9 @@ src/transport/file_transport.py:  [ABI-5-3]
 # T-2.10 liveness / T-2.12 mandate
 src/liveness/__init__.py:         [ABI-16-1]
 src/liveness/obligations.py:      [ABI-16-2, ABI-16-3, ABI-16-4, ABI-16-5, ABI-16-6, ABI-16-7, ABI-16-10]
+# T-F3: the mechanism above, actually loaded with an obligation. ABI-15-5 is here because the
+# deadline it watches is the passport's own lapse rather than a cadence somebody preferred.
+src/liveness/commitments.py:      [ABI-16-3, ABI-16-4, ABI-15-5]
 src/mandate/__init__.py:          [ABI-6-4]
 src/mandate/mandate.py:           [ABI-6-4, ABI-22-4]
 

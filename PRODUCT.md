@@ -66,6 +66,12 @@ GitHub API, human-control map with mandatory coverage, scoring with three weak-s
 passport issuance, public registry, status lifecycle, liveness, mandate, two transports, an
 ERC-8004 read adapter, and self-application over eight subjects.
 
+The word **liveness** in that list was doing more work than the artefact until 2026-08-20: the
+module existed, passed its tests and carried two laws, and no component had ever declared an
+obligation into it. It now holds one — the commitment to re-issue the eight published rows before
+they lapse — and a gate that goes red when the interval passes unmet (`LAW-REISSUE-OR-FINDING`,
+`docs/LIVENESS_OPERATIONS.md`). One obligation is a small claim, which is why it is stated as one.
+
 **Does not work yet, and the surface must not imply otherwise:** no active probing (the mandate
 object and its fail-closed behaviour exist; the prober does not), no runtime comparison, no runtime
 evidence collection. At least two of three operations on every current subject are `not_measured` —
