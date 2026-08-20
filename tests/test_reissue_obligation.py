@@ -31,6 +31,7 @@ from src.liveness.obligations import (
     Obligation,
     Registry,
 )
+from src.transport.erc8004_deployment import RecordState, TargetState
 
 ROOT = Path(__file__).resolve().parents[1]
 NOW = datetime(2026, 8, 20, 12, tzinfo=timezone.utc)
@@ -120,6 +121,18 @@ def _run(*, ran_days_ago: float, lapses_in_days: float = 30.0, rows: int = 8) ->
                        rows=rows)
 
 
+def _watch(*, at: datetime | None = None) -> C.TargetWatch:
+    """A clean second obligation, so the assertions in THIS file stay about the cohort.
+
+    Every one of them reads `findings()`, which sweeps both obligations into one list; a watch left
+    to default would drop another component's findings into assertions that mean to say something
+    about re-issuing. The validation-target obligation has its own suite
+    (`tests/test_validation_target_obligation.py`), and this constructor is deliberately the boring
+    case there is nothing to say about.
+    """
+    return C.TargetWatch(RecordState.READ, checked_at=at or NOW, target=TargetState.NO_TARGET)
+
+
 # --- the obligation exists at all -------------------------------------------------------------
 
 def test_the_registry_is_not_empty_which_is_the_state_this_task_found():
@@ -129,11 +142,11 @@ def test_the_registry_is_not_empty_which_is_the_state_this_task_found():
     assertion is what the first one would have read like for the whole of T-2.10's life.
     """
     assert "EMPTY OBLIGATION REGISTRY" in Registry().sweep(NOW)[0]
-    assert C.declare(_run(ran_days_ago=0)).sweep(NOW) == []
+    assert C.declare(_run(ran_days_ago=0), _watch()).sweep(NOW) == []
 
 
 def test_the_obligation_names_a_consumer_so_it_is_not_the_fifth_sleep_state():
-    reg = C.declare(_run(ran_days_ago=0))
+    reg = C.declare(_run(ran_days_ago=0), _watch())
     assert "NO CONSUMER" not in " ".join(reg.sweep(NOW))
     assert C.CONSUMER.startswith("web/src/App.tsx")
 
@@ -142,7 +155,7 @@ def test_the_obligation_names_a_consumer_so_it_is_not_the_fifth_sleep_state():
 
 def test_a_missed_interval_is_a_named_finding_with_a_remedy():
     late = MAX_AGE[Interval.BEFORE_REISSUE].days + 1
-    out = C.findings(_run(ran_days_ago=late, lapses_in_days=30 + late), NOW)
+    out = C.findings(_run(ran_days_ago=late, lapses_in_days=30 + late), NOW, _watch())
     assert out, "the interval elapsed and nothing was reported"
     joined = " ".join(out)
     assert "SILENCE" in joined and C.COMPONENT in joined
@@ -150,7 +163,7 @@ def test_a_missed_interval_is_a_named_finding_with_a_remedy():
 
 
 def test_a_run_inside_the_interval_reports_nothing():
-    assert C.findings(_run(ran_days_ago=MAX_AGE[Interval.BEFORE_REISSUE].days - 1), NOW) == []
+    assert C.findings(_run(ran_days_ago=MAX_AGE[Interval.BEFORE_REISSUE].days - 1), NOW, _watch()) == []
 
 
 def test_the_interval_is_derived_from_the_two_constants_and_not_a_literal():
@@ -167,7 +180,7 @@ def test_the_interval_is_derived_from_the_two_constants_and_not_a_literal():
 
 def test_a_shortened_validity_window_is_caught_rather_than_silently_missed():
     """`PASSPORT_VALIDITY` is a copy of the passport's number; this is what keeps the copy honest."""
-    out = C.findings(_run(ran_days_ago=0, lapses_in_days=10), NOW)
+    out = C.findings(_run(ran_days_ago=0, lapses_in_days=10), NOW, _watch())
     assert any("DEADLINE TOO LATE TO ACT ON" in f for f in out), out
 
 
@@ -184,7 +197,7 @@ def test_performing_the_obligation_does_not_accuse_the_operator_of_a_two_second_
         window = PASSPORT_VALIDITY + skew
         run = C.CohortRun(C.ReadState.READ, generated_at=NOW,
                           earliest_valid_until=NOW + window, rows=8)
-        assert C.findings(run, NOW) == [], f"false red at a skew of {skew}"
+        assert C.findings(run, NOW, _watch()) == [], f"false red at a skew of {skew}"
 
 
 def test_the_tolerance_is_slack_and_not_a_hole():
@@ -199,7 +212,7 @@ def test_the_tolerance_is_slack_and_not_a_hole():
     one_day_shorter = C.CohortRun(C.ReadState.READ, generated_at=NOW,
                                   earliest_valid_until=NOW + PASSPORT_VALIDITY - timedelta(days=1),
                                   rows=8)
-    assert any("DEADLINE TOO LATE TO ACT ON" in f for f in C.findings(one_day_shorter, NOW))
+    assert any("DEADLINE TOO LATE TO ACT ON" in f for f in C.findings(one_day_shorter, NOW, _watch()))
 
 
 # --- absence keeps its own name (invariant 1) --------------------------------------------------
@@ -234,7 +247,7 @@ def test_a_timestamp_that_was_read_is_not_thrown_away_because_the_rest_was_not()
     dropped the remedy too, because the remedy rides on SILENCE. Found by Fable."""
     stale = C.CohortRun(C.ReadState.NO_SUBJECTS_FIELD,
                         generated_at=NOW - timedelta(days=100))
-    out = C.findings(stale, NOW)
+    out = C.findings(stale, NOW, _watch())
     assert any(f.startswith("PARTIALLY READ") for f in out), out
     assert any("SILENCE" in f for f in out), out
     assert not any("NOT ASSESSED" in f for f in out), out
@@ -243,7 +256,7 @@ def test_a_timestamp_that_was_read_is_not_thrown_away_because_the_rest_was_not()
 
 def test_a_shipped_copy_no_cohort_run_produced_is_a_finding():
     """The other direction of the same comparison, and the only forgery this gate can catch."""
-    out = C.findings(_run(ran_days_ago=0), NOW, emitted=_run(ran_days_ago=90))
+    out = C.findings(_run(ran_days_ago=0), NOW, _watch(), emitted=_run(ran_days_ago=90))
     assert any("SHIPPED AHEAD OF THE RUN" in f for f in out), out
 
 
@@ -290,13 +303,13 @@ def test_never_run_and_could_not_look_are_different_findings():
 
 def test_a_read_file_listing_nothing_is_a_measured_zero_not_an_unread_file():
     empty = C.CohortRun(C.ReadState.READ, generated_at=NOW, earliest_valid_until=None, rows=0)
-    out = C.findings(empty, NOW)
+    out = C.findings(empty, NOW, _watch())
     assert any("EMPTY SHIPPED REGISTRY" in f for f in out), out
     assert not any(f.startswith("NOT MEASURED") for f in out), "the file WAS read"
 
 
 def test_rows_without_a_readable_lapse_date_do_not_pass_as_clean():
-    out = C.findings(C.CohortRun(C.ReadState.READ, generated_at=NOW, rows=8), NOW)
+    out = C.findings(C.CohortRun(C.ReadState.READ, generated_at=NOW, rows=8), NOW, _watch())
     assert any(f.startswith("NOT MEASURED") for f in out), out
 
 
@@ -305,13 +318,13 @@ def test_rows_without_a_readable_lapse_date_do_not_pass_as_clean():
 def test_a_cohort_run_that_never_reached_the_build_copy_is_a_finding():
     shipped = _run(ran_days_ago=5)
     emitted = _run(ran_days_ago=0)
-    out = C.findings(shipped, NOW, emitted=emitted)
+    out = C.findings(shipped, NOW, _watch(), emitted=emitted)
     assert any("RUN NOT SHIPPED" in f for f in out), out
 
 
 def test_a_comparison_that_could_not_run_does_not_report_the_same_nothing_as_a_clean_one():
     """Half the input missing produced zero findings, which reads identically to "in step"."""
-    out = C.findings(_run(ran_days_ago=0), NOW, emitted=C.CohortRun(C.ReadState.NOT_JSON))
+    out = C.findings(_run(ran_days_ago=0), NOW, _watch(), emitted=C.CohortRun(C.ReadState.NOT_JSON))
     assert any(f.startswith("NOT COMPARED") for f in out), out
 
 
@@ -426,5 +439,5 @@ def test_the_real_deadline_lands_before_the_real_lapse():
     # from this line, in the same suite, at the door, on the day the operator performs the habit.
     # L-2 in its purest shape, committed inside the fix for a defect raised as L-2's shape. There
     # is now one implementation of the rule and this test calls it. Found by Fable.
-    late = [f for f in C.findings(run, run.generated_at) if "DEADLINE TOO LATE" in f]
+    late = [f for f in C.findings(run, run.generated_at, _watch(at=run.generated_at)) if "DEADLINE TOO LATE" in f]
     assert late == [], late

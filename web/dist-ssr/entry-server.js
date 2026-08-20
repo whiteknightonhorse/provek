@@ -1000,11 +1000,22 @@ function Passport({ p }) {
 //#endregion
 //#region src/pages/Apply.tsx
 /** Intake. What we may touch is stated on the form, not in terms of service - because it is the
-* thing that decides whether we may reach a live system at all. Today that statement is flat:
-* every verification is read-only. The CHOICE between passive and an active probing mandate was
-* removed on 2026-08-20 and is now D-21. This header went on asserting the choice was on the form
-* while the removal lived only in the block below and in `docs/INTAKE_OPERATIONS.md` - L-2, in the
-* file that owns the form.
+* thing that decides whether we may reach a live system at all.
+*
+* THE CHOICE IS BACK, AND IT IS NARROWER THAN THE ONE THAT WAS REMOVED (D-23). It was withdrawn on
+* 2026-08-20 (D-21) because no prober existed, and offering it would have asked a stranger to grant
+* access to a live system that nothing here could use. T-2.12 built the prober, and it does exactly
+* one thing: an unauthenticated access attempt against a path the subject says is closed. So the
+* option names that one thing rather than "active probing" in general - the artefact is one action
+* wide and the offer may not be wider.
+*
+* AND THE OPTION ASKS RATHER THAN GRANTS. `src/mandate/mandate.py` opens "a mandate is a legal
+* object, not a checkbox": it has to state permitted actions, their limits, what must not be
+* affected, liability, an abort condition and how it is revoked. A radio button collects none of
+* that, so what this control records is a REQUEST, and the endpoint stores it beside the policy
+* actually applied, which stays `passive` for every submission (`mandate_requested` /
+* `mandate_applied`). A form that appeared to grant a probing mandate would be the same claim
+* outrunning its artefact one floor down from the one D-21 removed.
 *
 * THIS FORM USED TO DO NOTHING. `onSubmit` was `preventDefault` and nothing else: zero requests,
 * no confirmation, no error. It is the only action the site asks for, reached from the primary
@@ -1023,6 +1034,7 @@ function Apply() {
 	async function submit(e) {
 		e.preventDefault();
 		const form = new FormData(e.currentTarget);
+		const asked = form.get("mandate") === "active" ? "active" : "passive";
 		setSent({ state: "sending" });
 		try {
 			const r = await fetch("/api/apply", {
@@ -1031,7 +1043,7 @@ function Apply() {
 				body: JSON.stringify({
 					repo: form.get("repo"),
 					contact: form.get("contact"),
-					mandate: "passive",
+					mandate: asked,
 					website: form.get("website")
 				})
 			});
@@ -1045,7 +1057,8 @@ function Apply() {
 			}
 			setSent({
 				state: "sent",
-				delivered: Boolean(d.delivered)
+				delivered: Boolean(d.delivered),
+				asked
 			});
 		} catch (err) {
 			setSent({
@@ -1071,6 +1084,10 @@ function Apply() {
 			/* @__PURE__ */ jsx("p", {
 				className: "mt-5 text-sm text-[var(--color-ink-2)]",
 				children: "Verification runs are performed by hand at this stage. If yours runs, the passport appears in the registry and you are contacted at the address you gave. There is no queue position and no promised date, because nothing here has promised one."
+			}),
+			sent.asked === "active" && /* @__PURE__ */ jsxs("p", {
+				className: "mt-4 text-sm text-[var(--color-ink-2)]",
+				children: [/* @__PURE__ */ jsx("strong", { children: "You asked about an active-probing mandate." }), " Nothing is authorised by this form and nothing will be sent at your systems. What happens next is that the operator writes to you with a document to agree: it names the one action, the paths, a ceiling on how often, what must not be affected, who answers for damage, what stops the run, and how you revoke it. No request runs before you have signed it."]
 			}),
 			/* @__PURE__ */ jsxs("p", {
 				className: "mt-4 text-sm",
@@ -1168,15 +1185,56 @@ function Apply() {
 						placeholder: "you@example.com",
 						className: "mt-2 w-full border border-[var(--color-line-2)] bg-[var(--color-paper)] px-3 py-2 text-base"
 					})] }),
-					/* @__PURE__ */ jsxs("div", {
+					/* @__PURE__ */ jsxs("fieldset", {
 						className: "border border-[var(--color-line-2)] bg-[var(--color-paper)] p-3",
-						children: [/* @__PURE__ */ jsxs("p", {
-							className: "text-sm",
-							children: [/* @__PURE__ */ jsx("strong", { children: "Every verification at this stage is read-only." }), " We read what is already public and touch nothing. Fewer operations can be measured that way, and the passport says which ones and why."]
-						}), /* @__PURE__ */ jsx("p", {
-							className: "mt-1.5 text-xs text-[var(--color-ink-3)]",
-							children: "A probing mandate — where you name what we may touch, how often, what must not be affected and how you revoke it — becomes available when the prober exists. It will require a signed document before anything runs. It is not offered here yet because offering it would be a promise nobody could keep today."
-						})]
+						children: [
+							/* @__PURE__ */ jsx("legend", {
+								className: "px-1 text-sm font-medium",
+								children: "What we may touch"
+							}),
+							/* @__PURE__ */ jsxs("p", {
+								className: "text-xs text-[var(--color-ink-3)]",
+								children: [
+									/* @__PURE__ */ jsx("strong", {
+										className: "text-[var(--color-ink-2)]",
+										children: "Without a mandate we do not touch production."
+									}),
+									" ",
+									"Whichever you choose, this form authorises nothing on its own."
+								]
+							}),
+							/* @__PURE__ */ jsxs("label", {
+								className: "mt-3 flex gap-2.5",
+								children: [/* @__PURE__ */ jsx("input", {
+									type: "radio",
+									name: "mandate",
+									value: "passive",
+									defaultChecked: true,
+									className: "mt-1"
+								}), /* @__PURE__ */ jsxs("span", {
+									className: "text-sm",
+									children: [/* @__PURE__ */ jsx("strong", { children: "Read-only verification." }), /* @__PURE__ */ jsx("span", {
+										className: "block text-xs text-[var(--color-ink-3)]",
+										children: "We read what is already public and touch nothing you run. Fewer operations can be measured that way, and the passport says which ones and why."
+									})]
+								})]
+							}),
+							/* @__PURE__ */ jsxs("label", {
+								className: "mt-3 flex gap-2.5",
+								children: [/* @__PURE__ */ jsx("input", {
+									type: "radio",
+									name: "mandate",
+									value: "active",
+									className: "mt-1"
+								}), /* @__PURE__ */ jsxs("span", {
+									className: "text-sm",
+									children: [/* @__PURE__ */ jsx("strong", { children: "Ask about an active-probing mandate as well." }), /* @__PURE__ */ jsx("span", {
+										className: "block text-xs text-[var(--color-ink-3)]",
+										children: "One operation exists today: we attempt to use a path you tell us is closed, and report whether your running system actually refuses it — which your repository cannot show. Ticking this records the question. It is answered with a document naming the action, the paths, a ceiling on how often, what must not be affected, who answers for damage, what stops the run and how you revoke it, and nothing is sent at your systems before you sign it."
+									})]
+								})]
+							})
+						]
 					}),
 					/* @__PURE__ */ jsx("button", {
 						type: "submit",
@@ -1199,7 +1257,7 @@ function Apply() {
 								/* @__PURE__ */ jsxs("li", { children: [/* @__PURE__ */ jsx("strong", {
 									className: "text-[var(--color-ink-2)]",
 									children: "Stored:"
-								}), " the repository URL, your address, the time, and the two-letter country your request arrived from — plus three fields about the record rather than about you: a random identifier, the mandate this form sends (always the passive one), and whether our notification to the operator went through. Nothing further, and this form sets no cookie of its own."] }),
+								}), " the repository URL, your address, the time, and the two-letter country your request arrived from — plus four fields about the record rather than about you: a random identifier, which mandate you asked for, which one we applied (always the read-only one), and whether our notification to the operator went through. Nothing further, and this form sets no cookie of its own."] }),
 								/* @__PURE__ */ jsxs("li", { children: [/* @__PURE__ */ jsx("strong", {
 									className: "text-[var(--color-ink-2)]",
 									children: "Where:"

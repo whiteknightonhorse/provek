@@ -1,0 +1,83 @@
+# PROBE-001 - the first active probe this repository has executed, and it declines to answer
+#
+# Run on 2026-08-20 against https://provek.dev under `self-mandate-0002`, the incubator's own
+# mandate (src/prober/self_probe.py). The subject is the operator's own site: ADR-0006's identity
+# predicate, the same reason the whole published cohort is marked `same_owner`.
+#
+# WHAT THE PROBE ASKS. Whether the running site serves `/.git/config` - the canonical opening move
+# of an intruder, and a request no reading of a published page resembles. The subject's own
+# `web/wrangler.toml` declares `pages_build_output_dir = "dist"`, so the published artefact is the
+# build output and contains no repository metadata.
+#
+# WHAT IT ESTABLISHED, AND WHAT IT REFUSED TO CLAIM. The file is not served. That is NOT the same
+# as a control refusing it, because this origin answers 404 to everything unknown - the negative
+# control below returns the identical status for a path that has never existed. Separating those
+# two is the whole job, so the state is `indistinguishable_from_absent` and the verdict is
+# `not_measured`. A PASS was available by comparing the reading only against the positive control,
+# and it would have credited the subject with a refusal never performed; a host that deployed
+# nothing at all would have earned it too.
+#
+# THREE EARLIER VERSIONS CLAIMED MORE, and every one was refuted by Fable rather than noticed here.
+# The first probed `GET /api/apply` expecting 405 - a method restriction on a PUBLIC intake
+# endpoint, which needs no mandate at all, so the action was named `unauthenticated_access_attempt`
+# while the instance was an ordinary public read (L-13). The second retargeted the path and still
+# published ENFORCED for a catch-all 404 (L-11: "404 is absence"). The third added the negative
+# control and armed it on `absent.answered` alone, so a control answering 403 - this origin's
+# habit - counted as an established catch-all and promoted the reading anyway. They are recorded
+# here because this file is the artefact somebody checks the claim against.
+#
+# Everything below this line is verbatim tool output.
+#
+# $ python3 scripts/probe_self.py
+=== ACTIVE PROBE, live run ===
+subject:        git:whiteknightonhorse/provek
+origin:         https://provek.dev
+claim:          GET /.git/config answers [404]
+claimed by:     web/wrangler.toml, `pages_build_output_dir = "dist"` - the published artefact is the build output, which contains no repository metadata and no unbuilt source
+mandate:        self-mandate-0002
+calls made:     3
+control /: status=200 (http 200)
+absent  /.provek-negative-control-no-such-path: status=404 (http 404)
+subject /.git/config: status=404 (http 404)
+state:          indistinguishable_from_absent
+not measured:   unreadable
+VERDICT:        NOT_MEASURED
+# exit=2  (0 PASS / 1 FAIL / 2 NOT_MEASURED - three states, because a probe that could not
+#           answer is not a probe that found nothing wrong)
+#
+# ============================================================================================
+# THE POSITIVE CONTROL, DEMONSTRATED RATHER THAN ASSERTED. The same origin, the same path, one
+# header different - this is the refusal that would have been published as the subject's
+# compliance if the prober took no control reading (L-11, LAW-PROBE-CONTROL-BEFORE-ABSENCE).
+#
+# $ curl -4 -s -o /dev/null -w '%{http_code}' -A 'Python-urllib/3.11' https://provek.dev/
+403
+#
+# ============================================================================================
+# THE SEPARATE FINDING, MEASURED BY HAND WHILE CHOOSING THE CLAIM ABOVE - not produced by the
+# prober, and attributed that way in D-23 and L-25 for that reason.
+#
+# `GET /api/apply` answers 404 where web/functions/api/apply.js claims 405. The same request to a
+# path that certainly does not exist returns the same static 404 page: the intake Pages Function
+# is not deployed at all, so the form's POST reaches nothing and every submission a visitor makes
+# fails. `~/orchestra/deploy.sh` publishes `web/dist` from the repository root, and the functions
+# live at `web/functions`, which that directory does not contain. Four documents describe the
+# endpoint as working.
+#
+# $ curl -4 -s -o /dev/null -w '%{http_code}' https://provek.dev/api/apply
+404
+# $ curl -4 -s -o /dev/null -w '%{http_code}' https://provek.dev/api/nonexistent-xyz
+404
+#
+# AND THE REASON THAT WAS NAMED RATHER THAN FIXED WAS ITSELF WRONG, WHICH IS THE PART WORTH
+# KEEPING. The first draft of D-23 argued that publishing the function needs the `INTAKE` KV
+# binding and two Telegram secrets to exist on the Pages project, so a deploy would swap a loud
+# 404 for a 503 that looks like progress. That was an assumption dressed as a technical reason.
+# Asked directly, the production project already carries all three - so the only thing missing is
+# the working directory the deploy command runs wrangler from. Binding VALUES are never printed;
+# the names below are the whole reading.
+#
+# $ curl -4 -s -H 'Authorization: Bearer <redacted>' \
+#     https://api.cloudflare.com/client/v4/accounts/<id>/pages/projects/provek   # names only
+production kv_namespaces: ['INTAKE']
+production env_vars:      ['TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID']

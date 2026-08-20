@@ -72,9 +72,27 @@ obligation into it. It now holds one — the commitment to re-issue the eight pu
 they lapse — and a gate that goes red when the interval passes unmet (`LAW-REISSUE-OR-FINDING`,
 `docs/LIVENESS_OPERATIONS.md`). One obligation is a small claim, which is why it is stated as one.
 
-**Does not work yet, and the surface must not imply otherwise:** no active probing (the mandate
-object and its fail-closed behaviour exist; the prober does not), no runtime comparison, no runtime
-evidence collection. At least two of three operations on every current subject are `not_measured` —
+**Active probing exists as of 2026-08-20: built, run once, ONE operation wide.** The prober attempts
+to use a path a subject says is closed and reports whether the running system refuses it. It makes
+no request without a mandate — every denial returns before the transport is touched, and the
+assertion is about the requests that left the process rather than about the check being present. It
+takes two control readings before the subject's — one on a path the subject declares public, so a
+refusal aimed at our client is never published as their compliance, and one on a path that cannot
+exist, so a catch-all answer is never published as a refusal.
+
+**Its one live run returns `not_measured`, and that is the honest result rather than a shortfall.**
+The loaded claim asks whether `/.git/config` is served on the operator's own site. It answers 404 —
+and so does a path that was never there, because this origin's catch-all is 404. That establishes
+the file is *not served*; it does not establish that a control refused it, and those are the two
+states the component exists to separate. A PASS here would need a path whose refusal differs from
+the catch-all, and a static site with no authenticated surface has none. So: built, run, one
+reading, and the reading is that the instrument cannot answer this question on this subject
+(`evidence/PROBE-001.txt`). No third party has been probed. The word is *exists*, not *works*.
+
+**Does not work yet, and the surface must not imply otherwise:** no runtime comparison of a deployed
+artefact against a committed one, no runtime evidence collection feeding the score — the probe
+above produces a verdict of its own and nothing consumes it in a passport yet. At least two of
+three operations on every current subject are `not_measured` —
 on the four unreadable subjects it is all three — and the passport says which of the three absences
 applies rather than scoring them zero. (This read "two of three on every current subject" until
 2026-08-20; it holds for four of the eight. Counted from the emitted passports, as SPEC §6 is —

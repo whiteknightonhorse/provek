@@ -71,6 +71,21 @@ laws:
     # abandonment may not assume.
     gate: src/liveness/commitments.py
     test: tests/test_reissue_obligation.py
+  - id: LAW-BLOCKED-STEP-HAS-A-SENTINEL
+    text: "a step blocked by something outside this repository is re-checked on an interval, the reading is written down with its date, and the block lifting is a finding rather than a silence"
+    # THE LAW ABOVE WATCHES A LAPSE; THIS ONE WATCHES A BLOCKER, and the difference is what made it
+    # necessary. Nothing expires while T-2.15b has nowhere to publish, so no deadline in the world
+    # would ever have produced a finding - which is exactly how "cannot" turns into "forgot" when
+    # the state changes on somebody else's schedule. The gate is the parser that can refuse to
+    # answer: `no_target` is the reading this watch returns nearly every time, so it is the reading
+    # an instrument that has stopped looking would also return, and the anchors are what stop the
+    # second being printed as the first - they require BOTH deployed registries to be findable, and
+    # what they establish, and the residue they do not, is written out in parse()'s own docstring
+    # rather than left as "the failure becomes a red". The finding fires on the BLOCK LIFTING, not
+    # on its persisting - good news stops the build, because good news is what nobody has planned
+    # to notice.
+    gate: src/transport/erc8004_deployment.py
+    test: tests/test_validation_target_obligation.py
   - id: LAW-NO-PROBE-WITHOUT-MANDATE
     text: "active probing without a valid mandate is forbidden; the refusal names its reason"
     gate: src/mandate/mandate.py
@@ -208,3 +223,22 @@ laws:
     # failure as a fact about the market.
     gate: scripts/measure_qm1_step2.py
     test: tests/test_qm1_step2_absences.py
+
+  - id: LAW-PROBE-NEEDS-MANDATE
+    text: "a denied mandate makes zero requests: the refusal is the result, and the denial reason travels with it"
+    # The assertions are about the TRANSPORT and not about the check. A recording `fetch` must hold
+    # nothing at all after every one of the five denial reasons, so a refactor that moved the check
+    # below the first call would leave it visibly present and the property gone - which is L-21,
+    # where three repairs in a gate were defined, documented and never called.
+    gate: src/prober/prober.py
+    test: tests/test_prober.py
+  - id: LAW-PROBE-CONTROL-BEFORE-ABSENCE
+    text: "a status code is not a measurement until the client has been ruled out as its cause; the control request is a veto, not a warning"
+    # L-11 ARMED, and on the very origin that taught it: provek.dev answers 200 to a browser's user
+    # agent and 403 to Python's default one. Without the control request, that 403 read off a
+    # protected path lands in the set of refusals a subject's claim named and publishes ENFORCED -
+    # the subject credited with a control that was never exercised, because the edge declined to
+    # talk to US. The veto is checked in both directions: it voids a reading that would have
+    # flattered the subject and one that would have accused them.
+    gate: src/prober/prober.py
+    test: tests/test_probe_control.py

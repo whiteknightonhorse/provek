@@ -1,0 +1,32 @@
+{
+  "generated_by": "scripts/watch_validation_registry.py",
+  "blocks": "T-2.15b",
+  "source_repo": "erc-8004/erc-8004-contracts",
+  "source_url": "https://raw.githubusercontent.com/erc-8004/erc-8004-contracts/main/README.md",
+  "last_attempt": {
+    "at": "2026-08-20T22:59:21.686478+00:00",
+    "state": "no_target",
+    "http_status": 200,
+    "reading": "The deployment list was read and recognised, and it carries no Validation Registry address.",
+    "validation_registry_rows": []
+  },
+  "measurement": {
+    "checked_at": "2026-08-20T22:59:21.686478+00:00",
+    "state": "no_target",
+    "http_status": 200,
+    "reading": "The deployment list was read and recognised, and it carries no Validation Registry address.",
+    "validation_registry_addresses": [],
+    "validation_registry_rows": [],
+    "anchors": {
+      "identity_registry_addresses": [
+        "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
+        "0x8004A818BFB912233c491871b3d84c89A494BD9e"
+      ],
+      "reputation_registry_addresses": [
+        "0x8004BAa17C55a88189AE136b182e5fdA19dE9b63",
+        "0x8004B663056A597Dffe9eCcC1965A193B7388713"
+      ]
+    },
+    "document_sha256": "0fa22248188fc2455c0c7c5e31836f09a92cfeb34e27f61e778d1d9e276fb3cb"
+  }
+}

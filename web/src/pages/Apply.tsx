@@ -1,9 +1,20 @@
 /** Intake. What we may touch is stated on the form, not in terms of service - because it is the
- * thing that decides whether we may reach a live system at all. Today that statement is flat:
- * every verification is read-only. The CHOICE between passive and an active probing mandate was
- * removed on 2026-08-20 and is now D-21. This header went on asserting the choice was on the form
- * while the removal lived only in the block below and in `docs/INTAKE_OPERATIONS.md` - L-2, in the
- * file that owns the form.
+ * thing that decides whether we may reach a live system at all.
+ *
+ * THE CHOICE IS BACK, AND IT IS NARROWER THAN THE ONE THAT WAS REMOVED (D-23). It was withdrawn on
+ * 2026-08-20 (D-21) because no prober existed, and offering it would have asked a stranger to grant
+ * access to a live system that nothing here could use. T-2.12 built the prober, and it does exactly
+ * one thing: an unauthenticated access attempt against a path the subject says is closed. So the
+ * option names that one thing rather than "active probing" in general - the artefact is one action
+ * wide and the offer may not be wider.
+ *
+ * AND THE OPTION ASKS RATHER THAN GRANTS. `src/mandate/mandate.py` opens "a mandate is a legal
+ * object, not a checkbox": it has to state permitted actions, their limits, what must not be
+ * affected, liability, an abort condition and how it is revoked. A radio button collects none of
+ * that, so what this control records is a REQUEST, and the endpoint stores it beside the policy
+ * actually applied, which stays `passive` for every submission (`mandate_requested` /
+ * `mandate_applied`). A form that appeared to grant a probing mandate would be the same claim
+ * outrunning its artefact one floor down from the one D-21 removed.
  *
  * THIS FORM USED TO DO NOTHING. `onSubmit` was `preventDefault` and nothing else: zero requests,
  * no confirmation, no error. It is the only action the site asks for, reached from the primary
@@ -23,8 +34,14 @@ import { Page, Strip } from "../components/Chrome";
 type Sent =
   | { state: "idle" }
   | { state: "sending" }
-  | { state: "sent"; delivered: boolean }
+  // `asked` is carried into the confirmation because the two submissions are answered differently
+  // and the difference is the applicant's to know: one waits for a verification, the other waits
+  // for a document to sign. A single confirmation screen for both would let somebody who asked for
+  // probing leave the page believing it had been authorised.
+  | { state: "sent"; delivered: boolean; asked: Mandate }
   | { state: "failed"; why: string };
+
+type Mandate = "passive" | "active";
 
 const ISSUES = "https://github.com/whiteknightonhorse/provek/issues";
 
@@ -34,6 +51,10 @@ export default function Apply() {
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
+    // The radio always has a checked member, so this falls back to the SAFER of the two rather
+    // than to the one that asks for more access - a default reached only when something has
+    // already gone wrong should not be the permissive one.
+    const asked: Mandate = form.get("mandate") === "active" ? "active" : "passive";
     setSent({ state: "sending" });
     try {
       const r = await fetch("/api/apply", {
@@ -42,7 +63,7 @@ export default function Apply() {
         body: JSON.stringify({
           repo: form.get("repo"),
           contact: form.get("contact"),
-          mandate: "passive",
+          mandate: asked,
           website: form.get("website"),
         }),
       });
@@ -51,7 +72,7 @@ export default function Apply() {
         setSent({ state: "failed", why: d.error || `HTTP ${r.status}` });
         return;
       }
-      setSent({ state: "sent", delivered: Boolean(d.delivered) });
+      setSent({ state: "sent", delivered: Boolean(d.delivered), asked });
     } catch (err) {
       setSent({ state: "failed", why: (err as Error).message });
     }
@@ -90,6 +111,18 @@ export default function Apply() {
             appears in the registry and you are contacted at the address you gave. There is no
             queue position and no promised date, because nothing here has promised one.
           </p>
+          {/* SAID ONLY TO THE PERSON WHO ASKED, and said plainly. Recording a request is not
+              granting it, and the gap between the two is where somebody would otherwise assume
+              their production system is now in scope. */}
+          {sent.asked === "active" && (
+            <p className="mt-4 text-sm text-[var(--color-ink-2)]">
+              <strong>You asked about an active-probing mandate.</strong> Nothing is authorised by
+              this form and nothing will be sent at your systems. What happens next is that the
+              operator writes to you with a document to agree: it names the one action, the paths,
+              a ceiling on how often, what must not be affected, who answers for damage, what
+              stops the run, and how you revoke it. No request runs before you have signed it.
+            </p>
+          )}
           <p className="mt-4 text-sm">
             <a href="/registry/" className="text-[var(--color-accent)] hover:underline">
               See the registry
@@ -154,32 +187,55 @@ export default function Apply() {
             />
           </div>
 
-          {/* THE ACTIVE-MANDATE OPTION IS REMOVED, not hidden (Fable's ruling). It promised
-              "we will send it before anything runs" - and nobody would send it, because no prober
-              exists to honour it if it were signed. That is a false claim about US, which is the
-              least excusable kind, and it sat on the one page where a stranger commits to
-              something. It returns with T-2.12 and not before.
+          {/* THE OPTION RETURNS WITH THE PROBER AND IS THE SIZE OF THE PROBER (D-23). It was
+              removed on 2026-08-20 because it promised "we will send it before anything runs" and
+              nobody would have sent it - a false claim about US on the one page where a stranger
+              commits to something.
 
-              This comment used to end "the endpoint already coerces anything that is not 'active'
-              to 'passive', so nothing behind this changed", which read as reassurance and was the
-              opposite. `body.mandate === "active" ? "active" : "passive"` HONOURED "active" - it
-              was only the form that had stopped sending it, so any other client could still grant
-              a probing mandate and have it stored and announced. The endpoint now assigns
-              "passive" unconditionally (D-21). Removing a control removes the offer, not the
-              capability. */}
-          <div className="border border-[var(--color-line-2)] bg-[var(--color-paper)] p-3">
-            <p className="text-sm">
-              <strong>Every verification at this stage is read-only.</strong> We read what is already
-              public and touch nothing. Fewer operations can be measured that way, and the passport
-              says which ones and why.
+              Two things keep the copy below level with the artefact. It names the ONE action the
+              prober implements rather than "active probing", because that is all there is. And it
+              asks rather than grants: the endpoint records `mandate_requested` beside a
+              `mandate_applied` that is `passive` on every submission, so no HTTP request - from
+              this form or from a hand-built client - can authorise anything. That was the hole
+              D-21 actually closed, and it stays closed. */}
+          <fieldset className="border border-[var(--color-line-2)] bg-[var(--color-paper)] p-3">
+            <legend className="px-1 text-sm font-medium">What we may touch</legend>
+            {/* THE SENTENCE THE MANDATE EXISTS TO CARRY, required on the form and not in terms of
+                service by SPEC §3.4. It survived the option's removal in D-21 and it survives the
+                option's return: it is the rule, and the radio below only asks which side of it a
+                given applicant wants to stand on. */}
+            <p className="text-xs text-[var(--color-ink-3)]">
+              <strong className="text-[var(--color-ink-2)]">Without a mandate we do not touch
+              production.</strong>{" "}
+              Whichever you choose, this form authorises nothing on its own.
             </p>
-            <p className="mt-1.5 text-xs text-[var(--color-ink-3)]">
-              A probing mandate &mdash; where you name what we may touch, how often, what must not be
-              affected and how you revoke it &mdash; becomes available when the prober exists. It
-              will require a signed document before anything runs. It is not offered here yet
-              because offering it would be a promise nobody could keep today.
-            </p>
-          </div>
+
+            <label className="mt-3 flex gap-2.5">
+              <input type="radio" name="mandate" value="passive" defaultChecked className="mt-1" />
+              <span className="text-sm">
+                <strong>Read-only verification.</strong>
+                <span className="block text-xs text-[var(--color-ink-3)]">
+                  We read what is already public and touch nothing you run. Fewer operations can be
+                  measured that way, and the passport says which ones and why.
+                </span>
+              </span>
+            </label>
+
+            <label className="mt-3 flex gap-2.5">
+              <input type="radio" name="mandate" value="active" className="mt-1" />
+              <span className="text-sm">
+                <strong>Ask about an active-probing mandate as well.</strong>
+                <span className="block text-xs text-[var(--color-ink-3)]">
+                  One operation exists today: we attempt to use a path you tell us is closed, and
+                  report whether your running system actually refuses it &mdash; which your
+                  repository cannot show. Ticking this records the question. It is answered with a
+                  document naming the action, the paths, a ceiling on how often, what must not be
+                  affected, who answers for damage, what stops the run and how you revoke it, and
+                  nothing is sent at your systems before you sign it.
+                </span>
+              </span>
+            </label>
+          </fieldset>
 
           <button
             type="submit"
@@ -200,19 +256,20 @@ export default function Apply() {
           <div className="border-t border-[var(--color-line)] pt-4">
             <h2 className="text-sm font-medium">What happens to what you type here</h2>
             <ul className="mt-2 space-y-1 text-xs text-[var(--color-ink-3)]">
-              {/* THE THREE HOUSEKEEPING FIELDS ARE NAMED because "nothing else" was not true.
-                  `functions/api/apply.js` writes seven keys, and this list declared four: it also
-                  stores a random record id, the mandate the form sent (always "passive" - the
-                  active one is not offered), and whether our own notification to the operator got
-                  through. None of the three says anything further about the visitor, which is
-                  exactly why nobody noticed - and "nothing else" was still a false statement about
-                  a stored record, on the page of a site whose product is catching those. */}
+              {/* THE HOUSEKEEPING FIELDS ARE NAMED because "nothing else" was not true when they
+                  were not. `functions/api/apply.js` wrote seven keys and this list declared four;
+                  it now writes eight, because the single `mandate` field became the pair
+                  `mandate_requested` / `mandate_applied` (D-23). A list that was corrected once
+                  and then left behind by the next change would be the same false sentence again,
+                  on the page of a site whose product is catching those - so the count is stated
+                  and it is the count in the endpoint. */}
               <li>
                 <strong className="text-[var(--color-ink-2)]">Stored:</strong> the repository URL,
                 your address, the time, and the two-letter country your request arrived from —
-                plus three fields about the record rather than about you: a random identifier, the
-                mandate this form sends (always the passive one), and whether our notification to
-                the operator went through. Nothing further, and this form sets no cookie of its own.
+                plus four fields about the record rather than about you: a random identifier, which
+                mandate you asked for, which one we applied (always the read-only one), and whether
+                our notification to the operator went through. Nothing further, and this form sets
+                no cookie of its own.
               </li>
               <li>
                 <strong className="text-[var(--color-ink-2)]">Where:</strong> Cloudflare key-value

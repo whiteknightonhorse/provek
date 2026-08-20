@@ -1,0 +1,118 @@
+# RED-014 - the intake grants what it was asked, and the applicant's answer disappears
+#
+# Produced deliberately on 2026-08-20 to establish that
+# tests/test_intake_records_the_mandate_request.py CAN fail (invariant 5). The mutation puts back
+# the assignment D-21 removed - `body.mandate === "active" ? "active" : "passive"`, which honours
+# "active" for every client that is not the form - drops the validation of the requested value,
+# collapses the `mandate_requested` / `mandate_applied` pair into one field, and carries that one
+# field into the stored record and the operator notice. All three halves of the rule fail together,
+# which is the point: the offer returning to the form is only safe while the endpoint still refuses
+# to grant anything.
+#
+# PROVENANCE OF THE SHAPE, STATED PRECISELY BECAUSE THE PREVIOUS HEADER GOT IT WRONG. That line was
+# last carried as CODE by 3e97acc; `git show HEAD:web/functions/api/apply.js` holds
+# `const mandate = "passive";` and the ternary only inside a comment quoting it. The earlier header
+# cited HEAD as the source, which is a file that does not contain what it was said to contain. Nor
+# is the mutation a restoration of any historical file: it is applied to the CURRENT endpoint, whose
+# D-23 comment block stays in place - and it has to be, or the control below would be measuring a
+# different file rather than this gate.
+#
+# REGENERATED THREE TIMES, EACH FOR THE SAME DEFECT ONE LAYER SMALLER, EACH FOUND BY FABLE.
+#
+#   1. The transcript was a genuine run of a NARROWER mutation than the header described - the
+#      validation branch was left standing - so two tests died where the described shape kills
+#      three. True output, false sentence above it.
+#   2. The repair added a grep control whose caption read "(zero: the pair and its validation are
+#      gone)" above an output of TWO. Those two matches were the endpoint's explanatory comment,
+#      which quotes both field names on purpose and which the mutation does not touch: the counter
+#      was reading its own explanation. The gate this file guards strips comments before counting,
+#      for exactly that reason.
+#   3. The header then cited the wrong commit, and the control ran a script that existed nowhere -
+#      not in the repository, not in the diff, not in this file - so "comments stripped by the same
+#      rule the gate uses" was unverifiable by the only person it matters to. It is inlined below,
+#      and the run WITHOUT the mutation is shown as its own command rather than asserted in a
+#      caption.
+#
+# Everything below each `$` line is verbatim output of the command shown.
+#
+# The control, before anything is mutated. Comments are stripped first, by the same rule the
+# gate uses, because this file's endpoint quotes both field names in prose.
+# $ python3 - <<'EOF'
+#   import pathlib, re
+#   s = pathlib.Path("web/functions/api/apply.js").read_text(encoding="utf-8")
+#   s = re.sub(r"\{\s*/\*.*?\*/\s*\}", "", s, flags=re.DOTALL)   # JSX comments
+#   s = re.sub(r"/\*.*?\*/", "", s, flags=re.DOTALL)             # block comments
+#   s = re.sub(r"(?<!:)//[^\n]*", "", s)                         # line comments, sparing URLs
+#   print(len(re.findall(r"mandate_requested|mandate_applied|requested\s*!==", s)))
+# EOF
+8
+#
+# Now the mutation.
+# $ grep -n 'MUTATION RED-014' web/functions/api/apply.js
+66:  const mandate = body.mandate === "active" ? "active" : "passive";  // MUTATION RED-014
+#
+# The same control again, unchanged, against the mutated file.
+# $ python3 - <<'EOF'   # the script printed above, re-run
+0
+#
+# $ python3 -m pytest tests/test_intake_records_the_mandate_request.py -q
+..F.FF.                                                                  [100%]
+=================================== FAILURES ===================================
+___ test_the_applied_policy_is_a_constant_and_not_a_choice_the_caller_makes ____
+
+    def test_the_applied_policy_is_a_constant_and_not_a_choice_the_caller_makes() -> None:
+        code = _code(ENDPOINT)
+>       assert re.search(r'\bconst\s+mandate_applied\s*=\s*"passive"\s*;', code), (
+            "web/functions/api/apply.js no longer assigns `mandate_applied` the constant \"passive\". "
+            "The intake may ask about an active probing mandate and may never grant one: a mandate is "
+            "a legal object, not a checkbox, and no HTTP field can carry permitted actions, a rate "
+            "ceiling, a blast radius, liability, an abort condition and a revocation route. The "
+            "version this gate was written against made exactly this mistake with "
+            '`body.mandate === "active" ? "active" : "passive"`, which honours "active" for any client '
+            "that is not the form - see D-21 and D-23."
+        )
+E       AssertionError: web/functions/api/apply.js no longer assigns `mandate_applied` the constant "passive". The intake may ask about an active probing mandate and may never grant one: a mandate is a legal object, not a checkbox, and no HTTP field can carry permitted actions, a rate ceiling, a blast radius, liability, an abort condition and a revocation route. The version this gate was written against made exactly this mistake with `body.mandate === "active" ? "active" : "passive"`, which honours "active" for any client that is not the form - see D-21 and D-23.
+E       assert None
+E        +  where None = <function search at 0x7fbd67f376d0>('\\bconst\\s+mandate_applied\\s*=\\s*"passive"\\s*;', '\n\nconst MAX = 2000;\n\nfunction bad(reason, status = 400) {\n  return Response.json({ ok: false, error: reason }, {...nexport async function onRequestGet() {\n  return bad("This endpoint accepts a submission, not a reading.", 405);\n}\n')
+E        +    where <function search at 0x7fbd67f376d0> = re.search
+
+tests/test_intake_records_the_mandate_request.py:95: AssertionError
+_____________ test_the_request_is_recorded_rather_than_overwritten _____________
+
+    def test_the_request_is_recorded_rather_than_overwritten() -> None:
+        """Invariant 1 at the intake: "asked for active, refused" is not "asked for passive"."""
+        code = _code(ENDPOINT)
+>       assert "mandate_requested" in code, (
+            "web/functions/api/apply.js no longer records `mandate_requested`. Collapsing it into the "
+            "applied policy makes a refused request and a request that never asked read identically in "
+            "KV - the one-value-two-worlds defect, in the field that decides whether a human has to "
+            "write back with a document."
+        )
+E       AssertionError: web/functions/api/apply.js no longer records `mandate_requested`. Collapsing it into the applied policy makes a refused request and a request that never asked read identically in KV - the one-value-two-worlds defect, in the field that decides whether a human has to write back with a document.
+E       assert 'mandate_requested' in '\n\nconst MAX = 2000;\n\nfunction bad(reason, status = 400) {\n  return Response.json({ ok: false, error: reason }, {...nexport async function onRequestGet() {\n  return bad("This endpoint accepts a submission, not a reading.", 405);\n}\n'
+
+tests/test_intake_records_the_mandate_request.py:124: AssertionError
+______ test_an_unrecognised_mandate_value_is_refused_rather_than_guessed _______
+
+    def test_an_unrecognised_mandate_value_is_refused_rather_than_guessed() -> None:
+        """A default would put our assumption in the field that records the applicant's answer.
+    
+        This is the fail-closed direction of the pair: coercing an unknown value to `passive` sounds
+        safe and is the exact move that made the old single field meaningless.
+        """
+        code = _code(ENDPOINT)
+>       assert re.search(r'requested\s*!==\s*"passive"\s*&&\s*requested\s*!==\s*"active"', code), (
+            "web/functions/api/apply.js no longer refuses an unrecognised `mandate` value. Guessing "
+            "one records our assumption as the applicant's request."
+        )
+E       AssertionError: web/functions/api/apply.js no longer refuses an unrecognised `mandate` value. Guessing one records our assumption as the applicant's request.
+E       assert None
+E        +  where None = <function search at 0x7fbd67f376d0>('requested\\s*!==\\s*"passive"\\s*&&\\s*requested\\s*!==\\s*"active"', '\n\nconst MAX = 2000;\n\nfunction bad(reason, status = 400) {\n  return Response.json({ ok: false, error: reason }, {...nexport async function onRequestGet() {\n  return bad("This endpoint accepts a submission, not a reading.", 405);\n}\n')
+E        +    where <function search at 0x7fbd67f376d0> = re.search
+
+tests/test_intake_records_the_mandate_request.py:144: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_records_the_mandate_request.py::test_the_applied_policy_is_a_constant_and_not_a_choice_the_caller_makes
+FAILED tests/test_intake_records_the_mandate_request.py::test_the_request_is_recorded_rather_than_overwritten
+FAILED tests/test_intake_records_the_mandate_request.py::test_an_unrecognised_mandate_value_is_refused_rather_than_guessed
+3 failed, 4 passed in 0.03s

@@ -760,3 +760,205 @@ review: a printed excuse vouching for the step it skips, a reusable-workflow job
 id, a flow-mapping step, and a gate reached by command substitution. Every fix in this commit is
 mutation-tested — the repair is removed and exactly one test must die — because a green suite
 proved nothing about the three that were decorative. That practice is L-21.
+
+## D-23. The prober exists, so the mandate option returns — one action wide, and asking rather than granting
+
+**Decision.** `src/prober/` executes one active operation, `unauthenticated_access_attempt`: it
+attempts to use a path the subject says is closed and reports whether the running system refuses it.
+No request leaves the process without a mandate that permits that action, is in force, is not
+revoked and has budget for the whole probe. The mandate choice returns to `/apply/` in the same
+commit, naming that one action; the endpoint records `mandate_requested` beside a `mandate_applied`
+that is the constant `passive` on every submission.
+
+**The first version of this decision shipped the defect it exists to detect, and Fable refuted it.**
+The loaded claim probed `GET /api/apply` expecting 405. `/api/apply` is a PUBLIC intake endpoint —
+it accepts anonymous submissions, that is its whole purpose — so a 405 on GET is a method
+restriction and not an access control, and the subject had never declared that path closed. The
+action was called `unauthenticated_access_attempt` while the instance actually wired up was an
+ordinary public read needing no mandate at all. That is L-13 in its purest form: the measurement
+fitted to the acceptance criterion, invisible afterwards because everything around it reads as
+principled. The tell had been sitting in `prober.py` since the first draft — `DECLINES_TO_SAY`
+excludes 401 as *the clearest evidence a path is protected*, the whole classifier reasons about 401
+and 403, and the shipped claim named 405, which is neither.
+
+The claim is now `GET /.git/config`, expected to be refused, addressed to `web/wrangler.toml`'s
+`pages_build_output_dir = "dist"` — the subject's own declaration that what is published is the
+build output. Requesting another party's repository metadata is the canonical opening move of an
+intruder and appears in their logs as exactly that, which is what makes it an act needing written
+authorisation even though it fails.
+
+**Retargeting the claim was not enough, and the second refutation is the one that changed the
+design.** On a host whose catch-all is 404, `/.git/config` answering 404 is the same reading as a
+misspelt path answering 404. The first repair still returned ENFORCED for it — crediting the
+subject with a refusal never performed, on evidence a host that deployed nothing at all would
+produce. L-11 says *404 is absence*, and the classifier was turning absence into a positive
+finding, four lines below a constant whose docstring says so.
+
+So the probe now takes a NEGATIVE control as well: a path on the same origin that cannot exist. If
+the probed path answers as that one does, the state is `INDISTINGUISHABLE_FROM_ABSENT` and the
+verdict is `not_measured` — L-10's third sibling, *the instrument cannot see the quantity*, which
+is a complete reading of a question the answer does not settle. The same call catches the soft 404
+that put four ERC-8004 identities in front of a human as businesses in Q-M1 (L-23): where unknown
+paths answer 2xx, a 2xx on the probed path is not evidence of exposure either, and `NOT_ENFORCED`
+must not be published. A probe costs three calls now, and the mandate is asked about all three.
+
+**And the repair for that refutation carried the same defect one request further left, which the
+third round found.** The new veto asked whether the negative control *answered* — so a control
+coming back 403 counted as an answer, its status differed from the subject's 404, and the reading
+was promoted to `ENFORCED`. But 403, 429 and 5xx are the server declining to say; a decline
+establishes no catch-all at all. On an origin that refuses clients at its own discretion — which
+this subject demonstrably is, and which is the fact the whole positive control exists for — one
+unlucky call out of three would have credited it with a control never exercised. L-11 was armed on
+one control and left unarmed on the other, in the commit that added the other. The condition is now
+a named quantity, `catch_all_known`, and it vetoes in both directions: an unestablished catch-all
+blocks the flattering `ENFORCED` and equally blocks the accusing `NOT_ENFORCED`, since a soft 404
+cannot be ruled out either. Four mutations are kept in the red run, and two of them restore states
+this component actually shipped between rounds — each of which passed every test that existed then.
+
+**And the round after that found the same rule missing from its third site.** Both vetoes were
+written inline at `ENFORCED` and at `NOT_ENFORCED`, and the fall-through to `DIVERGED` had neither —
+so an origin that redirects every unknown path answered the probed path exactly as it answered a
+path that had never existed, and that was published as a measured **FAIL**. A host which had
+deployed nothing at all would have been accused of divergence: the mirror image of the sentence
+`INDISTINGUISHABLE_FROM_ABSENT` exists to prevent, surviving two consecutive rounds of repairing
+the identical defect in its two neighbours. The comparison is one named expression now,
+`reading_matches_absence`, consulted by all three — two copies of a rule and a third place that
+needed it is L-2 inside a single function, and writing it twice is what made the third invisible.
+
+Two smaller things came with it. A `ControlClaim` could name a 2xx as the refusal it expected,
+which would have turned an open path into a PASS with one field; the only thing standing against it
+was a test pinning the single shipped instance, which is a rule enforced by inspecting one caller
+(L-7). It is refused at construction now, 2xx and 3xx alike. And the `ProbeState` docstring counted
+"three measurements and four statements" over eight members — the previous round's fix to that same
+sentence changed a wrong number into one that did not add up.
+
+**The red run itself was fabricated, and that is the worst defect in this task.** `RED-013` was
+generated by one shell block that mutated, ran and restored four times with all output redirected
+together, and the run recorded under RED 4 was in fact RED 3's — a different mutation's failures,
+under a heading reading *"Everything below this line is verbatim tool output"*. The arming was real;
+the artefact was not. Fable caught it by applying the recorded mutation and comparing the failures,
+which is the only way it could have been caught, because the file looked exactly like an honest one.
+This repository keeps red runs so that a reader can check a gate rather than trust it, so a
+fabricated line in `evidence/` is worse than a missing file — it is the founding defect committed in
+the artefact that exists to detect it, and it was produced by automation nobody was checking. Each
+mutation is now run separately, captured to its own file, and joined afterwards; the four failure
+sets are distinct, and that distinctness is stated in the file as its own control.
+
+**The consequence is that the incubator's own probe returns `not_measured`, and it ships that way.**
+provek.dev is a static site with no authenticated surface, so it has no path whose refusal differs
+from its catch-all; the honest reading is that this question cannot be answered on this subject. A
+green PASS was available by leaving the classifier as it was, which is exactly why it is worth
+recording that it was not taken. `tests/test_prober.py` pins the three properties that made the
+old claims indefensible — a claimed refusal may not be a success status, the probed path may not be
+one the subject publishes for the public to call, and the claim must carry a negative control —
+while the discrimination itself is made at runtime, where it belongs.
+
+**Why the option could not return one commit earlier, and why it may return now.** D-21 removed it
+because offering a stranger the chance to grant access to their production system, while nothing
+here could use the permission, is a false claim about US on the single page where a visitor commits
+to something. The condition was never "T-2.12 is finished"; it was "a signed mandate has something
+to execute it". One probe satisfies that literally, and one probe is what shipped.
+
+**Why the offer is one action wide.** The prober implements a single operation, so the form names
+that operation. "An active probing mandate" in general would be the same defect at a smaller
+scale — an offer sized to the ambition rather than to the artefact — and this project exists to
+detect exactly that ratio. When the second action is built, the sentence grows by one clause.
+
+**Why it asks rather than grants, which is the half that keeps D-21's finding intact.** The mandate
+module opens "a mandate is a legal object, not a checkbox": it must state permitted actions, their
+limits, what must not be affected, liability, an abort condition and how it is revoked. An HTTP
+field carries none of that, so the radio records a QUESTION. The applied policy stays a constant in
+code, which is precisely the property D-21 was written to establish after `body.mandate ===
+"active" ? "active" : "passive"` turned out to honour `active` for every client that was not the
+form. Returning the offer changes what we ask; it does not change what a request can authorise.
+
+**The two fields exist because `apply.js` asked for them in writing.** Its own comment named the
+collapse and deferred it: *"the moment a prober exists and the value can differ, the request's own
+value has to be recorded beside the applied one rather than overwritten by it."* Until today
+"asked for active, refused" and "asked for passive" were the same bytes in KV — invariant 1, in the
+field that decides whether a human owes the applicant a document. An unrecognised value is a 400
+rather than a coercion to `passive`: the safe-sounding default is what made the single field
+meaningless in the first place.
+
+**What the prober refuses to conclude, and it is the design.** The probe spends THREE calls, two of
+them controls. The first is a request against a path the subject declares public, and its failure
+is a veto, not a warning: `provek.dev` answers 200 to a browser's user agent and 403 to Python's default one,
+so without the control a 403 read off a protected path would land in the set of refusals the
+subject's claim named and publish ENFORCED — the subject credited with a control that was never
+exercised, because the edge declined to talk to us (L-11). The veto is armed in both directions;
+the case that would have flattered the subject is the one nobody checks. And because the probe
+needs all three calls, a mandate with two left of its ceiling produces no probe at all rather than
+part of one: the ceiling is the subject's protection and it is spent in whole probes.
+
+**Three further corrections came out of the same refutation, and each was a claim outrunning its
+artefact by a little.** *One*, the classifier filed two different facts under `ORIGIN_UNREADABLE` —
+an origin that refuses our client, and a path that refuses us on an origin which answers everything
+else. Those need different next actions, so `SUBJECT_DECLINED` is now its own state; invariant 1,
+found inside the code written to honour invariant 1. *Two*, the hourly ceiling is enforced against
+the count it is given, and nothing persists a count between runs, so what it bounds today is one
+invocation rather than an hour. The runner names that in `CALLS_LAST_HOUR` instead of passing a
+bare zero, and this entry no longer implies a limiter that exists. *Three*, `self_probe.is_live()`
+carried a docstring saying the runner read it before spending a call; the runner never called it,
+and `may_probe` already enforces the same condition. It is deleted rather than wired in — a second
+implementation of a live rule is a copy that can drift from the one that runs (L-2), and a helper
+whose only caller is the test asserting it is L-21's dead repair.
+
+**The useful finding of this task was made beside the probe rather than by it, and it is attributed
+that way everywhere it appears.** It came from the hand measurements taken while choosing what to
+probe: **`GET https://provek.dev/api/apply`
+answers 404**, where `web/functions/api/apply.js` claims 405. The same request to
+`/api/nonexistent-xyz` returns the same static 404 page — the intake Pages Function is not deployed
+at all. `~/orchestra/deploy.sh` publishes `web/dist` from the repository root while the functions
+live at `web/functions`, which that directory does not contain. **So the form's only action has been
+failing for every visitor who has ever pressed the button**, and four documents describe it as
+working.
+
+Nothing in this repository could have found that. Every gate reads files; the test guarding the
+endpoint's behaviour says in its own docstring that it cannot speak about the deployed function;
+the door builds the site and sweeps `web/dist`, which is exactly the directory the functions are
+missing from. The gap between "the file says 405" and "the origin says 404" is the size of an
+active probe, and closing it is the first thing this component did that reading a repository could
+not. It is recorded as `evidence/PROBE-001.txt` and as L-25.
+
+**It is named and not fixed — and the reason first written here was an assumption, which is the
+part worth keeping.** That draft argued the fix was blocked on infrastructure: publishing the
+functions needs the `INTAKE` KV binding and the two Telegram secrets to exist on the Pages project,
+so a deploy would swap a loud 404 for a 503 from `if (!env.INTAKE)` — a different failure that looks
+like progress. It reads like a technical reason and nothing had measured it. Asked directly, the
+production project already carries **all three**: `kv_namespaces: ['INTAKE']` and `env_vars:
+['TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID']` (`evidence/PROBE-001.txt`; binding values are never
+printed, the names are the whole reading). So nothing infrastructural is missing. The only thing
+wrong is the working directory the deploy command runs `wrangler` from — `web/functions` is found
+when wrangler runs in `web/`, and `deploy.sh` runs it in the repository root.
+
+That is L-14 committed inside the entry announcing a lesson about untested claims: a reason
+constructed from what would plausibly be true, offered as evidence, and never asked of the system
+that could answer it in one call. It cost nothing here because the deferral survives the
+correction — `deploy.sh` lives outside this repository, it is the operator's publication channel,
+and switching on a server-side endpoint that writes durable records and messages a human is more
+than the site deploy this task is authorised to perform. But the deferral is now honest about its
+size: **one line, in one file, on the operator's side**, not a blocked dependency.
+
+**Adjacent, found in the same reading and recorded before it is lost.** `self-mandate-0001` has no
+document anywhere in this repository. It is a bare string in `scripts/cohort.py` that eight
+published passports point at as the authority under which their subjects were touched — a reference
+with no referent, which is this project's subject defect in the field that says by what right we
+acted. The active mandate is therefore a NEW one, `self-mandate-0002`, declared in
+`src/prober/self_probe.py`: widening `0001` to cover active probing would have changed, retroactively,
+what eight artefacts already in public say they were produced under. Writing the read mandate down
+is a task of its own.
+
+**Armed.** `LAW-PROBE-NEEDS-MANDATE` (`tests/test_prober.py`) asserts against the TRANSPORT and not
+against the check: a recording `fetch` must hold nothing at all after each of the five denial
+reasons, and the reasons are enumerated from the `Denial` enum so a sixth cannot arrive untested.
+`LAW-PROBE-CONTROL-BEFORE-ABSENCE` (`tests/test_probe_control.py`) holds the veto.
+`tests/test_intake_records_the_mandate_request.py` holds both halves of the intake rule. Every one
+of the three was mutation-tested — the repair removed, the exact deaths recorded — because a green
+suite proved nothing about three decorative helpers once already (L-21). The red runs are
+`evidence/RED-013-prober-without-a-mandate.txt` and
+`evidence/RED-014-intake-grants-what-it-was-asked.txt`.
+
+**The self-mandate expires on 2026-11-18 and `tests/test_prober.py` goes red when it does.** That
+red is correct behaviour rather than a defect to route around: a standing permission to send
+unauthenticated requests at a live system should be renewed by somebody deliberately, and widening
+the window to restore a green build would be the measurement fitted to the verdict (L-13).

@@ -264,13 +264,41 @@ form itself made for a day and a half.
 was filled in; the operator decides. That is §4.6 and A-9: nobody is assessed without their request,
 and the request being made does not oblige us to act on it.
 
-**No probing.** The probing mandate was removed from the form on 2026-08-20 because no prober
-exists to honour it, and offering it would have promised a document nobody would send. It returns
-with T-2.12.
+**No probing on submission, and none without a signature.** The probing mandate was removed from
+the form on 2026-08-20 because no prober existed to honour it. T-2.12 built one, so the option
+returned the same day (D-23) — and what returned is a QUESTION, not a grant.
 
-Removed from the ENDPOINT the same day, and only after that was it actually gone: `apply.js` had
-kept `body.mandate === "active" ? "active" : "passive"`, which honours `active` for any client that
-is not the form, so a `curl` POST could still have recorded a probing mandate over production. It
-now assigns `passive` unconditionally, and `tests/test_intake_offers_no_active_mandate.py` fails
-the build if that changes. The stored `mandate` field therefore records the policy applied rather
-than what the request asked for — see D-21, including what that costs.
+Removed from the ENDPOINT as well as the form, and only after that was it actually gone: `apply.js`
+had kept `body.mandate === "active" ? "active" : "passive"`, which honours `active` for any client
+that is not the form, so a `curl` POST could have recorded a probing mandate over production. That
+property is unchanged by the option's return. The endpoint now writes two fields:
+
+| field | who decides it | today's value |
+| --- | --- | --- |
+| `mandate_requested` | the applicant | `passive` or `active`; anything else is a 400, never a guess |
+| `mandate_applied` | us, in code | `passive`, on every submission without exception |
+
+`tests/test_intake_records_the_mandate_request.py` fails the build if the applied policy stops
+being a constant, if it is ever computed from the request body, if the two fields collapse back
+into one, or if the form starts offering a value the endpoint would refuse.
+
+**What the operator does with an `active` request.** Write back with a mandate document naming the
+one action the prober implements (`unauthenticated_access_attempt`), the paths, the hourly ceiling,
+the blast radius, the liability, the abort condition and the revocation route — the fields
+`src/mandate/mandate.py` requires. The Telegram notice carries both values for this reason: an
+`active` request is the one submission that needs a composed reply rather than a queue position.
+
+⚠️ **None of this reaches an applicant today, and it is measured rather than assumed.** On
+2026-08-20 `GET https://provek.dev/api/apply` answered **404** — the intake Pages Function is not
+deployed at all, so every submission the form makes fails with an error message. Until that is
+fixed, this whole section describes the repository and not the running site.
+
+**What it takes, measured and not guessed.** Nothing infrastructural is missing: the production
+Pages project already carries the `INTAKE` KV namespace and both Telegram variables. The one wrong
+thing is the working directory — `wrangler pages deploy` finds a `functions/` directory relative to
+where it runs, and `~/orchestra/deploy.sh` runs it in the repository root while the functions live
+in `web/`. That file is the operator's publication channel and sits outside this repository, so the
+change belongs to the operator; it is one line. Verify afterwards by measuring the origin rather
+than the tool's own report: `GET /api/apply` must answer **405**, and `GET /functions/api/apply.js`
+must stay **404**, because a deploy that serves the function's source instead of executing it is a
+worse outcome than the 404 it replaced. See D-23 and `evidence/PROBE-001.txt`.

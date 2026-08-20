@@ -19,8 +19,17 @@ import json
 import os
 import subprocess
 from dataclasses import dataclass
+from pathlib import Path
 
 from src.abs_profile.measured import Measurement, NotMeasured
+from src.transport.erc8004_deployment import (
+    RECORD,
+    SOURCE_REPO,
+    RecordState,
+    read_record,
+)
+
+ROOT = Path(__file__).resolve().parents[2]
 
 # Function selectors are declared, not guessed. An unknown selector is an error, not a skip.
 SELECTOR_OWNER_OF = "0x6352211e"      # ownerOf(uint256)
@@ -104,6 +113,28 @@ def read_identity(cfg: RegistryConfig, token_id: int) -> IdentityRecord:
     return IdentityRecord(str(token_id), owner_m, uri_m, notes)
 
 
+def _last_target_reading() -> str:
+    """The refusal's evidence: what the deployment list said, and when we last looked.
+
+    WHY THE REFUSAL CITES A FILE. It used to say the registry "requires a deployed validator
+    contract" in the present tense, permanently, with nothing behind it - true on the day it was
+    written and unfalsifiable afterwards, which is the shape of claim this project exists to
+    catch. `scripts/watch_validation_registry.py` measures it on an interval (T-F7), and this is
+    where the measurement is read (ABI-16-3: a result nobody reads is the fifth sleeping state).
+
+    IT NEVER RAISES AND NEVER GUESSES. If the record cannot be read, the message says so - a
+    refusal that invented a reason would be worse than the standing claim it replaced.
+    """
+    r = read_record(ROOT / RECORD)
+    if r.state is not RecordState.READ or r.target is None:
+        return (f"the last reading of the deployment list could not be taken from "
+                f"{RECORD.as_posix()} ({r.state.value}), so this refusal cites no measurement")
+    listed = ", ".join(r.validation_addresses)
+    where = f" listing {listed}" if listed else ""
+    return (f"the deployment list at {SOURCE_REPO} read `{r.target.value}`{where} when it was "
+            f"last checked ({r.checked_at_raw})")
+
+
 class Erc8004Transport:
     """Publishes a projection into the Validation Registry.
 
@@ -117,6 +148,7 @@ class Erc8004Transport:
 
     def publish(self, subject_id: str, passport: dict, projection: int | None) -> str:
         raise NotImplementedError(
-            "on-chain publication is T-2.15b: it requires a deployed validator contract and gas. "
-            "Until then use FileTransport - and note that the refusal is explicit, because a "
-            "transport that silently does nothing yields a passport nobody can find")
+            "on-chain publication is T-2.15b: it requires a deployed validator contract and gas - "
+            f"and {_last_target_reading()}. Until then use FileTransport, and note that the "
+            "refusal is explicit, because a transport that silently does nothing yields a passport "
+            "nobody can find")

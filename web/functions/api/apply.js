@@ -44,20 +44,35 @@ export async function onRequestPost({ request, env }) {
 
   const repo = clean(body.repo);
   const contact = clean(body.contact);
-  // D-21: the probing mandate is withdrawn until a prober exists, so this is not a choice the
-  // endpoint offers. It used to read `body.mandate === "active" ? "active" : "passive"`, which
-  // removed the option from the FORM while leaving it switched on for any other client: a curl
-  // POST could grant an active mandate over a live system, and it would be stored durably and
-  // announced to the operator as though somebody had agreed to it. The form was the only copy of
-  // the repeal that had been enforced, and the form is not the security boundary (L-2). Nothing
-  // here can honour an active mandate, so none is recorded. Note precisely what the stored field
-  // now means: it is the POLICY APPLIED, not the value the request asked for. A submission that
-  // sends "active" is still accepted and is stored as "passive", so "asked for active, refused"
-  // and "asked for passive" are indistinguishable in KV. That is invariant 1's shape, and it is
-  // tolerable only because there is exactly one policy today and D-21 fixes it; the moment a
-  // prober exists and the value can differ, the request's own value has to be recorded beside the
-  // applied one rather than overwritten by it.
-  const mandate = "passive";
+
+  // TWO FIELDS, BECAUSE THEY ARE TWO FACTS (D-23, and the previous version of this comment asked
+  // for exactly this change).
+  //
+  // D-21 withdrew the probing mandate from the intake while no prober existed, and did it here
+  // rather than only on the form, because a curl POST could otherwise grant an active mandate over
+  // a live system and have it stored durably and announced to the operator as though somebody had
+  // agreed to it. The form is not the security boundary (L-2). What the withdrawal left behind was
+  // a single `mandate` field holding the POLICY APPLIED, so "asked for active, refused" and "asked
+  // for passive" were indistinguishable in KV - invariant 1, named in this comment at the time and
+  // deferred until the value could differ. T-2.12 built the prober, so it can differ now.
+  //
+  // WHAT EACH FIELD MEANS, AND THE SECOND ONE IS STILL A CONSTANT. `mandate_requested` is the
+  // applicant's own answer and grants nothing. `mandate_applied` is what we may actually do, and
+  // it is `passive` for every submission without exception: a mandate is a legal object and not a
+  // checkbox (src/mandate/mandate.py), so no HTTP request can produce one. An active mandate
+  // begins with a signed document naming permitted actions, a rate ceiling, what must not be
+  // affected, liability, an abort condition and how it is revoked - a form cannot collect that and
+  // is not asked to. Recording the request is what lets the operator start that exchange.
+  const requested = clean(body.mandate);
+  if (requested !== "passive" && requested !== "active")
+    // NOT COERCED TO A DEFAULT, and that is the whole point of the pair. Guessing what an
+    // unrecognised value meant would put our assumption in the field that records the applicant's
+    // own answer, which is the collapse the two fields exist to end. The form always sends one of
+    // the two, so only a hand-built client reaches this line, and it gets told why.
+    return bad('The mandate field must be "passive" or "active" - it is what you are asking for, ' +
+               "and we will not guess it on your behalf.");
+  const mandate_requested = requested;
+  const mandate_applied = "passive";
 
   if (!/^https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/?$/.test(repo))
     return bad("That does not look like a public GitHub repository URL.");
@@ -67,7 +82,7 @@ export async function onRequestPost({ request, env }) {
   const id = crypto.randomUUID();
   const received_at = new Date().toISOString();
   const record = {
-    id, received_at, repo, contact, mandate,
+    id, received_at, repo, contact, mandate_requested, mandate_applied,
     // Recorded because it is a fact about the submission, and because a verifier that keeps no
     // provenance for its own intake is asking for a trust it does not extend.
     source_country: request.headers.get("cf-ipcountry") || null,
@@ -88,7 +103,12 @@ export async function onRequestPost({ request, env }) {
     try {
       const text =
         `[provek] verification request\n` +
-        `repo: ${repo}\ncontact: ${contact}\nmandate: ${mandate}\nid: ${id}`;
+        // BOTH VALUES, because the notice is the only one of the two records a human reads in
+        // time to act. An applicant asking for active probing is the one submission that needs a
+        // reply the operator has to compose - a signed mandate - and a message showing only the
+        // applied policy would show `passive` for every request forever and hide exactly that.
+        `repo: ${repo}\ncontact: ${contact}\n` +
+        `mandate requested: ${mandate_requested}, applied: ${mandate_applied}\nid: ${id}`;
       const r = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: "POST",
         headers: { "content-type": "application/json" },

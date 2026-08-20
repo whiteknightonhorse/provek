@@ -266,6 +266,15 @@ This is the registry our architecture publishes into (ADR-0001). Consequences, s
 * the decision to keep the adapter thin and the methodology transport-independent was not
   over-caution. It is what makes this finding an inconvenience rather than a redesign.
 
+**This paragraph now has a sentinel behind it, and the sentence above is dated (T-F7).** The
+reading was taken on 2026-08-20 and is re-taken on an interval by
+`scripts/watch_validation_registry.py`, which writes what it found and when to
+`public/erc8004/validation_registry.json`; the liveness obligation `validation_target_watch` goes
+red if nobody takes it. **If an address appears, the build goes red on that too** — because at that
+moment this section becomes a claim stronger than its artefact, and a blocker that lifts in silence
+is how a step nobody scheduled stops being anybody's job. The habit and the states it can report
+are in `docs/LIVENESS_OPERATIONS.md`; the reasoning is ADR-0010.
+
 ## Second material finding, from step 2
 
 **A registration file does not have to be a file, or resolve, or be a registration file.** Of 100

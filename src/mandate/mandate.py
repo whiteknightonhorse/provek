@@ -27,6 +27,17 @@ class Denial(str, Enum):
 
 @dataclass(frozen=True)
 class Mandate:
+    ref: str
+    """The reference of the signed document this object stands for.
+
+    ADDED WITH THE PROBER, AND THE GAP IT CLOSES IS OLDER THAN THE PROBER. Every passport in the
+    published cohort carries `mandate_ref: "self-mandate-0001"`, written as a bare string by
+    `scripts/cohort.py`, while this class - the only thing in the repository that models a mandate -
+    could not express which mandate it was. So a probe could be permitted by an object that had no
+    name, and a passport could name a mandate no object corresponded to. A reading has to carry the
+    authority it was taken under, for the reason a verdict carries its `access_channel`: the
+    instrument beside the number, or the number cannot be audited later.
+    """
     subject_id: str
     permitted_actions: frozenset[str]
     max_calls_per_hour: int

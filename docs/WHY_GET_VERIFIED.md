@@ -64,13 +64,25 @@ that plainly is cheaper than pretending otherwise.
   public and touch nothing. Fewer operations can be measured that way, and the passport says which
   ones and why.
 
-  Active probing is not offered and nothing is being asked for it. When a prober exists (T-2.12) it
-  will require an explicit mandate naming what we may touch, how often, what must not be affected,
-  and how you revoke it — **without a mandate we do not touch your production, and probing
-  someone's live system without one is an incident, not a verification.** Until then there is
-  nothing to sign. This bullet asked for the mandate in the present tense until 2026-08-20: the
-  offer had been withdrawn from the form and then from the endpoint under D-21, and this document,
-  which IS the offer, was the copy nobody re-read.
+  Active probing is now offered, and it is one operation wide. The prober built under T-2.12 does
+  exactly one thing: **it attempts to use a path you tell us is closed, and reports whether your
+  running system actually refuses it** — a fact your repository cannot show, because a file
+  describing a control and a deployment enforcing one are different things. Nothing else is
+  implemented, so nothing else is asked for. It has been run against one subject, our own site, and
+  no third party has been probed yet; you would be the first, and that is stated here rather than
+  discovered by you afterwards.
+
+  It requires an explicit mandate naming the action, the paths, a ceiling on how often, what must
+  not be affected, who answers for damage, what aborts the run and how you revoke it — **without a
+  mandate we do not touch your production, and probing someone's live system without one is an
+  incident, not a verification.** The form records that you want one; a document follows, and no
+  request is sent at your systems before you have signed it. Ticking the box authorises nothing:
+  the intake stores what you asked for beside a policy field that reads `passive` on every
+  submission, and no HTTP request can change the second one (D-23).
+
+  This bullet asked for the mandate in the present tense while there was no prober, then said the
+  opposite for one day, and both times it was the last copy to be corrected — this document IS the
+  offer, and it is the copy nobody re-reads (D-21, L-2).
 
 ## What we never do
 

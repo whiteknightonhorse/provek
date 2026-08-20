@@ -1,4 +1,12 @@
-# Liveness: who re-runs the cohort, when, and what happens if nobody does
+# Liveness: who re-runs what, when, and what happens if nobody does
+
+Two obligations are declared into the registry, and they watch opposite things. The first watches a
+**lapse** — verdicts that expire by time whether or not anybody acts. The second watches a
+**blocker** — a step of ours that cannot proceed until somebody outside this repository does
+something, where nothing expires at all and the only thing that decays is our knowledge of it. The
+cohort is below; the blocker is the last section.
+
+## The cohort: who re-runs it, when, and what happens if nobody does
 
 The eight rows on `/registry` are not permanent. Each carries a `valid_until`, and
 `effectiveStatus()` turns a row `stale` at read time the moment that date passes — with no event, no
@@ -246,3 +254,183 @@ it is a person, not another module.
 **No automatic copy from `public/` into `web/public/data/`.** The two copies are kept in step by
 hand and the gate reports the divergence rather than hiding it. A script that copied silently would
 remove the finding without removing the failure mode.
+
+---
+
+# The blocker: is there anywhere to publish yet?
+
+T-2.15b publishes a passport's projection on-chain, into the ERC-8004 Validation Registry — the
+distribution channel ADR-0001 chose. It cannot be scheduled, and the reason is not ours:
+`docs/MEASUREMENT_QM1.md` measured on 2026-08-20 that **the Validation Registry is not deployed on
+any chain**. The reference implementation lists Identity and Reputation registry addresses across
+twenty-odd chains and states that the Validation Registry portion is still under active update,
+with no addresses given at all.
+
+Nothing about this repository expires while that stays true, and that is exactly why it needed an
+instrument. A deadline produces a reminder; a blocker produces nothing, changes on somebody else's
+schedule, and sends no event here. Left alone, "we cannot" becomes "we forgot" with no moment at
+which anybody was wrong — and the plan goes on stating a blocker whose last measurement is months
+old, which is a claim stronger than its artefact, of our own making.
+
+## The habit
+
+**Who.** The same reader as above: the executing agent, on the audit host, inside a task cycle.
+
+**When.** On the same beat as the re-issue habit — `Interval.WHILE_BLOCKED` is defined as
+`MAX_AGE[BEFORE_REISSUE]`, twenty-three days, **by reference and not as a number**. Nothing in the
+world sets this deadline, so there was nothing to derive it from; what is real is the cadence at
+which anybody is actually standing in this tree doing liveness work, and that is the cohort's. A
+faster interval would be red most mornings with no act available to clear it, which is the same
+reason the section above refuses an obligation for the deploy.
+
+**What.** Four commands, and — unlike the cohort's — no last step held by anybody else:
+
+```bash
+python3 scripts/watch_validation_registry.py    # one anonymous read; the read needs no credential
+python3 -m src.liveness.commitments             # the line that prints the reading
+git add public/erc8004 && git commit -m "re-check the validation target: still no address"
+./scripts/push.sh
+```
+
+The commit is on the list for the same reason it is on the cohort's: the record is tracked, so a
+run that writes dirties the tree and `push.sh` stops there. A run that established nothing still
+writes — into the attempt block, carrying the measurement forward verbatim — so it is committable
+too. The one exception is a record this script cannot read well enough to carry that block
+forward: it reports `NOT WRITTEN`, leaves the file byte-identical, and the tree stays clean.
+Overwriting there would replace "we could not read this" with "this never happened". **No deploy is involved** — the record is deliberately
+not copied into `web/public/data/`, because nothing on provek.dev makes any claim about the
+Validation Registry and publishing the file would manufacture a claim with no reader. The read
+needs no credential; `push.sh` still does, which is why that qualifier is attached to the read and
+not to the sequence.
+
+## What the gate can and cannot see
+
+**The record has two blocks and the table below has two halves, because there are two facts.**
+`measurement` is the last run that *established* something; the interval rides it, so a run that
+measures nothing never advances the clock. `last_attempt` is what the last run did, whatever that
+was; the gate reports it the same minute — a non-measurement on its own line, a `target_present`
+as `TARGET APPEARED` from whichever block holds it, and any disagreement between the two blocks as
+`BLOCKS DISAGREE`. A draft that kept only the first is the worst defect this
+component has had — see the end of this section.
+
+| State | Named as |
+| --- | --- |
+| the last run measured, within the interval, and the list carries no address | clean — `python3 -m src.liveness.commitments` prints the reading; the gates print only red or green |
+| no run has measured for longer than the interval | `SILENCE: validation_target_watch …` + its own remedy |
+| a row spelled `ValidationRegistry`, naming no other registry, carries an address | **`TARGET APPEARED`** — a red, on good news, deliberately |
+| a line names validation beside an address and could be either | `NOT MEASURED: … unreadable:validation_row_not_conclusive`, quoting the line — cleared by teaching the parser, not by another run |
+| no HTTP client could be launched here | `NOT MEASURED: … check_did_not_run:no_http_client` — entirely ours |
+| the request never completed | `NOT MEASURED: … check_did_not_run:no_answer` — **whose** failure is not established, and the name refuses to guess |
+| the source answered and declined | `NOT MEASURED: … check_did_not_run:source_answered_non_200`, with the status in the record |
+| the list answered but an anchor registry could not be found in it | `NOT MEASURED: … unreadable:deployment_list_not_recognised` |
+| every run so far failed, so `measurement` is `null` | the attempt's own `NOT MEASURED`, **and** `SILENCE: … has never presented evidence` — both true, and the record was read perfectly |
+| the `measurement` key is **absent** rather than `null` | `NOT MEASURED: … unreadable:no_measurement_key` **and** `NOT ASSESSED` — an absent key is somebody else's shape, not this project saying "never" |
+| the two blocks cannot have come from one run | `BLOCKS DISAGREE` — a partial restore, a merge taking one block from each side, or a hand edit; **which** is not knowable from here |
+| the last run measured `target_present` while the measurement block is older | **`TARGET APPEARED`** fires from the attempt block too, beside `BLOCKS DISAGREE` |
+| the record is missing, is not JSON, or has no `last_attempt` block | `NOT MEASURED: …` **and** `NOT ASSESSED` for the obligation |
+| `checked_at` read but the state did not | `PARTIALLY READ` — the interval is still assessed, on a measurement that was taken |
+| the state read but `checked_at` did not | `PARTIALLY READ` — the interval is `NOT ASSESSED`, and **what the list said is still reported**, including `TARGET APPEARED` |
+| a deployment the reference implementation has not written down | **not visible from here.** This reads a document, not a chain |
+| a deployment written in a shape this parser cannot read — label in a column header, or split from its address across lines — while the anchors stay intact | **reported as `no_target`, a MEASURED absence.** The anchors cannot catch it, because they are still there and still readable; this is the residue the control does not cover |
+
+The five middle rows all describe the **last attempt**, and they fire while the measurement below
+them is still perfectly good — that is the point. Three of them are one distinction: **"we could
+not read it" is not "they would not answer"** (L-11). A single `source_refused` covered all three
+in the first draft, which asserted a fact about somebody else's server on the evidence that a
+socket had not opened on ours.
+
+**The anchors are the load-bearing part, and what they establish is narrower than it sounds.**
+`no_target` is the answer this watch returns nearly every time, so `no_target` is the answer an
+instrument that had stopped looking would also return — for ever, silently, and precisely in the
+state where a real deployment would be missed. The Identity and Reputation registries *are*
+deployed and *are* in that list, so the parser requires **both** of them to be findable beside
+addresses before it will report an absence — either one going missing is enough to refuse.
+`evidence/RED-015-absence-measured-with-a-broken-instrument.txt` is that control removed, with an
+empty document reading as "there is no Validation Registry".
+
+What that rules out is the document being replaced, emptied, moved behind an error page, or
+restructured past the shape this parser reads. What it does **not** rule out is a document that
+keeps two rows naming those registries while the current list moves elsewhere. That residue is
+stated rather than left to be discovered: it is the price of reading a README, and it is the reason
+the reading carries the document's `sha256` and is re-taken rather than trusted.
+
+**The target is matched in three tiers, and the middle one is the interesting answer.** A row still
+spelled `ValidationRegistry` — with any suffix — beside an address is a deployment, and that is
+`TARGET APPEARED`. A line that only mentions validation beside an address is neither: it might be a
+row renamed to `Validation`, and it might be `validationRequest(0x…, 42, …)` in a code sample, and
+this reader cannot tell. It reports **`not_measured`**, quotes the line, and names both exits —
+schedule the step, or tighten the parser with a test.
+
+Two earlier drafts got that wrong in opposite directions and both are worth keeping. The first
+matched the exact spelling only, so a renamed row read as `no_target` with the anchors green, for
+as long as the document kept the new name — the anchors cannot catch it, because it is a different
+label. The second matched `validation` alone and called a false positive "a red one reading of the
+document clears"; the section this parser reads already contains `validationRequest(...)`,
+`getValidationStatus` and an event signature taking an `address`, so one example value would have
+had the gate ordering somebody to schedule on-chain publication against a line of documentation.
+**A red that instructs work nobody should do is not cheaper than a silence.** The third tier is
+what neither draft had: a name for "I cannot tell", which is what invariant 1 asks for anyway.
+
+A positive reading is never overridden by the control, and the ordering in `parse()` is where that
+is decided: if an address IS found, that is a measurement, and reporting `unrecognised` over it
+would discard a reading the instrument was holding. The control protects the negative answer,
+because the negative answer is the only one that can be produced by not looking.
+
+### Two drafts of the write rule, and the second was the worse one
+
+**Draft one wrote the latest run over the top.** An operator who met `SILENCE` and followed the
+remedy exactly as printed on a day the source was 5xx thereby replaced `no_target` with a
+non-measurement, turned two assertions about the real tree red, and left a dirty file that step
+three of that same remedy — `./scripts/push.sh` — then refused to send. A false red at the moment
+somebody performs the habit, with the recovery step written down nowhere.
+
+**Draft two refused to overwrite a measurement, and that was worse.** The record went on saying
+`no_target` inside its interval while the last run had reported the deployment list unrecognisable
+— and the sweep returned **nothing**. A green gate meaning *did not look*, for up to twenty-three
+days, in the layer built to forbid exactly that, introduced by the fix for draft one. The only
+witness was the stdout of a script that nothing runs on a clock.
+
+Both drafts were choosing which of two facts to keep, and there are two facts, so there are two
+blocks. A run that establishes nothing still writes — into the attempt block, never over the
+measurement — so it stays committable, the clock is not advanced, and the finding is visible the
+same minute. What it says changes as the runs do — that is the point of keeping the attempt — and
+what it never does is disappear while the thing it reports is still true.
+
+## Why the finding fires on GOOD news
+
+When an address appears, the build stops. That is not a mistake in the sign of a comparison.
+
+Three things go wrong at the same moment, and none of them announces itself: `MEASUREMENT_QM1.md`
+still says NOT DEPLOYED, the plan still says T-2.15b cannot be scheduled, and the
+**contract-without-audit** risk — named in the plan and never decided, because there was nothing to
+decide about — becomes live. A green run would let all three stand while the reason for them had
+gone. So the finding names the address it found, names the step that is unblocked, and names the
+document that has become false; clearing it is a decision recorded in `DECISIONS.md`, not a rerun.
+
+## What runs this in the state it exists for, and how long that lasts
+
+The same daily `schedule:` in `gates.yml` — no second clock, and the argument above it applies
+unchanged. What does **not** carry over is the arithmetic that follows it, and borrowing the
+conclusion would be borrowing a number away from the noun it was computed for.
+
+That paragraph's load-bearing step is that the cohort's whole lifecycle — deadline on 2026-09-12,
+lapse on 2026-09-19 — happens inside the sixty-day window before GitHub disables the schedule for
+inactivity. **This obligation has no lapse.** It fires from day twenty-three and never terminates:
+there is no date on which being late stops mattering, because nothing expires. So the honest
+statement is the plainer one: after roughly sixty days of total inaction the schedule switches
+itself off and both alarms stop together, having by then said so every morning for about a month.
+Nothing is lost that a person returning to the repository would not immediately see — the door
+still goes red on the next push, because the sweep runs in the test suite as well as on the clock.
+
+## This is not the second obligation the cohort section refuses
+
+That refusal was specific: **nothing here can observe a deploy**, so an obligation about one would
+be a component watching a signal it cannot receive, reporting silence every day and teaching the
+reader to ignore it. The difference is the instrument. This state *is* observable from this host,
+by one anonymous HTTP request that any third party could repeat, and the obligation reports silence
+only when nobody has taken that reading. The rule both cases follow is the same one: an obligation
+is worth declaring exactly when something can actually be measured to satisfy it.
+
+And the chain still stops at a person (ABI-16-7). The `TARGET APPEARED` finding is read by whoever
+is at the door or in the daily gates run; no module decides what to do about it, and none is added.
+

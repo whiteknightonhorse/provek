@@ -1,0 +1,142 @@
+# RED-015 - the positive control was removed and an empty document read as "no target"
+#
+# Produced on 2026-08-20 to establish that tests/test_validation_target_obligation.py CAN
+# fail (invariant 5), and to show WHICH failure it catches. The state reproduced is not the
+# obvious one - a missed interval, which is the time bomb RED-010 already demonstrates - but
+# the silent one underneath it.
+#
+# WHAT WAS DISARMED. Exactly the branch of parse() that requires BOTH deployed registries to
+# be findable beside addresses before an absence of a Validation Registry address may be
+# reported:
+#
+#     elif not identity or not reputation:
+#         state, rows = TargetState.LIST_UNRECOGNISED, loose
+#
+# With it gone the parser still works, still passes forty of forty-four tests, and still
+# answers `no_target` - which is the correct answer today, and would go on being the answer
+# it gives after the document is restructured, after it is moved, and after it is replaced
+# by an error page. `no_target` is the reading this watch returns nearly every time, so it
+# is the reading that can be manufactured by not looking, for ever, in exactly the state
+# where a deployment would be missed.
+#
+# FOUR TESTS DIE, and between them they exercise six ways in: an empty string; a page that
+# is not the list; a list restructured past this reader; a single anchor renamed on its own;
+# a document whose only forty-digit runs are the tails of sixty-four-digit hashes, so it
+# holds no deployment addresses at all; and a lost list that also contains one API example,
+# which without the anchors is reported as a line to go and classify rather than as a list
+# that has gone. The FAILED summary at the end names all four tests.
+#
+# METHOD. The module was copied to `.erc_pristine` inside the project directory, edited in
+# place, and restored from that copy; the suite was then re-run clean (44 passed). Nothing
+# went through /tmp: on this host it is shared with nine other projects, and the incident
+# L-8 records is a read out of it that silently returned another project's file. An earlier
+# version of this artefact used /tmp and said so, which is how the habit was caught - and
+# the version after that was restored with `git checkout --` against a stale index, which
+# discarded an hour of edits to the module it was restoring. Both are why the method is
+# written down.
+#
+# THE TRANSCRIPT BELOW IS THE WHOLE RUN, from the first character of pytest output to the
+# last. Two earlier versions of this file were `tail`-ed and so began mid-traceback, one of
+# them under a sentence claiming the first failure was below when it was not - L-26 twice,
+# the second time inside the correction for the first. It is captured whole here so that
+# there is nothing for the prose to outrun.
+#
+# $ python3 -m pytest tests/test_validation_target_obligation.py -q
+..FF..F...F.................................                             [100%]
+=================================== FAILURES ===================================
+_____ test_a_document_whose_shape_is_gone_is_unreadable_and_not_an_absence _____
+
+    def test_a_document_whose_shape_is_gone_is_unreadable_and_not_an_absence():
+        """THE FALSE GREEN THIS INSTRUMENT IS BUILT AGAINST, and the only reason for the anchors.
+    
+        Absence is the answer this watch returns almost every time, so absence is the answer that can
+        be produced by not looking properly - for ever, silently, in exactly the state where a real
+        deployment would be missed. The Identity and Reputation registries ARE deployed and ARE in that
+        list; if neither can be found, the parser is no longer reading a deployment list and says so.
+        """
+        for name, doc in {
+            "empty": "",
+            "a page that is not the list": "# ERC-8004\n\nSee the docs for deployment addresses.\n",
+            "the list restructured past this reader": "| Chain | Identity | Reputation |\n"
+                                                      f"| Mainnet | {IDENTITY_ADDRESS} "
+                                                      f"| {REPUTATION_ADDRESS} |\n",
+        }.items():
+            read = D.parse(doc)
+>           assert read.state is D.TargetState.LIST_UNRECOGNISED, f"read as an absence: {name}"
+E           AssertionError: read as an absence: empty
+E           assert <TargetState.NO_TARGET: 'no_target'> is <TargetState.LIST_UNRECOGNISED: 'unreadable:deployment_list_not_recognised'>
+E            +  where <TargetState.NO_TARGET: 'no_target'> = DeploymentRead(state=<TargetState.NO_TARGET: 'no_target'>, validation_addresses=(), identity_addresses=(), reputation_...ttp_status=200, document_sha256='e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', validation_rows=()).state
+E            +  and   <TargetState.LIST_UNRECOGNISED: 'unreadable:deployment_list_not_recognised'> = <enum 'TargetState'>.LIST_UNRECOGNISED
+E            +    where <enum 'TargetState'> = D.TargetState
+
+tests/test_validation_target_obligation.py:148: AssertionError
+___________ test_one_anchor_is_not_enough_because_one_can_be_renamed ___________
+
+    def test_one_anchor_is_not_enough_because_one_can_be_renamed():
+        """Both anchors are required - the test is `not identity OR not reputation`, not "neither".
+    
+        Either registry could be renamed on its own, and a control that survives on the half that did
+        not move is a control that has stopped controlling. Two documents described this as "if neither
+        can be found", which is a weaker rule than the code holds; asserting the OR is what keeps the
+        prose from drifting back to it.
+        """
+        only_identity = f"- **IdentityRegistry**: `{IDENTITY_ADDRESS}`\n"
+        only_reputation = f"- **ReputationRegistry**: `{REPUTATION_ADDRESS}`\n"
+>       assert D.parse(only_identity).state is D.TargetState.LIST_UNRECOGNISED
+E       AssertionError: assert <TargetState.NO_TARGET: 'no_target'> is <TargetState.LIST_UNRECOGNISED: 'unreadable:deployment_list_not_recognised'>
+E        +  where <TargetState.NO_TARGET: 'no_target'> = DeploymentRead(state=<TargetState.NO_TARGET: 'no_target'>, validation_addresses=(), identity_addresses=('0x8004A169FB4...ttp_status=200, document_sha256='d28246efcca4ee1ab5c46ed61efaca84581e7b0d9b141b5fbaa453ed9be376df', validation_rows=()).state
+E        +    where DeploymentRead(state=<TargetState.NO_TARGET: 'no_target'>, validation_addresses=(), identity_addresses=('0x8004A169FB4...ttp_status=200, document_sha256='d28246efcca4ee1ab5c46ed61efaca84581e7b0d9b141b5fbaa453ed9be376df', validation_rows=()) = <function parse at 0x7fce51827ac0>('- **IdentityRegistry**: `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432`\n')
+E        +      where <function parse at 0x7fce51827ac0> = D.parse
+E        +  and   <TargetState.LIST_UNRECOGNISED: 'unreadable:deployment_list_not_recognised'> = <enum 'TargetState'>.LIST_UNRECOGNISED
+E        +    where <enum 'TargetState'> = D.TargetState
+
+tests/test_validation_target_obligation.py:162: AssertionError
+____ test_a_lost_deployment_list_outranks_a_line_the_parser_cannot_classify ____
+
+    def test_a_lost_deployment_list_outranks_a_line_the_parser_cannot_classify():
+        """THE ORDERING, AND AN EARLIER DRAFT HAD IT THE OTHER WAY.
+    
+        With the maybe-tier above the anchors, a document restructured past this parser - the exact
+        state RED-015 exists for - reported `validation_row_not_conclusive` the moment it contained one
+        API example, and told the reader to go and classify a line when the true state was "the
+        deployment list has gone". Both are `not_measured`, so the class survived and the instruction
+        did not: the anchor failure was in the DeploymentRead and was discarded as the state was named.
+        """
+        restructured = ("| Chain | Identity | Reputation |\n"
+                        f"| Mainnet | {IDENTITY_ADDRESS} | {REPUTATION_ADDRESS} |\n"
+                        f"`validationRequest({INVENTED_ADDRESS}, 42, uri, hash)`\n")
+        read = D.parse(restructured)
+>       assert read.state is D.TargetState.LIST_UNRECOGNISED, read.state
+E       AssertionError: unreadable:validation_row_not_conclusive
+E       assert <TargetState.ROW_NOT_CONCLUSIVE: 'unreadable:validation_row_not_conclusive'> is <TargetState.LIST_UNRECOGNISED: 'unreadable:deployment_list_not_recognised'>
+E        +  where <TargetState.ROW_NOT_CONCLUSIVE: 'unreadable:validation_row_not_conclusive'> = DeploymentRead(state=<TargetState.ROW_NOT_CONCLUSIVE: 'unreadable:validation_row_not_conclusive'>, validation_addresse...3944899a8bd2ee4d', validation_rows=('`validationRequest(0x8004cccccccccccccccccccccccccccccccccccc, 42, uri, hash)`',)).state
+E        +  and   <TargetState.LIST_UNRECOGNISED: 'unreadable:deployment_list_not_recognised'> = <enum 'TargetState'>.LIST_UNRECOGNISED
+E        +    where <enum 'TargetState'> = D.TargetState
+
+tests/test_validation_target_obligation.py:232: AssertionError
+________ test_a_sixty_four_digit_hash_is_not_truncated_into_an_address _________
+
+    def test_a_sixty_four_digit_hash_is_not_truncated_into_an_address():
+        """The pattern is bounded at both ends, and unbounded it did not skip a hash - it CUT one down
+        to forty digits. A deployment tx hash or a bytecode digest on a line naming a registry became a
+        fabricated address: a false TARGET APPEARED carrying something nobody deployed, or an anchor
+        passing on a document with no deployment addresses in it at all."""
+        doc = ("- **IdentityRegistry** deployed in tx 0x" + "a" * 64 + "\n"
+               "- **ReputationRegistry** bytecode 0x" + "b" * 64 + "\n"
+               "- **ValidationRegistry** salt 0x" + "c" * 64 + "\n")
+        read = D.parse(doc)
+        assert read.validation_addresses == (), read.validation_addresses
+        assert read.identity_addresses == () and read.reputation_addresses == ()
+>       assert read.state is D.TargetState.LIST_UNRECOGNISED
+E       AssertionError: assert <TargetState.NO_TARGET: 'no_target'> is <TargetState.LIST_UNRECOGNISED: 'unreadable:deployment_list_not_recognised'>
+E        +  where <TargetState.NO_TARGET: 'no_target'> = DeploymentRead(state=<TargetState.NO_TARGET: 'no_target'>, validation_addresses=(), identity_addresses=(), reputation_...ttp_status=200, document_sha256='4e69afb9d8e1602e8855983716b19833afdd4f4259d301a728b590e020d0e659', validation_rows=()).state
+E        +  and   <TargetState.LIST_UNRECOGNISED: 'unreadable:deployment_list_not_recognised'> = <enum 'TargetState'>.LIST_UNRECOGNISED
+E        +    where <enum 'TargetState'> = D.TargetState
+
+tests/test_validation_target_obligation.py:302: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_validation_target_obligation.py::test_a_document_whose_shape_is_gone_is_unreadable_and_not_an_absence
+FAILED tests/test_validation_target_obligation.py::test_one_anchor_is_not_enough_because_one_can_be_renamed
+FAILED tests/test_validation_target_obligation.py::test_a_lost_deployment_list_outranks_a_line_the_parser_cannot_classify
+FAILED tests/test_validation_target_obligation.py::test_a_sixty_four_digit_hash_is_not_truncated_into_an_address
+4 failed, 40 passed in 1.19s

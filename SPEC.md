@@ -89,14 +89,23 @@ including its stated limits — those are a feature of the pitch, not a caveat t
 Repository URL and contact. **Without a mandate we do not touch production** — this must be stated
 on the form, not in terms of service.
 
-⚠️ **Corrected 2026-08-20.** This section also required "the mandate choice: passive verification
-only, or an explicit mandate for active probing". The choice was removed from the form on
-2026-08-20 and the form now sends `passive` unconditionally, because no prober exists to honour an
-active mandate — offering the option would have asked a stranger to sign a document nothing in this
-repository could act on, which is a false claim about US on the one page where a visitor commits to
-something. The removal was recorded in `web/src/pages/Apply.tsx` and `docs/INTAKE_OPERATIONS.md`
-but not here and not in `DECISIONS.md`, so the rule survived its own repeal in this copy — L-2, in
-the document that governs the form. It is now **D-21**, and the option returns with T-2.12.
+The **mandate choice** is on the form: read-only verification, or a request for an active-probing
+mandate as well.
+
+⚠️ **Withdrawn and restored on 2026-08-20, both within a day, and the second move is the narrower
+one.** This section originally required "the mandate choice: passive verification only, or an
+explicit mandate for active probing". The choice was removed in the morning (**D-21**) because no
+prober existed to honour an active mandate — offering it would have asked a stranger to sign a
+document nothing in this repository could act on, which is a false claim about US on the one page
+where a visitor commits to something. That removal was recorded in `web/src/pages/Apply.tsx` and
+`docs/INTAKE_OPERATIONS.md` but not here and not in `DECISIONS.md`, so the rule survived its own
+repeal in the document that governs the form — L-2.
+
+T-2.12 built the prober, and the choice returned the same day under **D-23**, bounded twice over.
+It names the ONE action the prober implements rather than "active probing" in general, because the
+artefact is one action wide and the offer may not be wider. And it ASKS rather than grants: a
+mandate is a legal object and not a checkbox, so the endpoint records `mandate_requested` beside a
+`mandate_applied` that is constant `passive` — the hole D-21 actually closed, which stays closed.
 
 ### 3.5 Phase 2 (`/phase-2/`) — an announcement, and not an offer
 

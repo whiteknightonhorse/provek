@@ -37,6 +37,12 @@ class Interval(str, Enum):
     """A verdict lapses by time with no event (ABI-15-5), so the obligation to re-measure has a
     deadline set by the verdict rather than by a habit. Its max age is derived below."""
 
+    WHILE_BLOCKED = "while_blocked"
+    """A step of ours is blocked by something outside this repository, so the state changes on
+    somebody else's schedule and no event reaches us. Unlike BEFORE_REISSUE this deadline is NOT
+    set by the world: nothing lapses if the check is late, only the discovery is. Its max age is
+    therefore a habit and is derived from the one habit this project actually has."""
+
 
 RENEWAL_MARGIN = timedelta(days=7)
 """How much still-valid time a re-issue finding must leave the operator.
@@ -71,6 +77,28 @@ MAX_AGE = {Interval.DAILY: timedelta(days=1), Interval.EVERY_RUN: timedelta(hour
            Interval.BEFORE_REISSUE: PASSPORT_VALIDITY - RENEWAL_MARGIN}
 """Written as the subtraction rather than as `timedelta(days=23)`: the derivation is the rule, and
 a bare 23 would survive a change to either constant it came from."""
+
+MAX_AGE[Interval.WHILE_BLOCKED] = MAX_AGE[Interval.BEFORE_REISSUE]
+"""THE INTERVAL RIDES THE HABIT, and the reference rather than a number is the honest form.
+
+NOTHING IN THE WORLD SETS THIS DEADLINE. A blocked step misses no lapse by being discovered late;
+what is lost is only the days between the block lifting and somebody noticing. So there is no
+quantity to derive from, and the alternative to deriving is inventing - a round number, stated as
+though it had been measured, which is the defect this project is built to find.
+
+WHAT IS REAL IS THE CADENCE AT WHICH ANYBODY IS ACTUALLY IN THIS TREE PERFORMING LIVENESS WORK,
+and that is `BEFORE_REISSUE`: the re-issue habit is the only recurring appointment this repository
+has. A check that fires on the same beat is one somebody is already standing there to perform. A
+faster one would be red most mornings with no act available to clear it, and a gate that cries
+every day teaches the reader to walk past it - the reason `docs/LIVENESS_OPERATIONS.md` refuses an
+obligation for the deploy.
+
+THE COUPLING IT CREATES IS NAMED RATHER THAN HIDDEN: shorten the passport's validity and this
+interval shortens too, for a reason that has nothing to do with the blocked step. That is the
+correct direction anyway - both are habits, and the habit moved. It is a defect only if this
+deadline ever acquires a source of its own, and then the answer is its own entry above, not a
+literal here.
+"""
 
 
 class SleepState(str, Enum):

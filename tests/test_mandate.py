@@ -7,7 +7,8 @@ NOW = datetime(2026, 8, 19, tzinfo=timezone.utc)
 
 
 def _m(**kw):
-    base = dict(subject_id="git:a/b", permitted_actions=frozenset({"latency_probe"}),
+    base = dict(ref="test-mandate-0001",
+                subject_id="git:a/b", permitted_actions=frozenset({"latency_probe"}),
                 max_calls_per_hour=10, blast_radius="the subject's real customers are not affected",
                 liability="the incubator covers direct damage", abort_condition="p95 > 2s",
                 valid_from=NOW - timedelta(days=1), valid_until=NOW + timedelta(days=30))
@@ -53,3 +54,12 @@ def test_mandate_carries_liability_and_abort_condition():
     """A mandate is a legal object, not a checkbox."""
     m = _m()
     assert m.liability and m.abort_condition and m.blast_radius
+
+
+def test_mandate_names_the_document_it_stands_for():
+    """A permission whose grant cannot be named is not auditable after the fact.
+
+    The passports publish `mandate_ref` and the object had no such field until the prober needed to
+    record which document had authorised a request it actually made.
+    """
+    assert _m().ref == "test-mandate-0001"
