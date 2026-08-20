@@ -45,7 +45,13 @@ jobs:
           persist-credentials: false
 
       - name: run scorecard
-        uses: ossf/scorecard-action@v2
+        # PINNED TO A COMMIT, and not only because Scorecard's own Pinned-Dependencies check asks
+        # for it. `@v2` was tried first, on the assumption that a floating major tag exists because
+        # most actions publish one. `ossf/scorecard-action` does not: its refs are v2.3.1 .. v2.4.4
+        # and nothing else, so the runner could not resolve the reference and the job died in
+        # "Set up job" before a single step ran. A convention is not a guarantee, and the failure it
+        # produces looks like infrastructure rather than like a typo.
+        uses: ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc   # v2.4.4
         with:
           results_file: results.sarif
           results_format: sarif
