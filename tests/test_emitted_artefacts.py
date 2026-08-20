@@ -134,11 +134,13 @@ def test_the_gates_would_fire():
     row.pop("verifier_affiliation")
     assert "verifier_affiliation" not in row
 
-    row2 = dict(reg["subjects"][0]); row2["protocol_version"] = "2.0.0"
+    row2 = dict(reg["subjects"][0])
+    row2["protocol_version"] = "2.0.0"
     p = _passports()[0]
     assert row2["protocol_version"] != p["provenance"]["protocol_version"]
 
-    op = dict(p["verified"]["operations"][0]); op.pop("confidence")
+    op = dict(p["verified"]["operations"][0])
+    op.pop("confidence")
     assert "confidence" not in op
 
     assert "/home/incubator" not in reg["subjects"][0]["passport_ref"]

@@ -10,9 +10,8 @@ pass over one subject. What is NOT measured: the price of an API call in money -
 plan we have not chosen, and inventing it would be exactly the guessed constant this project
 forbids.
 """
-import resource
 import os
-import subprocess
+import resource
 import sys
 import time
 from pathlib import Path

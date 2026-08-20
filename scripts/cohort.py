@@ -9,7 +9,6 @@ Every passport carries verifier_affiliation=same_owner - without it the first re
 would read as INDEPENDENT verifications.
 """
 import os
-import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -19,13 +18,13 @@ sys.path.insert(0, "/home/incubator/incubator")
 from src.abs_profile.evidence import EvidenceClass
 from src.abs_profile.identity import Binding, BindingKind
 from src.abs_profile.ladder import L
+from src.abs_profile.measured import NotMeasured
 from src.collector.github import collect_github
-from src.passport.passport import SCHEMA_VERSION, Accountability, Provenance, build
+from src.passport.passport import Accountability, Provenance, build
 from src.registry.lifecycle import Status
 from src.registry.public_registry import PublicRegistry, Row
 from src.transport.file_transport import FileTransport
 from src.verify.control_map import Capability, ControlMap, ControlPath, Coverage, Surface
-from src.abs_profile.measured import NotMeasured
 from src.verify.scorer import Confidence, OperationScore, projection, score_operation
 
 
