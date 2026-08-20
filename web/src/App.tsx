@@ -54,6 +54,11 @@ function useRoute(initial: string) {
       if (!a) return;
       const href = a.getAttribute("href");
       if (!href || !href.startsWith("/") || a.target === "_blank") return;
+      // Method notes are static documents emitted outside this component set: they ship as plain
+      // HTML with no script at all, which is the point of them. Intercepting a click here would
+      // hand the route to a router that has never heard of it and paint "No such page" over a
+      // document the server serves perfectly well.
+      if (href.startsWith("/method/notes/")) return;
       e.preventDefault();
       history.pushState(null, "", href);
       setRoute(norm(href));
@@ -133,6 +138,14 @@ export function DeadEnd({ title, children }: { title: string; children: React.Re
   );
 }
 
+/** The placeholder route `404.html` is prerendered under.
+ *
+ * Cloudflare Pages serves that one document for every address that does not exist, so at build
+ * time there is no such thing as "the address the reader asked for". Defined here and imported by
+ * `prerender.mjs` rather than written as a literal in both: a string that means "this is not a real
+ * route" in two places is a string that will stop meaning it in one of them (L-2). */
+export const PRERENDER_ROUTE = "/__not_found__/";
+
 export const TITLES: Record<string, string> = {
   "/": "Provek - evidence, not claims",
   "/registry/": "Registry - Provek",
@@ -190,7 +203,16 @@ export function Body({
   if (route === "/") return <Landing reg={reg.state === "ready" ? reg.data : null} />;
   return (
     <DeadEnd title="No such page">
-      Nothing is served at <code className="font-mono text-xs">{route}</code>.
+      {/* THE ADDRESS IS NAMED ONLY WHEN IT IS THE READER'S OWN.
+          `404.html` is prerendered once, under the placeholder route `/__not_found__/`, and served
+          for every address that does not exist. So this line used to tell a reader who asked for
+          /typo/ that "nothing is served at /__not_found__/" - an address nobody requested and that
+          is not absent in any interesting sense. A reader without JavaScript, and every crawler,
+          got the placeholder as if it were a finding. Naming no address is the true statement
+          available at build time; the router fills the real one in once it is known. */}
+      {route === PRERENDER_ROUTE
+        ? "Nothing is served at this address."
+        : <>Nothing is served at <code className="font-mono text-xs">{route}</code>.</>}
     </DeadEnd>
   );
 }

@@ -55,6 +55,41 @@ jobs:
         # a filtered gate once let a red suite sign off on a sibling project.
         run: python -m pytest tests -q --cov=src --cov-report=term-missing --cov-fail-under=70
 
+  shipped:
+    name: the shipped site
+    # THE ONLY JOB THAT JUDGES WHAT A READER RECEIVES.
+    #
+    # Every other job here reads the repository, and L-3 is the standing rule that a file in the
+    # repository is not what the consumer gets. The gap was concrete rather than theoretical:
+    # `test_the_built_site_has_no_link_that_it_did_not_emit` sweeps every emitted page for internal
+    # links the build did not produce - it is the check that catches a dangling link WITHOUT
+    # knowing what the link is about - and it opens with `if not DIST.exists(): skip`. No job here
+    # ran a build, so `web/dist` never existed, so it skipped on every run since it was written.
+    # The general gate was a local convenience and the ratchet counted its law among those whose
+    # gate and test are present. Present is not armed; that is the whole of L-16.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - run: pip install --quiet pytest
+
+      - name: build the site
+        working-directory: web
+        run: npm ci && npm run build
+
+      - name: gates that read the emitted artefact
+        # Named explicitly rather than run as the whole suite: this job exists to prove the
+        # dist-dependent assertions RAN. `-rs` prints every skip, so a check that quietly goes back
+        # to skipping is visible in the log instead of passing as a green tick.
+        run: python -m pytest tests/test_notes_entrance.py tests/test_emitted_artefacts.py -q -rs
+
   lint:
     name: lint and types
     runs-on: ubuntu-latest

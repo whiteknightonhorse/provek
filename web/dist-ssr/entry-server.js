@@ -1061,7 +1061,7 @@ function Apply() {
 				className: "mt-4",
 				children: /* @__PURE__ */ jsx(Strip, {
 					tone: "pass",
-					children: sent.delivered ? /* @__PURE__ */ jsxs(Fragment, { children: [/* @__PURE__ */ jsx("strong", { children: "Your request is recorded and has reached the operator." }), " Nothing further is required from you."] }) : /* @__PURE__ */ jsxs(Fragment, { children: [/* @__PURE__ */ jsx("strong", { children: "Your request is recorded." }), " The notification to the operator did not go through, so it may be read later than usual. The record itself is safe - we are telling you this rather than claiming otherwise."] })
+					children: sent.delivered ? /* @__PURE__ */ jsxs(Fragment, { children: [/* @__PURE__ */ jsx("strong", { children: "Your request is recorded and the notification to the operator went out." }), " Nothing further is required from you."] }) : /* @__PURE__ */ jsxs(Fragment, { children: [/* @__PURE__ */ jsx("strong", { children: "Your request is recorded." }), " The notification to the operator did not go through, so it may be read later than usual. The record itself is safe - we are telling you this rather than claiming otherwise."] })
 				})
 			}),
 			/* @__PURE__ */ jsx("p", {
@@ -1195,11 +1195,11 @@ function Apply() {
 								/* @__PURE__ */ jsxs("li", { children: [/* @__PURE__ */ jsx("strong", {
 									className: "text-[var(--color-ink-2)]",
 									children: "Stored:"
-								}), " the repository URL, your address, the time, and the two-letter country your request arrived from. Nothing else, and this form sets no cookie of its own."] }),
+								}), " the repository URL, your address, the time, and the two-letter country your request arrived from — plus three fields about the record rather than about you: a random identifier, the mandate this form sends (always the passive one), and whether our notification to the operator went through. Nothing further, and this form sets no cookie of its own."] }),
 								/* @__PURE__ */ jsxs("li", { children: [/* @__PURE__ */ jsx("strong", {
 									className: "text-[var(--color-ink-2)]",
 									children: "Where:"
-								}), " Cloudflare key-value storage, plus a copy in the operator’s private message channel so a human sees it. Both are read by the operator alone."] }),
+								}), " Cloudflare key-value storage, plus — when that notification succeeds — a copy carried by Telegram to the operator’s private channel so a human sees it. Telegram is named because a message channel that reaches a person passes through somebody; the stored record is read by the operator alone."] }),
 								/* @__PURE__ */ jsxs("li", { children: [/* @__PURE__ */ jsx("strong", {
 									className: "text-[var(--color-ink-2)]",
 									children: "Used for:"
@@ -1207,7 +1207,7 @@ function Apply() {
 								/* @__PURE__ */ jsxs("li", { children: [/* @__PURE__ */ jsx("strong", {
 									className: "text-[var(--color-ink-2)]",
 									children: "Deleted:"
-								}), " whenever you ask, by opening an issue or replying to any message from us. There is nothing to unsubscribe from — we do not send anything you did not ask for."] }),
+								}), " whenever you ask, by opening an issue or replying to any message from us — the stored record and the message-channel copy together, both by hand, since nothing here deletes on a timer. There is nothing to unsubscribe from — we do not send anything you did not ask for."] }),
 								/* @__PURE__ */ jsxs("li", { children: [
 									/* @__PURE__ */ jsx("strong", {
 										className: "text-[var(--color-ink-2)]",
@@ -1772,6 +1772,13 @@ function DeadEnd({ title, children }) {
 		})
 	] });
 }
+/** The placeholder route `404.html` is prerendered under.
+*
+* Cloudflare Pages serves that one document for every address that does not exist, so at build
+* time there is no such thing as "the address the reader asked for". Defined here and imported by
+* `prerender.mjs` rather than written as a literal in both: a string that means "this is not a real
+* route" in two places is a string that will stop meaning it in one of them (L-2). */
+var PRERENDER_ROUTE = "/__not_found__/";
 var TITLES = {
 	"/": "Provek - evidence, not claims",
 	"/registry/": "Registry - Provek",
@@ -1815,16 +1822,16 @@ function Body({ route, reg, passport }) {
 	if (route === "/method/") return /* @__PURE__ */ jsx(Method, {});
 	if (route === "/phase-2/") return /* @__PURE__ */ jsx(Phase2, {});
 	if (route === "/") return /* @__PURE__ */ jsx(Landing, { reg: reg.state === "ready" ? reg.data : null });
-	return /* @__PURE__ */ jsxs(DeadEnd, {
+	return /* @__PURE__ */ jsx(DeadEnd, {
 		title: "No such page",
-		children: [
+		children: route === "/__not_found__/" ? "Nothing is served at this address." : /* @__PURE__ */ jsxs(Fragment, { children: [
 			"Nothing is served at ",
 			/* @__PURE__ */ jsx("code", {
 				className: "font-mono text-xs",
 				children: route
 			}),
 			"."
-		]
+		] })
 	});
 }
 function Shell({ route, children, containerRef }) {
@@ -1871,5 +1878,21 @@ function renderRoute(route, reg, passport) {
 		})
 	}));
 }
+/** A method note, in the site's own chrome and nothing else.
+*
+* The note's body is HTML built by `web/notes/emit.mjs` from committed prose - it is a document,
+* not a component, and it carries no state for a browser to take over. What it must NOT do is
+* reproduce the masthead and the footer: a second copy of the chrome is a second thing to drift,
+* and the whole reason `renderRoute` exists is that there is one component set. So the note is
+* poured into the same `Shell`, and inherits every token and every rule by construction. */
+function renderStatic(route, html) {
+	return render(/* @__PURE__ */ jsx(Shell, {
+		route,
+		children: /* @__PURE__ */ jsx("main", {
+			className: "mx-auto max-w-[1180px] px-5 py-8",
+			children: /* @__PURE__ */ jsx("div", { dangerouslySetInnerHTML: { __html: html } })
+		})
+	}));
+}
 //#endregion
-export { TITLES, renderRoute };
+export { PRERENDER_ROUTE, TITLES, renderRoute, renderStatic };

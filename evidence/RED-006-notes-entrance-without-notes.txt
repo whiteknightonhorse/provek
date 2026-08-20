@@ -1,0 +1,60 @@
+RED-006 - the notes entrance gate proved able to fail, 2026-08-20
+
+LAW-NOTES-ENTRANCE asserts a biconditional: the way in to /method/notes/ exists exactly when
+a note does. A biconditional is worth a gate only if BOTH sides can go red, so both were
+made to go red. Zero notes are captured in this checkout, so branch 1 is the live state and
+branch 2 had to be provoked.
+
+==============================================================================
+BRANCH 1 - the defect as it actually stood: the built site links what it never emitted.
+Run against web/dist as built at 14:25, before any repair. No injection: this is the
+artefact the next manual deploy would have published.
+==============================================================================
+
+$ python3 -m pytest tests/test_notes_entrance.py::test_the_built_site_has_no_link_that_it_did_not_emit -q
+E       assert not {('/method/', '/method/notes/')}
+
+tests/test_notes_entrance.py:115: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_notes_entrance.py::test_the_built_site_has_no_link_that_it_did_not_emit
+1 failed in 0.03s
+
+==============================================================================
+BRANCH 2 - the entrance offered while nothing is captured (the deleted paragraph
+put back verbatim, zero notes). This is the component-level form of branch 1:
+it fires in CI, where web/dist does not exist.
+==============================================================================
+
+$ python3 -m pytest tests/test_notes_entrance.py -q   # paragraph restored, 0 notes
+E           AssertionError: Method.tsx links /method/notes/ while no note is captured. `prerender.mjs` emits that route only when at least one note exists, so this is a link to a 404 AND a page claiming a body of writing that is not there.
+E           assert not True
+E       AssertionError: no note is captured, yet these offer a way in: ['web/src/pages/Method.tsx']
+E       assert not ['web/src/pages/Method.tsx']
+E       AssertionError: emitted pages link to addresses the build did not produce: [('/method/', '/method/notes/')]
+E       assert not {('/method/', '/method/notes/')}
+FAILED tests/test_notes_entrance.py::test_method_offers_the_entrance_exactly_when_notes_exist
+FAILED tests/test_notes_entrance.py::test_no_surface_anywhere_offers_an_entrance_that_is_not_built
+FAILED tests/test_notes_entrance.py::test_the_built_site_has_no_link_that_it_did_not_emit
+3 failed in 0.03s
+
+==============================================================================
+BRANCH 3 - the reverse, and the reason this is a biconditional rather than a ban.
+A note is captured while the Method page does NOT name the entrance. The notes are
+reachable from that one sentence and from nowhere else (SPEC 3.6; ADR-0009 keeps them
+out of the navigation), so this state publishes writing that no reader can arrive at.
+Provoked with one throwaway source file, removed immediately afterwards.
+==============================================================================
+
+$ python3 -m pytest tests/test_notes_entrance.py -q   # 1 note captured, no entrance on Method
+E           AssertionError: 1 note(s) captured and Method.tsx does not name /method/notes/. The notes are reachable from one sentence of prose and from nowhere else (SPEC 3.6, ADR-0009 keeps them out of the navigation), so without that sentence they are published and unreachable.
+E           assert False
+E       AssertionError: emitted pages link to addresses the build did not produce: [('/method/', '/method/notes/')]
+E       assert not {('/method/', '/method/notes/')}
+FAILED tests/test_notes_entrance.py::test_method_offers_the_entrance_exactly_when_notes_exist
+FAILED tests/test_notes_entrance.py::test_the_built_site_has_no_link_that_it_did_not_emit
+2 failed, 1 skipped in 0.03s
+
+Both directions fail on their own defect and on nothing else. With the paragraph removed and
+no note captured - the state committed here - the module is green WITHOUT skipping, which is
+the point: the four LAW-NOTES-* modules all carry skipif(not sources()) and were therefore
+silent in exactly the state that shipped the defect.

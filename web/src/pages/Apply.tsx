@@ -60,10 +60,17 @@ export default function Apply() {
           <h1 className="text-2xl font-semibold tracking-tight">Request recorded</h1>
           <div className="mt-4">
             <Strip tone="pass">
+              {/* WHAT `delivered` ACTUALLY MEASURES. It is `r.ok` from Telegram's sendMessage -
+                  proof that the message was ACCEPTED BY TELEGRAM, not that a person has seen it.
+                  This line said "has reached the operator", which is the stronger of the two and
+                  the one the visitor would act on by not following up. This file's own docstring
+                  sets the standard it fell short of: "received" asserts that someone has taken
+                  responsibility for reading it. The success branch now claims delivery of the
+                  notification, which is exactly what was measured. */}
               {sent.delivered ? (
                 <>
-                  <strong>Your request is recorded and has reached the operator.</strong> Nothing
-                  further is required from you.
+                  <strong>Your request is recorded and the notification to the operator went
+                  out.</strong> Nothing further is required from you.
                 </>
               ) : (
                 <>
@@ -182,15 +189,26 @@ export default function Apply() {
           <div className="border-t border-[var(--color-line)] pt-4">
             <h2 className="text-sm font-medium">What happens to what you type here</h2>
             <ul className="mt-2 space-y-1 text-xs text-[var(--color-ink-3)]">
+              {/* THE THREE HOUSEKEEPING FIELDS ARE NAMED because "nothing else" was not true.
+                  `functions/api/apply.js` writes seven keys, and this list declared four: it also
+                  stores a random record id, the mandate the form sent (always "passive" - the
+                  active one is not offered), and whether our own notification to the operator got
+                  through. None of the three says anything further about the visitor, which is
+                  exactly why nobody noticed - and "nothing else" was still a false statement about
+                  a stored record, on the page of a site whose product is catching those. */}
               <li>
                 <strong className="text-[var(--color-ink-2)]">Stored:</strong> the repository URL,
-                your address, the time, and the two-letter country your request arrived from.
-                Nothing else, and this form sets no cookie of its own.
+                your address, the time, and the two-letter country your request arrived from —
+                plus three fields about the record rather than about you: a random identifier, the
+                mandate this form sends (always the passive one), and whether our notification to
+                the operator went through. Nothing further, and this form sets no cookie of its own.
               </li>
               <li>
                 <strong className="text-[var(--color-ink-2)]">Where:</strong> Cloudflare key-value
-                storage, plus a copy in the operator&rsquo;s private message channel so a human sees
-                it. Both are read by the operator alone.
+                storage, plus — when that notification succeeds — a copy carried by Telegram to the
+                operator&rsquo;s private channel so a human sees it. Telegram is named because a
+                message channel that reaches a person passes through somebody; the stored record is
+                read by the operator alone.
               </li>
               <li>
                 <strong className="text-[var(--color-ink-2)]">Used for:</strong> deciding whether to
@@ -198,9 +216,16 @@ export default function Apply() {
                 never passed on.
               </li>
               <li>
+                {/* THE PROMISE HAD TO GROW WITH THE LIST ABOVE IT. Once the Telegram copy was
+                    named as a second place the data sits, "deleted whenever you ask" covered two
+                    stores while describing one - and `apply.js` has no deletion path at all, so
+                    both are the operator's hands. Naming a store and leaving the promise where it
+                    was is how a privacy statement quietly becomes partly false. */}
                 <strong className="text-[var(--color-ink-2)]">Deleted:</strong> whenever you ask, by
-                opening an issue or replying to any message from us. There is nothing to unsubscribe
-                from &mdash; we do not send anything you did not ask for.
+                opening an issue or replying to any message from us &mdash; the stored record and
+                the message-channel copy together, both by hand, since nothing here deletes on a
+                timer. There is nothing to unsubscribe from &mdash; we do not send anything you did
+                not ask for.
               </li>
               <li>
                 {/* This paragraph claimed "no identifier is created for you" while Google

@@ -1,0 +1,30 @@
+RED-007 - a law whose gate and test never leave this host, 2026-08-20
+
+T-DECISION-1 asked Path.exists() and nothing else. Five LAW-NOTES-* entries were written into
+a TRACKED enforced_by.yaml while their gate (web/notes/emit.mjs) and their test modules were
+still UNTRACKED. Every gate went green: the files were on this disk, so they existed. In any
+clone the same five laws name files that are not there, and the ratchet that exists to catch
+a law without an armed gate would itself have shipped five of them.
+
+This is not an injected defect. It is the state the tree was actually in when T-E1 read it,
+and it is L-3 turned on the law registry: what the consumer receives is the clone.
+
+$ python3 scripts/ratchet_decisions.py   # before git add
+  
+  X T-DECISION-1:
+    - DANGLING LAW LAW-NOTES-ADDRESSED: gate=web/notes/emit.mjs exists here but is NOT TRACKED by git, so it does not reach a clone and this law is unenforced everywhere else
+    - DANGLING LAW LAW-NOTES-ADDRESSED: test=tests/test_notes.py exists here but is NOT TRACKED by git, so it does not reach a clone and this law is unenforced everywhere else
+    - DANGLING LAW LAW-NOTES-GENRE: gate=web/notes/emit.mjs exists here but is NOT TRACKED by git, so it does not reach a clone and this law is unenforced everywhere else
+    - DANGLING LAW LAW-NOTES-GENRE: test=tests/test_notes_genre.py exists here but is NOT TRACKED by git, so it does not reach a clone and this law is unenforced everywhere else
+    - DANGLING LAW LAW-NOTES-FRESHNESS: test=tests/test_notes_freshness.py exists here but is NOT TRACKED by git, so it does not reach a clone and this law is unenforced everywhere else
+    - DANGLING LAW LAW-NOTES-CEILING: gate=web/notes/emit.mjs exists here but is NOT TRACKED by git, so it does not reach a clone and this law is unenforced everywhere else
+    - DANGLING LAW LAW-NOTES-CEILING: test=tests/test_notes_ceiling.py exists here but is NOT TRACKED by git, so it does not reach a clone and this law is unenforced everywhere else
+    - DANGLING LAW LAW-NOTES-ENTRANCE: test=tests/test_notes_entrance.py exists here but is NOT TRACKED by git, so it does not reach a clone and this law is unenforced everywhere else
+  exit=1
+
+Fixed by tracking the files, not by softening the check. The same run is green below, and the
+check keeps its third state: if git cannot be asked at all, that is reported as unknown
+rather than folded into the clean line (invariant 1).
+$ git add -A && python3 scripts/ratchet_decisions.py
+  T-DECISION-1: clean (41 laws, every gate and test present)
+  exit=0

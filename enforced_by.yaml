@@ -145,3 +145,30 @@ laws:
     gate: web/src/types.ts
     test: tests/test_stale_on_the_surface.py
 
+  - id: LAW-NOTES-ADDRESSED
+    text: "every claim on a method note names a place in this repository that settles it, and a key is a row the base returned with the state it recorded"
+    gate: web/notes/emit.mjs
+    test: tests/test_notes.py
+  - id: LAW-NOTES-GENRE
+    text: "a method note describes the instrument and never instructs a subject; no second-person imperative, no how-to heading, no teaching vocabulary"
+    gate: web/notes/emit.mjs
+    test: tests/test_notes_genre.py
+  - id: LAW-NOTES-FRESHNESS
+    text: "dateModified moves when the body hash moves and at no other time; a rebuild manufactures no freshness"
+    # The gate read `web/notes/manifest.json` - a DATA file, and one that exists at all only
+    # because a failed capture wrote it on its way out. A rule is held by the code that can break
+    # it, not by the record it keeps. Of the two files that could break this one, `emit.mjs` is the
+    # primary: `noteLd()` there is what writes `dateModified` into the page a reader receives,
+    # while `prerender.mjs` only carries the same value into the sitemap's <lastmod>.
+    gate: web/notes/emit.mjs
+    test: tests/test_notes_freshness.py
+  - id: LAW-NOTES-CEILING
+    text: "at most three notes stand until an indexation reading exists from a verified Bing Webmaster property"
+    gate: web/notes/emit.mjs
+    test: tests/test_notes_ceiling.py
+  - id: LAW-NOTES-ENTRANCE
+    text: "the way in to /method/notes/ is offered exactly when at least one note is captured - never before it, and never omitted after"
+    # The only one of the note laws that is armed at ZERO notes, which is the state that shipped
+    # the defect: the other four skip themselves when nothing is captured.
+    gate: web/src/pages/Method.tsx
+    test: tests/test_notes_entrance.py

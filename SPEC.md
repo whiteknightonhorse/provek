@@ -105,6 +105,56 @@ This page is a narrow exception to D-05, whose boundary otherwise stands: every 
 layout stays empty, disabled and unannounced. Describing a phase is not the same act as offering a
 capability, and the difference is recorded in D-16.
 
+### 3.6 Method notes (`/method/notes/<slug>/`) — the methodology at length
+
+The Method page states the ladder, the evidence classes and the three absences in a paragraph each.
+A note takes one of them and writes it out: what the term measures, what it cannot, and which of
+this repository's files settles the question. Reached from one sentence of prose on Method, with no
+navigation entry.
+
+**No note is published yet.** This section specifies the surface; the corpus is empty, because the
+capture has so far been refused by its own measurement (D-18). Until a note exists, `/method/notes/`
+is not emitted and the sentence on Method that leads to it is not written — `LAW-NOTES-ENTRANCE`
+fails the build in either direction. A specification is allowed to precede its instances; a page
+telling a reader that the writing exists is not, which is the distinction §4 already draws for
+phase 2.
+
+**The genre is the constraint, and it is not a matter of taste.** ADR-0009 ruled that teaching and
+verification stay separated as components: a surface written in the normative voice — *how to build
+autonomous agents*, *how to score higher* — puts the institution's opinion where a reader cannot
+tell it from the instrument's measurement, and an examiner coaching candidates grades work it set
+itself. A note is descriptive or it is not published. Concretely, and each of these is a test rather
+than an intention:
+
+1. **every claim carries an address** — a section of this document, a decision, a law in
+   `tasks/lessons.md`, a line of ERC-8004, or an emitted artefact. An address that does not resolve
+   fails the build, so an untraceable sentence cannot reach the surface at all;
+2. **no second-person imperative and no instruction vocabulary** — the boundary ADR-0009 draws, in
+   machine form;
+3. **no heading begins "How to"** — 35% of the question rows in the keyword capture do, and the
+   largest measured one is *how to build an ai agent*. The demand is real and this surface may not
+   serve it;
+4. **a keyword is a row `seo/keywords.csv` returned**, carried with the demand state the base
+   recorded, and never with a number where the instrument refused (D-17, §2.9). Zero to three per
+   note; a note with none records why, because most of this subject has no measured demand at all;
+5. **a figure is computed from an artefact at build time** — never drawn and then checked. Zero to
+   three, and a note with none says why. No photograph and no generated image: neither carries a
+   fact, and an ornament on a page about evidence is the failure this product exists to find;
+6. **at most three notes** stand until an indexation reading exists from a verified Bing Webmaster
+   property. The precedent for this work gates its publishing rate on Search Console; we have none,
+   and a rate gated on an absent instrument is not a gate (L-4);
+7. **what drafted the prose is disclosed on the face of the page.** A note is planned by
+   `claude-sonnet-5` and written by `claude-haiku-4-5`, then captured once and committed — the build
+   calls no model. Measuring how much of somebody else's business runs without a human, while
+   publishing machine-drafted prose in silence, would be this product's own defect wearing its
+   colours.
+
+**A note that turns out to be wrong is corrected in public.** The correction is a dated block on the
+page, the claim it replaces stays legible, and `dateModified` moves because the text moved — the
+manifest pins each body by hash so a rebuild cannot manufacture freshness. A note withdrawn is
+marked superseded and keeps its URL. Passports are never silently recomputed (PRODUCT.md); prose
+published from the same surface gets the same treatment.
+
 ## 4. Phase 2 — deferred by A-10, specified in full
 
 ### 4.1 What a funding task is, and what it is not

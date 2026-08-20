@@ -110,9 +110,16 @@ because a page that could drift from the machine record would stop being worth t
 
 ## How the rules are kept
 
-Every load-bearing rule in `enforced_by.yaml` names the gate and the test that enforce it — 31 of
-them. Rules that live only in prose are the ones that quietly stop being true, so a rule without a
-machine behind it is treated as unenforced.
+Every load-bearing rule in `enforced_by.yaml` names the gate and the test that enforce it. Rules
+that live only in prose are the ones that quietly stop being true, so a rule without a machine
+behind it is treated as unenforced.
+
+This paragraph used to end "— 31 of them", and the file had grown to 41 by the time anyone
+re-read the sentence. A count copied into prose is a second copy of a fact whose first copy keeps
+moving (L-2), and it decays into a claim the artefact no longer supports — on the page describing
+how this project refuses to let that happen. The number is not restored here in a computed form
+either: it would be one more place to keep true for no reader who needs it, and `enforced_by.yaml`
+is in the repository for anyone who wants to count.
 
 The design record is in the open, including its mistakes:
 

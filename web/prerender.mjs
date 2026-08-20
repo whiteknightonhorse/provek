@@ -16,11 +16,26 @@
  */
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { loadNotes, noteArticle, notesIndexArticle, noteLd } from "./notes/emit.mjs";
 
 const DIST = "dist";
 const SITE = "https://provek.dev";
 const shell = readFileSync(join(DIST, "index.html"), "utf8");
-const { renderRoute, TITLES } = await import("./dist-ssr/entry-server.js");
+const { renderRoute, renderStatic, TITLES, PRERENDER_ROUTE } = await import("./dist-ssr/entry-server.js");
+
+/** The same shell with the application's module script removed.
+ *
+ * A method note is prose. Hydrating it would download the router, the registry loader and the
+ * passport loader to take over a document that is already finished, and would then have to be
+ * taught every note route to avoid painting "No such page" over one. Stripping the entry here is
+ * what keeps the open item in DESIGN.md ("222 KB of JavaScript for five static routes") from
+ * growing with every note. The stylesheet stays - the design tokens are not optional - and so does
+ * the measurement snippet ratified in D-14, because switching it off on some pages and not others
+ * would make the reading say something nobody decided.
+ */
+const staticShell = shell
+  .replace(/<script type="module"[^>]*><\/script>\s*/g, "")
+  .replace(/<link rel="modulepreload"[^>]*>\s*/g, "");
 
 const registry = JSON.parse(readFileSync("public/data/registry.json", "utf8"));
 const passports = Object.fromEntries(
@@ -43,11 +58,34 @@ function ldOrganization() {
   };
 }
 
+/** The registry's own sentence, in the words the visible page uses.
+ *
+ * It read "every business that has been measured" while four of eight rows carry no measurement at
+ * all - their sources answer no reader without a credential. The visible page had already been
+ * corrected; the description, the og tags and this Dataset block had not, so the machine channel
+ * went on reporting `unreadable` as `measured` to every crawler that asked. That is invariant 1
+ * inverted in the one copy nobody re-reads, and L-2's shape exactly: a rule repealed in one place
+ * survives in another. Both channels are now computed here, from the same field the table renders
+ * (`projection_absent_reason === "unreadable"`), so the count cannot drift from the rows again.
+ *
+ * A THIRD COPY OF THE OLD SENTENCE SURVIVES, DELIBERATELY, at `web-1.0/src/pages/Registry.tsx:28`.
+ * That tree is the frozen phase-2 rollback point and its own `FROZEN.md` says not to edit it; a
+ * baseline that gets corrected is no longer a baseline. It is named here instead, because L-2 is
+ * about knowing where every copy is, not about there being one: anybody rolling back to `web-1.0`
+ * restores this defect along with the layout, and now finds that out from the file they are
+ * rolling forward to.
+ */
+const unreadable = registry.subjects.filter(
+  (s) => s.projection_absent_reason === "unreadable").length;
+const REGISTRY_SENTENCE =
+  "Every business submitted to the method, what could be established about each, and the evidence "
+  + `behind it. ${registry.count} records, of which ${unreadable} could not be measured at all.`;
+
 function ldRegistry() {
   return {
     "@context": "https://schema.org", "@type": "Dataset",
     name: "Provek registry",
-    description: "Every business that has been measured, with the evidence behind each verdict.",
+    description: REGISTRY_SENTENCE,
     url: SITE + "/registry/",
     dateModified: registry.generated_at,
     creator: { "@type": "Organization", name: "Provek" },
@@ -94,17 +132,41 @@ function ldPassport(p) {
   };
 }
 
+/** Every per-page field in the head, rewritten in ONE place.
+ *
+ * There were two copies of this list - one in `page()`, one in `staticPage()` - and the head has
+ * three channels saying the same thing to three different readers: `description` for search,
+ * `og:*` for link previews, `twitter:*` for cards. Keeping them in step by hand is how the registry
+ * page came to tell crawlers "every business that has been measured" for as long as it did: the
+ * visible prose was corrected, `og:description` was missed, and nothing connected them.
+ *
+ * `twitter:title` and `twitter:description` were not rewritten AT ALL until now - every one of the
+ * fourteen emitted documents carried the landing page's card, so sharing a passport advertised the
+ * front page. It was not a false statement, only a wrong one, which is why it survived a review
+ * that was hunting for false ones.
+ *
+ * One list, one loop. A channel added to `index.html` and not to this array is now the only way to
+ * get an unrewritten head, instead of one of three ways.
+ */
+function head(shellHtml, route, title, description) {
+  const t = esc(title), d = esc(description), url = SITE + route;
+  return [
+    [/<title>[^<]*<\/title>/, `<title>${t}</title>`],
+    [/(<meta name="description" content=")[^"]*(")/, `$1${d}$2`],
+    [/(<link rel="canonical" href=")[^"]*(")/, `$1${url}$2`],
+    [/(<meta property="og:url" content=")[^"]*(")/, `$1${url}$2`],
+    [/(<meta property="og:title" content=")[^"]*(")/, `$1${t}$2`],
+    [/(<meta property="og:description" content=")[^"]*(")/, `$1${d}$2`],
+    [/(<meta name="twitter:title" content=")[^"]*(")/, `$1${t}$2`],
+    [/(<meta name="twitter:description" content=")[^"]*(")/, `$1${d}$2`],
+  ].reduce((acc, [re, to]) => acc.replace(re, to), shellHtml);
+}
+
 function page(route, title, description, ld, data) {
   const html = renderRoute(route, registry, data?.passport ?? null);
-  let out = shell
-    .replace(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`)
-    .replace(/(<meta name="description" content=")[^"]*(")/, `$1${esc(description)}$2`)
-    .replace(/(<link rel="canonical" href=")[^"]*(")/, `$1${SITE}${route}$2`)
-    .replace(/(<meta property="og:url" content=")[^"]*(")/, `$1${SITE}${route}$2`)
-    .replace(/(<meta property="og:title" content=")[^"]*(")/, `$1${esc(title)}$2`)
-    .replace(/(<meta property="og:description" content=")[^"]*(")/, `$1${esc(description)}$2`);
+  let out = head(shell, route, title, description);
 
-  const head = [
+  const blocks = [
     `<script type="application/ld+json">${JSON.stringify(ld)}</script>`,
     data?.passport
       ? `<link rel="alternate" type="application/json" href="/data/passports/${slug(data.passport.subject_id)}.json">`
@@ -118,9 +180,18 @@ function page(route, title, description, ld, data) {
     ...(data?.passport ? { passport: data.passport } : {}),
   }).replace(/</g, "\\u003c")}</script>`;
 
-  out = out.replace("</head>", `    ${head}\n  </head>`);
+  out = out.replace("</head>", `    ${blocks}\n  </head>`);
   out = out.replace('<div id="root"></div>', `<div id="root">${html}</div>\n    ${inline}`);
   return out;
+}
+
+/** A page with no application behind it: one document, many JSON-LD blocks, no bootstrap data. */
+function staticPage(route, title, description, ld, html) {
+  let out = head(staticShell, route, title, description);
+  const blocks = (Array.isArray(ld) ? ld : [ld])
+    .map((x) => `<script type="application/ld+json">${JSON.stringify(x)}</script>`).join("\n    ");
+  out = out.replace("</head>", `    ${blocks}\n  </head>`);
+  return out.replace('<div id="root"></div>', `<div id="root">${renderStatic(route, html)}</div>`);
 }
 
 function write(route, html) {
@@ -135,7 +206,7 @@ written.push(write("/", page("/", TITLES["/"],
   "Per business operation, how much of a company runs without a human in the loop - with the evidence behind every number, including what could not be measured.",
   ldOrganization())));
 written.push(write("/registry/", page("/registry/", TITLES["/registry/"],
-  `Every business that has been measured, with the evidence behind each verdict. ${registry.count} records.`,
+  REGISTRY_SENTENCE,
   ldRegistry())));
 written.push(write("/method/", page("/method/", TITLES["/method/"],
   "How a level is assigned to an operation, how evidence is classed by forgery cost, and what the score does not measure.",
@@ -149,6 +220,35 @@ written.push(write("/apply/", page("/apply/", TITLES["/apply/"],
 written.push(write("/phase-2/", page("/phase-2/", TITLES["/phase-2/"],
   "Funding tasks are specified and NOT in service: none can be created, none commissioned, no application taken, and no date is given. What the specification requires of phase 2.",
   ldOrganization())));
+
+// METHOD NOTES. Descriptive notes on the published methodology (SPEC 3.6, D-18) - never teaching,
+// which ADR-0009 rules off this surface. `loadNotes()` throws rather than emitting a note whose key
+// the keyword base never returned, whose address resolves to nothing, or that is missing from the
+// freshness manifest; a build that cannot prove a note's provenance does not produce the note.
+const notes = loadNotes();
+const noteLastmod = new Map();
+if (notes.length) {
+  const indexRoute = "/method/notes/";
+  written.push(write(indexRoute, staticPage(indexRoute, "Notes on the method - Provek",
+    "Descriptive notes on the published methodology: what each term measures, which absences are distinguished, and what the standard underneath does not settle.",
+    { "@context": "https://schema.org", "@type": "CollectionPage", url: SITE + indexRoute,
+      name: "Notes on the method", inLanguage: "en",
+      isPartOf: { "@type": "WebPage", url: SITE + "/method/" },
+      publisher: { "@type": "Organization", name: "Provek" } },
+    notesIndexArticle(notes))));
+  noteLastmod.set(indexRoute,
+    notes.map((n) => n.date_modified).sort().at(-1));
+
+  for (const n of notes) {
+    const route = `/method/notes/${n.front.slug}/`;
+    written.push(write(route, staticPage(route, n.front.title, n.front.description,
+      noteLd(n, SITE), noteArticle(n))));
+    // lastmod comes from the manifest, which moves only when the body hash moves. Taking it from
+    // the build clock would tell every crawler that all three notes changed whenever any file in
+    // the repository did - a freshness claim with nothing behind it.
+    noteLastmod.set(route, n.date_modified);
+  }
+}
 
 for (const row of registry.subjects) {
   const s = slug(row.subject_id);
@@ -166,13 +266,46 @@ for (const row of registry.subjects) {
 // A REAL 404. Its presence switches off Cloudflare Pages' SPA fallback, which until now answered
 // 200 with the app shell for every nonexistent path - including /sitemap.xml. A positive answer
 // where the truthful answer is absence is this product's own thesis inverted.
-writeFileSync(join(DIST, "404.html"), page("/__not_found__/", "No such page - Provek",
-  "Nothing is served at this address.", ldOrganization()));
+// AND IT DECLARES NO ADDRESS OF ITS OWN. `page()` writes a canonical link and an og:url from the
+// route it is given, which for this document is the placeholder `/__not_found__/` - a URL that does
+// not exist and that no reader asked for. A 404 that names a canonical is telling every crawler
+// that the thing it failed to find lives somewhere specific; the honest header for a document that
+// stands in for any missing address is no address at all. Stripped rather than parameterised,
+// because this is the only page in the site with no URL of its own.
+const notFound = page(PRERENDER_ROUTE, "No such page - Provek",
+  "Nothing is served at this address.", ldOrganization())
+  .replace(/\s*<link rel="canonical"[^>]*>/, "")
+  .replace(/\s*<meta property="og:url"[^>]*>/, "");
+writeFileSync(join(DIST, "404.html"), notFound);
+
+// LASTMOD IS EMITTED ONLY WHERE A DATE WAS ACTUALLY MEASURED. AN UNMEASURED ONE IS OMITTED.
+//
+// Every route used to take `registry.generated_at` as its fallback, so regenerating `registry.json`
+// told every crawler that `/method/`, `/apply/` and `/phase-2/` had changed - pages whose prose the
+// build had not touched. That is "a rebuild manufactures freshness", which is the exact thing
+// LAW-NOTES-FRESHNESS forbids, running on all thirteen shipped routes while the law itself governed
+// zero notes. A law that binds only where there is nothing to check is L-6 one level up.
+//
+// Three routes have a real date and keep it; the rest have none and say nothing, because `<lastmod>`
+// is optional in the sitemap protocol and an absent field is honest where an invented one is not.
+// This is invariant 1 in a machine channel: not_measured is a state of its own, and the way to
+// write it here is to leave it out rather than to default it to the build clock.
+const lastmodFor = (route) => {
+  const note = noteLastmod.get(route);
+  if (note) return note;                                   // manifest: moves with the body hash
+  if (route.startsWith("/p/")) {                           // the passport was issued on a date
+    return passports[route.slice(3, -1)]?.issued_at?.slice(0, 10) ?? null;
+  }
+  // The landing and the registry ARE renderings of `registry.json` - their content moves when it
+  // does, so its generation stamp is a measurement of them and not a guess.
+  if (route === "/" || route === "/registry/") return registry.generated_at.slice(0, 10);
+  return null;                                             // prose we did not date: say nothing
+};
 
 const urls = written.map((route) => {
-  const p = route.startsWith("/p/") ? passports[route.slice(3, -1)] : null;
-  const lastmod = (p ? p.issued_at : registry.generated_at).slice(0, 10);
-  return `  <url>\n    <loc>${SITE}${route}</loc>\n    <lastmod>${lastmod}</lastmod>\n  </url>`;
+  const lastmod = lastmodFor(route);
+  const stamp = lastmod ? `\n    <lastmod>${lastmod}</lastmod>` : "";
+  return `  <url>\n    <loc>${SITE}${route}</loc>${stamp}\n  </url>`;
 }).join("\n");
 writeFileSync(join(DIST, "sitemap.xml"),
   `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`);

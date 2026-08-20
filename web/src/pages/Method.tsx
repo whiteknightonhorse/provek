@@ -95,6 +95,21 @@ export default function Method() {
           punishing someone for its own failure.
         </p>
 
+        {/* THE ENTRANCE TO THE NOTES IS ABSENT ON PURPOSE, and the absence is a measurement.
+            A paragraph stood here saying the methodology's harder parts "are written up as notes
+            on the method", linking to /method/notes/. Zero notes are captured - the capture went
+            red on a measured count and `web/notes/src/` holds nothing - so `prerender.mjs` emits
+            no such route, and the sentence pointed at a 404 while asserting in the present tense
+            that the writing existed. On this surface that is the defect this product sells the
+            detection of, so the sentence goes rather than the link being quietly softened.
+
+            The machinery it belongs to stays: SPEC 3.6, D-18 and the five LAW-NOTES-* gates
+            specify a surface that is not yet populated, which is the treatment phase 2 already
+            gets (D-16). The entrance returns WITH the first note and not before, and that is not
+            left to anybody's memory: `tests/test_notes_entrance.py` is red if this page names
+            /method/notes/ while no note is captured, and red again if a note is captured while
+            this page does not name it. */}
+
         {/* The only route to the phase-2 page, and it is here rather than on the landing on
             purpose. The landing's argument is built to hold at zero funders - that is the whole
             point of it - so dangling a future second side there as a reason to apply would

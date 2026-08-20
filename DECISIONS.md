@@ -378,3 +378,221 @@ queries instead of one, refusals are no longer counted among an instrument's ret
 the raw responses — which live outside this repository and are the only proof that every key came
 back from a source — are pinned by fingerprint in `evidence/KEYWORD-CAPTURE-001.txt`.
 
+
+## D-18. Method notes are descriptive provenance of the methodology, not teaching pages
+
+**Decision.** `/method/notes/<slug>/` is the address at which notes describing this instrument are
+published: what a term measures, which absences are distinguished, where the standard underneath
+stops and our method starts. They are reached from one sentence on Method and have no navigation
+entry. The genre, the address rule, the keyword rule, the figure rule, the ceiling and the
+disclosure are specified in SPEC §3.6 and armed by five laws in `enforced_by.yaml`.
+
+**ZERO NOTES STAND AT THE TIME OF WRITING, and that is stated first because the rest of this
+decision reads like a description of something that exists.** The machinery is built and armed; the
+corpus is empty. The capture ran twice on 2026-08-20 and ended RED both times — the second run
+drafted five sections and was then refused by `notes_gen.py`'s own deterministic `measure()` on a
+counted defect (two consecutive paragraphs opening with the same word). That is the gate working,
+not the gate failing, and a red capture is a red result rather than a skip (invariant 2). So this
+decision specifies a surface that is not yet populated, exactly as D-16 does for phase 2, and the
+sentence on Method that would lead a reader to it is ABSENT until the first note lands —
+`LAW-NOTES-ENTRANCE` holds that in both directions, because the first draft of this work shipped
+the entrance and the prose describing it before either had anything behind it.
+
+**The task asked for something else, and the substitution is recorded rather than performed
+quietly.** The instruction was "educational articles". ADR-0009 has already ruled that teaching
+does not go on this surface — the normative voice cannot be told apart from the instrument's
+descriptive one, and a verifier that teaches candidates grades work it set itself. So what was
+built is what may exist here: notes in the voice the Method page is already written in. Reporting
+"educational articles, done" over an artefact that is deliberately a different genre would be a
+statement stronger than the thing behind it, which is the defect in D-15 and the one this product
+sells the detection of.
+
+**Why the address rule is the whole design.** Programmatic page generation is the genre in which a
+claim outruns its artefact: a generator that writes plausible pages and one that writes true pages
+are indistinguishable from outside. Every note therefore carries its addresses as data, and a note
+whose address does not resolve does not build. That is not carefulness; it is the only version of
+"invent nothing" that a machine can hold.
+
+**Generation is a capture, not a build step.** A note's prose is drafted once — `claude-sonnet-5`
+plans it, `claude-haiku-4-5` writes the sections — and is then committed under `web/notes/src/`,
+which today holds nothing because no capture has yet survived `measure()`. The build
+calls no model. A build that did would depend on a network and on a token this host happens to
+hold, would not be reproducible from a clone, and would make `dateModified` a function of when
+somebody last rebuilt. The generator itself lives at `~/orchestra/notes_gen.py`, outside this
+repository, for the reason D-17 put the keyword collector there: no `ABI-*` requirement covers page
+generation, and binding one anyway to get past `scripts/ratchet_scope.py` is the rubber stamp that
+ratchet exists to catch. **No ABI mapping is added by this decision**, and saying so is the point:
+the honest consequence is that the capture cannot be re-run from a clone, and that cost is named
+here rather than hidden behind a convenient binding.
+
+**Three image keys were available and none was used.** `PEXELS_API_KEY`, `UNSPLASH_ACCESS_KEY` and
+`REPLICATE_API_TOKEN` are on the host. A stock photograph of a person at a laptop carries no fact
+about anything this page says; on a surface whose entire argument is that a claim may not exceed
+its artefact, it is ornament, and ornament is forbidden by D-07 and SPEC §10. `REPLICATE_API_TOKEN`
+is refused separately and more firmly: an image manufactured by a model to look like evidence, on a
+site about evidence, is worse than stock. What stands in their place are figures computed from
+`registry.json` and `seo/sources.json` at build time — and a note with nothing to draw says so
+instead of drawing something.
+
+**The ceiling has an instrument in its release condition.** Three notes. The precedent this work
+was modelled on gates publishing rate on Search Console indexation health; we have no Search
+Console, and Bing Webmaster answers `ErrorCode 14` until ownership verification is closed by a
+deploy this host cannot perform. So the rate is `not_measured` and the ceiling is code
+(`tests/test_notes_ceiling.py`), liftable by a reading rather than by a date or a mood.
+
+**What is decided and what is merely chosen.** The three subjects were chosen while demand is
+blind: the keyword base holds no question at all about measurement discipline, none about
+ERC-8004, and the three about autonomy levels are all `unreadable` because the demand instrument
+hit its quota. Choosing subjects under those conditions is a decision, not an optimisation, and it
+is revisited when a reading exists. The numeric bounds in `tests/test_notes.py` are assigned, dated
+2026-08-20, and carry no experiment behind them.
+
+
+## D-19. The schedule publishes on a jittered slot, and names the two steps it cannot perform
+
+**Decision.** `~/orchestra/notes_cron.py` wakes from cron every fifteen minutes and runs one
+publication cycle per day, in a slot computed as
+`HMAC-SHA256(NOTES_JITTER_SEED, "notes-cron:" + YYYY-MM-DD) mod 1440`. The cycle is
+capture, build, sitemap, deploy, Bing submission; every step it REACHES writes one line naming its
+own state, and two of those steps are refusals today.
+
+**"Every step" was the first draft of that sentence, and the journal refutes it.** The steps run in
+series and a red capture raises past the rest, so on both of the cycle's only two real runs the
+journal ends at `capture RED` and no line about `deploy` or `bing_submit` was ever written — the
+two refusals this decision is named after have in fact never once been recorded by the mechanism
+that promises to record them daily. The wording is corrected here rather than the code, because the
+scheduler is outside this repository and reordering its steps is a change that cannot be exercised
+while the capture is red; the defect is written down as **L-17** instead of being left in the shape
+of a claim. The blockages named in this decision were established by hand, from `bing_state.json`
+and from the absence of a Cloudflare credential — not by the cycle.
+
+**An even schedule is a farm's signature; a random one cannot be reproduced during a diagnosis.**
+The HMAC is both: the same date always yields the same minute, and the seed is thirty-two random
+bytes held in `~/.env`, so the schedule is not guessable from outside. The journal carries the
+seed's fingerprint, and the limit of what that proves is stated rather than glossed: a fingerprint
+pins WHICH seed produced the schedule, it does not let a reader who lacks the seed recompute a
+slot. At review the seed is presented, checked against the fingerprint, and the slot history
+recomputed with `--explain`. Writing that the journal alone reproduces the schedule would have been
+a claim stronger than its artefact, on a project whose whole subject is that defect.
+
+**"N pages a day" was refused, and refusing it is the decision.** The task asked for a daily
+printing press. D-18 caps the corpus at three notes with a named condition for lifting it, and
+`tests/test_notes_ceiling.py` arms that cap against `web/notes/emit.mjs`. From zero captured notes
+at one a day, the fourth day is the one with nothing left to print. So the cycle's work list is
+`topics - manifest`, `nothing_pending` is the correct steady state from that day on, and the
+ceiling is READ out of `emit.mjs` at run time rather than copied into a third place, because a rule
+written in more than one place survives its own repeal. A captured topic is never re-captured: the
+models are not deterministic, a second capture would produce a different `body_sha256`, and the
+manifest would faithfully move `dateModified` over prose that says the same thing - the exact lie
+D-18 forbids, arriving daily and automatically.
+
+**Three exit codes, not two.** `0` the cycle completed; `1` RED, a step broke; `2` the cycle ran
+and the publication channel is blocked for a measured reason. Collapsing `2` into `1` manufactures
+a daily red that everyone learns to ignore, and L-5 records that a false red teaches walking past
+the gate exactly as a false green does. Collapsing `2` into `0` lies.
+
+**The two blocked steps, and what unblocks each - they are NOT the same request.** `deploy` reports
+`blocked_no_tool` before `blocked_no_credential`, because both are true: wrangler is not installed
+on this host and no Cloudflare token is in `~/.env`. Publication remains the operator's manual
+`wrangler pages deploy` (L-9). `bing_submit` reports `blocked_not_verified`. These were read as one
+blockage and they are two: Bing's own record offers a **CNAME record** as proof of ownership
+(`dns_cname_record` in `~/orchestra/logs/bing_state.json`), which closes verification through DNS
+without any deploy at all. The cheap request to the operator is the DNS record; the separate,
+larger one is the deploy that makes pages exist. Reporting them as a single "waiting for the
+deploy" would have hidden the fact that half the chain unblocks in a minute.
+
+**The catch-up rule is general, and that generality is the honest part.** A cycle runs when today's
+slot has passed and no cycle is recorded for today - which serves a slot missed to a reboot, to a
+deferral, or to an installation that happened after the slot, and carries the drift in the journal
+so the miss stays visible. It was nearly written as a first-run exception instead, and Fable named
+that correctly as fitting the measurement to the verdict: a rule whose only beneficiary is the day
+of its own acceptance is dead code the following morning. The first cycle is a case of the general
+rule, labelled `catch_up_first_install`, not a rule of its own.
+
+**Contention is measured with an instrument that can see it.** Busy-ness is NOT read from
+`ps | grep claude`: this host runs a UNIX user named `claude` with four unrelated daemons and four
+other projects hold tmux sessions of that name, so the grep reads "busy" forever and would leave a
+permanently false `deferred_host_busy`. Another `notes_gen.py` in `/proc` defers the cycle; the
+orchestra does not, and that is deliberate - `orch.sh` is the long-lived driver that installed this
+cron, so yielding to it would leave a scheduler that can never run, which is a defect wearing
+caution's clothes. Its liveness is recorded beside every cycle instead. Bing's gate is the
+account-level `GetUserSites`, which answers while every per-site call refuses; hammering an
+endpoint daily in the certain knowledge that it will say `NotAuthorized` is a ritual, not a
+measurement.
+
+**Where it lives, and what that costs.** Outside this repository, by the precedent D-17 set for the
+keyword collector and D-18 for the note generator: no `ABI-*` requirement covers scheduled
+publication, and binding one to get past `scripts/ratchet_scope.py` is the rubber stamp that
+ratchet exists to catch. The cost is named: the schedule cannot be reproduced from a clone.
+**No law is added by this decision, and that is stated rather than quietly omitted** - the
+scheduler is outside the repository and there is nothing here to arm a gate against, so a
+`LAW-*` entry would be an anchor pointing at nothing. A law with a fake anchor is worse than an
+honest note (the form L-8 and L-12 use).
+
+
+## D-20. The final cross-check corrected six public claims, and none of them was a lie about the product
+
+**Decision.** T-E1 put the whole surface — live site, built site, documents, ratchets — in front of
+Fable to be REFUTED rather than approved, twice: once on the tree as it stood, once on the patch
+that answered the first round. Six statements were found to exceed their artefact and are corrected
+here. They are recorded together because the pattern matters more than any one of them, and because
+a correction to a public claim that arrives with no entry in this file is re-read a month later as
+an accident.
+
+**What they were.**
+
+1. `/registry/` told every crawler, in `description`, `og:description` and JSON-LD
+   `Dataset.description`, "every business that has been measured" while four of eight rows carry no
+   measurement at all. The VISIBLE prose had already been corrected to "submitted to the method …
+   4 could not be measured"; the machine channels had not. Live on the site for as long as it has
+   been deployed.
+2. The Method page offered a way in to `/method/notes/` — a route the build emits only when a note
+   exists, and none does — while stating in the present tense that the writing was there.
+3. D-18, SPEC §3.6 and the head of `emit.mjs` each said the prose "was drafted/captured once and
+   committed". No capture has yet survived the generator's own measurement.
+4. `README.md` put the number of enforced rules at 31; the file held 41.
+5. `/apply/` listed four stored fields and said "nothing else" over a record with seven, and told a
+   visitor their request "has reached the operator" on the strength of an HTTP 200 from Telegram.
+6. The sitemap gave every prose page `registry.generated_at` as its `lastmod`, so regenerating the
+   registry announced that `/method/`, `/apply/` and `/phase-2/` had changed.
+
+**The pattern, which is the reason this entry exists.** Not one is a lie about what the product
+does. Every one is a TRUE sentence that stopped being true in one copy while its other copy was
+corrected, or a measured quantity reported one notch stronger than the measurement. That is
+precisely the defect class this project sells the detection of, and it arrived here the same way it
+arrives everywhere: in the copy nobody re-reads, in the machine channel, in the past tense of a
+document written while the work was still expected to succeed.
+
+**What changed structurally, rather than textually.** Correcting the words would have left the
+mechanism that produced them:
+
+- the head is rewritten from ONE list for all eight per-page fields, so `og:` and `twitter:` cannot
+  drift from `description` again — `twitter:*` had never been rewritten at all, and every emitted
+  document carried the landing page's card;
+- `LAW-NOTES-ENTRANCE` makes the way in to the notes a biconditional: red if it is offered while
+  nothing is captured, red if a note is captured and no page names it. It never skips, which is
+  what separates it from the four laws that did;
+- `ratchet_decisions.py` now distinguishes `present` from `reaches a clone` — five laws named a
+  gate and a test that were untracked — and reports `unknown` rather than `clean` when git cannot
+  be asked;
+- `.github/workflows/gates.yml` builds the site, so the sweep for links the build never emitted
+  runs where gates do not depend on the pusher's discipline. It had skipped in CI since it was
+  written;
+- `push.sh` refuses a dirty tree, so the gates judge the artefact that is pushed;
+- an unmeasured `lastmod` is now OMITTED rather than defaulted, which is invariant 1 in a machine
+  channel: `not_measured` is written by leaving the field out, never by substituting the clock.
+
+**What was NOT done, and by whose ruling.** The notes corpus is still empty; capturing one is a
+neighbouring task and its gate is red for a real reason. `notes_cron.py`'s step ordering and its
+Bing/deploy desynchronisation are named in L-17 and left alone — the scheduler is outside this
+repository and the change cannot be exercised while the capture is red. Four LAW-NOTES-* modules
+still skip themselves at zero notes; L-16 names the ratchet that would close that and does not
+pretend one exists.
+
+**And the claim this task itself was asked to make.** The plan's wording was that everything "works
+autonomously without the human factor". It does not, and that is stated here rather than reported
+as done: the daily cycle can reach `blocked`, never `published`. `wrangler` is not on this host, no
+Cloudflare credential is in `~/.env`, and Bing answers `ErrorCode 14` until ownership is verified.
+Two separate operator actions unblock two different things — a DNS CNAME record closes Bing
+verification in a minute, and a `wrangler pages deploy` is what makes pages exist at all. Reporting
+autonomy over that arrangement would have been the seventh item in the list above.
