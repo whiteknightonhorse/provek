@@ -260,7 +260,7 @@ function Landing({ reg }) {
 					}),
 					/* @__PURE__ */ jsx("p", {
 						className: "mt-4 text-[1.05rem] leading-relaxed text-[var(--color-ink-2)]",
-						children: "Provek measures, per business operation, how much of your company runs without a human in the loop — and publishes the evidence behind every number, including what could not be measured."
+						children: "Provek measures, per business operation, how much of your company runs without a human in the loop — and publishes the measurements behind every number, including the ones that could not be taken."
 					}),
 					/* @__PURE__ */ jsxs("div", {
 						className: "mt-7 flex flex-wrap gap-3",
@@ -438,7 +438,7 @@ function Registry({ reg }) {
 		/* @__PURE__ */ jsxs("p", {
 			className: "mt-1 text-sm text-[var(--color-ink-2)] max-w-[46rem]",
 			children: [
-				"Every business that has been measured, with the evidence behind each verdict. Generated",
+				"Every business submitted to the method, what could be established about each, and the evidence behind it. Generated",
 				" ",
 				reg.generated_at.slice(0, 19).replace("T", " "),
 				" UTC."

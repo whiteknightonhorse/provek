@@ -26,7 +26,12 @@ export default function Registry({ reg }: { reg: R }) {
     <Page>
       <h1 className="text-2xl font-semibold tracking-tight">Registry</h1>
       <p className="mt-1 text-sm text-[var(--color-ink-2)] max-w-[46rem]">
-        Every business that has been measured, with the evidence behind each verdict. Generated{" "}
+        {/* "Every business that has been MEASURED" sat directly above four rows whose entire
+            content is that measurement did not happen. The registry lists what was SUBMITTED to
+            the method, and what the method could establish about each - which is a different and
+            truer sentence. */}
+        Every business submitted to the method, what could be established about each, and the
+        evidence behind it. Generated{" "}
         {reg.generated_at.slice(0, 19).replace("T", " ")} UTC.
       </p>
 

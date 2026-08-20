@@ -70,8 +70,8 @@ export default function Landing({ reg }: { reg: R | null }) {
         </p>
         <p className="mt-4 text-[1.05rem] leading-relaxed text-[var(--color-ink-2)]">
           Provek measures, per business operation, how much of your company runs without a human in
-          the loop &mdash; and publishes the evidence behind every number, including what could not
-          be measured.
+          the loop &mdash; and publishes the measurements behind every number, including the ones
+          that could not be taken.
         </p>
         <div className="mt-7 flex flex-wrap gap-3">
           <a href="/apply/" className="border border-[var(--color-ink)] bg-[var(--color-ink)] text-[var(--color-paper)] px-4 py-2 text-sm">
