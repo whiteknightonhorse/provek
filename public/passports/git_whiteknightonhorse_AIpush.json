@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-08-20T06:18:33.525031+00:00",
-    "valid_until": "2026-09-19T06:18:33.525031+00:00",
+    "issued_at": "2026-08-20T06:47:26.381511+00:00",
+    "valid_until": "2026-09-19T06:47:26.381511+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -87,6 +87,7 @@
     },
     "mandate_ref": "self-mandate-0001",
     "verifier_affiliation": "same_owner",
+    "access_channel": "anonymous",
     "disclaimer": "The score measures AUTONOMY. It does not measure reliability, decision quality, profitability, or the presence of an accountable party - see accountability."
   }
 }

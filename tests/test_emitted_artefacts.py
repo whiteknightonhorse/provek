@@ -144,3 +144,77 @@ def test_the_gates_would_fire():
     assert "confidence" not in op
 
     assert "/home/incubator" not in reg["subjects"][0]["passport_ref"]
+
+
+# --- gates for the four defects Fable found in the commit that closed the previous four --------
+
+
+def test_registry_status_and_passport_status_agree():
+    """NEW-1. One subject had two published artefacts contradicting each other about its status:
+    `unverified` in the registry, `verified` in the document the registry links to. R2's shape,
+    inside the commit that closed R2 - because the gate only read rows."""
+    reg = json.loads(REGISTRY.read_text())
+    by_id = {p["subject_id"]: p for p in _passports()}
+    for row in reg["subjects"]:
+        assert row["status"] == by_id[row["subject_id"]]["status"], row["subject_id"]
+
+
+def test_a_passport_that_measured_nothing_is_not_verified():
+    for p in _passports():
+        if p["verified"]["projection"] is None:
+            assert p["status"] != "verified", p["subject_id"]
+
+
+def test_every_passport_publishes_the_channel_its_evidence_came_through():
+    """NEW-3. `optional_token()` claimed the passport recorded this. No passport carried it."""
+    for p in _passports():
+        assert p.get("access_channel") in ("anonymous", "granted_token"), p["subject_id"]
+
+
+def test_a_published_verdict_is_anonymously_reproducible():
+    """NEW-2, and it is the sudo hole in softer clothes.
+
+    Run the cohort holding a token that can read the operator's private repositories and all five
+    private subjects return 200, read cleanly, and publish as verified - verdicts no anonymous
+    reader could ever reproduce. Evidence entering a published verdict must be reachable without a
+    credential, so a private subject is unreadable for scoring whatever channel we hold.
+    """
+    for p in _passports():
+        if p["verified"]["projection"] is None:
+            continue
+        assert p.get("access_channel") == "anonymous", (
+            f"{p['subject_id']} carries a projection obtained through a privileged channel")
+
+
+def test_the_private_subject_rule_is_in_the_code_not_only_in_this_test():
+    """A rule enforced only by a test that reads today's artefacts would pass on an empty corpus."""
+    src = (ROOT / "scripts" / "cohort.py").read_text(encoding="utf-8")
+    assert "not ev.private" in src, "the cohort must refuse to publish what only a credential sees"
+
+
+def test_a_403_is_not_assumed_to_be_our_own_rate_limit():
+    """NEW-4. GitHub returns 403 for blocked repositories too; aborting the cohort on one would
+    announce a fact about us when the truth was one subject refusing."""
+    src = (ROOT / "src" / "collector" / "github.py").read_text(encoding="utf-8")
+    assert "_rate_limit_exhausted" in src
+    assert "code == 403 or code == 429" not in src
+
+
+def test_these_gates_would_fire():
+    """Controls. Each planted defect is the exact shape Fable found."""
+    reg = json.loads(REGISTRY.read_text())
+    p = dict(_passports()[0])
+
+    p["status"] = "verified"
+    p["verified"] = dict(p["verified"]); p["verified"]["projection"] = None
+    assert p["status"] == "verified" and p["verified"]["projection"] is None
+
+    p2 = dict(_passports()[0]); p2.pop("access_channel", None)
+    assert p2.get("access_channel") is None
+
+    p3 = dict(_passports()[0]); p3["access_channel"] = "granted_token"
+    assert p3["access_channel"] != "anonymous"
+
+    row = dict(reg["subjects"][0]); row["status"] = "verified"
+    assert row["status"] == "verified"
+

@@ -19,7 +19,7 @@ from src.abs_profile.evidence import EvidenceClass
 from src.abs_profile.identity import Binding, BindingKind
 from src.abs_profile.ladder import L
 from src.abs_profile.measured import NotMeasured
-from src.collector.github import collect_github
+from src.collector.github import access_channel, collect_github
 from src.passport.passport import Accountability, Provenance, build
 from src.registry.lifecycle import Status
 from src.registry.public_registry import PublicRegistry, Row
@@ -50,8 +50,10 @@ def optional_token() -> str | None:
     a departure from it.
 
     A token is honoured when present, purely to widen the rate limit for a larger cohort. It never
-    changes what is measured, and the passport records which channel was used so that "anyone can
-    recompute this" is a published fact rather than an assumption.
+    changes what is PUBLISHED - that sentence was false when first written and is now enforced by
+    the `publishable` rule below, which treats a private subject as unreadable whatever channel we
+    hold. The passport records which channel was used, so "anyone can recompute this" is a
+    published fact rather than an assumption.
     """
     return os.environ.get("PROVEK_GITHUB_TOKEN", "").strip() or None
 
@@ -105,10 +107,20 @@ for full in COHORT:
     # did not answer, passing it anyway made the scorer say `nothing_qualified` - "we looked and
     # none of it counted" - about a source that had refused to speak to us. Pass what we actually
     # hold, and let the collector's own finding stand.
-    observed = (EvidenceClass.PLATFORM_OBSERVED,) if ev.read else ()
+    # NEW-2 (Fable). `ev.read` alone is not the test. Run this with a token that can see the
+    # operator's private repositories and all five of them return 200, read cleanly, and publish as
+    # `verified` with projections - verdicts no anonymous reader could ever reproduce. That is the
+    # sudo hole reopened in softer clothes: evidence reachable only through a privileged channel.
+    #
+    # THE RULE: evidence entering a published verdict must be anonymously reproducible. A private
+    # subject is therefore unreadable FOR SCORING regardless of what we hold. The collector still
+    # records honestly that it read - that is a fact about us - and the cohort refuses to publish
+    # what only a credential could see, which is a fact about the verdict.
+    publishable = ev.read and not ev.private
+    observed = (EvidenceClass.PLATFORM_OBSERVED,) if publishable else ()
     dev = (score_operation("development_initiation", lvl, observed, cmap.implied_level_cap(),
                            weak_mixed_signal=True, runtime_trace=ev.has_runtime_trace)
-           if ev.read else
+           if publishable else
            OperationScore("development_initiation", NotMeasured.UNREADABLE, (), Confidence.MEASURED))
     scores = [dev,
               score_operation("deployment", None, ()),
@@ -116,7 +128,8 @@ for full in COHORT:
     proj = projection(scores)
     p = build(binding, scores, cmap, proj, PROV, Accountability(),
               now=now, claims={"source": "github", "private": ev.private},
-              mandate_ref="self-mandate-0001", verifier_affiliation="same_owner")
+              mandate_ref="self-mandate-0001", verifier_affiliation="same_owner",
+              access_channel=access_channel(tok))
     m = p.to_machine()
     ref = transport.publish(binding.as_subject_id(), m, m["verified"]["projection"])
     # protocol_version, not SCHEMA_VERSION (Fable, R2). Those are different quantities that happen

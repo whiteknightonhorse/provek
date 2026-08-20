@@ -140,6 +140,16 @@ class Passport:
     verified: dict = field(default_factory=dict)        # the MEASURED branch
     self_reported: dict = field(default_factory=dict)   # the SUBJECT-CLAIMED branch
     accountability: Accountability = field(default_factory=Accountability)
+    access_channel: str = "anonymous"
+    """WHICH CHANNEL the evidence came through, published rather than assumed (Fable, NEW-3).
+
+    `optional_token()` already claimed in its docstring that the passport records this. It did not.
+    A claim about an artefact that the artefact does not carry is the defect class this product
+    exists to detect, so the fix is to emit it rather than to withdraw the sentence.
+
+    "Reproducible by anyone" and "reproducible by someone holding a credential" are different
+    offers, and a reader is not asked to guess which one they have been given.
+    """
     mandate_ref: str | None = None                      # None = no active probing was performed
     verifier_affiliation: str = "independent"
     """MANDATORY DISCLOSURE (Fable ruling, 2026-08-19).
@@ -176,10 +186,26 @@ class Passport:
             "accountability": self.accountability.to_machine(),
             "mandate_ref": self.mandate_ref,
             "verifier_affiliation": self.verifier_affiliation,
+            "access_channel": self.access_channel,
             "disclaimer": ("The score measures AUTONOMY. It does not measure reliability, "
                            "decision quality, profitability, or the presence of an accountable "
                            "party - see accountability."),
         }
+
+
+def _status(control_map_valid: bool, projection_value: Measurement) -> Status:
+    """A passport that measured nothing is NOT verified (Fable, NEW-1).
+
+    The registry row learned this and the passport did not, so one subject had two published
+    artefacts contradicting each other about its own status - `unverified` in the registry,
+    `verified` in the document the registry links to. That is R2's shape, in the commit that
+    closed R2, and the emitted-artefact gate missed it because the gate only read rows.
+
+    One rule, one place, both artefacts derived from it.
+    """
+    if not control_map_valid:
+        return Status.IN_PROGRESS
+    return Status.VERIFIED if projection_value.is_measured else Status.UNVERIFIED
 
 
 def build(binding: Binding, scores: list[OperationScore], control_map: ControlMap,
@@ -187,7 +213,8 @@ def build(binding: Binding, scores: list[OperationScore], control_map: ControlMa
           accountability: Accountability, *, now: datetime | None = None,
           validity_days: int = 30, claims: dict | None = None,
           mandate_ref: str | None = None,
-          verifier_affiliation: str = "independent") -> Passport:
+          verifier_affiliation: str = "independent",
+          access_channel: str = "anonymous") -> Passport:
     """Assemble a passport. An invalid control map CANNOT yield `verified`.
 
     A map without coverage claims more than it knows (ABI-7-5), and a passport cannot stand on it.
@@ -217,7 +244,20 @@ def build(binding: Binding, scores: list[OperationScore], control_map: ControlMa
             "unknown_shape": control_map.coverage.unknown_shape if ok else "",
         },
     }
-    return Passport(binding, now, now + timedelta(days=validity_days),
-                    Status.VERIFIED if ok else Status.IN_PROGRESS,
-                    provenance, verified, dict(claims or {}), accountability,
-                    mandate_ref, verifier_affiliation)
+    # KEYWORDS, not positions. Inserting `access_channel` above shifted every argument after it,
+    # so the field silently took `mandate_ref`'s value and published a null where a channel name
+    # belongs. The bare-null gate caught it, which is the whole reason that gate reads the emitted
+    # document; a positional constructor with ten arguments is a defect waiting for its next field.
+    return Passport(
+        subject_binding=binding,
+        issued_at=now,
+        valid_until=now + timedelta(days=validity_days),
+        status=_status(ok, projection_value),
+        provenance=provenance,
+        verified=verified,
+        self_reported=dict(claims or {}),
+        accountability=accountability,
+        access_channel=access_channel,
+        mandate_ref=mandate_ref,
+        verifier_affiliation=verifier_affiliation,
+    )

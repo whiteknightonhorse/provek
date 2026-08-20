@@ -1,6 +1,6 @@
 {
   "subject_id": "git:whiteknightonhorse/provek",
-  "projection": null,
+  "projection": 80,
   "passport": {
     "schema_version": "2.0.0",
     "subject_id": "git:whiteknightonhorse/provek",
@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-08-20T06:18:33.525031+00:00",
-    "valid_until": "2026-09-19T06:18:33.525031+00:00",
+    "issued_at": "2026-08-20T06:47:26.381511+00:00",
+    "valid_until": "2026-09-19T06:47:26.381511+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -20,10 +20,12 @@
       "operations": [
         {
           "operation": "development_initiation",
-          "level": "unreadable",
-          "measured": false,
-          "confidence": null,
-          "limiters_applied": []
+          "level": "L4",
+          "measured": true,
+          "confidence": "inferred",
+          "limiters_applied": [
+            "O1:mixed_classes->inferred"
+          ]
         },
         {
           "operation": "deployment",
@@ -40,8 +42,8 @@
           "limiters_applied": []
         }
       ],
-      "projection": null,
-      "projection_absent_reason": "unreadable",
+      "projection": 80,
+      "projection_absent_reason": null,
       "control_map_valid": true,
       "control_map_cap": 5,
       "coverage": {
@@ -84,6 +86,7 @@
     },
     "mandate_ref": "self-mandate-0001",
     "verifier_affiliation": "same_owner",
+    "access_channel": "anonymous",
     "disclaimer": "The score measures AUTONOMY. It does not measure reliability, decision quality, profitability, or the presence of an accountable party - see accountability."
   }
 }

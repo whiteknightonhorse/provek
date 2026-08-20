@@ -86,6 +86,15 @@ def access_channel(token: str | None) -> str:
     return GRANTED if token else ANONYMOUS
 
 
+def _rate_limit_exhausted(token: str | None) -> bool:
+    """Ask GitHub whether OUR budget is the reason, instead of inferring it from a status code."""
+    code, body = _api("/rate_limit", token)
+    if code != 200 or not isinstance(body, dict):
+        return False
+    core = ((body.get("resources") or {}).get("core") or {})
+    return core.get("remaining") == 0
+
+
 def _api(path: str, token: str | None = None) -> tuple[int, object]:
     """ANONYMOUS BY DEFAULT (2026-08-20).
 
@@ -123,7 +132,12 @@ def collect_github(full_name: str, token: str | None = None) -> GitHubEvidence:
 
 
     code, repo = _api(f"/repos/{full_name}", token)
-    if code == 403 or code == 429:
+    # NEW-4 (Fable): GitHub also returns 403 for DMCA-blocked and access-blocked repositories.
+    # Treating every 403 as our exhausted budget would abort the whole cohort announcing a fact
+    # about us when the truth was one subject refusing - misattribution in the opposite direction
+    # from the one this guard exists to prevent. Only a 403 that comes with an exhausted rate-limit
+    # header is ours; any other 403 is the subject's refusal and yields `unreadable` below.
+    if code == 429 or (code == 403 and _rate_limit_exhausted(token)):
         # Exhausting a rate limit is OUR budget running out, not the subject's source refusing to
         # answer. Emitting evidence here would publish a fact about us as a fact about them.
         raise SystemExit(
