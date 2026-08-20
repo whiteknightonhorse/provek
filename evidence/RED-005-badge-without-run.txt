@@ -1,0 +1,48 @@
+RED-005 - the badge test proved able to fail, 2026-08-20
+
+A test that cannot fail is a declaration (CLAUDE.md invariant 5). Four defects were injected into
+README.md, one per guard, and the file was restored afterwards from a copy taken before the
+injection - the suite is green again in the same session.
+
+The defects are the four ways a badge lies, and each was chosen because it is what a hurried commit
+actually does, not what a malicious one would:
+
+  1. `![build](https://img.shields.io/badge/build-passing-brightgreen)`
+     The decorative badge. Renders in the project's own green, is wrapped in no link, and takes its
+     text from its own URL. This is the exact claim-stronger-than-artefact defect the project is
+     built to detect, which is why its presence in this repository's own README would be the worst
+     available failure. Caught twice, by the no-link guard and by the endpoint ban.
+
+  2. the `codeql` badge repointed at `nightly-fuzz.yml`, a workflow this repository does not have
+     A badge for a workflow that never existed - or that was deleted after the badge was pasted -
+     keeps rendering the last colour it ever had. Nothing about the image says the run is gone.
+
+  3. the OpenSSF badge relinked from our report to `https://scorecard.dev/`
+     The badge still shows our real score; the link now lands on the service's front page. A reader
+     who clicks to check the number arrives somewhere it cannot be checked, which is worse than no
+     link because it looks like it was followed.
+
+  4. `## What the badges assert` renamed to `## Security`
+     Three green ticks and no statement of what they cover. A green `codeql` badge means the
+     analysis COMPLETED, not that it found nothing, and an unexplained tick is read as covering
+     everything.
+
+COMMAND: python3 -m pytest tests/test_readme_badges.py -q
+
+E           AssertionError: badge 'build' is an image with no link: a claim whose evidence the reader cannot open
+E           AssertionError: badge 'build' uses img.shields.io/badge/ - that endpoint renders the words in its own URL and no run stands behind it
+E           AssertionError: badge 'codeql' points at nightly-fuzz.yml, which is not in .github/workflows - a badge for a workflow that does not exist keeps rendering the last colour it ever had
+E       AssertionError: the badge section is gone; three green ticks with nothing saying what they mean read as a claim about the whole repository
+FAILED tests/test_readme_badges.py::test_every_badge_is_a_link_to_its_report
+FAILED tests/test_readme_badges.py::test_no_static_label_badges
+FAILED tests/test_readme_badges.py::test_every_actions_badge_names_a_workflow_that_exists
+FAILED tests/test_readme_badges.py::test_the_badges_are_explained_where_the_reader_can_find_it
+4 failed, 2 passed in 0.04s
+
+WHAT THIS ARTEFACT DOES NOT PROVE. That the badges are green right now. The test deliberately makes
+no network call: a suite that fails when GitHub is slow gets skipped, and a false red bypasses a
+gate exactly as a false green does (L-4's other edge). Greenness was established by measurement
+instead, before the badges were written into README - three completed runs on f5c92b9 read from
+`/actions/runs`, and score 3.7 read from `api.securityscorecards.dev`, dated 2026-08-20T14:13:01Z
+and pinned by the OpenSSF to that same commit. Those readings are recorded in the commit that added
+the badges.

@@ -1,5 +1,13 @@
 # Provek
 
+[![gates](https://github.com/whiteknightonhorse/provek/actions/workflows/gates.yml/badge.svg)](https://github.com/whiteknightonhorse/provek/actions/workflows/gates.yml)
+[![codeql](https://github.com/whiteknightonhorse/provek/actions/workflows/codeql.yml/badge.svg)](https://github.com/whiteknightonhorse/provek/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/whiteknightonhorse/provek/badge)](https://scorecard.dev/viewer/?uri=github.com/whiteknightonhorse/provek)
+
+*Each of these is a live run, not a picture — click one and read the run it came from.
+[What they do and do not assert](#what-the-badges-assert) is stated below, because a badge is a
+claim like any other.*
+
 **Evidence, not claims.** A verification layer that measures, per business operation, how much of a
 company actually runs without a human in the loop — and publishes the evidence behind every number,
 including what could not be measured.
@@ -114,6 +122,41 @@ The design record is in the open, including its mistakes:
   `TAINTED-SUDO-CORPUS`, the artefacts produced by a pipeline that read its subjects through host
   privilege before the rule caught it. Deleting the evidence of a violation would be a second
   violation.
+
+## What the badges assert
+
+Three badges sit at the top of this file. Each is fetched live from the service that ran the check,
+so it goes red when the check does — and a reader who wants the underlying run is one click away.
+
+| badge | who runs it | what green means |
+|---|---|---|
+| `gates` | us, on GitHub Actions | the ratchets, the full test suite at ≥70% coverage, ruff, and the secret scan all passed on this commit |
+| `codeql` | GitHub's CodeQL engine | the `security-and-quality` analysis **completed** on both Python and TypeScript — *not* that it found nothing; findings live in the Security tab |
+| OpenSSF Scorecard | the OpenSSF, from their own copy | supply-chain posture scored against their rubric, published by them at [scorecard.dev](https://scorecard.dev/viewer/?uri=github.com/whiteknightonhorse/provek) |
+
+**`gates` is us grading our own homework.** Every rule in it was written by the same hands as the
+code it judges, which makes it useful and not independent. That is the whole reason the other two
+are here: their queries and their rubric are not ours.
+
+**The Scorecard number is low, and it is real.** It is not pinned, not cached and not chosen — it
+is whatever the OpenSSF last computed. Several checks score zero because this repository has not
+adopted the practice they measure; raising the number by tuning the run rather than by changing
+the repository would be the exact defect this project exists to detect.
+
+One detail in that report is worth naming, because it is this project's own vocabulary appearing in
+someone else's tool: Scorecard reports `-1` for a check that **could not run**, distinct from `0`
+for one that ran and found nothing. `nothing_qualified` and `check_did_not_run` are different
+states of the world in their rubric as they are in [ours](SPEC.md).
+
+**Badges that were considered and rejected**, so that their absence is a decision rather than an
+oversight: Snyk (its badge answers `200` with the word *monitored* — no scan stands behind it),
+Dependabot (a real service, but no badge that reports a run), Codecov (needs an account credential
+this project does not hold; coverage is already gated at 70% inside `gates`), Sigstore/SLSA
+provenance (nothing to attest — this repository publishes no release artefacts, which Scorecard
+independently confirms with `-1` on `Signed-Releases` and `Packaging`), and the OpenSSF Best
+Practices badge (a self-assessed questionnaire, which is `self_reported` under our own taxonomy and
+therefore not evidence). `tests/test_readme_badges.py` fails the build if a badge without a run
+behind it is ever pasted in here.
 
 ## Repository layout
 
