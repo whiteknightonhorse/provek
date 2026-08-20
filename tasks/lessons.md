@@ -366,3 +366,70 @@ The general rule has no gate: a checker cannot tell which of a repository's test
 The limits on the instance are recorded once, in `docs/LIVENESS_OPERATIONS.md`, rather than listed
 again here — including the one in L-10's form, that the trigger being in the file is checkable from
 this host and its dispatch by GitHub is not.
+
+## L-20 Closing the instance leaves the mechanism, and the mechanism is the defect
+
+`gates.yml` opens "THE SAME GATES AS scripts/push.sh". It was not true: CI ran `ruff` and the door
+never had, so four runs went out clean through the door and turned `main` red. The fix was to add
+ruff to the door. That fix was correct and it was not enough, because what made the drift last was
+not the missing tool — it was that a sentence claimed the two lists were one list while nothing
+compared them. A rule written in more than one place survives its own repeal (L-2); here the two
+copies were a workflow and a shell script, and the copy that was wrong was the one nobody ran.
+
+Writing the comparison as a gate rather than a sentence found two more divergences in the first
+run, both older than the ruff one and neither suspected: the door built no site, so the assertions
+that sweep the emitted pages read whatever `web/dist` was lying on the host or skipped outright;
+and the door enforced no coverage floor while CI required 70%. Three instances, one mechanism, and
+the two that had never been noticed were found by the check rather than by another red build.
+
+The general form: **when a divergence between two copies of a rule is found, the finding is the
+absence of the comparison, not the value that differed.** Fixing the value returns the system to
+the state it was in the day before the last drift started.
+
+There is a second half, and it is the one that took longer to see. `mypy` sat beside ruff running
+`|| true`, and the note under it promised it would become blocking "once a clean baseline exists —
+and that promise is recorded here rather than left as an intention". Recording it *is* leaving it
+as an intention. Nothing measured the condition, nothing would fire when it was met, and nothing
+would notice if it never was — L-7 in the document that describes this project's gates, four lines
+above a section kept as a warning about a dated condition that had expired unnoticed.
+
+`|| true` was also invariant 1 in its purest shape. It suppressed the findings, which was intended,
+and it suppressed mypy failing to START, which was not: an instrument that could not run printed
+exactly what a clean baseline prints. The single reading that would have ended the advisory state
+was indistinguishable from a crash, so the gate could not have moved forward even in principle.
+
+Anchor: `LAW-DOOR-MATCHES-ARBITER` (`scripts/push.sh`, `tests/test_door_matches_ci.py`). The
+comparison is checked in both directions, the advisory state carries a date that goes red on its
+own, and the date sits inside GitHub's sixty-day schedule-disable window for L-19's reason — a
+deadline the clock cannot reach in the state it exists for is another promise. The red runs are
+`evidence/RED-011-door-checks-less-than-the-arbiter.txt`.
+
+## L-21 A fix that is written but never called documents itself into looking done
+
+`tests/test_door_matches_ci.py` was written to end the door/arbiter drift of L-20. Three of its
+repairs — `executable_lines`, `CHAINS`, `BENIGN_ACTIONS` — were defined, given docstrings naming
+the exact defect each closed, and **never called**. `grep` found every one of them at its own
+definition and nowhere else. The suite was green, the file read as thorough, and all three holes
+were open: a door with lint, site and tests commented out was reported as matching CI, because the
+prose explaining why those steps matter still contained the strings being matched.
+
+That is this repository's subject defect — a claim stronger than its artefact — committed inside
+the check written to end it, and it is the second time in one task that the *documentation of a
+fix* was mistaken for the fix. The green suite was not evidence of anything: no test exercised the
+helpers, so nothing could tell a wired-in repair from a decorative one.
+
+**A repair is not landed until something fails without it.** Not a test that calls it — a test that
+goes red when the call is removed. Mutation is the cheap form: take out the fix, watch the suite,
+and confirm exactly one test dies and it is the right one. Applied to the six defects Fable then
+found, this caught two mutations that never applied at all because shell quoting mangled the
+anchor — a "passing" run that had tested nothing, which is the same false green one level up.
+
+The corollary is about review. Reading the diff would not have caught this; the diff looks like
+three careful fixes. What caught it was asking, of each new symbol, *who calls this?* — a question
+about the artefact rather than about the prose describing it. **Dead code in a gate is not tidiness
+debt; it is an unarmed gate that reads as an armed one** (L-16, moved from the gate to the gate's
+own implementation).
+
+Anchor: `LAW-DOOR-MATCHES-ARBITER`. The reds, including the five false greens Fable produced
+against the repaired file and the mutation that kills each fix, are RED 5 and RED 6 in
+`evidence/RED-011-door-checks-less-than-the-arbiter.txt`.

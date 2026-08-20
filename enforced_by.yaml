@@ -87,6 +87,21 @@ laws:
     text: "a gate that does not stop is not a gate: pushes go only through push.sh with set -e"
     gate: scripts/push.sh
     test: tests/test_ratchet_scope.py
+  - id: LAW-DOOR-MATCHES-ARBITER
+    text: "no step of our own gates.yml can fail on main that the door did not run; a workflow the door cannot mirror is declared with its reason; and an advisory CI step carries a dated expiry rather than a promise"
+    # LAW-GATE-MUST-BLOCK is that the door STOPS; this is that it stops for the same reasons the
+    # arbiter does. The gap between those two is where four red runs on `main` came from, and the
+    # header of gates.yml asserting the lists were identical is what kept it invisible - so the
+    # gate is the door itself and the test is the comparison, checked in both directions.
+    #
+    # THE SCOPE IN THAT SENTENCE IS LOAD-BEARING AND WAS WRONG WHEN FIRST WRITTEN. It read "no
+    # check can fail on main", while the test reads gates.yml alone and codeql.yml and
+    # scorecard.yml also trigger on push to main - a law broader than its gate, ratified in the
+    # commit closing a task about exactly that. The door cannot run CodeQL, so the achievable
+    # property is that our own suite is mirrored and the unmirrorable ones are named, counted, and
+    # cannot grow a fourth member unnoticed.
+    gate: scripts/push.sh
+    test: tests/test_door_matches_ci.py
   - id: LAW-REDACT-BEFORE-ARTIFACT
     text: "secrets are redacted BEFORE the text becomes an artefact"
     gate: src/collector/github.py

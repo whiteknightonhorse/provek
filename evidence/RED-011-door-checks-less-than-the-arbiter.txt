@@ -1,0 +1,204 @@
+RED-011 - the door checks less than the arbiter (LAW-DOOR-MATCHES-ARBITER)
+==========================================================================
+T-F4, captured 2026-08-20 on the audit host.
+
+A gate whose firing has never been shown is a promise (ADR-0007). Four reds below: the acceptance
+criterion of the task, the two divergences the new comparison found that had never produced a red
+build, and the state this task found `mypy` in.
+
+Restores were verified after each: `git diff --stat` shows only the intended files, and the
+`ADVISORY-UNTIL` sentinel and the coverage floor are both back in place.
+
+
+RED 1 - ./scripts/push.sh --gates-only is RED on a ruff finding
+--------------------------------------------------------------
+The task's stated acceptance criterion. An unused import was planted in `tests/`, which ruff checks
+and the scope ratchet does not, so the finding had to reach step 5 rather than being caught earlier.
+(The first attempt planted it in `scripts/` and T-SCOPE-RATCHET stopped it at step 2 - recorded
+because it is the gate ahead of this one doing its job, not a failed capture.)
+
+1/7 secrets
+secret scan: clean
+2/7 scope
+T-SCOPE-RATCHET: clean
+3/7 laws
+T-DECISION-1: clean (43 laws, every gate and test present)
+4/7 language
+T-LANGUAGE-RATCHET: clean (English-only)
+5/7 lint
+F401 [*] `os` imported but unused
+ --> tests/_planted_ruff.py:1:8
+  |
+1 | import os
+  |        ^^
+help: Remove unused import: `os`
+  |
+  - import os
+  |
+
+Found 1 error.
+[*] 1 fixable with the `--fix` option.
+EXIT=1
+
+
+RED 2 - a blocking CI gate absent from the door
+-----------------------------------------------
+`--cov=src --cov-fail-under=70` removed from scripts/push.sh. This is not hypothetical: it is the
+state the door was actually in until this commit, and it had never gone red.
+
+        """The assertion the header of gates.yml has been making, now measured."""
+>       assert divergences(WORKFLOW.read_text(encoding="utf-8"),
+E       assert ['tests: CI s...the arbiter.'] == []
+E         Left contains one more item: "tests: CI step 'full suite, whole tree' is blocking, but scripts/push.sh does not contain `--cov-fail-under=70` - the door checks LESS than the arbiter."
+1 failed, 7 passed in 0.03s
+EXIT=1
+
+
+RED 3 - mypy reverted to the bare `|| true` this task found
+------------------------------------------------------------
+Four separate assertions fire: the advisory step has no expiry, the workflow no longer states the
+date it is governed by, `|| true` cannot tell a clean run from a broken one, and no branch of the
+step can end the advisory state.
+
+E         Left contains one more item: "lint: CI step 'mypy' is declared advisory, but its body carries no `ADVISORY-UNTIL:` - an advisory gate with no expiry is a permanent one."
+tests/test_door_matches_ci.py:246: AssertionError
+E       AssertionError: the workflow step must carry the expiry it is governed by, so a reader of the step does not have to know this file exists
+tests/test_door_matches_ci.py:316: AssertionError
+E       AssertionError: `|| true` cannot tell a clean run from a broken one
+tests/test_door_matches_ci.py:332: AssertionError
+E       AssertionError: no branch of an advisory step ends the advisory state
+tests/test_door_matches_ci.py:351: AssertionError
+4 failed, 4 passed in 0.05s
+
+
+RED 4 - the expiry, against a simulated clock
+----------------------------------------------
+SIMULATED, and labelled as such: the assertion reads the real UTC clock, so the only honest way to
+show it firing today is to evaluate its condition at two dates. It is the one red here that is not
+a live run, and saying so is the point of the file.
+
+  clock=2026-10-15  advisory_until=2026-10-15  -> PASS
+  clock=2026-10-16  advisory_until=2026-10-15  -> RED
+
+What runs it in the world where nobody pushes is the daily `schedule:` in gates.yml (L-19), which
+is why the date sits inside the sixty days after which GitHub disables it.
+
+
+RED 5 - three false greens INSIDE the comparison itself
+-------------------------------------------------------
+Captured 2026-08-20, after RED 1-4 and before this commit. `executable_lines`, `CHAINS` and
+`BENIGN_ACTIONS` had been written, documented in prose as the fixes for three named defects, and
+never called - `grep` found each name only at its own definition. The docstrings asserted the
+repairs; the code did not perform them. That is this repository's subject defect committed inside
+the check written to end it, which is why it is recorded here rather than quietly corrected.
+
+Measured BEFORE the wiring, against the real gates.yml and the real push.sh:
+
+  1. door with steps 5, 6 and 7 commented out   -> divergences reported: NONE
+     ("-m ruff" still present in the door: True - in the comment that explains why ruff matters)
+  2. run: pip install bandit && bandit -r src --strict  -> divergences reported: NONE
+  3. uses: gitleaks/gitleaks-action@v2                  -> divergences reported: NONE
+
+Each is a state in which the door checks LESS than the arbiter and this file says it does not.
+
+AFTER the wiring, the same three inputs (baseline against the real pair stays clean):
+
+  1. four gaps named: 'full suite, whole tree', 'build the site', 'gates that read the emitted
+     artefact', 'ruff' - each "the door checks LESS than the arbiter."
+  2. "an UNNAMED step runs `pip install bandit && bandit -r src --strict`, which is not runner
+     preparation."
+  3. "step `uses: gitleaks/gitleaks-action@v2`, a third-party action that is not runner
+     preparation."
+
+And the three new assertions are shown to be able to fail, one mutation at a time - each kills its
+own test and only its own, so they are armed and specific rather than jointly satisfied:
+
+  un-wire executable_lines(door)          -> FAILED ..._commented_out_at_the_door_is_not_vouched_for
+  restore the bare startswith() test      -> FAILED ..._chained_behind_a_setup_command_is_not_setup
+  skip `uses:` steps again                -> FAILED ..._third_party_action_is_a_gate
+  each: 1 failed, 10 passed               restored: 11 passed
+
+
+RED 6 - six more, from handing the repaired file to Fable to REFUTE
+--------------------------------------------------------------------
+Captured 2026-08-20, after RED 5 was fixed. Five are false GREENS - inputs that can redden `main`
+and that `divergences()` reported as clean - and one is a law whose text outran its gate. Measured
+BEFORE the repair, each against the real gates.yml and the real push.sh:
+
+  F1  push.sh step 5 replaced by
+        echo "5/7 lint skipped today: -m ruff release is broken"
+      -> NONE. RED 5's fix removed `#` comments only, so an excuse PRINTED by the door still
+      contained `-m ruff` and vouched for the step it announces the absence of. The same false
+      green as RED 5.1, one string context over, in the commit that claimed to have closed it.
+
+  F2  a job that IS a reusable workflow:
+        audit:
+          uses: octo-org/sec/.github/workflows/strict-audit.yml@main
+      -> NONE. The parser only ever read `- ` items under a job, so job-level keys were never
+      seen. An entire external workflow, able to fail `main` on anything it contains, invisible.
+
+  F3  a trailing comment on a job id:  `evil:   # bandit, strict`
+      -> NONE for the bandit step beneath it. The job header test required the line to END with
+      `:`, so the job was not recognised and every step under it was skipped. Partial
+      unreadability rendered as clean - invariant 1 turned on this file's own parser, and the
+      `if not steps` guard catches only the totally unreadable case.
+
+  F4  a flow-mapping step:  `- { name: bandit, run: bandit -r src --strict }`
+      -> NONE. Valid YAML, accepted by Actions, read as one nonsense key with no `run`, and
+      dropped through the same `run is None: continue` that once swallowed `uses:`.
+
+  F5  `- run: pip install --quiet $(python scripts/choose_gate.py)`
+      -> NONE. CHAINS knew `&&` and not `$(`, so an arbitrary script running under `bash -e`
+      entered by the unnamed-step-is-setup hole the predicate exists to close.
+
+  F6  not an input but a claim: the law read "no check can fail on main that the door did not
+      run", while its test reads gates.yml ALONE - and codeql.yml and scorecard.yml both trigger
+      on push to main. A law broader than its gate, ratified in the commit closing a task about
+      exactly that. scorecard.yml's own header records a run that died in setup on an
+      unresolvable ref: a red on `main` the door has never been able to see.
+
+AFTER the repair, the same six inputs, with the real pair still clean:
+
+  baseline        clean
+  F1  "CI step 'ruff' is blocking, but scripts/push.sh does not contain `-m ruff`"
+  F2  "the job IS a reusable workflow (`uses: ...`)"
+  F3  "CI step 'bandit strict' has NO ROW in CI_GATES"
+  F4  "step `- { name: bandit, ... }` is a flow mapping, which this checker does not parse"
+  F5  "an UNNAMED step runs `pip install --quiet $(python x.py)`, which is not runner preparation"
+  F6  law text scoped to our own suite; codeql.yml and scorecard.yml declared as unmirrored with
+      the reason; the workflow count asserted, so a fourth cannot appear unnoticed.
+  control: `pip install --quiet pytest pytest-cov` is still read as setup (no false red).
+
+Each fix mutation-tested, one at a time, and each kills its own test and only its own:
+
+  don't strip string literals   -> FAILED ..._a_printed_excuse_does_not_vouch_for_the_step
+  don't see job-level uses:     -> FAILED ..._a_reusable_workflow_job_is_not_invisible
+  require job line to end ':'   -> FAILED ..._a_commented_job_id_does_not_hide_the_steps
+  don't flag flow mappings      -> FAILED ..._a_flow_mapping_step_is_reported_unreadable
+  drop '$(' from CHAINS         -> FAILED ..._a_gate_reached_by_command_substitution_is_not_setup
+  drop a declared workflow      -> FAILED ..._no_workflow_can_appear_without_being_declared
+
+Two false REDS were reported and deliberately kept, because the direction is the safe one and
+closing them costs quoting-aware parsing: `pip install "tomli; python_version < '3.11'"` is read as
+chained, and an escaped or nested quote can still hide text from the match.
+
+NOTE ON RED 5's COUNTS. RED 5 was captured when the suite held 11 tests; it now holds 18, so the
+"1 failed, 10 passed" lines there are the readings of that moment and not of this commit.
+
+
+GREEN, for comparison - the same door, same commit
+---------------------------------------------------
+1/7 secrets  | secret scan: clean
+2/7 scope    | T-SCOPE-RATCHET: clean
+3/7 laws     | T-DECISION-1: clean (43 laws, every gate and test present)
+4/7 language | T-LANGUAGE-RATCHET: clean (English-only)
+5/7 lint     | All checks passed!
+6/7 site     | (built)
+7/7 tests    | Required test coverage of 70% reached. Total coverage: 89.36%
+             | 284 passed, 27 skipped
+TREE GREEN (gates only, nothing pushed)
+
+This GREEN is the reading at the commit that ships RED 6's repairs - 284 tests, the 274 of the
+first capture plus the ten written for RED 5 and RED 6. Restated rather than left at its original
+figure, because a count that no longer matches the suite is the small version of the defect this
+whole file is about.

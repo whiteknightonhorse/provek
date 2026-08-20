@@ -677,3 +677,86 @@ them, and the eight emitted passports say so.
 
 **What this does not decide.** Whether active probing is built at all, and on what terms. T-2.12
 owns that, and it requires a signed document before anything runs.
+
+## D-22. The door and the arbiter are compared by a gate, and mypy's advisory state gets a date
+
+**Decision.** `scripts/push.sh` runs every check `.github/workflows/gates.yml` can fail the build
+on, and `tests/test_door_matches_ci.py` holds that correspondence as a table checked in both
+directions. `mypy` stays advisory — with its three states separated, and with an expiry of
+**2026-10-15** that goes red on its own.
+
+**Why a table rather than another tool added to the door.** The ruff divergence was closed in D-20
+by adding ruff to `push.sh`. That was the right repair and it addressed the instance: the header
+asserting the two gate lists were identical stayed correct-sounding while nothing compared them, so
+the next drift would have been just as invisible and would also have been discovered by a red
+`main`. Writing the comparison out as a gate found two further divergences immediately, both older
+than the ruff one:
+
+- **the door never built the site.** The `shipped` job builds it because the sweep over emitted
+  pages is the only check that judges what a reader receives (L-3). At the door those assertions
+  read whatever `web/dist` happened to be on this host — a stale build, or none, in which case they
+  skipped and were counted as passing. L-16 at the door: present, not armed. The build costs 2.1s
+  measured and `web/dist/` is ignored, so the tree stays clean and `push.sh` still refuses a dirty
+  one;
+- **the door enforced no coverage floor.** CI requires 70%; `push.sh` ran a bare `pytest`, so a
+  commit could drop coverage and go out clean. Measured 89% on 2026-08-20, so the threshold is
+  slack the door can carry rather than a number picked to be survivable.
+
+Neither had ever produced a red build. That is the argument for the table: they were found by the
+check, not by the badge.
+
+**Why mypy stays advisory, and why that is now a dated position rather than a standing one.** The
+reasoning for suppressing its findings is unchanged — a gate that fails on day one gets disabled by
+whoever meets it. What was wrong was the shape of the promise. `mypy ... || true` collapsed three
+states into one, and the collapsed one was load-bearing: mypy failing to start printed exactly what
+a clean baseline prints, and a clean baseline was the stated trigger for making the gate blocking.
+The condition could not have been observed even if it had occurred. The step now fails on a clean
+run (saying to make it blocking and add mypy to the door in the same commit), fails on exit ≥ 2 as
+`not_measured`, and prints a count otherwise.
+
+The reading is taken only in CI. mypy is absent from the audit host, so a local zero would be the
+instrument's absence wearing the shape of a measurement — L-1, and L-11's sharper form.
+
+**The baseline, and why it argues for a deadline.** 28 errors across 7 files on 2026-08-20, nearly
+all `None` reaching a comparison or an attribute access. That is invariant 1's own defect class, in
+`src/liveness/commitments.py` above all, which is the strongest available argument against letting
+the advisory state stand indefinitely. The date is 56 days out, inside the sixty after which GitHub
+disables a public repository's `schedule:`, because that schedule is what runs the deadline test in
+the world where nobody pushes — L-19's arithmetic, applied to a different clock.
+
+**What was NOT done, and named rather than left to be found.** The door builds with the
+`node_modules` on this host while CI installs from the lockfile with `npm ci`; a clean install at
+every push costs more than the drift it would catch, and the difference is recorded in `push.sh`
+rather than closed. The comparison checks a declared correspondence, not semantics — it proves the
+door runs `pytest` with the same coverage floor, not that the two runs see the same tree. The 28
+type errors are not fixed here; this task bought them a deadline, not a repair. And the workflows
+README table said "four jobs" while five were running, omitting `shipped` — the one job that judges
+the shipped artefact, absent from the document listing what fails the build.
+
+**A third instance of the same defect, found and deliberately left open.** `pyproject.toml` says of
+the ruff rule families: "EXPANSION IS A DATED PROMISE, NOT AN INTENTION: after the front door lands,
+add one family at a time … Recorded here so it cannot quietly become never." It names no date, and
+nothing measures whether the front door has landed — the mypy promise exactly, one file over, in
+the configuration of the gate this task was opened about, and carrying a sentence that claims the
+opposite of what it does. It is named rather than closed because the two things it needs are the
+operator's calls and not the executor's: whether "the front door has landed" is now true, and which
+date each of `E5`, `UP`, `SIM`, `C4`, `BLE` gets. The mechanism to arm it exists in this commit and
+the entry would be four lines. Recorded here so that leaving it is a decision with a name on it.
+
+**The law's scope, corrected before it was ever true.** `LAW-DOOR-MATCHES-ARBITER` was first
+written "no check can fail on main that the door did not run". Its test reads `gates.yml` alone,
+and `codeql.yml` and `scorecard.yml` both trigger on push to `main` — so the law was broader than
+its gate on the day it was ratified, in the commit closing a task about headers that outlive their
+lists. The door cannot run CodeQL and should not pretend to: the achievable property is that **our
+own** suite is mirrored at the door and the unmirrorable workflows are declared with the reason.
+The law now says that, and the count of workflow files is asserted rather than left to the word
+"three" in a README, so a fourth cannot arrive unnoticed.
+
+**On how the remaining defects were found, which is the part worth keeping.** Three of the repairs
+in `tests/test_door_matches_ci.py` were written, documented, and never called — dead helpers whose
+docstrings described fixes the code did not perform, with the suite green throughout. Five more
+false greens surfaced only when the repaired file was handed to Fable to *refute* rather than to
+review: a printed excuse vouching for the step it skips, a reusable-workflow job, a commented job
+id, a flow-mapping step, and a gate reached by command substitution. Every fix in this commit is
+mutation-tested — the repair is removed and exactly one test must die — because a green suite
+proved nothing about the three that were decorative. That practice is L-21.

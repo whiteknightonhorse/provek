@@ -10,3 +10,6 @@ web/compare/
 web/dist-ssr/
 web/.wrangler/
 .commitmsg
+# Written by the coverage floor the door enforces at step 7. Untracked, it dirties the tree
+# and push.sh refuses to push - the gate blocking its own door on the gate's own artefact.
+.coverage

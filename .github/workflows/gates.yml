@@ -124,7 +124,39 @@ jobs:
 
       - name: mypy
         # Whole tree. A narrowly scoped type check misses exactly the errors that cross modules.
-        run: mypy src --ignore-missing-imports --no-error-summary || true
+        #
+        # ADVISORY ABOUT ITS FINDINGS, NEVER ABOUT ITS OWN EXECUTION, AND NOT INDEFINITELY.
+        # `mypy ... || true` said all three of the wrong things at once: it swallowed the findings,
+        # which was intended; it swallowed mypy failing to START, which was not; and it carried a
+        # promise - blocking "once a clean baseline exists", in workflows/README.md - that nothing
+        # measured and nothing would notice going unmet. The suppressed crash is the worst of the
+        # three, because a mypy that could not run printed exactly what a clean baseline prints,
+        # and the clean baseline is the one reading that ends the advisory state.
+        #
+        #   exit 0  -> the baseline IS clean: the promise's condition is MET, so this goes red and
+        #              the way past is to make the step blocking and add mypy to scripts/push.sh.
+        #   exit 1  -> type errors: the state this was declared for. The count is printed.
+        #   exit >1 -> mypy did not run. That is not_measured (invariant 1), not a clean baseline.
+        #
+        # The DATE below is held by tests/test_door_matches_ci.py, which runs at the door and on
+        # this workflow's daily schedule, so it goes red on its own once the date passes.
+        run: |
+          # ADVISORY-UNTIL: 2026-10-15 - see .github/workflows/README.md
+          set +e
+          mypy src --ignore-missing-imports --no-error-summary > mypy.out 2>&1
+          rc=$?
+          set -e
+          cat mypy.out
+          if [ "$rc" -ge 2 ]; then
+            echo "::error::mypy DID NOT RUN (exit $rc): not_measured, not a clean baseline."
+            exit 1
+          fi
+          if [ "$rc" -eq 0 ]; then
+            echo "::error::mypy is CLEAN, so the condition in .github/workflows/README.md is met."
+            echo "::error::Drop this wrapper and add mypy to scripts/push.sh in the same commit."
+            exit 1
+          fi
+          echo "mypy: $(grep -c ': error:' mypy.out) errors - advisory, baseline not yet clean"
 
   secrets:
     name: secret scan

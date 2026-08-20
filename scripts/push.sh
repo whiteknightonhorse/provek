@@ -6,14 +6,19 @@
 # carried on. A gate you can walk past is worse than no gate: it manufactures a false sense of
 # safety.
 #
-# Order: secrets -> scope -> laws -> language -> tests -> and only then push.
+# Order: secrets -> scope -> laws -> language -> lint -> site -> tests -> and only then push.
+# This line had already drifted once - it still read "... -> language -> tests" after ruff was
+# added below, which is the same header-outlives-its-list defect that let the door and CI diverge
+# in the first place, sitting three lines above the comment explaining that defect. The list that
+# is actually compared against CI is `CI_GATES` in tests/test_door_matches_ci.py; this sentence is
+# a reader's convenience and is not what enforces anything.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-echo "1/6 secrets";  ./scripts/secret_scan.sh
-echo "2/6 scope";    python3 scripts/ratchet_scope.py
-echo "3/6 laws";     python3 scripts/ratchet_decisions.py
-echo "4/6 language"; python3 scripts/ratchet_language.py
+echo "1/7 secrets";  ./scripts/secret_scan.sh
+echo "2/7 scope";    python3 scripts/ratchet_scope.py
+echo "3/7 laws";     python3 scripts/ratchet_decisions.py
+echo "4/7 language"; python3 scripts/ratchet_language.py
 # LINT IS HERE BECAUSE ITS ABSENCE WAS MEASURED, NOT BECAUSE IT IS TIDY.
 #
 # `gates.yml` opens "THE SAME GATES AS scripts/push.sh". It was not true: CI ran ruff and this
@@ -25,8 +30,40 @@ echo "4/6 language"; python3 scripts/ratchet_language.py
 # The divergence is the defect, not the five violations. Two gate lists that claim to be one list
 # are a rule written in more than one place (L-2), and this one had already survived its own
 # repeal: the header asserting the lists were identical stayed correct-sounding while they drifted.
-echo "5/6 lint";     python3 -m ruff check src tests scripts
-echo "6/6 tests";    python3 -m pytest tests -q | tail -1
+echo "5/7 lint";     python3 -m ruff check src tests scripts
+
+# THE SAME DIVERGENCE, TWICE MORE, FOUND BY WRITING THE TWO LISTS OUT SIDE BY SIDE.
+#
+# Adding ruff above closed the instance that had turned `main` red four times and left the
+# mechanism untouched, so `tests/test_door_matches_ci.py` now compares the two lists as a gate.
+# It immediately named two more steps CI can fail on that never existed here:
+#
+#   THE SITE WAS NEVER BUILT. The `shipped` job builds it, because the assertions that sweep the
+#   emitted pages are the only ones that judge what a reader receives (L-3). Here they read
+#   whatever `web/dist` happened to be lying on this host - yesterday's output, or none at all, in
+#   which case they SKIPPED and were counted as passing. That is L-16 at the door: present, not
+#   armed. It costs 2.1s measured, and `web/dist/` is ignored, so the tree stays clean.
+#
+#   COVERAGE WAS NOT ENFORCED. CI requires 70%; this ran a bare `pytest`, so a commit could drop
+#   coverage and go out clean through here. Coverage measured 89% on 2026-08-20, so the threshold
+#   is slack the door can carry rather than a number chosen to be survivable.
+#
+# Step 7 needs `pytest-cov`, which CI installs and a fresh clone of this host does not have. If it
+# is missing pytest rejects the flags and the step fails loudly - a missing instrument is a red,
+# never a silently unenforced threshold, which is the whole reason the floor is stated as a flag
+# here rather than read off a report afterwards.
+#
+# The door builds with the `node_modules` already on this host while CI installs from the lockfile
+# with `npm ci`. That difference is named rather than closed: a clean install at every push costs
+# more than the drift it would catch. If `node_modules` is absent the build fails loudly, which is
+# the correct reading - a missing instrument is a red, never a skip.
+echo "6/7 site";     ( cd web && npm run build >/dev/null )
+echo "7/7 tests";    python3 -m pytest tests -q --cov=src --cov-fail-under=70 | tail -3
+
+# MYPY IS NOT HERE, AND THAT IS THE MEASURED ANSWER RATHER THAN AN OVERSIGHT.
+# It runs in CI with its findings suppressed, so it cannot turn `main` red and the door omitting it
+# creates no asymmetry. Its advisory state expires on 2026-10-15; when it becomes blocking, the
+# comparison above fails until mypy is added here, in that same commit.
 
 # Gates-only mode. The orchestra must judge the tree after EVERY task, not just before a push,
 # and a second copy of the gate list would drift from this one the first time the list changed.
