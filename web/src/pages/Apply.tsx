@@ -1,11 +1,98 @@
 /** Intake. The mandate choice is on the form, not in terms of service - because it is the thing
- * that decides whether we may touch a live system at all. */
+ * that decides whether we may touch a live system at all.
+ *
+ * THIS FORM USED TO DO NOTHING. `onSubmit` was `preventDefault` and nothing else: zero requests,
+ * no confirmation, no error. It is the only action the site asks for, reached from the primary
+ * call to action and from a button in the masthead on every screen, and a visitor who filled it in
+ * correctly received silence.
+ *
+ * What the confirmation may claim is a substantive question, not a wording one (Fable's ruling).
+ * "Received" asserts that somebody has taken responsibility for reading it, and that is only true
+ * because the submission is written durably AND announced in a channel the operator actually
+ * watches. When the announcement fails, the record still exists and the page says so in different
+ * words rather than claiming the stronger thing. And nothing here promises a clock: no side of
+ * this has committed to one, so the page may not invent it. */
 
 import { useState } from "react";
 import { Page, Strip } from "../components/Chrome";
 
+type Sent =
+  | { state: "idle" }
+  | { state: "sending" }
+  | { state: "sent"; delivered: boolean }
+  | { state: "failed"; why: string };
+
+const ISSUES = "https://github.com/whiteknightonhorse/provek/issues";
+
 export default function Apply() {
   const [mandate, setMandate] = useState<"passive" | "active">("passive");
+  const [sent, setSent] = useState<Sent>({ state: "idle" });
+
+  async function submit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = new FormData(e.currentTarget);
+    setSent({ state: "sending" });
+    try {
+      const r = await fetch("/api/apply", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          repo: form.get("repo"),
+          contact: form.get("contact"),
+          mandate: form.get("mandate"),
+          website: form.get("website"),
+        }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d.ok) {
+        setSent({ state: "failed", why: d.error || `HTTP ${r.status}` });
+        return;
+      }
+      setSent({ state: "sent", delivered: Boolean(d.delivered) });
+    } catch (err) {
+      setSent({ state: "failed", why: (err as Error).message });
+    }
+  }
+
+  if (sent.state === "sent") {
+    return (
+      <Page>
+        <div className="max-w-[40rem]">
+          <h1 className="text-2xl font-semibold tracking-tight">Request recorded</h1>
+          <div className="mt-4">
+            <Strip tone="pass">
+              {sent.delivered ? (
+                <>
+                  <strong>Your request is recorded and has reached the operator.</strong> Nothing
+                  further is required from you.
+                </>
+              ) : (
+                <>
+                  <strong>Your request is recorded.</strong> The notification to the operator did
+                  not go through, so it may be read later than usual. The record itself is safe -
+                  we are telling you this rather than claiming otherwise.
+                </>
+              )}
+            </Strip>
+          </div>
+          <p className="mt-5 text-sm text-[var(--color-ink-2)]">
+            Verification runs are performed by hand at this stage. If yours runs, the passport
+            appears in the registry and you are contacted at the address you gave. There is no
+            queue position and no promised date, because nothing here has promised one.
+          </p>
+          <p className="mt-4 text-sm">
+            <a href="/registry/" className="text-[var(--color-accent)] hover:underline">
+              See the registry
+            </a>{" "}
+            <span className="text-[var(--color-ink-3)]">
+              &mdash; every record it holds, and what each one could not measure.
+            </span>
+          </p>
+        </div>
+      </Page>
+    );
+  }
+
   return (
     <Page>
       <div className="max-w-[40rem]">
@@ -15,17 +102,36 @@ export default function Apply() {
           access to.
         </p>
 
-        <form className="mt-7 space-y-5" onSubmit={(e) => e.preventDefault()}>
+        {sent.state === "failed" && (
+          <div className="mt-4">
+            <Strip tone="warn">
+              <strong>Not recorded.</strong> {sent.why}. Nothing was saved, so please try again -
+              and if it keeps failing, the one channel that certainly works is{" "}
+              <a href={ISSUES} className="text-[var(--color-accent)] hover:underline">
+                an issue on the repository
+              </a>
+              .
+            </Strip>
+          </div>
+        )}
+
+        <form className="mt-7 space-y-5" onSubmit={submit}>
+          {/* A field no human sees and no human fills. */}
+          <div className="sr-only" aria-hidden="true">
+            <label htmlFor="website">Leave this empty</label>
+            <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />
+          </div>
+
           <div>
             <label htmlFor="repo" className="block text-sm font-medium">Repository URL</label>
             <p className="mt-0.5 text-xs text-[var(--color-ink-3)]">
               Public repositories only at this stage. That restriction exists so we never hold your
-              secrets.
+              secrets &mdash; and so that anyone can recompute the verdict from the same source.
             </p>
             <input
               id="repo" name="repo" type="url" required
               placeholder="https://github.com/org/repo"
-              className="mt-2 w-full border border-[var(--color-line-2)] bg-[var(--color-paper)] px-3 py-2 text-sm"
+              className="mt-2 w-full border border-[var(--color-line-2)] bg-[var(--color-paper)] px-3 py-2 text-base"
             />
           </div>
 
@@ -34,7 +140,7 @@ export default function Apply() {
             <input
               id="contact" name="contact" type="email" required
               placeholder="you@example.com"
-              className="mt-2 w-full border border-[var(--color-line-2)] bg-[var(--color-paper)] px-3 py-2 text-sm"
+              className="mt-2 w-full border border-[var(--color-line-2)] bg-[var(--color-paper)] px-3 py-2 text-base"
             />
           </div>
 
@@ -79,9 +185,10 @@ export default function Apply() {
 
           <button
             type="submit"
-            className="border border-[var(--color-ink)] bg-[var(--color-ink)] text-[var(--color-paper)] px-4 py-2 text-sm"
+            disabled={sent.state === "sending"}
+            className="border border-[var(--color-ink)] bg-[var(--color-ink)] text-[var(--color-paper)] px-4 py-2 text-sm disabled:opacity-60"
           >
-            Submit request
+            {sent.state === "sending" ? "Sending…" : "Submit request"}
           </button>
           <p className="text-xs text-[var(--color-ink-3)]">
             Nothing is charged. There is no payment step anywhere on this site, in this phase or any

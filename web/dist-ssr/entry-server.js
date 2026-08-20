@@ -876,9 +876,92 @@ function Passport({ p }) {
 //#endregion
 //#region src/pages/Apply.tsx
 /** Intake. The mandate choice is on the form, not in terms of service - because it is the thing
-* that decides whether we may touch a live system at all. */
+* that decides whether we may touch a live system at all.
+*
+* THIS FORM USED TO DO NOTHING. `onSubmit` was `preventDefault` and nothing else: zero requests,
+* no confirmation, no error. It is the only action the site asks for, reached from the primary
+* call to action and from a button in the masthead on every screen, and a visitor who filled it in
+* correctly received silence.
+*
+* What the confirmation may claim is a substantive question, not a wording one (Fable's ruling).
+* "Received" asserts that somebody has taken responsibility for reading it, and that is only true
+* because the submission is written durably AND announced in a channel the operator actually
+* watches. When the announcement fails, the record still exists and the page says so in different
+* words rather than claiming the stronger thing. And nothing here promises a clock: no side of
+* this has committed to one, so the page may not invent it. */
+var ISSUES = "https://github.com/whiteknightonhorse/provek/issues";
 function Apply() {
 	const [mandate, setMandate] = useState("passive");
+	const [sent, setSent] = useState({ state: "idle" });
+	async function submit(e) {
+		e.preventDefault();
+		const form = new FormData(e.currentTarget);
+		setSent({ state: "sending" });
+		try {
+			const r = await fetch("/api/apply", {
+				method: "POST",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify({
+					repo: form.get("repo"),
+					contact: form.get("contact"),
+					mandate: form.get("mandate"),
+					website: form.get("website")
+				})
+			});
+			const d = await r.json().catch(() => ({}));
+			if (!r.ok || !d.ok) {
+				setSent({
+					state: "failed",
+					why: d.error || `HTTP ${r.status}`
+				});
+				return;
+			}
+			setSent({
+				state: "sent",
+				delivered: Boolean(d.delivered)
+			});
+		} catch (err) {
+			setSent({
+				state: "failed",
+				why: err.message
+			});
+		}
+	}
+	if (sent.state === "sent") return /* @__PURE__ */ jsx(Page, { children: /* @__PURE__ */ jsxs("div", {
+		className: "max-w-[40rem]",
+		children: [
+			/* @__PURE__ */ jsx("h1", {
+				className: "text-2xl font-semibold tracking-tight",
+				children: "Request recorded"
+			}),
+			/* @__PURE__ */ jsx("div", {
+				className: "mt-4",
+				children: /* @__PURE__ */ jsx(Strip, {
+					tone: "pass",
+					children: sent.delivered ? /* @__PURE__ */ jsxs(Fragment, { children: [/* @__PURE__ */ jsx("strong", { children: "Your request is recorded and has reached the operator." }), " Nothing further is required from you."] }) : /* @__PURE__ */ jsxs(Fragment, { children: [/* @__PURE__ */ jsx("strong", { children: "Your request is recorded." }), " The notification to the operator did not go through, so it may be read later than usual. The record itself is safe - we are telling you this rather than claiming otherwise."] })
+				})
+			}),
+			/* @__PURE__ */ jsx("p", {
+				className: "mt-5 text-sm text-[var(--color-ink-2)]",
+				children: "Verification runs are performed by hand at this stage. If yours runs, the passport appears in the registry and you are contacted at the address you gave. There is no queue position and no promised date, because nothing here has promised one."
+			}),
+			/* @__PURE__ */ jsxs("p", {
+				className: "mt-4 text-sm",
+				children: [
+					/* @__PURE__ */ jsx("a", {
+						href: "/registry/",
+						className: "text-[var(--color-accent)] hover:underline",
+						children: "See the registry"
+					}),
+					" ",
+					/* @__PURE__ */ jsx("span", {
+						className: "text-[var(--color-ink-3)]",
+						children: "— every record it holds, and what each one could not measure."
+					})
+				]
+			})
+		]
+	}) });
 	return /* @__PURE__ */ jsx(Page, { children: /* @__PURE__ */ jsxs("div", {
 		className: "max-w-[40rem]",
 		children: [
@@ -890,10 +973,43 @@ function Apply() {
 				className: "mt-2 text-sm text-[var(--color-ink-2)]",
 				children: "Free at this stage. We verify only what you ask us to verify, and only what you give us access to."
 			}),
+			sent.state === "failed" && /* @__PURE__ */ jsx("div", {
+				className: "mt-4",
+				children: /* @__PURE__ */ jsxs(Strip, {
+					tone: "warn",
+					children: [
+						/* @__PURE__ */ jsx("strong", { children: "Not recorded." }),
+						" ",
+						sent.why,
+						". Nothing was saved, so please try again - and if it keeps failing, the one channel that certainly works is",
+						" ",
+						/* @__PURE__ */ jsx("a", {
+							href: ISSUES,
+							className: "text-[var(--color-accent)] hover:underline",
+							children: "an issue on the repository"
+						}),
+						"."
+					]
+				})
+			}),
 			/* @__PURE__ */ jsxs("form", {
 				className: "mt-7 space-y-5",
-				onSubmit: (e) => e.preventDefault(),
+				onSubmit: submit,
 				children: [
+					/* @__PURE__ */ jsxs("div", {
+						className: "sr-only",
+						"aria-hidden": "true",
+						children: [/* @__PURE__ */ jsx("label", {
+							htmlFor: "website",
+							children: "Leave this empty"
+						}), /* @__PURE__ */ jsx("input", {
+							id: "website",
+							name: "website",
+							type: "text",
+							tabIndex: -1,
+							autoComplete: "off"
+						})]
+					}),
 					/* @__PURE__ */ jsxs("div", { children: [
 						/* @__PURE__ */ jsx("label", {
 							htmlFor: "repo",
@@ -902,7 +1018,7 @@ function Apply() {
 						}),
 						/* @__PURE__ */ jsx("p", {
 							className: "mt-0.5 text-xs text-[var(--color-ink-3)]",
-							children: "Public repositories only at this stage. That restriction exists so we never hold your secrets."
+							children: "Public repositories only at this stage. That restriction exists so we never hold your secrets — and so that anyone can recompute the verdict from the same source."
 						}),
 						/* @__PURE__ */ jsx("input", {
 							id: "repo",
@@ -910,7 +1026,7 @@ function Apply() {
 							type: "url",
 							required: true,
 							placeholder: "https://github.com/org/repo",
-							className: "mt-2 w-full border border-[var(--color-line-2)] bg-[var(--color-paper)] px-3 py-2 text-sm"
+							className: "mt-2 w-full border border-[var(--color-line-2)] bg-[var(--color-paper)] px-3 py-2 text-base"
 						})
 					] }),
 					/* @__PURE__ */ jsxs("div", { children: [/* @__PURE__ */ jsx("label", {
@@ -923,7 +1039,7 @@ function Apply() {
 						type: "email",
 						required: true,
 						placeholder: "you@example.com",
-						className: "mt-2 w-full border border-[var(--color-line-2)] bg-[var(--color-paper)] px-3 py-2 text-sm"
+						className: "mt-2 w-full border border-[var(--color-line-2)] bg-[var(--color-paper)] px-3 py-2 text-base"
 					})] }),
 					/* @__PURE__ */ jsxs("fieldset", { children: [/* @__PURE__ */ jsx("legend", {
 						className: "text-sm font-medium",
@@ -978,8 +1094,9 @@ function Apply() {
 					}),
 					/* @__PURE__ */ jsx("button", {
 						type: "submit",
-						className: "border border-[var(--color-ink)] bg-[var(--color-ink)] text-[var(--color-paper)] px-4 py-2 text-sm",
-						children: "Submit request"
+						disabled: sent.state === "sending",
+						className: "border border-[var(--color-ink)] bg-[var(--color-ink)] text-[var(--color-paper)] px-4 py-2 text-sm disabled:opacity-60",
+						children: sent.state === "sending" ? "Sending…" : "Submit request"
 					}),
 					/* @__PURE__ */ jsx("p", {
 						className: "text-xs text-[var(--color-ink-3)]",

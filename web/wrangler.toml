@@ -1,0 +1,9 @@
+name = "provek"
+compatibility_date = "2026-08-20"
+pages_build_output_dir = "dist"
+
+# The durable record of every intake submission. Nothing is only an email: a notification can fail,
+# and a request the operator never saw must still exist.
+[[kv_namespaces]]
+binding = "INTAKE"
+id = "5d93877f53d94f3fbc4863a0195fc9a4"
