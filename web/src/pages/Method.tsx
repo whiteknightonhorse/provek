@@ -1,7 +1,7 @@
 /** The methodology is published in full - it is an asset, not a vulnerability (decision A-8).
  * Publishing it invites optimisation against it, which is the price of being reproducible. */
 
-import { Facts, Page } from "../components/Chrome";
+import { Facts, Page, Strip } from "../components/Chrome";
 
 const LADDER: Array<[string, string]> = [
   ["L0", "A human performs the operation; the agent drafts or advises."],
@@ -20,6 +20,38 @@ export default function Method() {
         <p className="mt-2 text-sm text-[var(--color-ink-2)]">
           Published in full. A verdict that only we can reproduce would be a brand, not a standard.
         </p>
+
+        {/* THE ONLY REFERENCE to the provenance corpus, and it sits here rather than at the foot of
+            the page because the claim it backs is made in the sentence directly above it. A page
+            that asserts "published in full" and puts the link four screens below has made the
+            reader hunt for the evidence - which is the shape this product exists to reject.
+
+            Still one sentence of prose and still no nav entry (ADR-0009): a nav item would make the
+            corpus a component OF this surface, which is integration rather than separation, and
+            DESIGN.md rule 4 forbids the retrofit independently. A test over the emitted site
+            asserts this stays the only occurrence. */}
+        <div className="mt-5">
+          <Strip tone="info">
+            <strong>Everything here is open, including our own workings.</strong> The methodology,
+            the scorer, every gate and every decision live at{" "}
+            <a
+              href="https://github.com/whiteknightonhorse/provek"
+              className="text-[var(--color-accent)] hover:underline"
+            >
+              github.com/whiteknightonhorse/provek
+            </a>
+            , licensed for reuse, so any verdict can be recomputed from the same inputs. The
+            operating documents that produced this instrument are recorded separately at{" "}
+            <a
+              href="https://github.com/whiteknightonhorse/provek-method"
+              className="text-[var(--color-accent)] hover:underline"
+            >
+              provek-method
+            </a>{" "}
+            &mdash; provenance, not instruction. Following them has no effect on any verdict: the
+            score is computed from measured operations, and the use of a method is not one of them.
+          </Strip>
+        </div>
 
         <h2 className="mt-8 text-lg font-semibold">The ladder</h2>
         <p className="mt-1 text-sm text-[var(--color-ink-2)]">
@@ -63,34 +95,6 @@ export default function Method() {
           punishing someone for its own failure.
         </p>
 
-        {/* THE ONLY REFERENCE to the provenance corpus, and it is deliberately one sentence of
-            prose rather than a nav entry (Fable's architecture ruling, ADR-0009). The
-            specification anticipated the conflict: a party that teaches people to pass its own
-            verification grades work it set itself, and its mitigation is that teaching and
-            verification stay separated as components. A nav item would make the corpus a component
-            OF this surface - integration, not separation - and DESIGN.md rule 4 forbids the
-            retrofit independently. A test over the emitted site asserts this stays the only
-            occurrence. */}
-        <h2 className="mt-8 text-lg font-semibold">Published in full, including our own workings</h2>
-        <p className="mt-1 text-sm text-[var(--color-ink-2)]">
-          The methodology, the scorer, every gate and every decision are open at{" "}
-          <a
-            href="https://github.com/whiteknightonhorse/provek"
-            className="text-[var(--color-accent)] hover:underline"
-          >
-            github.com/whiteknightonhorse/provek
-          </a>
-          , licensed for reuse, so a verdict can be recomputed by anyone from the same inputs. The
-          operating documents that produced this instrument are recorded separately at{" "}
-          <a
-            href="https://github.com/whiteknightonhorse/provek-method"
-            className="text-[var(--color-accent)] hover:underline"
-          >
-            provek-method
-          </a>{" "}
-          &mdash; provenance, not instruction. Following them has no effect on any verdict: the
-          score is computed from measured operations, and the use of a method is not one of them.
-        </p>
       </div>
     </Page>
   );
