@@ -54,3 +54,10 @@ and the request being made does not oblige us to act on it.
 **No probing.** The probing mandate was removed from the form on 2026-08-20 because no prober
 exists to honour it, and offering it would have promised a document nobody would send. It returns
 with T-2.12.
+
+Removed from the ENDPOINT the same day, and only after that was it actually gone: `apply.js` had
+kept `body.mandate === "active" ? "active" : "passive"`, which honours `active` for any client that
+is not the form, so a `curl` POST could still have recorded a probing mandate over production. It
+now assigns `passive` unconditionally, and `tests/test_intake_offers_no_active_mandate.py` fails
+the build if that changes. The stored `mandate` field therefore records the policy applied rather
+than what the request asked for — see D-21, including what that costs.

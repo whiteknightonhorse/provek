@@ -1,0 +1,56 @@
+# RED-009 - the intake accepts an active probing mandate again
+#
+# Produced deliberately on 2026-08-20 to establish that
+# tests/test_intake_offers_no_active_mandate.py CAN fail (invariant 5). The ternary that
+# D-21 removed - body.mandate === "active" ? "active" : "passive" - was restored in
+# web/functions/api/apply.js, which is the exact state Fable refuted the first draft of
+# D-21 against. The file was restored immediately afterwards.
+# Everything below this line is verbatim tool output.
+#
+# $ python3 -m pytest tests/test_intake_offers_no_active_mandate.py -q
+.FF                                                                      [100%]
+=================================== FAILURES ===================================
+________________ test_endpoint_assigns_passive_unconditionally _________________
+
+    def test_endpoint_assigns_passive_unconditionally() -> None:
+        code = _code(ENDPOINT)
+>       assert re.search(r'\bconst\s+mandate\s*=\s*"passive"\s*;', code), (
+            "web/functions/api/apply.js no longer assigns `mandate` the constant \"passive\". D-21 "
+            "withdraws the active probing mandate from the INTAKE, not merely from the form - the "
+            "previous version made exactly this mistake with "
+            '`body.mandate === "active" ? "active" : "passive"`, which honours "active" for any client '
+            "that is not the form."
+        )
+E       AssertionError: web/functions/api/apply.js no longer assigns `mandate` the constant "passive". D-21 withdraws the active probing mandate from the INTAKE, not merely from the form - the previous version made exactly this mistake with `body.mandate === "active" ? "active" : "passive"`, which honours "active" for any client that is not the form.
+E       assert None
+E        +  where None = <function search at 0x7fc177553760>('\\bconst\\s+mandate\\s*=\\s*"passive"\\s*;', '\n\nconst MAX = 2000;\n\nfunction bad(reason, status = 400) {\n  return Response.json({ ok: false, error: reason }, {...nexport async function onRequestGet() {\n  return bad("This endpoint accepts a submission, not a reading.", 405);\n}\n')
+E        +    where <function search at 0x7fc177553760> = re.search
+
+tests/test_intake_offers_no_active_mandate.py:69: AssertionError
+________________ test_no_active_mandate_anywhere_in_the_intake _________________
+
+    def test_no_active_mandate_anywhere_in_the_intake() -> None:
+        for path in (ENDPOINT, FORM):
+            code = _code(path)
+>           assert "active" not in code, (
+                f'the token "active" appears in the code of {path.relative_to(ROOT)} (comments were '
+                "stripped before this check). No prober exists to honour an active probing mandate, "
+                "so the intake may not accept, send or store one until T-2.12 - see D-21."
+            )
+E           AssertionError: the token "active" appears in the code of web/functions/api/apply.js (comments were stripped before this check). No prober exists to honour an active probing mandate, so the intake may not accept, send or store one until T-2.12 - see D-21.
+E           assert 'active' not in '\n\nconst M..., 405);\n}\n'
+E             
+E             'active' is contained here:
+E             ?         -----
+E               date === "active" ? "active" : "passive";
+E             ?                   +++++++++++
+E               
+E                 if (!/^https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/?$/.test(repo))...
+E             
+E             ...Full output truncated (47 lines hidden), use '-vv' to show
+
+tests/test_intake_offers_no_active_mandate.py:81: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_offers_no_active_mandate.py::test_endpoint_assigns_passive_unconditionally
+FAILED tests/test_intake_offers_no_active_mandate.py::test_no_active_mandate_anywhere_in_the_intake
+2 failed, 1 passed in 0.03s

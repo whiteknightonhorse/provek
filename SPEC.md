@@ -59,9 +59,22 @@ Must show, in this order:
 
 ### 3.2 Registry (`/registry`) — the listing
 
-A dense, searchable table. Columns: subject, status, projection, confidence, valid-until,
-affiliation. Sortable and filterable. Density over decoration: this is a public evidence log, and
-an ornamented log does not inspire trust.
+A dense, searchable table. Columns: subject, status, autonomy, verifier, valid-until. Filterable by
+subject. Density over decoration: this is a public evidence log, and an ornamented log does not
+inspire trust. A trailing action column stays in the layout and empty (§4.2).
+
+⚠️ **Corrected 2026-08-20.** This paragraph listed a `confidence` column and required the table to
+be **sortable**. Neither exists: `Row` in `src/registry/public_registry.py` emits no `confidence`
+field and `git log -S confidence -- src/registry/public_registry.py` finds no commit that ever put
+one there, the live
+`https://provek.dev/data/registry.json` carries none, and the page offers a filter over subject and
+no sort at all. The demand is withdrawn rather than implemented, because implementing it would
+require a decision nobody has taken: the master specification's `confidence` is a property of a
+single **operation** (§6.1, `measured` / `inferred`), and a subject-level column would need a rule
+for aggregating three operations — two or three of which are `not_measured` on every current row —
+into one word. Inventing that rule to satisfy a sentence in this document is precisely the direction of
+travel this project exists to detect. A registry `confidence` column, if it is wanted, is a
+recorded decision first and a column second.
 
 Must handle the **honest current state**: eight rows, all affiliated. See §6.
 
@@ -73,9 +86,17 @@ including its stated limits — those are a feature of the pitch, not a caveat t
 
 ### 3.4 Apply (`/apply`) — intake
 
-Repository URL, contact, and the mandate choice: passive verification only, or an explicit mandate
-for active probing. **Without a mandate we do not touch production** — this must be stated on the
-form, not in terms of service.
+Repository URL and contact. **Without a mandate we do not touch production** — this must be stated
+on the form, not in terms of service.
+
+⚠️ **Corrected 2026-08-20.** This section also required "the mandate choice: passive verification
+only, or an explicit mandate for active probing". The choice was removed from the form on
+2026-08-20 and the form now sends `passive` unconditionally, because no prober exists to honour an
+active mandate — offering the option would have asked a stranger to sign a document nothing in this
+repository could act on, which is a false claim about US on the one page where a visitor commits to
+something. The removal was recorded in `web/src/pages/Apply.tsx` and `docs/INTAKE_OPERATIONS.md`
+but not here and not in `DECISIONS.md`, so the rule survived its own repeal in this copy — L-2, in
+the document that governs the form. It is now **D-21**, and the option returns with T-2.12.
 
 ### 3.5 Phase 2 (`/phase-2/`) — an announcement, and not an offer
 
@@ -288,9 +309,12 @@ one fails, because a registry that silently holds eight where its own specificat
 eleven has made an unexplained choice.
 
 ⚠️ **Corrected 2026-08-20.** This table listed a projection for all eight. It stopped being true
-when the pipeline moved to an anonymous channel: five of the eight subjects are private
+when the pipeline moved to an anonymous channel: **four** of the eight subjects are private
 repositories and return 404 to a reader holding no credential, so their verdicts were never
-reproducible by a third party. The numbers below are now read from the emitted registry rather
+reproducible by a third party. (This correction said "five" until it was itself re-counted on
+2026-08-20 — against anonymous GitHub, which answers 404 for exactly four of the eight, and against
+the emitted registry, which carries exactly four `unreadable` rows. A miscount inside a paragraph
+correcting a miscount is the shape worth naming, not hiding.) The numbers below are now read from the emitted registry rather
 than asserted here, because a specification that describes an artefact it has stopped matching is
 the drift this project exists to catch.
 
@@ -299,8 +323,20 @@ the drift this project exists to catch.
 | AIpush, APIbase, mcp-protocol-tester, provek | verified, projection 40–80 | public, readable anonymously |
 | AI-Property-Sales-Platform, audiobook-shorts-series, cryptocardhub-defycard, gov-auction-report | **unverified, `unreadable`** | private repositories; no anonymous reader can recompute the verdict |
 
-Two of three operations on every subject are `not_measured` — runtime evidence is not collected
-yet, and the passport says so.
+**At least** two of three operations on every subject are `not_measured` — runtime evidence is not
+collected yet, and the passport says so. On the four unreadable subjects it is all three, and the
+three are not all absent for the same reason: `development_initiation` is `unreadable` there,
+because a repository that returns 404 to an anonymous reader cannot be read at all, while
+`deployment` and `treasury_control` are `check_did_not_run` on those subjects exactly as they are
+on the public four. Two absences with different causes must not be summed into one word — that is
+invariant 1 in prose rather than in a field.
+
+⚠️ **Corrected 2026-08-20.** This read "two of three operations on every subject". It is true of
+four of the eight; the four private subjects carry three `not_measured` operations each — counted
+from the emitted passports, the same reading that produced the table above. The sentence was
+presumably written against the credentialed pipeline, but that is not reconstructible from this
+repository: the oldest commit carrying emitted passports already shows `unreadable` on the private
+four, so no tracked state ever matched the claim, and no reader can check when it did.
 
 **We will not invent additional companies to fill the table.** Rule 6 of the design methodology
 forbids inventing facts about the product, and fabricated entries in a trust registry are the worst
@@ -354,7 +390,9 @@ a safety rating; any pay button; any fabricated registry entry.
 
 ## 11. Technical
 
-React + TypeScript + Vite + Tailwind. Deploy to Cloudflare Pages via Wrangler, domain
+Preact (through `preact/compat`, so the source still imports from `react`) + TypeScript + Vite +
+Tailwind — the runtime is Preact, and `web/vite.config.ts` is what settles it. Deploy to
+Cloudflare Pages via Wrangler, domain
 **provek.dev**. The site is static and reads `registry.json` and passport JSON produced by the
 validator — the same artefacts machines consume, so the human surface can never drift from the
 machine one.

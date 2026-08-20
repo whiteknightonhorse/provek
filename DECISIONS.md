@@ -601,3 +601,79 @@ Cloudflare credential is in `~/.env`, and Bing answers `ErrorCode 14` until owne
 Two separate operator actions unblock two different things — a DNS CNAME record closes Bing
 verification in a minute, and a `wrangler pages deploy` is what makes pages exist at all. Reporting
 autonomy over that arrangement would have been the seventh item in the list above.
+
+## D-21. The probing mandate is withdrawn from the intake until a prober exists
+
+**Decision.** `/apply/` collects a repository URL and a contact, and nothing else that decides what
+we may touch. The choice between passive verification and an active probing mandate is removed from
+the form AND from the endpoint: `web/functions/api/apply.js` now assigns `passive` unconditionally,
+so no client can record an active mandate. The option returns with T-2.12, when a prober exists to
+honour it.
+
+**The endpoint had to change too, and finding that out is why this entry is worth its length.** The
+first draft of this decision claimed the stored record already carried `passive` on every
+submission, on the strength of `body.mandate === "active" ? "active" : "passive"` — a line that does
+the opposite. It honoured `active` for every client that was not the form. A `curl` POST could grant
+a probing mandate over a live system, and it would have been validated, written durably to KV and
+announced to the operator as though a person had agreed to it. Removing a control from a page
+removes the OFFER, not the capability; the form is not the boundary. Fable refuted the draft against
+the very file the draft cited as its own evidence — L-14's shape, a reading that stopped at the
+field which agreed with it.
+
+⚠️ **This lands in the repository, not yet on the live endpoint.** `/api/apply` runs as a Cloudflare
+Pages Function and is republished by `wrangler pages deploy`, which needs a credential this host
+does not hold (L-9, D-19). Until the operator deploys, the served endpoint still coerces in the old
+direction, and an active mandate remains recordable in production. That is the state of the world
+today rather than a claim about it.
+
+**Armed, because a decision without a machine behind it is unenforced.**
+`tests/test_intake_offers_no_active_mandate.py` fails the build if the endpoint stops assigning
+`passive` unconditionally, or if the quoted token `"active"` reappears in the code of either the
+endpoint or the form. It strips comments first, so this entry and the ones in the source can go on
+quoting the old line. The red run is kept as `evidence/RED-009-intake-accepts-active-mandate.txt`.
+
+The gate covers the one copy that executes. The four prose copies have no gate and are not pretended
+to have one — a `LAW-*` naming them would be the fake anchor L-8 refuses, since no checker can tell
+a withdrawn offer from a described one. What closes those is the count above, done again.
+
+**Not covered, and named rather than left silent:** `web-1.0/` is the frozen rollback clone and its
+`Apply.tsx` still carries the full active-mandate radio UI. The freeze is deliberate, so it is left
+alone; but a rollback to that clone would re-offer the mandate with no prober behind it, and that is
+a property of the rollback rather than a defect in it.
+
+**Why.** No prober exists. Offering the mandate would ask a stranger to grant permission to touch
+their production system, in the knowledge that nothing in this repository is capable of using the
+permission — and it would do so on the single page where a visitor commits to something. That is a
+claim stronger than its artefact pointed at the reader rather than at a subject, which makes it the
+least excusable instance of the defect this product sells the detection of: the tool failing on
+itself, in the one place a stranger acts on what it says.
+
+**Why it is a decision and not a note.** The removal happened on 2026-08-20 and was written down
+twice — a comment in `web/src/pages/Apply.tsx` and a paragraph in `docs/INTAKE_OPERATIONS.md` —
+while `SPEC.md` §3.4 went on requiring "the mandate choice" on the form. The specification is the
+document that governs the form, so for as long as that stood, the rule had been repealed in the
+code and in the operations note while surviving intact in the copy that outranks both. That is L-2
+exactly: *a rule written in more than one place survives its own repeal*.
+
+**And the count went wrong twice, which is the part worth keeping.** The first draft found three
+copies of the rule. Refuted, it found a fourth and said so — `apply.js`'s ternary, the only copy
+that RAN, while `SPEC.md` §3.4 and the header of `Apply.tsx` were merely prose that had stopped
+being true. Refuted again, it found a fifth: `docs/WHY_GET_VERIFIED.md` still asked a stranger for
+an active mandate in the present tense, in the document that IS the offer. So five copies — four
+prose, one executable — and the entry claiming "the copies were four, not three" was itself a
+miscount, two lines above its own sentence about how prose is the easy half to find. The lesson
+does not survive as a number. It survives as: **the copy you have not found is the reason to keep
+counting**, and the search ends when a search finds nothing, not when the tally feels complete.
+
+**What is unchanged.** The sentence the mandate existed to carry stays on the form: *without a
+mandate we do not touch production*. Removing the control did not remove the promise, and the form
+now states the read-only limit as a fact about today rather than as one branch of a choice. The
+passport keeps its `mandate_ref` field: every record in the current cohort carries
+`self-mandate-0001`, the operator's self-mandate under ADR-0006, because all eight subjects are the
+operator's own systems. A subject verified without any mandate would carry the field with no
+reference rather than no field at all — an absent mandate is a state with a name (invariant 1). The
+first draft of this paragraph said the field was "null on every record"; it is null on none of
+them, and the eight emitted passports say so.
+
+**What this does not decide.** Whether active probing is built at all, and on what terms. T-2.12
+owns that, and it requires a signed document before anything runs.

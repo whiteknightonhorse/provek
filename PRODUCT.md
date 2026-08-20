@@ -68,8 +68,11 @@ ERC-8004 read adapter, and self-application over eight subjects.
 
 **Does not work yet, and the surface must not imply otherwise:** no active probing (the mandate
 object and its fail-closed behaviour exist; the prober does not), no runtime comparison, no runtime
-evidence collection. Two of three operations on every current subject are `not_measured`, and the
-passport says which of the three absences applies rather than scoring them zero.
+evidence collection. At least two of three operations on every current subject are `not_measured` —
+on the four unreadable subjects it is all three — and the passport says which of the three absences
+applies rather than scoring them zero. (This read "two of three on every current subject" until
+2026-08-20; it holds for four of the eight. Counted from the emitted passports, as SPEC §6 is —
+which also records why the original sentence cannot be dated from anything in this repository.)
 
 **Vocabulary that must not drift:**
 

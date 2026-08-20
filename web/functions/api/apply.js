@@ -44,7 +44,20 @@ export async function onRequestPost({ request, env }) {
 
   const repo = clean(body.repo);
   const contact = clean(body.contact);
-  const mandate = body.mandate === "active" ? "active" : "passive";
+  // D-21: the probing mandate is withdrawn until a prober exists, so this is not a choice the
+  // endpoint offers. It used to read `body.mandate === "active" ? "active" : "passive"`, which
+  // removed the option from the FORM while leaving it switched on for any other client: a curl
+  // POST could grant an active mandate over a live system, and it would be stored durably and
+  // announced to the operator as though somebody had agreed to it. The form was the only copy of
+  // the repeal that had been enforced, and the form is not the security boundary (L-2). Nothing
+  // here can honour an active mandate, so none is recorded. Note precisely what the stored field
+  // now means: it is the POLICY APPLIED, not the value the request asked for. A submission that
+  // sends "active" is still accepted and is stored as "passive", so "asked for active, refused"
+  // and "asked for passive" are indistinguishable in KV. That is invariant 1's shape, and it is
+  // tolerable only because there is exactly one policy today and D-21 fixes it; the moment a
+  // prober exists and the value can differ, the request's own value has to be recorded beside the
+  // applied one rather than overwritten by it.
+  const mandate = "passive";
 
   if (!/^https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/?$/.test(repo))
     return bad("That does not look like a public GitHub repository URL.");

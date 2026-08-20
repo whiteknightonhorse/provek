@@ -999,8 +999,12 @@ function Passport({ p }) {
 }
 //#endregion
 //#region src/pages/Apply.tsx
-/** Intake. The mandate choice is on the form, not in terms of service - because it is the thing
-* that decides whether we may touch a live system at all.
+/** Intake. What we may touch is stated on the form, not in terms of service - because it is the
+* thing that decides whether we may reach a live system at all. Today that statement is flat:
+* every verification is read-only. The CHOICE between passive and an active probing mandate was
+* removed on 2026-08-20 and is now D-21. This header went on asserting the choice was on the form
+* while the removal lived only in the block below and in `docs/INTAKE_OPERATIONS.md` - L-2, in the
+* file that owns the form.
 *
 * THIS FORM USED TO DO NOTHING. `onSubmit` was `preventDefault` and nothing else: zero requests,
 * no confirmation, no error. It is the only action the site asks for, reached from the primary

@@ -28,27 +28,55 @@ recompute any verdict from the same inputs.
 
 ## What a verdict looks like
 
-Real output, from the live registry — not an example:
+Below is `passport.verified.operations`, taken from
+[`/data/passports/git_whiteknightonhorse_APIbase.json`](https://provek.dev/data/passports/git_whiteknightonhorse_APIbase.json).
+It is the complete array — all three operations, nothing dropped, nothing reshaped and nothing
+reordered — extracted from that subtree and re-serialised with `json.dumps(..., indent=2)`. In the
+served file the same array sits three levels deeper, attached to its `"operations":` key and
+followed by a comma; those are the differences, and they are the whole of them. It is one subtree
+of a passport, not a whole one: the rest carries `self_reported`, `accountability` and provenance
+at `passport.*`, and coverage at `passport.verified.coverage`.
 
 ```json
-{
-  "subject_id": "git:whiteknightonhorse/APIbase",
-  "status": "verified",
-  "projection": 80,
-  "verifier_affiliation": "same_owner",
-  "verified": {
-    "operations": [
-      { "operation": "development_initiation", "level": "L4", "measured": true,
-        "confidence": "inferred",
-        "limiters_applied": ["O1:mixed_classes->inferred"] },
-      { "operation": "deployment", "level": "check_did_not_run", "measured": false,
-        "confidence": null, "limiters_applied": [] }
+[
+  {
+    "operation": "development_initiation",
+    "level": "L4",
+    "measured": true,
+    "confidence": "inferred",
+    "limiters_applied": [
+      "O1:mixed_classes->inferred"
     ]
+  },
+  {
+    "operation": "deployment",
+    "level": "check_did_not_run",
+    "measured": false,
+    "confidence": null,
+    "limiters_applied": []
+  },
+  {
+    "operation": "treasury_control",
+    "level": "check_did_not_run",
+    "measured": false,
+    "confidence": null,
+    "limiters_applied": []
   }
-}
+]
 ```
 
-Three things in that fragment are the whole product:
+> This block used to be introduced as *"Real output, from the live registry — not an example"*, and
+> it was neither. It came from a passport rather than the registry, and its shape existed in no
+> artefact: `status` and `verifier_affiliation` sit at `passport.*` while `operations` sits two
+> levels down, and the fragment spliced the two levels flat and then dropped the third operation.
+> Every value in it was true. A reader who pasted the path into `jq` would have got nothing, on the
+> page that invites them to recompute the verdict themselves.
+> `tests/test_readme_fragment_is_verbatim.py` now fails the build if this block stops being an
+> emitted passport's operations array, entire and in order — the red run that proves it can fail is
+> kept as `evidence/RED-008-readme-fragment-not-verbatim.txt`.
+
+Three things here are the whole product — two of them quoted above, and the third,
+`"verifier_affiliation": "same_owner"`, one level up at `passport.verifier_affiliation`:
 
 | | |
 |---|---|
@@ -101,7 +129,7 @@ checkable by anyone, rather than by whoever holds a token.
 
 ```bash
 git clone https://github.com/whiteknightonhorse/provek && cd provek
-python3 -m pytest -q          # 185 tests
+python3 -m pytest -q          # the suite prints its own count
 python3 scripts/cohort.py     # re-emits public/registry + public/passports
 ```
 

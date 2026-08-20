@@ -60,9 +60,17 @@ that plainly is cheaper than pretending otherwise.
 ## What we ask of you
 
 * a scoped read-only token or a public repository - the same access any auditor would need;
-* for active probing only: an explicit mandate naming what we may touch, how often, what must not
-  be affected, and how you revoke it. **Without a mandate we do not touch your production. Probing
-  someone's live system without one is an incident, not a verification.**
+* nothing else today. **Every verification at this stage is read-only** — we read what is already
+  public and touch nothing. Fewer operations can be measured that way, and the passport says which
+  ones and why.
+
+  Active probing is not offered and nothing is being asked for it. When a prober exists (T-2.12) it
+  will require an explicit mandate naming what we may touch, how often, what must not be affected,
+  and how you revoke it — **without a mandate we do not touch your production, and probing
+  someone's live system without one is an incident, not a verification.** Until then there is
+  nothing to sign. This bullet asked for the mandate in the present tense until 2026-08-20: the
+  offer had been withdrawn from the form and then from the endpoint under D-21, and this document,
+  which IS the offer, was the copy nobody re-read.
 
 ## What we never do
 

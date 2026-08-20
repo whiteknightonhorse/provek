@@ -145,5 +145,12 @@ belongs rather than eight pixels low forever.
 
 ## Known open items
 
-Carried from `web/AUDIT.md`: 222 KB of JavaScript serves five static routes. The reduced-motion
+Carried from `web/AUDIT.md`: 222 KB of JavaScript served five static routes. **Closed 2026-08-20**
+— the runtime moved to Preact through `preact/compat` (`web/vite.config.ts`), and the built bundle
+is now 73,760 bytes across 13 prerendered routes, five prose and eight passports. Measured from
+`web/dist/assets/`; the live site references that same content-hashed asset. The reduced-motion
 rule and the landing's empty right half were both closed in phase 5.
+
+The audit's own line is left reading 222 KB on purpose: it is a dated measurement, and rewriting it
+would falsify a reading rather than update one. This section is the copy that carried the number
+forward as *currently open*, so this is the copy that had to move.

@@ -1,5 +1,9 @@
-/** Intake. The mandate choice is on the form, not in terms of service - because it is the thing
- * that decides whether we may touch a live system at all.
+/** Intake. What we may touch is stated on the form, not in terms of service - because it is the
+ * thing that decides whether we may reach a live system at all. Today that statement is flat:
+ * every verification is read-only. The CHOICE between passive and an active probing mandate was
+ * removed on 2026-08-20 and is now D-21. This header went on asserting the choice was on the form
+ * while the removal lived only in the block below and in `docs/INTAKE_OPERATIONS.md` - L-2, in the
+ * file that owns the form.
  *
  * THIS FORM USED TO DO NOTHING. `onSubmit` was `preventDefault` and nothing else: zero requests,
  * no confirmation, no error. It is the only action the site asks for, reached from the primary
@@ -154,8 +158,15 @@ export default function Apply() {
               "we will send it before anything runs" - and nobody would send it, because no prober
               exists to honour it if it were signed. That is a false claim about US, which is the
               least excusable kind, and it sat on the one page where a stranger commits to
-              something. It returns with T-2.12 and not before. The endpoint already coerces
-              anything that is not "active" to "passive", so nothing behind this changed. */}
+              something. It returns with T-2.12 and not before.
+
+              This comment used to end "the endpoint already coerces anything that is not 'active'
+              to 'passive', so nothing behind this changed", which read as reassurance and was the
+              opposite. `body.mandate === "active" ? "active" : "passive"` HONOURED "active" - it
+              was only the form that had stopped sending it, so any other client could still grant
+              a probing mandate and have it stored and announced. The endpoint now assigns
+              "passive" unconditionally (D-21). Removing a control removes the offer, not the
+              capability. */}
           <div className="border border-[var(--color-line-2)] bg-[var(--color-paper)] p-3">
             <p className="text-sm">
               <strong>Every verification at this stage is read-only.</strong> We read what is already
