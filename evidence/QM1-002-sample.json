@@ -1,0 +1,1667 @@
+{
+ "population_ceiling": 50275,
+ "sample_size": 100,
+ "identity_registry": "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
+ "rpc": "https://ethereum-rpc.publicnode.com",
+ "external_calls_used": 137,
+ "call_ceiling": 300,
+ "records": [
+  {
+   "id": 503,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 1006,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 1508,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 2011,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 2514,
+   "state": "card_read",
+   "uri": "https://ag0.xyz",
+   "detail": "http 200",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "ag0.xyz",
+   "shape": {
+    "parsed": false
+   }
+  },
+  {
+   "id": 3016,
+   "state": "card_read",
+   "uri": "https://ag0.xyz",
+   "detail": "http 200",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "ag0.xyz",
+   "shape": {
+    "parsed": false
+   }
+  },
+  {
+   "id": 3519,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 4022,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 4525,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 5028,
+   "state": "card_read",
+   "uri": "https://ag0.xyz",
+   "detail": "http 200",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "ag0.xyz",
+   "shape": {
+    "parsed": false
+   }
+  },
+  {
+   "id": 5530,
+   "state": "card_read",
+   "uri": "https://ag0.xyz",
+   "detail": "http 200",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "ag0.xyz",
+   "shape": {
+    "parsed": false
+   }
+  },
+  {
+   "id": 6033,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 6536,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 7038,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 7541,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 8044,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 8547,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 9050,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 9552,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 10055,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 10558,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 11060,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 11563,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 12066,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 12569,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 13072,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 13574,
+   "state": "card_read",
+   "uri": "data:application/json;base64,ewogICJ0eXBlIjogImh0dHBzOi8vZWlwcy5ldGhlcmV1bS5vcmcvRUlQUy9laXAtODAwNCNyZWdpc3RyYXRpb24tdjEiLAogICJuYW1lIjogInB1cCIsCiAgImRlc2NyaXB",
+   "detail": "inline data URI",
+   "label": "not_a_business",
+   "rationale": "trading capability claimed, services[] and registrations[] both empty - a claim with no artefact",
+   "host": "(inline)",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "",
+    "type_is_eip8004": true,
+    "has_name": true,
+    "description_chars": 66,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "active",
+     "description",
+     "image",
+     "name",
+     "registrations",
+     "services",
+     "supportedTrusts",
+     "type",
+     "x402support"
+    ]
+   }
+  },
+  {
+   "id": 14077,
+   "state": "card_read",
+   "uri": "data:application/json;base64,eyJ0eXBlIjoiaHR0cHM6Ly9laXBzLmV0aGVyZXVtLm9yZy9FSVBTL2VpcC04MDA0I3JlZ2lzdHJhdGlvbi12MSIsIm5hbWUiOiJ0ZXN0IiwiZGVzY3JpcHRpb24iOiJvbmx",
+   "detail": "inline data URI",
+   "label": "not_a_business",
+   "rationale": "self-declared test entry: 'only test ... please do not disturb'",
+   "host": "(inline)",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "",
+    "type_is_eip8004": true,
+    "has_name": true,
+    "description_chars": 57,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "active",
+     "description",
+     "image",
+     "name",
+     "type",
+     "x402Support"
+    ]
+   }
+  },
+  {
+   "id": 14580,
+   "state": "card_read",
+   "uri": "data:application/json;base64,eyJ0eXBlIjoiaHR0cHM6Ly9laXBzLmV0aGVyZXVtLm9yZy9FSVBTL2VpcC04MDA0I3JlZ2lzdHJhdGlvbi12MSIsIm5hbWUiOiJ0ZXN0IiwiZGVzY3JpcHRpb24iOiJvbmx",
+   "detail": "inline data URI",
+   "label": "not_a_business",
+   "rationale": "self-declared test entry: 'only test ... please do not disturb'",
+   "host": "(inline)",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "",
+    "type_is_eip8004": true,
+    "has_name": true,
+    "description_chars": 57,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "active",
+     "description",
+     "image",
+     "name",
+     "type",
+     "x402Support"
+    ]
+   }
+  },
+  {
+   "id": 15082,
+   "state": "card_read",
+   "uri": "data:application/json;base64,eyJ0eXBlIjoiaHR0cHM6Ly9laXBzLmV0aGVyZXVtLm9yZy9FSVBTL2VpcC04MDA0I3JlZ2lzdHJhdGlvbi12MSIsIm5hbWUiOiJ0ZXN0IiwiZGVzY3JpcHRpb24iOiJvbmx",
+   "detail": "inline data URI",
+   "label": "not_a_business",
+   "rationale": "self-declared test entry: 'only test ... please do not disturb'",
+   "host": "(inline)",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "",
+    "type_is_eip8004": true,
+    "has_name": true,
+    "description_chars": 57,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "active",
+     "description",
+     "image",
+     "name",
+     "type",
+     "x402Support"
+    ]
+   }
+  },
+  {
+   "id": 15585,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 16088,
+   "state": "card_read",
+   "uri": "data:application/json;base64,eyJ0eXBlIjoiaHR0cHM6Ly9laXBzLmV0aGVyZXVtLm9yZy9FSVBTL2VpcC04MDA0I3JlZ2lzdHJhdGlvbi12MSIsIm5hbWUiOiJTb2xQdWxzZV85OGNjIiwiZGVzY3JpcHR",
+   "detail": "inline data URI",
+   "label": "not_a_business",
+   "rationale": "persona boilerplate; no service, endpoint or output declared - nothing observable",
+   "host": "(inline)",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "",
+    "type_is_eip8004": true,
+    "has_name": true,
+    "description_chars": 93,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "active",
+     "description",
+     "image",
+     "name",
+     "type",
+     "x402Support"
+    ]
+   }
+  },
+  {
+   "id": 16591,
+   "state": "card_read",
+   "uri": "data:application/json;base64,eyJ0eXBlIjoiaHR0cHM6Ly9laXBzLmV0aGVyZXVtLm9yZy9FSVBTL2VpcC04MDA0I3JlZ2lzdHJhdGlvbi12MSIsIm5hbWUiOiJBeGlBZ2VudF83NDIyIiwiZGVzY3JpcHR",
+   "detail": "inline data URI",
+   "label": "not_a_business",
+   "rationale": "persona boilerplate; no service, endpoint or output declared - nothing observable",
+   "host": "(inline)",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "",
+    "type_is_eip8004": true,
+    "has_name": true,
+    "description_chars": 82,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "active",
+     "description",
+     "image",
+     "name",
+     "type",
+     "x402Support"
+    ]
+   }
+  },
+  {
+   "id": 17094,
+   "state": "card_read",
+   "uri": "data:application/json;base64,eyJ0eXBlIjoiaHR0cHM6Ly9laXBzLmV0aGVyZXVtLm9yZy9FSVBTL2VpcC04MDA0I3JlZ2lzdHJhdGlvbi12MSIsIm5hbWUiOiJBeGlBZ2VudF83NDIyIiwiZGVzY3JpcHR",
+   "detail": "inline data URI",
+   "label": "not_a_business",
+   "rationale": "persona boilerplate; no service, endpoint or output declared - nothing observable",
+   "host": "(inline)",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "",
+    "type_is_eip8004": true,
+    "has_name": true,
+    "description_chars": 82,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "active",
+     "description",
+     "image",
+     "name",
+     "type",
+     "x402Support"
+    ]
+   }
+  },
+  {
+   "id": 17596,
+   "state": "card_read",
+   "uri": "data:application/json;base64,eyJ0eXBlIjoiaHR0cHM6Ly9laXBzLmV0aGVyZXVtLm9yZy9FSVBzL2VpcC04MDA0I3JlZ2lzdHJhdGlvbi12MSIsIm5hbWUiOiJQcmltZU1pbmRfODEwMCIsImRlc2NyaXB",
+   "detail": "inline data URI",
+   "label": "not_a_business",
+   "rationale": "persona boilerplate; no service, endpoint or output declared - nothing observable",
+   "host": "(inline)",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "",
+    "type_is_eip8004": true,
+    "has_name": true,
+    "description_chars": 59,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "active",
+     "description",
+     "image",
+     "name",
+     "type",
+     "x402Support"
+    ]
+   }
+  },
+  {
+   "id": 18099,
+   "state": "card_read",
+   "uri": "data:application/json;base64,eyJ0eXBlIjoiaHR0cHM6Ly9laXBzLmV0aGVyZXVtLm9yZy9FSVBzL2VpcC04MDA0I3JlZ2lzdHJhdGlvbi12MSIsIm5hbWUiOiJRdWFudHVtTmV0XzIwNiIsImRlc2NyaXB",
+   "detail": "inline data URI",
+   "label": "not_a_business",
+   "rationale": "persona boilerplate; no service, endpoint or output declared - nothing observable",
+   "host": "(inline)",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "",
+    "type_is_eip8004": true,
+    "has_name": true,
+    "description_chars": 59,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "active",
+     "description",
+     "image",
+     "name",
+     "type",
+     "x402Support"
+    ]
+   }
+  },
+  {
+   "id": 18602,
+   "state": "card_read",
+   "uri": "data:application/json;base64,eyJ0eXBlIjoiaHR0cHM6Ly9laXBzLmV0aGVyZXVtLm9yZy9FSVBTL2VpcC04MDA0I3JlZ2lzdHJhdGlvbi12MSIsIm5hbWUiOiJBZ2VudHMgMTg2MDYiLCJkZXNjcmlwdGl",
+   "detail": "inline data URI",
+   "label": "not_a_business",
+   "rationale": "persona boilerplate; no service, endpoint or output declared - nothing observable",
+   "host": "(inline)",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "",
+    "type_is_eip8004": true,
+    "has_name": true,
+    "description_chars": 93,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "active",
+     "description",
+     "image",
+     "name",
+     "type",
+     "x402Support"
+    ]
+   }
+  },
+  {
+   "id": 19104,
+   "state": "card_read",
+   "uri": "data:application/json;base64,eyJ0eXBlIjoiaHR0cHM6Ly9laXBzLmV0aGVyZXVtLm9yZy9FSVBTL2VpcC04MDA0I3JlZ2lzdHJhdGlvbiIsIm5hbWUiOiJSdWJ5IFNpbHZlciBFY2hvIiwiZGVzY3JpcHR",
+   "detail": "inline data URI",
+   "label": "not_a_business",
+   "rationale": "generated flavour text with a mint id; no service or endpoint declared",
+   "host": "(inline)",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "",
+    "type_is_eip8004": false,
+    "has_name": true,
+    "description_chars": 64,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "8004Support",
+     "active",
+     "description",
+     "image",
+     "name",
+     "type"
+    ]
+   }
+  },
+  {
+   "id": 19607,
+   "state": "card_read",
+   "uri": "data:application/json;base64,eyJ0eXBlIjoiaHR0cHM6Ly9laXBzLmV0aGVyZXVtLm9yZy9FSVBTL2VpcC04MDA0I3JlZ2lzdHJhdGlvbi12MSIsIm5hbWUiOiJBZ2VudHMgMTk0MzkiLCJkZXNjcmlwdGl",
+   "detail": "inline data URI",
+   "label": "not_a_business",
+   "rationale": "persona boilerplate; no service, endpoint or output declared - nothing observable",
+   "host": "(inline)",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "",
+    "type_is_eip8004": true,
+    "has_name": true,
+    "description_chars": 87,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "active",
+     "description",
+     "image",
+     "name",
+     "type",
+     "x402Support"
+    ]
+   }
+  },
+  {
+   "id": 20110,
+   "state": "card_read",
+   "uri": "data:application/json;base64,eyJ0eXBlIjoiaHR0cHM6Ly9laXBzLmV0aGVyZXVtLm9yZy9FSVBTL2VpcC04MDA0I3JlZ2lzdHJhdGlvbiIsIm5hbWUiOiJaZXJvIFdhbmRlcmVyIDc5MjciLCJkZXNjcml",
+   "detail": "inline data URI",
+   "label": "not_a_business",
+   "rationale": "generated flavour text with a mint id; no service or endpoint declared",
+   "host": "(inline)",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "",
+    "type_is_eip8004": false,
+    "has_name": true,
+    "description_chars": 71,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "8004Support",
+     "active",
+     "description",
+     "image",
+     "name",
+     "type"
+    ]
+   }
+  },
+  {
+   "id": 20613,
+   "state": "card_read",
+   "uri": "data:application/json;base64,eyJ0eXBlIjoiaHR0cHM6Ly9laXBzLmV0aGVyZXVtLm9yZy9FSVBTL2VpcC04MDA0I3JlZ2lzdHJhdGlvbiIsIm5hbWUiOiJPbnl4IExvc3QgU2hhbWFuIiwiZGVzY3JpcHR",
+   "detail": "inline data URI",
+   "label": "not_a_business",
+   "rationale": "generated flavour text with a mint id; no service or endpoint declared",
+   "host": "(inline)",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "",
+    "type_is_eip8004": false,
+    "has_name": true,
+    "description_chars": 58,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "8004Support",
+     "active",
+     "description",
+     "image",
+     "name",
+     "type"
+    ]
+   }
+  },
+  {
+   "id": 21116,
+   "state": "card_read",
+   "uri": "data:application/json;base64,eyJ0eXBlIjoiaHR0cHM6Ly9laXBzLmV0aGVyZXVtLm9yZy9FSVBTL2VpcC04MDA0I3JlZ2lzdHJhdGlvbi12MSIsIm5hbWUiOiJ0ZXN0IiwiZGVzY3JpcHRpb24iOiJvbmx",
+   "detail": "inline data URI",
+   "label": "not_a_business",
+   "rationale": "self-declared test entry: 'only test ... please do not disturb'",
+   "host": "(inline)",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "",
+    "type_is_eip8004": true,
+    "has_name": true,
+    "description_chars": 57,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "active",
+     "description",
+     "image",
+     "name",
+     "type",
+     "x402Support"
+    ]
+   }
+  },
+  {
+   "id": 21618,
+   "state": "card_read",
+   "uri": "data:application/json;base64,eyJ0eXBlIjoiaHR0cHM6Ly9laXBzLmV0aGVyZXVtLm9yZy9FSVBTL2VpcC04MDA0I3JlZ2lzdHJhdGlvbiIsIm5hbWUiOiJEaWdpdGFsIFdpc2UgU2VudGluZWwiLCJkZXN",
+   "detail": "inline data URI",
+   "label": "not_a_business",
+   "rationale": "generated flavour text with a mint id; no service or endpoint declared",
+   "host": "(inline)",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "",
+    "type_is_eip8004": false,
+    "has_name": true,
+    "description_chars": 66,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "8004Support",
+     "active",
+     "description",
+     "image",
+     "name",
+     "type"
+    ]
+   }
+  },
+  {
+   "id": 22121,
+   "state": "card_read",
+   "uri": "data:application/json;base64,eyJ0eXBlIjoiaHR0cHM6Ly9laXBzLmV0aGVyZXVtLm9yZy9FSVBTL2VpcC04MDA0I3JlZ2lzdHJhdGlvbiIsIm5hbWUiOiJFdGVybmFsIE15c3RpYyBDaGltZXJhIiwiZGV",
+   "detail": "inline data URI",
+   "label": "not_a_business",
+   "rationale": "generated flavour text with a mint id; no service or endpoint declared",
+   "host": "(inline)",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "",
+    "type_is_eip8004": false,
+    "has_name": true,
+    "description_chars": 63,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "8004Support",
+     "active",
+     "description",
+     "image",
+     "name",
+     "type"
+    ]
+   }
+  },
+  {
+   "id": 22624,
+   "state": "card_unreadable",
+   "uri": "https://space-weather-agent-production.up.railway.app/.well-known/agent-metadata.json",
+   "detail": "http 404",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "space-weather-agent-production.up.railway.app"
+  },
+  {
+   "id": 23126,
+   "state": "card_unreadable",
+   "uri": "ipfs://QmTnaDpxCEtQHcCrMAcG8PxuHiLiPQvePajUaRp8k3Q3Bg",
+   "detail": "timed out (curl rc=28)",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "(content-addressed)"
+  },
+  {
+   "id": 23629,
+   "state": "card_unreadable",
+   "uri": "https://api.khorus.io/api/v1/agents/dc21500b-c101-45ab-87f1-5c1fd37d4922/card",
+   "detail": "http 502",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "api.khorus.io"
+  },
+  {
+   "id": 24132,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 24635,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 25138,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 25640,
+   "state": "card_read",
+   "uri": "{\"name\":\"keentiger333\",\"bio\":\"\",\"type\":\"user\",\"registered\":\"2026-02-20T22:46:42.924Z\"}",
+   "detail": "inline document (agentURI holds the file, not a pointer to it)",
+   "label": "not_a_business",
+   "rationale": "user profile stub ({name,bio,type:user}); not an EIP-8004 registration file at all",
+   "host": "(inline)",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "",
+    "type_is_eip8004": false,
+    "has_name": true,
+    "description_chars": 0,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "bio",
+     "name",
+     "registered",
+     "type"
+    ]
+   }
+  },
+  {
+   "id": 26143,
+   "state": "card_read",
+   "uri": "{\"name\":\"vicuna_vibes1\",\"bio\":\"\",\"type\":\"user\",\"registered\":\"2026-02-21T07:41:51.856Z\"}",
+   "detail": "inline document (agentURI holds the file, not a pointer to it)",
+   "label": "not_a_business",
+   "rationale": "user profile stub ({name,bio,type:user}); not an EIP-8004 registration file at all",
+   "host": "(inline)",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "",
+    "type_is_eip8004": false,
+    "has_name": true,
+    "description_chars": 0,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "bio",
+     "name",
+     "registered",
+     "type"
+    ]
+   }
+  },
+  {
+   "id": 26646,
+   "state": "card_read",
+   "uri": "{\"name\":\"tsaql_nft\",\"bio\":\"\",\"type\":\"user\",\"registered\":\"2026-02-24T19:24:16.689Z\"}",
+   "detail": "inline document (agentURI holds the file, not a pointer to it)",
+   "label": "not_a_business",
+   "rationale": "user profile stub ({name,bio,type:user}); not an EIP-8004 registration file at all",
+   "host": "(inline)",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "",
+    "type_is_eip8004": false,
+    "has_name": true,
+    "description_chars": 0,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "bio",
+     "name",
+     "registered",
+     "type"
+    ]
+   }
+  },
+  {
+   "id": 27148,
+   "state": "card_read",
+   "uri": "{\"name\":\"cookie_mint_420\",\"bio\":\"\",\"type\":\"user\",\"registered\":\"2026-02-25T06:56:29.446Z\"}",
+   "detail": "inline document (agentURI holds the file, not a pointer to it)",
+   "label": "not_a_business",
+   "rationale": "user profile stub ({name,bio,type:user}); not an EIP-8004 registration file at all",
+   "host": "(inline)",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "",
+    "type_is_eip8004": false,
+    "has_name": true,
+    "description_chars": 0,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "bio",
+     "name",
+     "registered",
+     "type"
+    ]
+   }
+  },
+  {
+   "id": 27651,
+   "state": "card_read",
+   "uri": "{\"name\":\"tragic_flea22\",\"bio\":\"\",\"type\":\"user\",\"registered\":\"2026-02-25T16:59:00.089Z\"}",
+   "detail": "inline document (agentURI holds the file, not a pointer to it)",
+   "label": "not_a_business",
+   "rationale": "user profile stub ({name,bio,type:user}); not an EIP-8004 registration file at all",
+   "host": "(inline)",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "",
+    "type_is_eip8004": false,
+    "has_name": true,
+    "description_chars": 0,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "bio",
+     "name",
+     "registered",
+     "type"
+    ]
+   }
+  },
+  {
+   "id": 28154,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 28657,
+   "state": "card_read",
+   "uri": "data:application/json;base64,eyJ0eXBlIjoiaHR0cHM6Ly9laXBzLmV0aGVyZXVtLm9yZy9FSVBTL2VpcC04MDA0I3JlZ2lzdHJhdGlvbi12MSIsIm5hbWUiOiJNb29uIE11ZmZpbiIsImRlc2NyaXB0aW9",
+   "detail": "inline data URI",
+   "label": "not_a_business",
+   "rationale": "meme persona, no service declared",
+   "host": "(inline)",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "",
+    "type_is_eip8004": true,
+    "has_name": true,
+    "description_chars": 42,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "active",
+     "description",
+     "image",
+     "name",
+     "supportedTrust",
+     "type",
+     "x402Support"
+    ]
+   }
+  },
+  {
+   "id": 29160,
+   "state": "card_read",
+   "uri": "data:application/json;base64,eyJ0eXBlIjoiaHR0cHM6Ly9laXBzLmV0aGVyZXVtLm9yZy9FSVBTL2VpcC04MDA0I3JlZ2lzdHJhdGlvbi12MSIsIm5hbWUiOiJUSEUgQ09MTEVDVElWRSAgLSBCeSBEYXJ",
+   "detail": "inline data URI",
+   "label": "not_a_business",
+   "rationale": "collectible persona, services[] empty",
+   "host": "(inline)",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "",
+    "type_is_eip8004": true,
+    "has_name": true,
+    "description_chars": 226,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 0,
+    "registrations": 1,
+    "keys": [
+     "active",
+     "description",
+     "image",
+     "name",
+     "nftOrigin",
+     "registrations",
+     "services",
+     "type",
+     "updatedAt",
+     "x402Support"
+    ]
+   }
+  },
+  {
+   "id": 29662,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 30165,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 30668,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 31170,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 31673,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 32176,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 32679,
+   "state": "card_read",
+   "uri": "https://api.normies.art/agents/metadata/2767",
+   "detail": "http 200",
+   "label": "not_a_business",
+   "rationale": "one row of a 10,000-piece collection; declares 2 services. The business is the collection, not the row; operator api.normies.art assessed at operator level",
+   "host": "api.normies.art",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "https://api.normies.art/agents/info/2767",
+    "type_is_eip8004": true,
+    "has_name": true,
+    "description_chars": 237,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 2,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "active",
+     "description",
+     "image",
+     "name",
+     "services",
+     "type",
+     "updatedAt",
+     "x402Support"
+    ]
+   }
+  },
+  {
+   "id": 33182,
+   "state": "card_read",
+   "uri": "https://api.normies.art/agents/metadata/4768",
+   "detail": "http 200",
+   "label": "not_a_business",
+   "rationale": "one row of a 10,000-piece collection; declares 2 services. The business is the collection, not the row; operator api.normies.art assessed at operator level",
+   "host": "api.normies.art",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "https://api.normies.art/agents/info/4768",
+    "type_is_eip8004": true,
+    "has_name": true,
+    "description_chars": 250,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 2,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "active",
+     "description",
+     "image",
+     "name",
+     "services",
+     "type",
+     "updatedAt",
+     "x402Support"
+    ]
+   }
+  },
+  {
+   "id": 33684,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 34187,
+   "state": "card_read",
+   "uri": "https://exquisites.es/.well-known/agent-card/2547.json",
+   "detail": "http 200",
+   "label": "not_a_business",
+   "rationale": "one of ~10,000 critic functions under one operator; declares 8 capabilities on a POST endpoint. Agent-as-a-function per 2.7; operator exquisites.es assessed at operator level",
+   "host": "exquisites.es",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "https://exquisites.es/api/showcase/agent-summary/2547",
+    "type_is_eip8004": false,
+    "has_name": true,
+    "description_chars": 226,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 8,
+    "registrations": 0,
+    "keys": [
+     "active",
+     "agentWallet",
+     "capabilities",
+     "description",
+     "erc8004",
+     "external_links",
+     "identity",
+     "image",
+     "lens",
+     "market",
+     "name",
+     "policy",
+     "rarity",
+     "readOnly",
+     "schema",
+     "traits",
+     "type",
+     "upgrade",
+     "upgradeStatus",
+     "url"
+    ]
+   }
+  },
+  {
+   "id": 34690,
+   "state": "card_read",
+   "uri": "https://exquisites.es/.well-known/agent-card/125.json",
+   "detail": "http 200",
+   "label": "not_a_business",
+   "rationale": "one of ~10,000 critic functions under one operator; declares 8 capabilities on a POST endpoint. Agent-as-a-function per 2.7; operator exquisites.es assessed at operator level",
+   "host": "exquisites.es",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "https://exquisites.es/api/showcase/agent-summary/125",
+    "type_is_eip8004": false,
+    "has_name": true,
+    "description_chars": 227,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 8,
+    "registrations": 0,
+    "keys": [
+     "active",
+     "agentWallet",
+     "capabilities",
+     "description",
+     "erc8004",
+     "external_links",
+     "identity",
+     "image",
+     "lens",
+     "market",
+     "name",
+     "policy",
+     "rarity",
+     "readOnly",
+     "schema",
+     "traits",
+     "type",
+     "upgrade",
+     "upgradeStatus",
+     "url"
+    ]
+   }
+  },
+  {
+   "id": 35192,
+   "state": "card_read",
+   "uri": "https://exquisites.es/.well-known/agent-card/469.json",
+   "detail": "http 200",
+   "label": "not_a_business",
+   "rationale": "one of ~10,000 critic functions under one operator; declares 8 capabilities on a POST endpoint. Agent-as-a-function per 2.7; operator exquisites.es assessed at operator level",
+   "host": "exquisites.es",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "https://exquisites.es/api/showcase/agent-summary/469",
+    "type_is_eip8004": false,
+    "has_name": true,
+    "description_chars": 223,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 8,
+    "registrations": 0,
+    "keys": [
+     "active",
+     "agentWallet",
+     "capabilities",
+     "description",
+     "erc8004",
+     "external_links",
+     "identity",
+     "image",
+     "lens",
+     "market",
+     "name",
+     "policy",
+     "rarity",
+     "readOnly",
+     "schema",
+     "traits",
+     "type",
+     "upgrade",
+     "upgradeStatus",
+     "url"
+    ]
+   }
+  },
+  {
+   "id": 35695,
+   "state": "card_read",
+   "uri": "https://signalbound.art/.well-known/agents/477.json",
+   "detail": "http 200",
+   "label": "not_a_business",
+   "rationale": "one row of a 6,666-piece collection; declares 22 service endpoints. The business is the collection, not the row; operator signalbound.art assessed at operator level",
+   "host": "signalbound.art",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "https://signalbound.art/agent/477",
+    "type_is_eip8004": true,
+    "has_name": true,
+    "description_chars": 180,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 22,
+    "capabilities": 0,
+    "registrations": 1,
+    "keys": [
+     "active",
+     "description",
+     "extensions",
+     "image",
+     "name",
+     "registrations",
+     "services",
+     "supportedTrust",
+     "type",
+     "x402Support"
+    ]
+   }
+  },
+  {
+   "id": 36198,
+   "state": "card_read",
+   "uri": "https://exquisites.es/.well-known/agent-card/920.json",
+   "detail": "http 200",
+   "label": "not_a_business",
+   "rationale": "one of ~10,000 critic functions under one operator; declares 8 capabilities on a POST endpoint. Agent-as-a-function per 2.7; operator exquisites.es assessed at operator level",
+   "host": "exquisites.es",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "https://exquisites.es/api/showcase/agent-summary/920",
+    "type_is_eip8004": false,
+    "has_name": true,
+    "description_chars": 223,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 8,
+    "registrations": 0,
+    "keys": [
+     "active",
+     "agentWallet",
+     "capabilities",
+     "description",
+     "erc8004",
+     "external_links",
+     "identity",
+     "image",
+     "lens",
+     "market",
+     "name",
+     "policy",
+     "rarity",
+     "readOnly",
+     "schema",
+     "traits",
+     "type",
+     "upgrade",
+     "upgradeStatus",
+     "url"
+    ]
+   }
+  },
+  {
+   "id": 36701,
+   "state": "card_read",
+   "uri": "data:application/json;base64,eyJ0eXBlIjoiaHR0cHM6Ly9laXBzLmV0aGVyZXVtLm9yZy9FSVBTL2VpcC04MDA0I3JlZ2lzdHJhdGlvbi12MSIsIm5hbWUiOiJFbGV2aW5lIFRyZWFzdXJlIiwiZGVzY3J",
+   "detail": "inline data URI",
+   "label": "not_a_business",
+   "rationale": "empty description, services[] empty",
+   "host": "(inline)",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "",
+    "type_is_eip8004": true,
+    "has_name": true,
+    "description_chars": 0,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 0,
+    "capabilities": 0,
+    "registrations": 1,
+    "keys": [
+     "active",
+     "description",
+     "image",
+     "name",
+     "nftOrigin",
+     "registeredVia",
+     "registrations",
+     "services",
+     "type",
+     "updatedAt",
+     "x402Support"
+    ]
+   }
+  },
+  {
+   "id": 37204,
+   "state": "card_unreadable",
+   "uri": "https://agents.exquisite.land/compas/272.json",
+   "detail": "TLS handshake failed (curl rc=35)",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "agents.exquisite.land"
+  },
+  {
+   "id": 37706,
+   "state": "card_unreadable",
+   "uri": "https://agents.exquisite.land/compas/770.json",
+   "detail": "TLS handshake failed (curl rc=35)",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "agents.exquisite.land"
+  },
+  {
+   "id": 38209,
+   "state": "card_unreadable",
+   "uri": "https://agents.exquisite.land/compas/1273.json",
+   "detail": "TLS handshake failed (curl rc=35)",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "agents.exquisite.land"
+  },
+  {
+   "id": 38712,
+   "state": "card_unreadable",
+   "uri": "https://agents.exquisite.land/compas/1776.json",
+   "detail": "TLS handshake failed (curl rc=35)",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "agents.exquisite.land"
+  },
+  {
+   "id": 39214,
+   "state": "card_unreadable",
+   "uri": "https://agents.exquisite.land/compas/2278.json",
+   "detail": "TLS handshake failed (curl rc=35)",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "agents.exquisite.land"
+  },
+  {
+   "id": 39717,
+   "state": "card_unreadable",
+   "uri": "https://agents.exquisite.land/compas/2779.json",
+   "detail": "TLS handshake failed (curl rc=35)",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "agents.exquisite.land"
+  },
+  {
+   "id": 40220,
+   "state": "card_unreadable",
+   "uri": "https://agents.exquisite.land/compas/3282.json",
+   "detail": "TLS handshake failed (curl rc=35)",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "agents.exquisite.land"
+  },
+  {
+   "id": 40723,
+   "state": "card_unreadable",
+   "uri": "https://agents.exquisite.land/compas/3785.json",
+   "detail": "TLS handshake failed (curl rc=35)",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "agents.exquisite.land"
+  },
+  {
+   "id": 41226,
+   "state": "card_unreadable",
+   "uri": "https://agents.exquisite.land/compas/4287.json",
+   "detail": "TLS handshake failed (curl rc=35)",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "agents.exquisite.land"
+  },
+  {
+   "id": 41728,
+   "state": "card_unreadable",
+   "uri": "https://agents.exquisite.land/compas/4789.json",
+   "detail": "TLS handshake failed (curl rc=35)",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "agents.exquisite.land"
+  },
+  {
+   "id": 42231,
+   "state": "card_unreadable",
+   "uri": "https://agents.exquisite.land/compas/5292.json",
+   "detail": "TLS handshake failed (curl rc=35)",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "agents.exquisite.land"
+  },
+  {
+   "id": 42734,
+   "state": "card_unreadable",
+   "uri": "https://agents.exquisite.land/compas/5795.json",
+   "detail": "TLS handshake failed (curl rc=35)",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "agents.exquisite.land"
+  },
+  {
+   "id": 43236,
+   "state": "card_unreadable",
+   "uri": "https://agents.exquisite.land/compas/6295.json",
+   "detail": "TLS handshake failed (curl rc=35)",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "agents.exquisite.land"
+  },
+  {
+   "id": 43739,
+   "state": "card_unreadable",
+   "uri": "https://agents.exquisite.land/compas/6796.json",
+   "detail": "TLS handshake failed (curl rc=35)",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "agents.exquisite.land"
+  },
+  {
+   "id": 44242,
+   "state": "card_unreadable",
+   "uri": "https://agents.exquisite.land/compas/7299.json",
+   "detail": "TLS handshake failed (curl rc=35)",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "agents.exquisite.land"
+  },
+  {
+   "id": 44745,
+   "state": "card_unreadable",
+   "uri": "https://agents.exquisite.land/compas/7802.json",
+   "detail": "TLS handshake failed (curl rc=35)",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "agents.exquisite.land"
+  },
+  {
+   "id": 45248,
+   "state": "card_unreadable",
+   "uri": "https://agents.exquisite.land/compas/8305.json",
+   "detail": "TLS handshake failed (curl rc=35)",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "agents.exquisite.land"
+  },
+  {
+   "id": 45750,
+   "state": "card_unreadable",
+   "uri": "https://agents.exquisite.land/compas/8807.json",
+   "detail": "TLS handshake failed (curl rc=35)",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "agents.exquisite.land"
+  },
+  {
+   "id": 46253,
+   "state": "card_unreadable",
+   "uri": "https://agents.exquisite.land/compas/9310.json",
+   "detail": "TLS handshake failed (curl rc=35)",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "agents.exquisite.land"
+  },
+  {
+   "id": 46756,
+   "state": "card_unreadable",
+   "uri": "https://agents.exquisite.land/compas/9813.json",
+   "detail": "TLS handshake failed (curl rc=35)",
+   "label": "unlabelled",
+   "rationale": "",
+   "host": "agents.exquisite.land"
+  },
+  {
+   "id": 47258,
+   "state": "card_read",
+   "uri": "https://api.freaks.one/api/freak/923",
+   "detail": "http 200",
+   "label": "not_a_business",
+   "rationale": "declares 3 service endpoints and 4 skills - but its own telemetry declares state 'Dormant', 0 sessions, 0 messages, last_contact null. The subject's own record of no activity; operator freaks.one assessed at operator level",
+   "host": "api.freaks.one",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "https://freaks.one/alive/",
+    "type_is_eip8004": true,
+    "has_name": true,
+    "description_chars": 258,
+    "skills": 4,
+    "endpoints": 3,
+    "services": 3,
+    "capabilities": 0,
+    "registrations": 1,
+    "keys": [
+     "active",
+     "attributes",
+     "description",
+     "endpoints",
+     "freaks",
+     "image",
+     "name",
+     "registrations",
+     "services",
+     "skills",
+     "supportedProtocols",
+     "supportedTrust",
+     "type",
+     "x402Support"
+    ]
+   }
+  },
+  {
+   "id": 47761,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 48264,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 48767,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 49270,
+   "state": "no_registration",
+   "uri": "",
+   "detail": "",
+   "label": "unlabelled",
+   "rationale": ""
+  },
+  {
+   "id": 49772,
+   "state": "card_read",
+   "uri": "https://api.normies.art/agents/metadata/1755",
+   "detail": "http 200",
+   "label": "not_a_business",
+   "rationale": "one row of a 10,000-piece collection; declares 2 services. The business is the collection, not the row; operator api.normies.art assessed at operator level",
+   "host": "api.normies.art",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "https://api.normies.art/agents/info/1755",
+    "type_is_eip8004": true,
+    "has_name": true,
+    "description_chars": 372,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 2,
+    "capabilities": 0,
+    "registrations": 0,
+    "keys": [
+     "active",
+     "description",
+     "image",
+     "name",
+     "services",
+     "type",
+     "updatedAt",
+     "x402Support"
+    ]
+   }
+  },
+  {
+   "id": 50275,
+   "state": "card_read",
+   "uri": "https://signalbound.art/.well-known/agents/5655.json",
+   "detail": "http 200",
+   "label": "not_a_business",
+   "rationale": "one row of a 6,666-piece collection; declares 22 service endpoints. The business is the collection, not the row; operator signalbound.art assessed at operator level",
+   "host": "signalbound.art",
+   "shape": {
+    "parsed": true,
+    "first_endpoint": "https://signalbound.art/agent/5655",
+    "type_is_eip8004": true,
+    "has_name": true,
+    "description_chars": 180,
+    "skills": 0,
+    "endpoints": 0,
+    "services": 22,
+    "capabilities": 0,
+    "registrations": 3,
+    "keys": [
+     "active",
+     "description",
+     "extensions",
+     "image",
+     "name",
+     "registrations",
+     "services",
+     "supportedTrust",
+     "type",
+     "x402Support"
+    ]
+   }
+  }
+ ],
+ "classified_by_hand": 35,
+ "classified_on": "2026-08-20"
+}

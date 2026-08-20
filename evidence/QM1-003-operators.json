@@ -1,0 +1,33 @@
+{
+ "external_calls_used": 4,
+ "operators": [
+  {
+   "operator": "api.normies.art",
+   "from_agent_id": 32679,
+   "endpoint": "https://api.normies.art/agents/info/2767",
+   "result": "http 200",
+   "bytes": 6993
+  },
+  {
+   "operator": "exquisites.es",
+   "from_agent_id": 34187,
+   "endpoint": "https://exquisites.es/api/showcase/agent-summary/2547",
+   "result": "http 200",
+   "bytes": 85056
+  },
+  {
+   "operator": "signalbound.art",
+   "from_agent_id": 35695,
+   "endpoint": "https://signalbound.art/agent/477",
+   "result": "http 200",
+   "bytes": 7594
+  },
+  {
+   "operator": "api.freaks.one",
+   "from_agent_id": 47258,
+   "endpoint": "https://freaks.one/alive/",
+   "result": "transport failure rc=56",
+   "bytes": null
+  }
+ ]
+}

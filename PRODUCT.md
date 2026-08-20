@@ -122,9 +122,14 @@ Real, and honestly scarce.
   is not reproducible. That is a measurement about the subject's public posture, not a judgement of
   it, and it is the honest result of applying the method to ourselves. Exact numbers live in the
   emitted registry; repeating them here is how this section drifted once already.
-- Two measured answers to open questions: the ERC-8004 identity population is **50,275**, measured
-  on-chain; verification cost is **0.006 CPU-seconds** and three API calls.
-- 196 tests, 35 laws armed, four ratchets. The count is quoted because it moves; the claim that
+- Three measured answers to open questions: the ERC-8004 identity population is **50,275**,
+  measured on-chain; verification cost is **0.006 CPU-seconds** and three API calls; and the
+  §2.7 filter over a 100-identity sample of that population returns **zero candidate identities**,
+  with 27 of the 100 recorded as unreadable rather than counted against anyone, and **3 of the 8
+  operators behind those identities reachable at a declared endpoint** when probed
+  ([`docs/MEASUREMENT_QM1.md`](docs/MEASUREMENT_QM1.md)). Both numbers are published because a
+  per-identity rule cannot count a business that mints ten thousand rows.
+- 301 tests, 44 laws armed, four ratchets. The count is quoted because it moves; the claim that
   matters is that every load-bearing rule names the gate and the test enforcing it.
 
 **Absences that must not be fabricated:** no customers, no testimonials, no third-party subjects,

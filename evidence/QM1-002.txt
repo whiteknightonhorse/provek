@@ -1,0 +1,67 @@
+=== Q-M1 step 2: the specification 2.7 filter, measured ===
+population ceiling (step 1, measured): 50275 agentIds
+sample: 100 ids, systematic, stride 502.75, ids 503..50275
+
+what the instruments returned, per identity:
+  token_absent          0
+  rpc_unreadable        0
+  no_registration      38
+  card_unreadable      27
+  card_read            35
+
+hand classification of the registration files that resolved:
+  candidate             0   passes every 2.7 condition a public file carries
+  not_a_business       35   read, and 2.7 excludes it
+  unlabelled            0   collected, not yet classified - not a rejection
+
+THE TWO ABSENCES, kept apart (specification 2.9, law L-1):
+  unreadable            27   we did not obtain the evidence
+  nothing_qualified     73   we obtained it and nothing there qualifies
+
+RATE, with the unreadable band shown rather than resolved:
+  lower    0.00%  every unreadable identity counted as NOT a candidate
+  upper   27.00%  every unreadable identity counted as a candidate
+  sampling error on the lower rate (Wilson 95%): 0.00% to 3.70%
+
+EXTRAPOLATION to the population:
+  point estimate                  0 external candidate identities
+  sampling error alone            0 to 1860 (the unreadable all counted against)
+  unreadable counted for      13574
+
+WHAT THIS NUMBER IS: identities whose public registration file describes a business operation with an observable result - CANDIDATES FOR INTAKE.
+WHAT IT IS NOT: the count of subjects qualifying under 2.7. The 2.3 operation at level >= L3 is `not_measured` for every row and cannot be read remotely, so this is a CEILING on qualification and the mandate stage is where it is settled.
+
+WHERE THE DECLARED FILES LIVE (host as a weak proxy for operator, not extrapolated):
+    25  (inline)
+    20  agents.exquisite.land
+     4  ag0.xyz
+     4  exquisites.es
+     3  api.normies.art
+     2  signalbound.art
+     1  space-weather-agent-production.up.railway.app
+     1  (content-addressed)
+     1  api.khorus.io
+     1  api.freaks.one
+  (25 inline, 1 content-addressed - neither names an operator)
+  distinct hosts in the sample: 8 across 36 files - a count of HOSTS, which bounds the operator count in neither direction: one company may serve several hosts and one host may serve several companies
+
+OPERATOR LEVEL - one declared endpoint probed per operator (the 2.7 'observable result of activity' condition, measured rather than read off the card):
+  api.normies.art            http 200                   6993 bytes         live
+  exquisites.es              http 200                   85056 bytes        live
+  signalbound.art            http 200                   7594 bytes         live
+  api.freaks.one             transport failure rc=56    no body obtained   not_measured
+  3 live, 0 answered without an artefact, 1 not_measured of 4 probed.
+  NOT PROBED, and therefore not_measured rather than not live - 4 of 8 hosts declared no endpoint we could extract:
+    ag0.xyz
+    agents.exquisite.land
+    api.khorus.io
+    space-weather-agent-production.up.railway.app
+    (their registration files were never obtained, so the absence of an endpoint here is OUR gap and not their silence)
+  The count of operators IN THE POPULATION is not_measured: a sample of identities is not a sample of operators, and no number here may be multiplied by the stride.
+
+GO/NO-GO, computed by src/governance/thresholds.py at BOTH ends of the band:
+  lower        0 candidates -> REVISIT      0 candidates is below 10, but growth has not been measured yet - a young market is not a dead one, so this is a revisit, not a stop
+  upper    13574 candidates -> NOT_MEASURED mandates granted were not measured
+  No end of the band is GO or STOP, so the band's WIDTH does not bind the decision.
+    at the lower end, what binds is a second-window growth measurement
+    at the upper end, what binds is the unmeasured mandate and clock inputs

@@ -198,3 +198,13 @@ laws:
     # the defect: the other four skip themselves when nothing is captured.
     gate: web/src/pages/Method.tsx
     test: tests/test_notes_entrance.py
+  - id: LAW-SURVEY-ABSENCE
+    text: "in a sampled measurement, an identity we failed to read is never counted as one that failed to qualify"
+    # LAW-NOT-MEASURED restated for a DENOMINATOR, because that is where it hides. A survey has the
+    # one shape that makes the collapse invisible: the unreadable rows are already inside the
+    # sample, so folding them into the non-matchers leaves the totals correct and only the meaning
+    # wrong. Q-M1 step 2 could not read 27 of 100 sampled identities - 20 of them behind a single
+    # host that serves no certificate - so the collapse would have published our own instrument
+    # failure as a fact about the market.
+    gate: scripts/measure_qm1_step2.py
+    test: tests/test_qm1_step2_absences.py

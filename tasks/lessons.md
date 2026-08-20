@@ -433,3 +433,63 @@ own implementation).
 Anchor: `LAW-DOOR-MATCHES-ARBITER`. The reds, including the five false greens Fable produced
 against the repaired file and the mutation that kills each fix, are RED 5 and RED 6 in
 `evidence/RED-011-door-checks-less-than-the-arbiter.txt`.
+
+## L-22 A survey hides the absence collapse inside its own denominator
+
+Q-M1 step 2 sampled 100 of the 50,275 ERC-8004 identities and could not read 27 of them: 20 behind
+one host that serves no TLS certificate at all, plus a 404, a 502, a timeout, and four soft 404s
+that answered HTTP 200 with a single-page-app shell. The obvious arithmetic - matched over drawn -
+would have folded all 27 into the non-matchers and published a rate that was partly a report on
+our own broken instruments, with every total still adding up correctly.
+
+This is L-1, but a survey is where it is hardest to see. Elsewhere the two states are two return
+values and the collapse is visible at the call site. Here the unreadable rows are already inside
+the sample, so the collapse leaves the sums intact and changes only what the number means.
+
+The measurement therefore publishes a BAND - every unreadable identity counted against, then every
+one counted for - and the go/no-go code is run at both ends. When both ends give the same class of
+verdict, the width of the band is not worth closing.
+
+Anchor: LAW-SURVEY-ABSENCE.
+
+## L-23 The instrument was wrong three times in one run, and twice it said "absent"
+
+Reading the registry needed three corrections before any number was honest, and all three had the
+shape L-10 named:
+
+* `tokenURI` was read as a pointer. A run of identities stores the registration document ITSELF in
+  that slot - bare JSON, no scheme - so the reader split on `:`, found `{"name"` where a scheme
+  belonged, and filed five READABLE documents as `unsupported scheme`.
+* Four identities answered HTTP 200 with an HTML shell. A 200 was taken for an artefact, and four
+  error pages were on their way to a human to be classified as businesses.
+* `curl rc=35` was recorded as the reason. A number is not a reason: it took a separate
+  investigation to establish that the host offers no certificate at all, which is a fact about the
+  subject, where a timeout would have been a fact about us.
+
+None of the three would have produced an error. Two would have produced ABSENCE, and absence reads
+as a finding. The rule: before a sweep is allowed to produce a rate, every distinct failure mode in
+it is opened and named. The cost here was three probes; the alternative was a published number.
+
+Anchor: LAW-SURVEY-ABSENCE.
+
+## L-24 A per-row rule cannot count an entity that owns ten thousand rows
+
+Q-M1 step 2 classified 100 sampled ERC-8004 identities against §2.7 and found zero businesses.
+Every individual label was defensible: a row of a 10,000-piece collection is not a business in its
+own right. The total was not. Four operators were running collections behind those rows, two of
+them serving a live artefact on demand, and the per-identity rule scored each of them zero - not
+because they failed a condition, but because the unit of counting could not represent them.
+
+The first draft reached for the precedent that excluded `realestate` from the cohort. That
+precedent excludes a candidate for OVERLAPPING a subject already counted; it presumes the business
+is counted once somewhere. Applied where the collection itself was assessed nowhere, the same
+words deleted the subject instead of deduplicating it. A rule borrowed across a change of unit
+keeps its wording and loses its meaning.
+
+What the measurement owed, and now does: state the unit before the number, publish both levels
+when they differ, and probe the operator's declared endpoint rather than inferring from the rows.
+Four probes cost four calls of 159 unspent.
+
+Anchor: no code gate. A checker cannot know which unit a given question is about - that is the
+judgement the measurement exists to make. Recorded as a habit in L-8's form rather than dressed as
+an enforced rule, because a law with a fake anchor is worse than an honest note.

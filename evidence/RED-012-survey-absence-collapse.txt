@@ -1,0 +1,18 @@
+=== RED-012: the absence collapse this survey refuses to make ===
+Injected 2026-08-20 into scripts/measure_qm1_step2.py tally(): 'unreadable' folded into
+'nothing_qualified' - the seven-instance defect (L-1) in survey form, where the totals stay
+correct and only the meaning changes. Kept as an artefact because a test that has never been
+seen red is a declaration, not a test.
+
+        assert t["candidates"] == 0
+>       assert t["unknown"] == 27
+E       assert 0 == 27
+
+tests/test_qm1_step2_absences.py:106: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_qm1_step2_absences.py::test_an_unreadable_card_is_not_counted_against_the_subject
+FAILED tests/test_qm1_step2_absences.py::test_the_two_absences_never_collapse_into_one_number
+FAILED tests/test_qm1_step2_absences.py::test_a_collected_but_unclassified_card_is_unknown_and_not_a_rejection
+FAILED tests/test_qm1_step2_absences.py::test_a_soft_404_is_demoted_to_unreadable_and_never_to_not_a_business
+FAILED tests/test_qm1_step2_absences.py::test_the_committed_sample_is_the_one_the_published_number_was_read_from
+5 failed, 6 passed in 0.05s
