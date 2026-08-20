@@ -1,0 +1,36 @@
+T-2.16 - PROVEK AUDITOR AGENT ON THE AMADEUS PROTOCOL SDK
+taken at        : 2026-08-20T23:40:19.891907+00:00
+verdict         : DEMONSTRATED
+sdk             : @amadeus-protocol/sdk@1.2.0 (reports 1.2.0)
+network         : mainnet via https://mainnet-rpc.ama.one/api
+
+READINGS  (a 200 is not a measurement; the shape is checked, and a body that is not this
+           chain's shape is UNREADABLE rather than a zero)
+  chain.getTip     measured            80358193
+                   entry.header.height = 80358193
+  chain.getStats   measured            80358193
+                   stats.height = 80358193
+  chain.getKpi     measured            500
+                   kpi.block_time = 500
+
+SDK FINDING     : accepts_unvalidated_response
+
+SELF-AUDIT      (ABI-31-4 - the subject of this demo is Provek itself)
+  subject       : git:whiteknightonhorse/provek
+  projection    : 80  (passed through from the passport, NOT recomputed by the agent)
+  passport      : public/passports/git_whiteknightonhorse_provek.json
+  sha256        : 792124647301c6eec0869bb86f86755b6f45ceea8232c3c7e4c60ae5f5a85da7
+
+VALIDATION PAYLOAD  (serialised with the SDK's own codec, so the record is TRANSPORTABLE
+                     on Amadeus rails - nothing was sent; see the on-chain write below)
+  built         : True
+  bytes         : 707
+  sha256        : 44206e62f688fd1c8e54b8b853bf98d7d68dd16505f4687e8f86b6ce483003bf
+  base58        : E8Q3KAPFj3fxfz2vp4CjBjwp5entjbj5EFH8bNFgZMj2S4YB6gAcek7WhyzMebRz...
+
+ON-CHAIN WRITE  : check_did_not_run (not attempted)
+  blocker       : no signing key is present: by operator decision this agent is never given one, so it cannot sign - only a public address would ever reach a file
+  blocker       : a write costs AMA and the project holds none: the MVP runs on a budget of approximately zero, and paid dependencies are outside it
+
+FINDINGS
+  - in the instrument control (a local socket serving a reconstructed CKAN envelope) the SDK accepted a 200 whose body was not chain state and returned it as the chain tip; the height a caller would read is `undefined` in JavaScript, recorded here as None

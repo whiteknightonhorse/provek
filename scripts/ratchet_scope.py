@@ -17,13 +17,19 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 MAP = ROOT / "requirements" / "ABI_MAP.yaml"
-SCAN = ("src", "scripts")
-CODE_SUFFIXES = (".py", ".sh")
+SCAN = ("src", "scripts", "demo")
+CODE_SUFFIXES = (".py", ".sh", ".mjs")
 """EXPLICIT list of what counts as code.
 
 The first version looked only at `*.py`, so shell scripts were outside supervision entirely: any
 number of them could be added and scope would not push back. A checker that inspects one shape
-reports success on every other."""
+reports success on every other.
+
+AND IT HAPPENED AGAIN, EXACTLY AS THE PARAGRAPH ABOVE PREDICTS. T-2.16 added `demo/amadeus/` -
+a JavaScript agent that is half the demo and takes every reading in it - and both the directory
+and the `.mjs` shape fell outside this list, so the load-bearing half of a new feature was bound
+to no requirement and the build could not go red over it. The widening for `.sh` was the same
+lesson; the note recording it sat three lines above the gap. Found by Fable."""
 MAX_SHARE = 0.5   # no single requirement may cover more than half the modules
 
 
@@ -56,8 +62,17 @@ def check() -> list[str]:
             rel = f.relative_to(ROOT).as_posix()
             # EXPLICIT, NAMED skip. Silently skipping an unrecognised shape is forbidden: a checker
             # that quietly walks past what it does not understand reports success on what it never
-            # examined. Exactly two known classes of junk are skipped here.
-            if "__pycache__" in rel or f.name.startswith("._"):
+            # examined. Exactly three known classes of junk are skipped here.
+            #
+            # `node_modules` JOINED THE LIST THE MOMENT `demo/` DID, and leaving it out was a live
+            # trap rather than an untidiness. This walks the filesystem, not the index, so adding
+            # `demo/` brought 1414 gitignored third-party `.js` files inside the scan boundary.
+            # The build survived only because `CODE_SUFFIXES` happens to carry `.mjs` and not
+            # `.js` - and this list has already been widened twice. The next widening would have
+            # printed 1414 "MODULE WITHOUT REQUIREMENT" lines for somebody else's code AND, worse,
+            # inflated `len(found)` so that the MAX_SHARE rubber-stamp rule silently stopped
+            # binding. A gate defeated by a dependency install is not a gate. Found by Fable.
+            if "__pycache__" in rel or "node_modules/" in rel or f.name.startswith("._"):
                 skipped.append(rel)
                 continue
             found.add(rel)

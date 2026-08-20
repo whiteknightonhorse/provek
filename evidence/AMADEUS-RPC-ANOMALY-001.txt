@@ -1,0 +1,119 @@
+AMADEUS-RPC-ANOMALY-001 - three HTTP 200s from mainnet-rpc.ama.one carrying another
+                          organisation's document, and the limits of this record
+
+WHAT THIS FILE IS, AND WHAT IT IS NOT. This is the artefact behind the incident cited by
+`demo/amadeus/README.md`, `demo/amadeus/auditor.mjs` and `src/amadeus/demo_audit.py`. It exists
+because those files asserted a dated, timed, three-endpoint incident and nothing in the repository
+backed it - a claim stronger than its artefact, which is the defect this project exists to find,
+committed by the demo built to find it. Fable named it BLOCKER and was right.
+
+It is NOT an instrumented capture. The readings below were taken by hand at a shell during an
+agent session on 2026-08-20 and are TRANSCRIBED FROM THAT SESSION'S COMMAND OUTPUT. No response
+file was retained.
+
+TWO STANDARDS OF EVIDENCE IN THIS FILE, AND THE SEAM IS MARKED BECAUSE IT IS UNEVEN. What is
+under WHAT WAS CAPTURED is transcribed: command, per-request figures, and the body prefix. What
+is under CONTROLS TAKEN IN THE SAME SESSION is RECALLED - the commands were run and the outcomes
+observed, but only the outcome was carried out of the session, not the transcript. So the
+controls are weaker evidence than the tables above, and nothing in this file should be read as
+though they were equally recorded. An earlier draft claimed "everything not listed under WHAT WAS
+CAPTURED was not measured" while listing three measurements below that line; that sentence was
+false about its own contents. Found by Fable.
+
+--------------------------------------------------------------------------------------------
+WHAT WAS CAPTURED
+--------------------------------------------------------------------------------------------
+
+Command, given in full because an abbreviated version of it does not support the claim below.
+The body is dumped to a FIXED path, so the reader has to be able to see that `head` runs INSIDE
+the loop - otherwise `/tmp/o.json` would hold only the third response and "each of the three"
+would be unfounded:
+
+    for p in tip stats kpi; do
+      echo "=== /api/chain/$p ==="
+      curl -s -o /tmp/o.json -w "http=%{http_code} time=%{time_total}s ip=%{remote_ip}\n" \
+           --max-time 25 "https://mainnet-rpc.ama.one/api/chain/$p"
+      head -c 400 /tmp/o.json
+      echo
+    done
+
+Approximate wall-clock: 2026-08-20 23:07-23:08 UTC. The minute is from surrounding file
+timestamps in the same session, not from a clock read beside the request; treat it as +/- a
+minute.
+
+    path                       http   time        remote_ip
+    /api/chain/tip             200    0.418380s   2606:4700:20::681a:78a
+    /api/chain/stats           200    0.386447s   2606:4700:20::ac43:4a97
+    /api/chain/kpi             200    0.394798s   2606:4700:20::ac43:4a97
+
+So the first ~400 characters of each of the three bodies were printed, each from its own
+response. The three prefixes were identical AS FAR AS THEY WERE SHOWN - which is 400 characters,
+not the whole body, and the sentence means nothing more than that.
+
+Transcribed from the session output. "Verbatim" is claimed only for the characters below; the
+line breaks and indentation are this file's, added to fit the width:
+
+    {"help": "https://ckan.opendata.swiss/api/3/action/help_show?name=package_search",
+     "success": true, "result": {"count": 188, "facets": {}, "results": [{"accrual_periodicity":
+     "", "author": null, "author_email": null, "conforms_to": [], "contact_points": [{"email":
+     "auskunftsdienst@bfs.admin.ch", "name": "info@bfs.admin.ch"}], "creator_user_id":
+     "af084126-f711-4016-a585-70354e997796", "description"
+
+That is a CKAN `package_search` response from `ckan.opendata.swiss`, the Swiss open government
+data portal. `bfs.admin.ch` is the Swiss Federal Statistical Office.
+
+--------------------------------------------------------------------------------------------
+WHAT WAS NOT CAPTURED - each of these was an overclaim until this file was written
+--------------------------------------------------------------------------------------------
+
+  - THE FULL BODIES. Only the leading ~400 characters, and only as terminal output.
+  - RESPONSE HEADERS, INCLUDING CONTENT-TYPE. An earlier draft of the README asserted "same
+    content-type". It was never read. The claim has been removed rather than softened.
+  - A PRECISE TIMESTAMP PER REQUEST. See the +/- a minute above.
+  - WHERE ON THE PATH THE MISROUTE HAPPENED. Both addresses sit in `2606:4700::/32`, which is
+    Cloudflare's allocation - stated from the prefix itself, because no whois or ASN lookup was
+    run and this file does not assert what it did not measure. Whether the substitution occurred
+    at the origin, at the edge, or elsewhere was NOT established, and nothing in this repository
+    says Amadeus's infrastructure was at fault.
+
+--------------------------------------------------------------------------------------------
+CONTROLS TAKEN IN THE SAME SESSION
+--------------------------------------------------------------------------------------------
+
+NEGATIVE CONTROL - this host's egress was not intercepted. In the same session:
+`https://example.com/` returned its genuine page and `https://provek.dev/` returned ours, so the
+CKAN body was not a blanket substitution applied to everything leaving this host.
+
+ROUTING CONTROL, AFTER THE WINDOW ONLY - the heading says "after the window" because that is the
+whole of what was measured. AFTER the window, `/api/chain/this-path-does-not-exist-zzz` and `/`
+both returned HTTP 404 `{"error":"not_found"}`, so at that time the host was a live routed API
+and not a parked domain. What the host did with an unknown path DURING the window was never
+measured, and nothing here establishes it. An earlier draft put the conclusion in the heading and
+the retraction two lines below it, which is a claim for anybody who reads headings.
+
+RECURRENCE, AFTER THE WINDOW - a later re-probe in the same session. Recalled, not
+transcribed (see the note on the two standards above):
+
+    24 sequential GETs to /api/chain/tip
+    well_shaped=24  foreign_or_malformed=0  transport_error=0
+
+"well_shaped" meant the body began `{"error":"ok","entry"`. So the anomaly was observed 3 times
+out of 3 inside the window and 0 times out of 24 after it. No rate is claimed from that: the two
+samples are not from the same population, which is the whole point of calling the window
+transient.
+
+--------------------------------------------------------------------------------------------
+WHY IT MATTERS TO THE DEMO
+--------------------------------------------------------------------------------------------
+
+`@amadeus-protocol/sdk@1.2.0` applies no schema to a success body. `ChainAPI.getTip()` is
+`return this.client.get('/api/chain/tip')`; `AmadeusClient.handleResponse()` inspects a 2xx body
+only for an application-level `error` envelope (throwing 404 on `error:"not_found"`, 400 on any
+other non-`ok` error, and stripping `error:"ok"`) and for JSON parseability. A body like the one
+above carries no `error` key at all, so it falls through to `return data` and reaches the caller
+AS THE CHAIN TIP. `entry.header.height` then reads `undefined`.
+
+That behaviour does not depend on this incident and is reproduced on demand, offline, by the
+instrument control in `demo/amadeus/auditor.mjs`, which serves a REDUCED RECONSTRUCTION of the
+envelope above from a local socket. The control - not this file - is what the demo's finding
+rests on. This file records only that the failure mode has been seen in the wild once.

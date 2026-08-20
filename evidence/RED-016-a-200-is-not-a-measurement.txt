@@ -1,0 +1,61 @@
+RED-016 - the Amadeus demo's gates, proved able to fail
+
+DATE (UTC): 2026-08-20T23:40:50Z
+TREE      : the T-2.16 tree as shipped, taken after the last change to
+            src/amadeus/demo_audit.py, so the output below matches the code that lands.
+
+WHY THIS FILE EXISTS. Invariant 5: a test must be ABLE to fail, and the red run is the only proof
+of it. "The section exists" is not a test.
+
+TWO BREAKS, NEITHER A STRAWMAN. The first is the behaviour the Amadeus SDK itself ships; the
+second is a defect this repository actually committed and Fable caught before the push.
+
+  BREAK 1 - `classify_reading` in src/amadeus/demo_audit.py, cut short with:
+
+      found = _dig(reading.get("body"), SHAPE[endpoint])
+      return Reading(endpoint, ReadingState.MEASURED, Measurement(value=found or 0),
+                     "answered with HTTP 200")
+
+  Trust the status code, and let a missing height fall back to a number. `ChainAPI.getTip()` is
+  `return this.client.get('/api/chain/tip')` and no schema is applied to a success body, so a 200
+  carrying another portal's JSON reaches the caller as the chain tip. `or 0` is the second half:
+  the absence becomes a zero, which is invariant 1.
+
+  BREAK 2 - the control gate in `judge()`, deleted:
+
+      if sdk_finding is SdkFinding.CONTROL_DID_NOT_RUN:
+          verdict = DemoVerdict.NOT_DEMONSTRATED
+
+  Verbatim the state the demo was in when it was first handed to Fable: a run whose instrument
+  control could not be set up still returned `demonstrated` and exit 0, carrying the README's
+  headline finding while having established nothing. `check_did_not_run` wearing a pass.
+
+WHAT THE RED RUN SHOWS. The shape tests fall, and so do the two that guard the verdict - the
+foreign-document run and the un-run control. A reader can check that the failures name the
+behaviours the demo argues for, rather than merely that something went red.
+
+COMMAND: python3 -m pytest tests/test_amadeus_demo.py -q
+
+----- OUTPUT -----
+                     anchor={"present": True, "network": "mainnet", "height": 999, "slot": 999})
+        j = judge(a)
+        assert j.verdict is DemoVerdict.DEFECT
+>       assert any("disagree about the anchor" in f for f in j.findings)
+E       assert False
+E        +  where False = any(<generator object test_an_agent_that_invents_an_anchor_is_caught.<locals>.<genexpr> at 0x7f78d64e0a50>)
+
+tests/test_amadeus_demo.py:278: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_amadeus_demo.py::test_the_foreign_200_is_unreadable_and_carries_no_number
+FAILED tests/test_amadeus_demo.py::test_near_misses_are_unreadable_rather_than_measured[None]
+FAILED tests/test_amadeus_demo.py::test_near_misses_are_unreadable_rather_than_measured[body1]
+FAILED tests/test_amadeus_demo.py::test_near_misses_are_unreadable_rather_than_measured[body2]
+FAILED tests/test_amadeus_demo.py::test_near_misses_are_unreadable_rather_than_measured[body3]
+FAILED tests/test_amadeus_demo.py::test_near_misses_are_unreadable_rather_than_measured[body4]
+FAILED tests/test_amadeus_demo.py::test_near_misses_are_unreadable_rather_than_measured[body5]
+FAILED tests/test_amadeus_demo.py::test_near_misses_are_unreadable_rather_than_measured[body6]
+FAILED tests/test_amadeus_demo.py::test_a_boolean_height_is_not_a_height - As...
+FAILED tests/test_amadeus_demo.py::test_a_control_that_never_ran_cannot_go_out_as_a_demonstrated_run
+FAILED tests/test_amadeus_demo.py::test_a_chain_answering_foreign_documents_is_not_demonstrated
+FAILED tests/test_amadeus_demo.py::test_an_agent_that_invents_an_anchor_is_caught
+12 failed, 24 passed in 0.12s

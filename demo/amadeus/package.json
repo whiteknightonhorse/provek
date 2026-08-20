@@ -1,0 +1,14 @@
+{
+  "name": "provek-amadeus-auditor-demo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "T-2.16 demo: a Provek Auditor agent built on the Amadeus Protocol SDK, running Provek's own self-audit.",
+  "license": "MIT",
+  "scripts": {
+    "audit": "node auditor.mjs"
+  },
+  "dependencies": {
+    "@amadeus-protocol/sdk": "1.2.0"
+  }
+}

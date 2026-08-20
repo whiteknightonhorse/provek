@@ -26,6 +26,15 @@ def test_unmapped_module_FAILS_the_build(tmp_path, monkeypatch):
     assert rs.check() == []
 
 
+def test_third_party_code_is_outside_the_scan_boundary(monkeypatch):
+    """REGRESSION. `demo/` is scanned by filesystem walk, so the gitignored `node_modules` under
+    it came inside the boundary. The build survived only because `CODE_SUFFIXES` carried `.mjs`
+    and not `.js` - a coincidence, and this list has been widened twice already. Widening it here
+    proves the skip does the work rather than the coincidence."""
+    monkeypatch.setattr(rs, "CODE_SUFFIXES", (".py", ".sh", ".mjs", ".js"))
+    assert rs.check() == []
+
+
 def test_stamp_degeneration_is_caught():
     """The "hang everything on one requirement" degeneration is caught mechanically, not by eye."""
     fake = {f"src/m{i}.py": ["ABI-21-2"] for i in range(10)}

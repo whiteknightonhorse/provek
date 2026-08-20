@@ -1,0 +1,1045 @@
+{
+  "generated_by": "demo/amadeus/auditor.mjs",
+  "task": "T-2.16",
+  "sdk": {
+    "package": "@amadeus-protocol/sdk",
+    "pinned_version": "1.2.0",
+    "reported_version": "1.2.0"
+  },
+  "network": {
+    "name": "mainnet",
+    "rpc_url": "https://mainnet-rpc.ama.one/api"
+  },
+  "readings": [
+    {
+      "endpoint": "chain.getTip",
+      "transport": "answered",
+      "http_status": null,
+      "http_status_absent_reason": "the SDK does not expose the status of a successful call",
+      "error": null,
+      "body": {
+        "entry": {
+          "header": {
+            "slot": 80358193,
+            "signer": "743oZmCSZ6pRg7ChivABSTdMGuKzBaCVWw1u1L2KEA4wX7S97HjTKKgSe1AsZZbYHu",
+            "height": 80358193,
+            "root_chain": "J\"y2N\ufffd\u0003\ufffdL\ufffd\ufffd3^\u051b\u0002\u0003\ufffd~\ufffd\ufffd#\ufffd\ufffdJ\ufffdU\ufffd\u00016\ufffd",
+            "prev_hash": "BfKY2CUTxVEW3Jcq8tdXqUxFieKv9qxc7VuoBuD8j7TS",
+            "prev_slot": 80358192,
+            "dr": "Dty5k2zroutiFuZFnzAUMmuzJxZB6pYj3eVj1nTWSJw4",
+            "vr": "25xFuErTSDGapmVeH5PcuL9tB6djLAuAWQSRifUrS894mZLzrfdVoogB4XuuY2VWY58WQEUYrPq5ms4PJiytop6shuBrVDaZ7em78mJwFdKxf2gnN7aT8K7tpsd2JJqccdAV",
+            "root_tx": "BaAoGh2XvtWbty8XSUkHrxeZYaSZdgV1QYUM7V5r6hNi",
+            "root_validator": "FKybu34c8maPRJrM71FsYJPX73xRnZbxYu3zLGH953Hb"
+          },
+          "hash": "EF5pvuwGEnAGLvXhpxzoHEM7kgodGYSRpryuC1zfy5mq",
+          "consensus": {
+            "score": 0.05,
+            "finality_reached": false,
+            "mut_hash": "Hca9y2ytrUGbaHCG7moYEqFcsNAuqTpwanzW3akKJ7wX"
+          },
+          "tx_count": 1
+        }
+      }
+    },
+    {
+      "endpoint": "chain.getStats",
+      "transport": "answered",
+      "http_status": null,
+      "http_status_absent_reason": "the SDK does not expose the status of a successful call",
+      "error": null,
+      "body": {
+        "stats": {
+          "height": 80358193,
+          "rooted_height": 80358192,
+          "validators": {
+            "6V4ohJrU4DEwGv3DwqDw75qPSGhjfi1NaDUMCvpheY4MHmv7QqMyGw2TVv935fEfht": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V54Qb6eL8nSZd8MCtQ13U2GPyZYkQqWf9dHh8hYcLnnfhJpfqJb33eHUoxkBf1vsj": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V21hjnfcbBmdko8UVqAk2pf6fzaM19TZD8ttPRWush65Zm3ddJreognnUs87k7tLw": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "5ithX2bx9psU7e1VF25UMAQmZQgEFgcifMHJXWafvYoqhPvntyymfus2KF2j6GVssa": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6Vo3vC9dWPQQPKz6MGLHnps47hQQMd3SnDkXZH7MPsUFyTp3c4nQx8HfDd5FthZmr6": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "7dB1BirBBRkX1YpFTP8NJimbXYAS9Rk5hgZaaPfo183Lu4y1hiYzmnssuVS58x2bPH": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V39emgWtAoMQC7fM5rNuBVuJy8S4pDyJFMoC8ymX9VaSt7FFP4zQqmTbuPnDX6hmP": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "743oZmCSZ6pRg7ChivABSTdMGuKzBaCVWw1u1L2KEA4wX7S97HjTKKgSe1AsZZbYHu": {
+              "commission_bps": 0,
+              "sols": 8137,
+              "in_validator_set": true,
+              "staked": 0,
+              "staked_flat": 0
+            },
+            "6V55H2E3ygR5qTkvDLQnYwUce431fs8o8NMBALucin3AL9fNi3hUYtbL5SCRxL95D2": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6uSyJ5gebrNrW252CCW1GgKQAtweN94hRMbLNDhCjNhovLiNo5asP89jTWrusre3Jn": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "74YiswNx2i8Zs7JpCvpdBXPKwuoCGsARuBM4okViJwMuXSAFEKW5okzvcJptaLZi8Y": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "7CwYVmQZgKWxRiwyzVusssGF14PR1XejPqshCzJDBuntLePb2mRSd8gbrvSjUyvaFK": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6HuAuvztaD5JkmqEDLWZH7MTLQ7XLYG5zpwDhkTnBEVvUKBRWmwM81BUQQWsfMUcE5": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V44oh2coxjmWTwY6h9jgu5iYJikkaeEADBCQ5SBwv95dfSPJBLB6LbtT9LPBP7ejN": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6cSz65sfhBU13XLXyJxkkBcDspSUMomRB2qE8Ay7cbetpBubKKEn3eaq2V7YuppYKf": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V15xBXbTkdmeAJDfPv7xZK8LW6jY1aYrxDhdqNmpwo5ufh5b24m3Gpo2pMTE71ZwJ": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V6oEREiMgKehVvCL4x7RoJAXG3SJPQNYa3Pu5HrS3TR6iiYcNH6PLTPMSFUA2jbJL": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V16uXiQa1KmxeL6c3xV8d1GmYioKKr87PGZ9WBYXZZAuM1VrFoHWrxVygN8yqky3H": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "7CneXt3ND7Gc9U55FWaM1xNweHxWbvbJdTboUxDgX5k9QfcCV6Bgo9Y6QAKAS6NpH2": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6Z8X3KoTvA143UzMPS5WL3vR818oUAfhjtfx9wUPXJHP8VHeP9sr7xFDHBKx7KjaVU": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "5jpHMyaYvXcc7qQr3GXFU9FFCqKVwBQS4eCvzKXJxacVynnNbjM1NvLoJ383UdEXZf": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6uXv2CPkPdNwKtykK5ScdhKstCKyzz5TSaAy3a1TpXVDcurtaMXrKdr14ZnYSA418A": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V3o6zFHP7uiSNG1cPGt26XbZZnxEcxpJDvByeTHKcSdHLTYGt3SJhaWtAsBXQ1RC5": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "7mGyA1nrPbXqKRc8xN5m6k3Lu1NcGmmznm8BtCCUYj4wVRgGMkY5LNBApWczJa9yVi": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V345vMryLBt31kvTPxSKPwDTegCU3fWe6PQjKqopmoDcb76cMLY7kw8kar8fcs4se": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6aiqxLtXMcdHxC62Y1N3SGgwHkr7me8UR2Vd6KJ2HfbYfsRShcePnzK5c8dTHXtrvT": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "7Jstnbi4xDDfZ5Sw5VHAbyL2Uqt7czvyTri4ue7NHQDertk6xafDT3XgXzLddX2nSy": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6Vo6Pvgvt9sSkuXTamuE74WLACFLvuyKthEw1pZNydE8UzL7L4ZE3oAzBXU7bgdRBs": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "7ViFutpBzJMHWVzAiSLgRojE4evYDHBGXXf8peibvkTE7vQ56nsWQu1EqfSSjqNLaE": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "5pSnYwq7CVZHZdbzzhMF8UH8U95zX1Es52EV4eHq1JdgTN1KaYJyy4jtRpCrnqcQbQ": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V49vZj5fi5PrxYUsQeiEuz1vPw4UpZeBNWLVNtDb8DACKaMuuHFRBcJy4FzMzt5V3": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V29bv3mLjwt7e2uh6uZU3y2H82QLXPauifWM8HkbmJkinedyHdom5qpb3a94qDsyn": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6BwQPuBU9SNMPDwG7LC4rVdGo8MjvrA6qoCeeT2Rcr4S6dUQMyqsdwwF5ysu4vnGgy": {
+              "commission_bps": 0,
+              "sols": 16,
+              "in_validator_set": true,
+              "staked": 10044.485326416,
+              "staked_flat": 10044485326416
+            },
+            "788ETgXWzXMkfhW4BgBMuDAcDbHkyxHfqtw5yk2kMVM6wR5GtNfCoH83vnJnCKwAGq": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6yYUViFbTUgLm6vkKhmU5LAiBHivt63AZ6snLsHSZzZAFKZFThrNhSXJdVgk51xWzb": {
+              "commission_bps": 0,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 0,
+              "staked_flat": 0
+            },
+            "71JtSiFVnrxxTKT1TdJZXCkWPi477QTtuZqTDZj2U11tvMQMvQKHYVLTTeF1XYq4rN": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V63TkA1zxMC122QgqizLDuE9wdW5rzFwSWzRADowgjPtcjCzGhuDcxDayXULADg9t": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6Vo8hPXyrEkX1yhyf6HgBznm3VXbkQzawESZUY8rdBypYMwsxrqc3DyxiwzQehktJH": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "7BZuYQjpoLhiJLqthF1d4QSHo9hdnGqHtZuKUokdVRS6qG773QZucX6RffWYN9SnDD": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6sTLjPC3K9jNLhTRAkz3nnbnZ9WwHmsyFYQYKp2QVux1NE67gP1rHQjkbNyuNsDRbJ": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "5uMuTsi3u6Goa8iuRwP91Df1dExK8QQU9jrnmfZCcXbwc19ofKbXGP1P1iKsSZCKi6": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V27wjKU8mCP5Kf2ztJcYTiwNonbtsEPnETNmYgUXR1cNNPAji3TrSY1xfCVzDVMAc": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "68f68Rmy5WMioJXHqCMFfk3xkryuBcVx9qG9Ex3woyHeY35JWoy3yWbv5XdkaXthDV": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V31AGF7hnXRrxwqjuYTFt8sTU16WTSHMT8JVbF2ffPNhpjgH6EXZ35GnJeUe3bJGL": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V668VVot57QvwjY2s1w8RbgeYE2ftBCxUt1uNp5mfJgXPiUoepteUguXUSYpf3a7E": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1013816.883268798,
+              "staked_flat": 1013816883268798
+            },
+            "7NZf12sgb6nno5ehs22vZ9tNdops1Mv5R6kbvbPJ3hEycjyQb6gj6cgkDi7RGJpyd4": {
+              "commission_bps": 500,
+              "sols": 132,
+              "in_validator_set": true,
+              "staked": 101349.34818095,
+              "staked_flat": 101349348180950
+            },
+            "6V6487pb6m5X5DYG1issU5rprHcoVuMwCchreJ5VqCe6QGGQHofFCee6Ae83uSqqhs": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V2oodcRqCcTxZzJ4qfNB3JRzq2xzPv2y8oQPzPcR7uTLDmEqKBiii4bpBShQ7LKxP": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6t25L4uayUepovZKYD1oumMuC5DQB1SKoPbDS7sY6LFMLW7Kn1FnDjRoWBqW9Bu1Gj": {
+              "commission_bps": 0,
+              "sols": 19286,
+              "in_validator_set": true,
+              "staked": 5025.428253602,
+              "staked_flat": 5025428253602
+            },
+            "6V18GwSbThregG3yRWbsx5QjVAxvX6jV6ZsP9inV1p1PdrVgSAFPLfhirh3JQaApgY": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "5qSwwgKnuCMEy73WxoNXK8MEtbjohvrKuPqg7TpHgU49HnVgJfVReHoWnvnLidcxvh": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V62m4sa5LVBwzSmvQ99yiZRE6USre5ww7uTpSzNKDWNHhCi6qB4q8MkmxAKyzKmdp": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6sTJWi4nmckUsPxxsQpuC1eeq4WArFvTrxgnJ1gwZcFmBU3hmY8qBG2rpJp9RXaEep": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6PK9jkKfZBZRBkuwvYA6CF7wWD4zTreFgYHwbSgycRvP53NHm2qs2E72zx3RTCL2XN": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V1oW4VcAemJuQ9S3a45zjG3zozPS6WngB2CPsFFV2K68PKWtRHC3EmQwTBANN3GjM": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "79LpeR6P6gs8Tw1qrKBGiUAe2PzvRUq2zce8rARcf8Y2XySjm9iN9Ar4odc4iybhmo": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V14PkD1VJEQ2nKrRsfYsNH9CTDYc3etXKqSqdyTHFhzSiMJhyxv96o431FQyuD9i5": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V26KGmxA9x4FXEewZTqjL8LmqFWKHx5VSr3kLgC6xtZUethvL4uRW6XRKHFf46hTP": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V56XWUhcgW6ai69Tt2AjXZrCauzUSPkGq88imMvQ5rkB1Nwvb2dSr559Ao51teqWR": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V52emh6bJhX4RrLMKvnAVgbx3M9RcR1Uo5uoi1Fm6ZySg1aNEiDvV4nTWAuG9yBnB": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V61uGFs3m994gfbydJXo66qwTr782YiQxL5HA9qE4ZTQfF82Pa2zSacd1wWtHxsb6": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6Vo16WB2KRXkq1gA8TNwKHsQpCRNoMG8TsX1pk39zxmFMnXBXKAoYaKoUuAihZb8oy": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "7MQGZN9gPaDMarJjyzVrH93cNXE1QW9RXWwJGNLCsUXRgmnXiMtMo2mh95vimhBRbj": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6Vo9vJUStihqfpyjjGmR9beTfw6dtJ5uFvShHAVZjAC7oyXLqcoiJBZGKHC7EtoEqf": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6Vo5c1TfWxrig4VZ9qnyL2mARHj94hNK4oGUe7t5jo3X9hJ8jGughg75MmxgysxABc": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "5zU13Q4iNrcxYenX5oUU8h7YAzM7XqQAzMe9fHs9dyxf58HMnA4JMX9vC7q5GiGpKa": {
+              "commission_bps": 0,
+              "sols": 1111,
+              "in_validator_set": true,
+              "staked": 0,
+              "staked_flat": 0
+            },
+            "6V41R4owV5EkfgQhP5tfeioJTctfGbxKBmmA69G3Kew3Wb7tKREwK8qYLQ6S7N2LH2": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V22jLFBvj8wtd3hpiUe1oJTHpdNy7RVgedaKFdkV4yUeJBQFTpr5mEzHAD3sCMBQC": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6QGTxozeF6wTft5rQzq4h8RAxPQV6zWhLip5GRCLz1GVp2H95nV7nLVbtfTQFhezFU": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "7DXyX5siLBPbkwhW2aaV4WRuLAHu7LTn2BJFNvprZ5wt9jtrXXusrys7qKmJdBhx1n": {
+              "commission_bps": 0,
+              "sols": 24841,
+              "in_validator_set": true,
+              "staked": 0,
+              "staked_flat": 0
+            },
+            "6Hy6Jp1kWrhmJcqaHFgUqMC8uSwx9Tr5MGzKcfTjq6bSyLD1mEsYRmy4kjVU9xSWGK": {
+              "commission_bps": 0,
+              "sols": 52797,
+              "in_validator_set": true,
+              "staked": 11082.581352531,
+              "staked_flat": 11082581352531
+            },
+            "6V57vGACKHsyYwFf5yEwqzhanoCigFt6pVB8TX71ZyZ3dUFBDmo2u8wgCWJHgzJXtg": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "7WnSynBtkysxNV6dvr1Bc2AZgFqATxJvzACBDYY2sqfMtJYFkYSrQyUmRcyif4bJHz": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V1393qnbTXAaMydPye4wNn6NuQNAM3162K4NUqBZF2syRkKZzvbKMriSU1tySM7hu": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "7JbRUnBAq4hejzuKyHHzpw13213Lk2qDndFAGnoyCv5Yayb9EEj1RdtY6NAnG11FJA": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6Vo2A4nAwftQwxSQSfPjqydAxVpPAv7jH5LUjDq6ebddhE4DWKhV7g3K2MqmrVsUSX": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V593D9NuimzfqQe9Pxf1T4RPjBKqXiuVqKDUV59CQMfufyjsZT5ccP5E5UxPBMNy5": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V35V4GU17aGqdb5gDrzK1ZRqiQ9BEPH4TMRS84oQk8ENN65rf6M7NZkxmmCNruVPN": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6Vo4ZZaHZD5FmLHXEbvB9HyEcp9ykmrrYhdpZaXQoZSbZvmM6QYd3eVT9zmWZzT5eG": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6ZzPZkdV3poUVD91NcjsL222ta3UBxv6MKSqn1nrmnHu9hvjtpg28aRV1ZNvJjkfHZ": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V11iT7c2i6YeUex33f7vMgXpV3M6BL1efzJw4vSWMncNhizGs4UFD2Ha9VMm9U3Je": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "5hkm2jtBWtaSsiBWxx5AJnQg3bN4TqfdxBytKSK3EW1Wh8ECDHrpvaqPriaVHem2ig": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V376nQ8VszZKqrvqYokv6zHDwf9ANwtgN4mPx9F1PuaSezvpEWtav1FNHZGTW8Cz3": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "74z6YVLwuUJkpU5yVAEbTLJ6pes6r747qmoiM6pWeU2gajoVNiaPhxAp3Y6GrcYRjK": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6Vo7wTBADd3iiStGcZQioVq9nsXRThm5P7zSWknYHBd1a5TqDXhUGHdAGeW9tZZkx1": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V23PEE6ChK3YrvG6VELSkcPpfG7YaHTbdNcM7aCTRv9eekpat83xmW7dsb94JB7uL": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V42x1NRfzMxhjjrfqp73SHYAurDVLcW9WBLfoFbf5sj7FzaS59WRcPNt2jvmdF85E": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "7gYnih9swvutLLJ1A5y6Rfki4z9NhCyuYsgG7HoQmQWArsf8aRUVPXp7nfNpkAX4Zz": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V25jGDwRQaBKnBvk67oCNiskZ4Q5K8BvxhFCZsWJgd1muNmSFcwj9rrZFr1MhcAgb": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V65RDdHU8T7TbFxGh42sp2hmXrfmRRFbuTjmJv4yysikdNhtdSC2yMxr7L95gDCKn": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "7HdmhUvYYCsADbbDmx2CRx9xwJsBT3JmMhsgBFJn7Y266pPkWHREM2uCMudA3EQrSL": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V282CBk3boyYZdtL2WLcXUHDBcAtijn7HuocwzhgQKeWeRjtL1U2Yb5bMZPX8WJcq": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "7MwajrxdL1U341HqWmQFEtusBUgCZH6ZguAbCgbxxFMEW1y29VkjELQGYZzksn1MUk": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V58992XWnDYfXGrRvCPc3AWxRjVB6XhzVsdb7nYAdvLFSsuYzRFwLZfVrD5vLb3SF": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V43VCqoBximd9or4CvuzhT1gxm52i6fdLG4W7z3ceVYecoirtzGSozX2B6xmiDwFj": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6VoorVmD8FaLN645nsLmM2XGQtExGm2172QYAoofDDYyyBS6JxSG3y7UPP4kg9ktfs": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1018063.467587121,
+              "staked_flat": 1018063467587121
+            },
+            "6V53nStvti5DGeVDJg2UUzFWmaGwTvquoL8gieJqKHr4TtgCYHdmnJ9UWTyYPfQqkT": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "7EgUBdxJBc3ZfJiymDhCbj3GbVV8yQZhVpKmfpvWk8ZQzaNU1kJPzzSWnCJwFLrWDC": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "7V3gM8xzDJ9uVWsasggG6ydG4PcXGMCFVkxhvzrqgUxDuc69SzQJXvrxwxV3UmhbCT": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V32JNRY8byMP2wfMGYrZRD7hrvVHKvu5JXLnaafYp8PFiCWbUtrECdYGrALPtdKMP": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V46zv8T4f3dJn8bQ5GXTQUycpfrKNt1q1QToYREN9ioVwnZYGvTG22UG1PjZK3Ev8": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "775RG8FzrzKjoVHZBx5fSPt2hATP8G8sV1GRAS84doKXTN1gvhFbJQmUH2mAzRJxpR": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6JB4XW2QgE5P1MBtXL8fFqcTwKV6c75qdim6or2uijxy8PVUEnpQqyAKBHcQBXeqyW": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V36NYNEZUPc4UXjRTt5D4M3KEX9HrJwy9YQY55KrfPV9NQAD2RvSwxuUjftioFPzQ": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V48jRAbHXGvbNAKfVTtgkQnqe8vd7MdPcTBNkEpMZXTZ9fPVof5TtZQBn3MVJt5jF": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V47Lzj9JLZuUxEU8MXj2nxgyEtKjuPj41t9EYpCiyUK5g3gn6DChzbv5o7Fcz7oJu": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V51sn1GX9B7kegcev4ccuAhTuGET4TmrYPaxexBrqz84CyAwg3GXAmAg7PRDTid4Q": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V17oSmqUPi5oafegU4MPrD4MfKbhxdZJxXE4GQB53zoVHRve6ow7tHkPY1mszhrf2": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "7jUUt6e8v6dsmzQ7K7gWs3LYUrV7Nsm1j7PJThDyVGqNsWNCFrA9RV52hdHVnV3ptb": {
+              "commission_bps": 0,
+              "sols": 87,
+              "in_validator_set": true,
+              "staked": 0,
+              "staked_flat": 0
+            },
+            "6V45abkL6vCzqB65hPLuzUnFso2XZG2MXwmTYe8z6HpM51uKcURqYq6sjeMZGc5rEb": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V38WmeNebARwKxTEYYoJu7E5KGTwfRktoAU43X6ksDUftUfV2a6tn1PBnaBKQUqRf": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V5o3sAkX753Q9YERUNESxG5vVfSZmLdM5HoYYstgpF8gX9UaR1DPiUTEioDHo9jcY": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "7PcJHpXxdedkVzwarEnCrA9xJ2hkjAnWPBXfyeVFfvbSuNB14d94TfuWMqmo51HBKr": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V24fYnwZ8ozxUBy6ux1UCdFjhvNJ5Fn767y6ewppVgNmK3nuuHEa2aVXU92vr5pR1": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6S5nbK9MEEwVfD2872QKsWxp5Sp5zsRqy74apjLUNsNcrMoP1r5JrHyfGx83CAgd3H": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V33mHmpJr1pKDaMbxovHxUdQpJV9TFeqXBcy4yKpZYWe8LZQwqHpVkc1ZRXiFiQQ5": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6w9J9oU1noW1fsPDGDVeQiuaPrPvobVyDyaXsUFSUM1hkYNefhqBrFkCeh6BbWY4xe": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V19YbSbmf55WCxe8EXLR12DCXhzE6HSaGgrkhVdVzvUZTb29eYLe5HjSmkbzGhJhg": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "6V12HBHNyLYxEmEJ957mSGykcSM9V7LyxuGHBX3AWqKbRiB8nQrtQ6xfd9gVqfEZfr": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            },
+            "5wzckuoWsXJhwRbDk9iR5fHHgi4WeEn9nnzDjMNw9Ug4u2UW6kfc4HGPxAexpna4rD": {
+              "commission_bps": 6600,
+              "sols": 0,
+              "in_validator_set": true,
+              "staked": 1000000,
+              "staked_flat": 1000000000000000
+            }
+          },
+          "diff_bits": 24,
+          "segment_vr_hash": "6LMWhohf8juh2aLeMNcZUvPhHrZsAKX2sJ5DcUNGTcgJ",
+          "tip": {
+            "header": {
+              "slot": 80358193,
+              "signer": "743oZmCSZ6pRg7ChivABSTdMGuKzBaCVWw1u1L2KEA4wX7S97HjTKKgSe1AsZZbYHu",
+              "height": 80358193,
+              "root_chain": "J\"y2N\ufffd\u0003\ufffdL\ufffd\ufffd3^\u051b\u0002\u0003\ufffd~\ufffd\ufffd#\ufffd\ufffdJ\ufffdU\ufffd\u00016\ufffd",
+              "prev_hash": "BfKY2CUTxVEW3Jcq8tdXqUxFieKv9qxc7VuoBuD8j7TS",
+              "prev_slot": 80358192,
+              "dr": "Dty5k2zroutiFuZFnzAUMmuzJxZB6pYj3eVj1nTWSJw4",
+              "vr": "25xFuErTSDGapmVeH5PcuL9tB6djLAuAWQSRifUrS894mZLzrfdVoogB4XuuY2VWY58WQEUYrPq5ms4PJiytop6shuBrVDaZ7em78mJwFdKxf2gnN7aT8K7tpsd2JJqccdAV",
+              "root_tx": "BaAoGh2XvtWbty8XSUkHrxeZYaSZdgV1QYUM7V5r6hNi",
+              "root_validator": "FKybu34c8maPRJrM71FsYJPX73xRnZbxYu3zLGH953Hb"
+            },
+            "hash": "EF5pvuwGEnAGLvXhpxzoHEM7kgodGYSRpryuC1zfy5mq",
+            "consensus": {
+              "score": 0.692,
+              "finality_reached": true,
+              "mut_hash": "Hca9y2ytrUGbaHCG7moYEqFcsNAuqTpwanzW3akKJ7wX"
+            },
+            "tx_count": 1
+          },
+          "pflops": 1.57817082248917,
+          "circulating": 597251951.6200651,
+          "total_supply": 708411333.8140346,
+          "total_locked": 111159382.19396943,
+          "burned": 2192742.279867687,
+          "cur_validator": "743oZmCSZ6pRg7ChivABSTdMGuKzBaCVWw1u1L2KEA4wX7S97HjTKKgSe1AsZZbYHu",
+          "emission_for_epoch": 214308.286356147,
+          "next_validator": "6V376nQ8VszZKqrvqYokv6zHDwf9ANwtgN4mPx9F1PuaSezvpEWtav1FNHZGTW8Cz3",
+          "supply_computed_at_height": 80354042,
+          "tip_hash": "EF5pvuwGEnAGLvXhpxzoHEM7kgodGYSRpryuC1zfy5mq",
+          "total_supply_y3": 804065972,
+          "total_supply_y30": 1000000000,
+          "tx_pool_size": 3,
+          "txs_per_sec": 3.44
+        }
+      }
+    },
+    {
+      "endpoint": "chain.getKpi",
+      "transport": "answered",
+      "http_status": null,
+      "http_status_absent_reason": "the SDK does not expose the status of a successful call",
+      "error": null,
+      "body": {
+        "kpi": {
+          "block_time": 500,
+          "active_peers": 11,
+          "active_validator_keys": 120,
+          "ama_burned": 2192742.28,
+          "fees_paid": 4385484.56,
+          "total_tx": 350954531,
+          "uaw": 75371
+        }
+      }
+    }
+  ],
+  "foreign_payload_control": {
+    "performed": true,
+    "served": {
+      "help": "https://ckan.opendata.swiss/api/3/action/help_show?name=package_search",
+      "success": true,
+      "result": {
+        "count": 188,
+        "facets": {},
+        "results": [
+          {
+            "name": "not-a-chain-entry"
+          }
+        ]
+      }
+    },
+    "sdk_threw": false,
+    "returned": {
+      "help": "https://ckan.opendata.swiss/api/3/action/help_show?name=package_search",
+      "success": true,
+      "result": {
+        "count": 188,
+        "facets": {},
+        "results": [
+          {
+            "name": "not-a-chain-entry"
+          }
+        ]
+      }
+    },
+    "height_seen": null,
+    "height_seen_absent_reason": "the SDK returned the foreign body and entry.header.height was undefined",
+    "error": null
+  },
+  "self_audit": {
+    "loaded": true,
+    "path": "public/passports/git_whiteknightonhorse_provek.json",
+    "sha256": "792124647301c6eec0869bb86f86755b6f45ceea8232c3c7e4c60ae5f5a85da7",
+    "error": null,
+    "subject_id": "git:whiteknightonhorse/provek",
+    "projection": 80
+  },
+  "anchor": {
+    "present": true,
+    "network": "mainnet",
+    "height": 80358193,
+    "slot": 80358193
+  },
+  "payload": {
+    "built": true,
+    "absent_reason": null,
+    "record": {
+      "profile": "ABS",
+      "profile_version": "1.0.0",
+      "subject_id": "git:whiteknightonhorse/provek",
+      "projection": 80,
+      "projection_absent_reason": null,
+      "passport_sha256": "792124647301c6eec0869bb86f86755b6f45ceea8232c3c7e4c60ae5f5a85da7",
+      "issued_at": "2026-08-20T08:30:14.931533+00:00",
+      "valid_until": "2026-09-19T08:30:14.931533+00:00",
+      "verifier_affiliation": "same_owner",
+      "access_channel": "anonymous",
+      "anchored_at": {
+        "network": "mainnet",
+        "height": 80358193,
+        "slot": 80358193
+      },
+      "anchor_absent_reason": null,
+      "missing_fields": [],
+      "null_means": "a null field was absent from the source passport; an explicit *_absent_reason is added only where an absence is an expected outcome rather than a defect (see missing_fields for absences that are defects)"
+    },
+    "encoding": "amadeus-sdk encode() -> base58",
+    "byte_length": 707,
+    "base58": "E8Q3KAPFj3fxfz2vp4CjBjwp5entjbj5EFH8bNFgZMj2S4YB6gAcek7WhyzMebRzVXTwNBNpbueMj1sLwDJVwpjw4QFucSPzVG7BqSFEyt8dGu784j3QWZSV55vaEHj86RMjywfM5iowzDg4nH58xZhz1NBQgDvZheb3r1Wrd1cnLmuxgrtX4UwppmrUgPwJkwJwn859oLz2E3YMSuDrotN25Y2KsR4HcvMn8348cNYGbvNxPPsmSg9PhP8wuX99cVfus5GeRfcfrroRFsRpPzmiXe3iCLcwmL7Ga2thyEm8F7m1FL9XY1st4NsEgQPf4FroTZLMM8SEjmpECgM3yQZpwyhRE9qdqxmDJnkDzUTxsc8LfUAnByGfqdEk6rfy2arhCQCLeCJ3cUwTumLWvMUqtuDxiNqVWhtS3xTrzoMhmAiRF2mgMSrxp4VjQi8t6um3ijAUA9RsWqk8roe9mRBMkPtsUu7avRuBmAC2o1AcwJsenuTfMgr142w8TEDnpaXMwbRJys5GZdBUGTyUhYomvgZqNrGrMSqAgQfMJHnzFw7F6u9xPdJarWEzpSfCBay9ToCpUiARLQk49N2BeTHnhENsbNCC39aEo8MjXnjFSVSqzijGVEHvPLuCbD3gW7QdDwt8ovuo94mdrnX3GYWBCtcTq5akutAHWLsrLFmamEmQ5hEmtsRN6Zeje7RvYGtoidmnQ738a1FQf1LGHBmnRGWC1yVSLD9F3aGhDaRiVAYGWkMBk2V4GYYAZG8h5AvYUmhgaSA2zC83jKNk34LrFGWzek5ajXbuQb4zafGyGcbaocBouEMi3VbKcxo1ZnK2McXbgi5xjtB8qREHrNbB2N5koDPr44sHQ7eNrX48iXBuif5LsMkdePpUpbgjw3yWqzwkTd2xbSW1amSJgeU6p4CA5h7pTmB9AVGC6Rz6oQ9RWxVsw8B4xVT8vkGThzTLb",
+    "sha256": "44206e62f688fd1c8e54b8b853bf98d7d68dd16505f4687e8f86b6ce483003bf"
+  },
+  "onchain_write": {
+    "attempted": false,
+    "state": "check_did_not_run",
+    "blockers": [
+      "no signing key is present: by operator decision this agent is never given one, so it cannot sign - only a public address would ever reach a file",
+      "a write costs AMA and the project holds none: the MVP runs on a budget of approximately zero, and paid dependencies are outside it"
+    ],
+    "would_use": "sdk.transaction.submit(txPacked) after TransactionBuilder + signing"
+  },
+  "taken_at": "2026-08-20T23:40:19.891907+00:00",
+  "verdict": "demonstrated",
+  "sdk_finding": "accepts_unvalidated_response",
+  "findings": [
+    "in the instrument control (a local socket serving a reconstructed CKAN envelope) the SDK accepted a 200 whose body was not chain state and returned it as the chain tip; the height a caller would read is `undefined` in JavaScript, recorded here as None"
+  ]
+}

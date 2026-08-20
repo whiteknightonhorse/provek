@@ -58,6 +58,22 @@ scripts/probe_self.py:            [ABI-5-1, ABI-16-5]
 src/transport/erc8004_deployment.py: [ABI-24-4, ABI-16-11]
 scripts/watch_validation_registry.py: [ABI-24-4, ABI-5-3]
 
+# T-2.16: the Amadeus demo. ABI-31-4 because the subject of the demo is Provek itself - the same
+# self-application the cohort performs, carried to a second ecosystem. The classifier carries the
+# three-absence requirements rather than a second copy of ABI-31-4 because its load-bearing part is
+# not that it audits us: it is that a 200 whose body is not the chain's shape stays UNREADABLE
+# instead of becoming a height. The runner carries ABI-5-3: the reading is taken through the public
+# RPC that needs no credential, so Amadeus can repeat the demo against us.
+src/amadeus/__init__.py:          [ABI-31-4]
+src/amadeus/demo_audit.py:        [ABI-16-11, ABI-13-6, ABI-33-4]
+scripts/amadeus_demo.py:          [ABI-31-4, ABI-5-3]
+# The agent itself. It carries ABI-5-1 because what it produces is evidence gathered from a live
+# source, and ABI-24-4 because the whole point of running on somebody else's SDK is not building
+# our own transport where an accepted one exists. It was unbound until Fable found that
+# `ratchet_scope.py` scanned neither `demo/` nor `.mjs` - the gathering half of the demo, invisible
+# to the gate that exists to make an unneeded module fail the build.
+demo/amadeus/auditor.mjs:         [ABI-5-1, ABI-24-4]
+
 # end-to-end pipeline
 src/pipeline.py:                  [ABI-5-1, ABI-5-3, ABI-22-1]
 scripts/secret_scan.sh:           [ABI-4-4, ABI-30-7]
