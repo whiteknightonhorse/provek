@@ -1,0 +1,57 @@
+name: scorecard
+
+# THE SUPPLY-CHAIN POSTURE, SCORED BY SOMEBODY ELSE'S RUBRIC.
+#
+# OpenSSF Scorecard checks things this repository cannot check about itself without grading its own
+# homework: whether workflow tokens are over-permissioned, whether actions are pinned, whether
+# branch protection exists, whether dependencies are updated, whether releases are signed. The
+# rubric is the OpenSSF's and the runner is ours, so the reading is reproducible by anyone who runs
+# the same action against the same repository.
+#
+# `publish_results: true` is the load-bearing line. Without it the score exists only inside this
+# repository's own logs, and a badge over a self-held number would be the self-report this project
+# exists to detect. With it, the result is pushed to the OpenSSF's public API, and the badge in
+# README is served BY THE OPENSSF from THEIR copy - a reader is trusting them, not us.
+#
+# Expect a middling score at first, and expect it to be honest. Some checks will fail because they
+# describe practices this repository has deliberately not adopted yet; a low true number is worth
+# more here than a high one obtained by tuning the run.
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Weekly. Scorecard measures a moving target - a pinned action drifts out of date, a
+    # dependency ages - so a single run would age into a claim about a repository that no longer
+    # exists.
+    - cron: "41 5 * * 1"
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  analysis:
+    name: scorecard analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write   # the findings land in code scanning beside CodeQL's
+      id-token: write          # required to publish: the OpenSSF verifies WHO sent the result
+      contents: read
+      actions: read
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: run scorecard
+        uses: ossf/scorecard-action@v2
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+
+      - name: upload to code scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif

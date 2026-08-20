@@ -1,0 +1,56 @@
+name: codeql
+
+# STATIC ANALYSIS BY A THIRD PARTY, SO THE CLAIM IS NOT OURS ALONE.
+#
+# `gates` is our own suite judging our own tree. That is necessary and it is not independent: every
+# rule in it was written by the same hands as the code. CodeQL is GitHub's engine with GitHub's
+# query packs - a reader who distrusts this repository can still read this workflow's runs and see
+# a check we did not author.
+#
+# BOTH LANGUAGES, DELIBERATELY. The pipeline is Python and the public surface is TypeScript. A scan
+# of `python` alone would report clean on a tree whose entire shipped artefact is unexamined - the
+# shape L-12 records, a checker inspecting one part of the tree and reporting on all of it.
+#
+# The badge this workflow earns states one thing only: the analysis ran and completed. It is not a
+# statement that the code is free of defects, and README says so beside it.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly, because query packs improve after the code stops changing: a tree that was clean in
+    # August is only known to be clean against August's queries.
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write   # the findings go to code scanning, not to a log that scrolls away
+      actions: read
+      contents: read
+    strategy:
+      fail-fast: false         # a failure in one language must not hide the other's result
+      matrix:
+        language: [python, javascript-typescript]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: initialise CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          language: ${{ matrix.language }}
+          queries: security-and-quality
+
+      - name: analyze
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:${{ matrix.language }}
