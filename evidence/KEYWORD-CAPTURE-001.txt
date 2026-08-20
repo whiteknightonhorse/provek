@@ -1,0 +1,21 @@
+KEYWORD-CAPTURE-001 - fingerprint of the raw capture behind seo/, 2026-08-20
+
+The claim that every key in seo/keywords.csv was RETURNED by a source is checkable only
+against the raw responses. They live outside this repository, with the collector, for the
+reason given in seo/KEYWORD_BASE.md and D-17 - so what is pinned here is their fingerprint.
+This proves identity, not honesty: a reader off this host verifies the base by re-taking it.
+
+file:   ~/orchestra/logs/keyword_raw.jsonl
+lines:  1915  (one JSON object per source call, in call order - with ONE exception,
+        named because an unnamed gap in a record is worse than a small one: the control
+        call GetKeyword('ai agents') was printed to keyword_run.log and never written
+        here, so the manifest's 1,279 probes leave 1,278 rows in this file. The collector
+        logs that control now; this capture predates the fix. Found by refutation.)
+bytes:  1762653
+sha256: bc0a8f7ecf32d9f40a24ddc1de183f93fff5bff82da5b15ad344c661706fe88b
+
+Companion logs, same directory, same standing:
+  keyword_run.log            the capture run, with the measured summary it printed
+  keyword_reprice.jsonl      43 retries of throttled demand readings, all refused
+  keyword_serp_control.jsonl the control probes for the source declared blind
+  keywords.prerefilter.csv   the base as the collector left it, before the late rules

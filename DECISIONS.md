@@ -311,3 +311,70 @@ an erratum in the specification. And **SPEC §4.1 can drift from a specification
 the revision it was derived from is now named in the text, and the re-derivation is an item for the
 operator, recorded as unarmed rather than dressed as a gate.
 
+## D-17. The keyword base is a measurement, and it licenses no page
+
+**Decision.** `seo/` holds a dated capture of search demand around this domain: one row per key,
+each naming the source that returned it and the address inside that source, with the manifest
+`seo/sources.json` carrying every endpoint, parameter and control. Nothing in it authorises a page.
+A page generated from a key still needs an address in SPEC.md, exactly as every other sentence on
+the surface does.
+
+**Why the caveat is the decision.** The ordinary use of a keyword base is programmatic pages: one
+page per query, assembled because the query exists. That manoeuvre is the defect this product was
+built to detect, wearing our own colours — a page whose claim is *"here is the answer to this
+question"* when the only thing measured was that people ask it. Demand is evidence about readers.
+It is not evidence about us, and it cannot be spent as if it were.
+
+**Why a key must carry its source.** A list of plausible phrases and a capture from an instrument
+are indistinguishable once the provenance is gone, and the second is worth something only while it
+can be re-taken. `seo/sources.json` therefore records what was asked and how, so a third party can
+repeat the capture without our code — which is the same standard the registry holds itself to.
+
+**Why the collector is not in this repository.** Every `*.py` under `scripts/` must be bound to an
+`ABI-*` requirement, and the master specification contains no requirement about search demand:
+`grep -ci "SEO\|AEO"` over it returns zero. Binding a collector to a neighbouring requirement to
+get it past `scripts/ratchet_scope.py` is precisely the rubber-stamp that ratchet exists to catch,
+so the collector lives at `~/orchestra/keyword_probe.py` beside `bing_probe.py`, and the repository
+holds the measurement plus the parameters needed to repeat it. The cost is named rather than
+hidden: the capture cannot be re-run from a clone.
+
+**What is not measured, and is not guessed.** One market (`us`, `en-US`) and one demand window.
+Google is not measured at all — no instrument on this host reads it — and the base says so instead
+of assuming Bing's shape carries over. The Bing result page, the only candidate source for "people
+also ask", answers HTTP 200 with organic results and yields no related-question items to our
+reader; its control is therefore blind, and it contributes no keys **and no zeros**. A test refuses
+to let a blind source do either.
+
+**Consequence.** A later task that wants pages from this base opens SPEC.md first. If the sentence
+a page would make cannot be traced there, the page is not written, however large the number beside
+the key.
+
+**What the refutation changed, before anything was pushed.** Fable was sent the finished artefacts
+and asked to refute them, and he recomputed every published number against the files rather than
+reading the document. The numbers held; three defects did not, and all three were in the same
+place — the pass that re-applies a late rule to a finished capture:
+
+* **a reading attached to a string nobody measured.** Normalisation stripped `(Optional)` off a
+  heading of ERC-8004, and the row kept the demand figure that had been taken for the *unstripped*
+  string. One row, and exactly the defect this repository exists to refuse: a measurement whose two
+  halves are about different things. The reading is now discarded on rename, the row falls to
+  `check_did_not_run`, and the rename itself is recorded;
+* **a record that erased itself.** The pass wrote its movements into the manifest by overwriting,
+  so running it a second time — which moved nothing — deleted the history of the first, while the
+  document went on saying "with the movements counted". The counts accumulate now. The same trap
+  had been re-dug twice in the two fields added to fix it, which is the argument for re-running the
+  corrected pass from the as-captured state rather than patching the file in place;
+* **rejects lying about their own rule.** `duplicate` means "already in the base". When 67 rows left
+  the base as `false_friend`, twenty rows that had been rejected as duplicates *of those rows* kept
+  the label and became false. They are re-judged by the same code now, and a test refuses a
+  `duplicate` whose key the base does not hold.
+
+A fourth finding was about a claim rather than a defect: the collision list had been called
+**explicit**, and `trust` — this project's own core word, which in estate law names a thing an
+agent registers and manages — was not in it, with seventeen rows riding on the omission. That
+paragraph no longer claims completeness; it claims a measured, extendable list, which is what it
+is. The remaining remarks were taken as written: the blind source now rests on three control
+queries instead of one, refusals are no longer counted among an instrument's returned items, and
+the raw responses — which live outside this repository and are the only proof that every key came
+back from a source — are pinned by fingerprint in `evidence/KEYWORD-CAPTURE-001.txt`.
+

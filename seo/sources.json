@@ -1,0 +1,271 @@
+{
+  "schema_version": "1.0.0",
+  "captured_at": "2026-08-20",
+  "market": {
+    "country": "us",
+    "language": "en-US",
+    "demand_window": "2026-05-01..2026-08-01",
+    "note": "one market. A second market is a second capture, not an extrapolation."
+  },
+  "probe_rounds": {
+    "round1_seeds": 44,
+    "round2_seeds": 120,
+    "round2_cap": 120,
+    "round2_candidates_not_expanded": 318,
+    "question_stems": [
+      "what is",
+      "how does",
+      "how to",
+      "why",
+      "who",
+      "can",
+      "is"
+    ]
+  },
+  "totals": {
+    "keys": 1418,
+    "sources_configured": 6,
+    "sources_that_yielded_keys": 4,
+    "keys_corroborated_by_a_second_source": 574,
+    "rejected": 12653
+  },
+  "demand_states": {
+    "measured": 257,
+    "nothing_qualified": 733,
+    "unreadable": 427,
+    "check_did_not_run": 1
+  },
+  "rejected_by_rule": {
+    "duplicate": 6031,
+    "off_topic": 5629,
+    "navigational": 477,
+    "echo_of_probe": 263,
+    "false_friend": 87,
+    "too_long": 77,
+    "non_ascii": 68,
+    "too_short": 16,
+    "generic_term": 4,
+    "code_fragment": 1
+  },
+  "rule_order": [
+    "empty",
+    "echo_of_probe",
+    "too_short",
+    "too_long",
+    "non_ascii",
+    "code_fragment",
+    "navigational",
+    "false_friend",
+    "generic_term",
+    "off_topic",
+    "duplicate"
+  ],
+  "rule_exemption": {
+    "rule": "off_topic",
+    "exempt_source": "erc8004_spec_text",
+    "why": "topicality of a term taken from the standard's own text is a fact of provenance, not of tokens; the extraction rule bounds what the exemption can admit"
+  },
+  "sources": {
+    "erc8004_spec_text": {
+      "kind": "document",
+      "endpoint": "https://raw.githubusercontent.com/ethereum/ERCs/master/ERCS/erc-8004.md",
+      "extraction": "front-matter title/description, headings h2-h4 minus EIP boilerplate, **bold** terms; each key carries the line it was taken from",
+      "state": "ok",
+      "items_returned": 29,
+      "keys_admitted": 20,
+      "control": {
+        "query": "document fetched, then headings extracted",
+        "returned": "24458 bytes, 29 terms",
+        "verdict": "instrument sees presence"
+      },
+      "counting_convention": "probes_made INCLUDES the control probe; probe_states counts expansion probes only, the control being recorded separately under `control`. The two therefore differ by the number of controls, and that is the whole of the difference."
+    },
+    "bing_related_keywords": {
+      "kind": "api",
+      "endpoint": "https://ssl.bing.com/webmaster/api.svc/json/GetRelatedKeywords",
+      "params": {
+        "country": "us",
+        "language": "en-US",
+        "startDate": "2026-05-01",
+        "endDate": "2026-08-01"
+      },
+      "auth": "BING_WEBMASTER_API_KEY, read from ~/.env; never written to any output",
+      "state": "ok",
+      "probes_made": 165,
+      "probe_budget": 400,
+      "budget_exhausted": false,
+      "probe_states": {
+        "ok": 164
+      },
+      "items_returned": 9813,
+      "keys_admitted": 203,
+      "control": {
+        "query": "ai agents",
+        "returned": 66,
+        "state": "ok",
+        "verdict": "instrument sees presence"
+      },
+      "counting_convention": "probes_made INCLUDES the control probe; probe_states counts expansion probes only, the control being recorded separately under `control`. The two therefore differ by the number of controls, and that is the whole of the difference."
+    },
+    "bing_autosuggest": {
+      "kind": "api",
+      "endpoint": "https://api.bing.com/osjson.aspx",
+      "params": {
+        "query": "<probe>"
+      },
+      "auth": "none",
+      "state": "ok",
+      "probes_made": 305,
+      "probe_budget": 500,
+      "budget_exhausted": false,
+      "probe_states": {
+        "ok": 304
+      },
+      "items_returned": 3222,
+      "keys_admitted": 1132,
+      "control": {
+        "query": "python",
+        "returned": 25,
+        "state": "ok",
+        "verdict": "instrument sees presence"
+      },
+      "counting_convention": "probes_made INCLUDES the control probe; probe_states counts expansion probes only, the control being recorded separately under `control`. The two therefore differ by the number of controls, and that is the whole of the difference."
+    },
+    "ddg_autocomplete": {
+      "kind": "api",
+      "endpoint": "https://duckduckgo.com/ac/",
+      "params": {
+        "q": "<probe>",
+        "type": "list"
+      },
+      "auth": "none",
+      "state": "ok",
+      "probes_made": 165,
+      "probe_budget": 300,
+      "budget_exhausted": false,
+      "probe_states": {
+        "ok": 163,
+        "unparseable": 1
+      },
+      "items_returned": 1007,
+      "keys_admitted": 63,
+      "control": {
+        "query": "python",
+        "returned": 8,
+        "state": "ok",
+        "verdict": "instrument sees presence"
+      },
+      "counting_convention": "probes_made INCLUDES the control probe; probe_states counts expansion probes only, the control being recorded separately under `control`. The two therefore differ by the number of controls, and that is the whole of the difference."
+    },
+    "bing_serp_related": {
+      "kind": "html",
+      "endpoint": "https://www.bing.com/search",
+      "params": {
+        "setlang": "en",
+        "cc": "US"
+      },
+      "auth": "none",
+      "state": "unreadable",
+      "probes_made": 5,
+      "probe_budget": 6,
+      "budget_exhausted": false,
+      "probe_states": {
+        "control_only": 1
+      },
+      "items_returned": 0,
+      "keys_admitted": 0,
+      "control": {
+        "query": "python",
+        "returned": 0,
+        "state": "ok",
+        "verdict": "BLIND - contributes no keys and no zeros"
+      },
+      "why_no_keys": "The control query returns organic results (b_algo x10, python.org present) but zero related-search and zero people-also-ask items to this client. Absence here is a statement about our reader, not about Bing, so this source is recorded unreadable and admits nothing - L-10, L-11.",
+      "additional_controls": [
+        {
+          "query": "weather",
+          "state": "ok",
+          "returned": 0,
+          "response_bytes": 116860,
+          "sample": []
+        },
+        {
+          "query": "how to boil an egg",
+          "state": "ok",
+          "returned": 0,
+          "response_bytes": 123822,
+          "sample": []
+        }
+      ],
+      "control_verdict_rests_on": "3 control queries, every one of them returning zero related-search items from a response of the size recorded beside it. The organic results were counted for the first control only (ten, python.org among them); for the other two the reading is that a full-sized page carried no related searches, and the claim goes no further than that.",
+      "counting_convention": "probes_made INCLUDES the control probe; probe_states counts expansion probes only, the control being recorded separately under `control`. The two therefore differ by the number of controls, and that is the whole of the difference."
+    },
+    "bing_get_keyword": {
+      "kind": "api",
+      "endpoint": "https://ssl.bing.com/webmaster/api.svc/json/GetKeyword",
+      "params": {
+        "country": "us",
+        "language": "en-US",
+        "startDate": "2026-05-01",
+        "endDate": "2026-08-01"
+      },
+      "auth": "BING_WEBMASTER_API_KEY, read from ~/.env; never written to any output",
+      "role": "demand measurement only - it prices a key we already hold and cannot discover one",
+      "state": "ok",
+      "probes_made": 1279,
+      "probe_budget": 1500,
+      "budget_exhausted": false,
+      "probe_states": {
+        "ok": 812,
+        "api_error": 466
+      },
+      "items_returned": 812,
+      "keys_admitted": 0,
+      "control": {
+        "query": "ai agents",
+        "expected": "non-zero, the same query GetRelatedKeywords priced at 5395 exact impressions",
+        "returned": 5395,
+        "state": "ok",
+        "verdict": "instrument sees presence"
+      },
+      "demand_retry_attempt": {
+        "rows_that_were_unreadable_after_the_first_pass": 466,
+        "rows_retried_before_the_pass_was_stopped": 43,
+        "of_those_refused": 43,
+        "outcome": "every one refused: HTTP 400 {\"ErrorCode\":4,\"Message\":\"ThrottleUser\"}",
+        "reading": "a quota on this account, reached after 812 successful readings in one day",
+        "why_stopped": "at four retries and exponential backoff per row, confirming a quota over 466 rows costs about two hours of calls to an API already saying no",
+        "consequence": "those rows keep demand_state=unreadable. The keyword may well have demand; what is known is that the instrument would not say. Writing zero there would destroy the only evidence that the reading is missing."
+      },
+      "items_returned_note": "readings the instrument actually gave. The refusals in probe_states are counted as probes, never as returned items - a file that insists a refusal is not a reading may not count refusals among its readings.",
+      "counting_convention": "probes_made INCLUDES the control probe; probe_states counts expansion probes only, the control being recorded separately under `control`. The two therefore differ by the number of controls, and that is the whole of the difference."
+    }
+  },
+  "refilter_pass": {
+    "rules_added_after_the_capture": [
+      "generic_term",
+      "code_fragment",
+      "false_friend"
+    ],
+    "rows_moved_out_of_the_base": {
+      "generic_term": 4,
+      "false_friend": 67,
+      "code_fragment": 1
+    },
+    "rows_moved_in_this_pass": {},
+    "duplicate_rejects_reclassified": {
+      "false_friend": 20
+    },
+    "keys_renamed_by_normalisation": [
+      {
+        "before": "endpoint domain verification (optional)",
+        "after": "endpoint domain verification",
+        "demand_reading": "discarded - it was taken for the string before",
+        "was": "nothing_qualified"
+      }
+    ],
+    "accumulates": "movement counts ACCUMULATE across passes. They were overwritten once, and a second, empty pass erased the record of the first - a pass that reports only its own run cannot describe the file it produced.",
+    "why": "a rule added late is applied as code to every row, with the movements counted; after this pass the base is closed under its own rules",
+    "note": "probe counts in probe_rounds are unchanged and describe what was ASKED. A probe is not a key: terms dropped here were still used to question the sources, and what those sources returned stands on its own admission."
+  }
+}

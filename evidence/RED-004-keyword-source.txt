@@ -1,0 +1,23 @@
+RED-004 - the keyword-base test proved able to fail, 2026-08-20
+
+A test that cannot fail is a declaration (CLAUDE.md invariant 5). Four defects were injected
+into seo/keywords.csv, one per guard, and the file was restored afterwards from
+~/orchestra/keywords.intact.csv - the suite is green again in the same session.
+
+  row 1 'agentic ai'          source_id emptied      -> a key with no source
+  row 2 'what is agentic ai'  unreadable + '0'      -> a refused reading wearing a zero
+  row 3 'agentic'             measured + '0'        -> a measured zero, which is nothing_qualified
+  row 4 'agentic ai definition' reading credited to an instrument that does not exist
+
+COMMAND: python3 -m pytest tests/test_keyword_base.py -q
+
+E           AssertionError: row 2: key 'agentic ai' has NO source
+E               AssertionError: row 3: 'what is agentic ai' is `unreadable` yet carries impressions '0'/'10265' - an unmeasured quantity must be absent, not zero
+E               AssertionError: row 5: reading attributed to 'google_keyword_planner', which is not a source
+E       AssertionError: the manifest's demand tally is not the file's - and the demand tally is where an `unreadable` row would be quietly promoted to a measured one
+FAILED tests/test_keyword_base.py::test_no_key_without_a_source - AssertionEr...
+FAILED tests/test_keyword_base.py::test_demand_never_confuses_zero_with_unmeasured
+FAILED tests/test_keyword_base.py::test_every_reading_names_an_instrument_the_manifest_knows
+FAILED tests/test_keyword_base.py::test_the_manifest_counts_what_the_files_hold
+
+4 failed, 6 passed in 0.12s
