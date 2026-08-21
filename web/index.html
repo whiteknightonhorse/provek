@@ -7,13 +7,29 @@
     <meta name="description" content="A verification and reputation layer for businesses operated by AI agents. Measured per operation, from evidence." />
     <link rel="canonical" href="https://provek.dev/" />
 
-    <!-- Static Open Graph, and static is the whole limitation.
-         A passport travels by link in due-diligence email, which is this product's only real
-         distribution channel. Without these tags such a link unfurls as a bare URL. With them it
-         unfurls as the standard rather than as the subject: routing is by hash, so a crawler never
-         sees anything past the "/" and every passport shares one preview. Naming the subject in an
-         unfurl needs prerendering, which is a build change rather than a tag. Recorded as a stated
-         ceiling instead of left for someone to discover as a defect. -->
+    <!-- Open Graph. A passport travels by link in due-diligence email, which is this product's only
+         real distribution channel, and without these tags such a link unfurls as a bare URL.
+         The values below are the shell's; `prerender.mjs` rewrites the per-page ones into each
+         emitted document - `og:url`, `og:title`, `og:description`, both `twitter:*` twins, the
+         `<title>`, the description and the canonical - so a passport unfurls as its subject.
+         `404.html` is the single exception and a deliberate one: it is written with the canonical
+         and `og:url` stripped out, because the document standing in for every missing address has
+         no address of its own to declare.
+
+         THIS COMMENT DECLARED A CEILING THAT HAD ALREADY BEEN LIFTED. It read "routing is by hash,
+         so a crawler never sees anything past the '/' and every passport shares one preview". The
+         first half stopped being true at `bedb764` on 2026-08-20, the commit that moved routing to
+         the path and emitted each page as a file with its own `og:title`. The second half outlived
+         it on one channel: `twitter:title` and `twitter:description` were rewritten by nothing
+         until `f857e74`, later the same day, so every card went on advertising the front page.
+
+         That makes this the THIRD copy of the same stale reason. The first was the comment over the
+         GA snippet below, corrected at `3e97acc`; the second was `DECISIONS.md` D-14, corrected on
+         2026-08-21; this one stood in the file that ships the tags it describes and was found only
+         by refutation - L-2, in the place nobody thought to re-read.
+
+         What IS still a ceiling, stated rather than left to be discovered: there is no `og:image`
+         anywhere in this site, so every unfurl is text on a `summary` card. -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Provek" />
     <meta property="og:url" content="https://provek.dev/" />

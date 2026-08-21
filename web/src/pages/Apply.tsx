@@ -44,6 +44,18 @@ type Sent =
 type Mandate = "passive" | "active";
 
 const ISSUES = "https://github.com/whiteknightonhorse/provek/issues";
+// The entry, not the file. A reader sent to the top of the decision log to hunt for the paragraph
+// about the tracker on the page they are standing on has been answered in the shape of a refusal.
+//
+// (A dead number is kept here because what first replaced it was worse. The draft called this "a
+// 964-line log"; the commit carrying that sentence also added lines to that file, so the count was
+// false on arrival - hardcoded beside the document it counts, in the same file as this page's own
+// rule that a stated count is the count in the artefact. The sentence then written to explain the
+// mistake stated how many lines the commit added, and the commit grew again before it went out.
+// A number is a claim with a maintenance cost, and neither of these was worth one.)
+const DECISION_LOG =
+  "https://github.com/whiteknightonhorse/provek/blob/main/DECISIONS.md" +
+  "#d-14-measurement-on-the-public-surface-ga4-without-a-consent-banner";
 
 export default function Apply() {
   const [sent, setSent] = useState<Sent>({ state: "idle" });
@@ -301,13 +313,24 @@ export default function Apply() {
                     scoped to the form and true; the second was unscoped and false - a false
                     sentence in the one paragraph a stranger reads before handing over an address.
                     The measurement decision is the operator's (D-14). A surface that contradicts
-                    it is a separate matter, and this is the correction. */}
+                    it is a separate matter, and this is the correction.
+
+                    AND "IT IS WRITTEN DOWN" IS NOW REACHABLE FROM THE PAGE THAT SAYS IT. This is
+                    the one place a stranger is told they are being counted, and the clause that
+                    softens it - that the argument against it is on the record - was the only claim
+                    in this list they could not check without being told where to look. A site whose
+                    product is evidence over claims may not ask to be taken at its word about the
+                    entry that argues against its own tracker. */}
                 <strong className="text-[var(--color-ink-2)]">Separately, about this whole site:</strong>{" "}
                 Google Analytics runs on every page here, without a consent banner. It sets a cookie
                 and creates an identifier for your browser, and what it records goes to Google. That
                 is the operator&rsquo;s decision and it is written down, with the argument against
-                it, in the project&rsquo;s decision log. Advertising and personalisation signals are
-                switched off, which is the most that can be said for it.
+                it, in the{" "}
+                <a href={DECISION_LOG} className="text-[var(--color-accent)] hover:underline">
+                  project&rsquo;s decision log
+                </a>
+                . Advertising and personalisation signals are switched off, which is the most that
+                can be said for it.
               </li>
             </ul>
           </div>

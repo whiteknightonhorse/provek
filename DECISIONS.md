@@ -184,6 +184,34 @@ leaving them on would collect more than the decision covers. `send_page_view` is
 are emitted manually, because routing is by hash and gtag would otherwise count the first screen and
 miss every navigation after it.
 
+**Correction, 2026-08-21: routing is by pathname, and has been since fourteen minutes after the
+paragraph above was written.** That paragraph is true of the moment it was written — `de65dcf`,
+2026-08-20 14:13 +07:00, the offset these three commits carry, while later commits of the same day
+carry +00:00 — and its stated reason was falsified fourteen minutes later at 14:27 by `bedb764`,
+which moved routing to `history.pushState` and `location.pathname` (`web/src/App.tsx:47`). It is
+corrected here rather than rewritten above, because what a decision was reasoned from is part of the
+record. The conclusion outlives its reason: `send_page_view` stays off because the router is ours
+either way, and gtag counts the first screen and nothing after it whether the route lives in the
+fragment or in the path. What did not outlive it
+was the counter — the snippet read `location.hash` and hooked `hashchange`, so from 14:27 until
+`3e97acc` at 15:59 every visit recorded one `page_view` of `/` whatever page was read, and no
+client-side navigation was recorded at all. That defect was corrected where it executes and written
+down there (`web/index.html`).
+
+**And the stale reason had a third copy, which is why this is L-2 and not an oversight.** The first
+draft of this correction called this entry "the copy that had not been re-read". It was not. Three
+copies existed: the comment over the GA snippet in `web/index.html`, corrected at `3e97acc`; this
+entry, corrected above; and a third in the same `web/index.html`, in the comment over the Open Graph
+tags, where "routing is by hash" justified a ceiling — "every passport shares one preview" — on the
+file that ships those tags. `bedb764`, the commit that falsified the reason here, lifted that
+ceiling for `og:*` in the same stroke, by emitting each page as a file with its own `og:title`; the
+`twitter:*` card went on advertising the landing page from every emitted document until `f857e74`,
+later the same day — so an og-reading unfurl of those documents was correct and a card was not, which
+is written down where it was found (`web/prerender.mjs`, which describes the defect without naming
+the commit that closed it). The third copy is corrected in the commit carrying this paragraph. It
+was found by refutation and not by the read that opened this entry, which is the whole of L-2: the
+copy you did not think to look for is the one that survives the repeal.
+
 **Measured after installation:** Lighthouse 100 / 100 / 100 / 100 on the live domain at
 benchmarkIndex 2916; total blocking time 10 ms; transfer 73 KiB to 240 KiB, all of the increase
 being gtag.js.

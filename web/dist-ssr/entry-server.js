@@ -1029,6 +1029,7 @@ function Passport({ p }) {
 * words rather than claiming the stronger thing. And nothing here promises a clock: no side of
 * this has committed to one, so the page may not invent it. */
 var ISSUES = "https://github.com/whiteknightonhorse/provek/issues";
+var DECISION_LOG = "https://github.com/whiteknightonhorse/provek/blob/main/DECISIONS.md#d-14-measurement-on-the-public-surface-ga4-without-a-consent-banner";
 function Apply() {
 	const [sent, setSent] = useState({ state: "idle" });
 	async function submit(e) {
@@ -1276,7 +1277,14 @@ function Apply() {
 										children: "Separately, about this whole site:"
 									}),
 									" ",
-									"Google Analytics runs on every page here, without a consent banner. It sets a cookie and creates an identifier for your browser, and what it records goes to Google. That is the operator’s decision and it is written down, with the argument against it, in the project’s decision log. Advertising and personalisation signals are switched off, which is the most that can be said for it."
+									"Google Analytics runs on every page here, without a consent banner. It sets a cookie and creates an identifier for your browser, and what it records goes to Google. That is the operator’s decision and it is written down, with the argument against it, in the",
+									" ",
+									/* @__PURE__ */ jsx("a", {
+										href: DECISION_LOG,
+										className: "text-[var(--color-accent)] hover:underline",
+										children: "project’s decision log"
+									}),
+									". Advertising and personalisation signals are switched off, which is the most that can be said for it."
 								] })
 							]
 						})]
