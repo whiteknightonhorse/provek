@@ -1,0 +1,652 @@
+# RED-017 - the intake telling an applicant that nothing was saved, about a record that was saved
+#
+# Produced by evidence/RED-017-generator.py, checked in beside this file so the runs below can be
+# repeated rather than believed. It establishes that the gate landing with T-A2-2 CAN fail
+# (invariant 5) in each of the directions it holds. Each mutation is applied to
+# web/functions/api/apply.js from a pristine copy, grepped back out to prove it landed, run with
+# its output captured separately, and the endpoint restored and compared byte for byte before the
+# next one - because a single redirected stream is how RED-013 came to carry one mutation's output
+# under another's heading (L-26).
+#
+# FIVE OF THESE NINE WERE GREEN WHEN THEY WERE FIRST APPLIED. That is the honest summary of this
+# file: the gate was written, believed, and then refuted and repaired over three rounds, and 5 to 9 are
+# the false greens Fable produced against it - a delivery outcome frozen to a constant, an
+# unreachable Telegram reading as a delivered notice, a write-back storing a constant, a refusal
+# reason that is not what the store said, and every sentinel sharing one key. Each is a value the
+# operator's sweep acts on, and each passed a suite that already RAN the endpoint. A gate that runs
+# the code is still a gate about the shapes it runs.
+#
+# WHAT THE GENERATOR REFUSES TO WRITE THIS FILE OVER, each of which caught a real draft:
+#
+#   * a mutation that does not go red, or whose marker does not appear in the file afterwards;
+#   * a pytest that did not RUN - only exit 1 is a suite that ran and failed, and reading any
+#     nonzero exit as "red" was invariant 1 inside the instrument;
+#   * a mutation that kills the suite's INSTRUMENT CONTROL. Mutation 3 was first written as an
+#     `if (false) {` facing a `catch`: the module stopped parsing, every scenario died, and eight
+#     tests went red under a heading claiming the sentinel had been removed. A red produced by a
+#     file that does not parse says nothing about any property;
+#   * two mutations with the same failure set - the transposition RED-013 was corrected for;
+#   * an endpoint that is not restored byte for byte, or that is not green afterwards.
+#
+# The diff blocks are printed from the strings that perform the edits. Written by hand, one of them
+# was already wrong: it showed a mutated line without the `// MUTATION` marker the grep under it
+# proved was there. Nothing was invented and the run was real, and the prose still described an
+# edit other than the one performed, which is L-26's second half inside the artefact kept to defend
+# against L-26. Found by Fable.
+#
+# The gate is tests/test_intake_survives_a_failed_writeback.py, and it RUNS the endpoint under Node
+# with a stubbed KV binding (tests/intake_probe.mjs) rather than matching patterns against its
+# source. That is the point of it: a source scan can see that a `try` is written and can never see
+# what the handler answers.
+#
+# Everything below each `$` line is verbatim output of the command shown.
+#
+# ============================================================================================
+# RED 1.
+# THE DEFECT ITSELF, restored: the write-back leaves the `try` and is uncaught again. The `if (false)` keeps the sentinel block that follows syntactically attached, so what the mutation removes is the guard and nothing else.
+#
+# -   try {
+# -     await env.INTAKE.put(key, JSON.stringify({ ...record, delivered }));
+# -   } catch (refusal) {
+# +   await env.INTAKE.put(key, JSON.stringify({ ...record, delivered }));  // MUTATION: uncaught again
+# +   if (false) { const refusal = null;
+#
+# $ grep -n 'MUTATION' web/functions/api/apply.js
+# 170:  await env.INTAKE.put(key, JSON.stringify({ ...record, delivered }));  // MUTATION: uncaught again
+#
+# $ python3 -m pytest tests/test_intake_survives_a_failed_writeback.py -q
+FFFFFFF.F.....                                                           [100%]
+=================================== FAILURES ===================================
+________ test_a_refused_writeback_still_answers_the_applicant_the_truth ________
+
+    def test_a_refused_writeback_still_answers_the_applicant_the_truth() -> None:
+        """The submission is durable, so the answer says so."""
+        r = run("writeback_fails")
+>       assert r["outcome"] == "answered", (
+            "the endpoint threw when the write-back was refused. Cloudflare turns that into a 500 and "
+            "the form reads a 500 as 'Not recorded ... Nothing was saved' - about a record that is "
+            "sitting in KV.")
+E       AssertionError: the endpoint threw when the write-back was refused. Cloudflare turns that into a 500 and the form reads a 500 as 'Not recorded ... Nothing was saved' - about a record that is sitting in KV.
+E       assert 'invocation_failed' == 'answered'
+E         
+E         - answered
+E         + invocation_failed
+
+tests/test_intake_survives_a_failed_writeback.py:119: AssertionError
+________ test_the_delivery_state_reported_is_the_one_that_was_measured _________
+
+    def test_the_delivery_state_reported_is_the_one_that_was_measured() -> None:
+        """"Honest" is the load-bearing word: `delivered` is what the notice actually did.
+    
+        This is the path that matters most and the one the 500 hid. The operator HAS been told, so the
+        applicant may be told that too - and answering `ok: true` while flattening `delivered` to
+        `false` would replace one false sentence with a smaller one.
+        """
+        r = run("notice_sent_writeback_fails")
+        assert r["notices"] == 1, "the notice was never attempted; this scenario measures nothing"
+>       assert r["outcome"] == "answered", (
+            "the endpoint threw after the operator had already been told. The visitor gets a 500 and "
+            f"reads that nothing was saved, about a record that exists and a notice that went out: {r}")
+E       AssertionError: the endpoint threw after the operator had already been told. The visitor gets a 500 and reads that nothing was saved, about a record that exists and a notice that went out: {'scenario': 'notice_sent_writeback_fails', 'outcome': 'invocation_failed', 'error': 'KV PUT failed: 429 rate limited (1 write per second to the same key)', 'writes': [{'key': 'request:2026-08-21T00:42:10.400Z:d90540d9-822c-4d36-9613-3381e76a9d73', 'stored': True, 'value': {'id': 'd90540d9-822c-4d36-9613-3381e76a9d73', 'received_at': '2026-08-21T00:42:10.400Z', 'repo': 'https://github.com/example-org/example-repo', 'contact': 'applicant@example.com', 'mandate_requested': 'passive', 'mandate_applied': 'passive', 'source_country': None, 'delivered': None}}, {'key': 'request:2026-08-21T00:42:10.400Z:d90540d9-822c-4d36-9613-3381e76a9d73', 'stored': False, 'value': {'id': 'd90540d9-822c-4d36-9613-3381e76a9d73', 'received_at': '2026-08-21T00:42:10.400Z', 'repo': 'https://github.com/example-org/example-repo', 'contact': 'applicant@example.com', 'mandate_requested': 'passive', 'mandate_applied': 'passive', 'source_country': None, 'delivered': True}}], 'notices': 1}
+E       assert 'invocation_failed' == 'answered'
+E         
+E         - answered
+E         + invocation_failed
+
+tests/test_intake_survives_a_failed_writeback.py:142: AssertionError
+________ test_the_delivery_state_is_measured_in_the_false_direction_too ________
+
+    def test_the_delivery_state_is_measured_in_the_false_direction_too() -> None:
+        """A control that cannot go false measures nothing.
+    
+        The Telegram stub took an `ok` argument that was only ever passed `true`, so `delivered` could
+        be hardcoded to `true` in the endpoint with all ten assertions green - and `delivered` is the
+        whole of "an honest delivery state". The operator's follow-up reads the same value off the
+        sentinel. Found by Fable, who applied exactly that mutation and watched it pass.
+        """
+        r = run("notice_refused_writeback_fails")
+        assert r["notices"] == 1, "the notice was never attempted; this scenario measures nothing"
+>       assert r["status"] == 200 and r["body"]["ok"] is True
+E       KeyError: 'status'
+
+tests/test_intake_survives_a_failed_writeback.py:166: KeyError
+____ test_a_caught_refusal_is_distinguishable_from_an_invocation_that_died _____
+
+    def test_a_caught_refusal_is_distinguishable_from_an_invocation_that_died() -> None:
+        """`delivered: null` had ONE meaning and the fix silently gave it two.
+    
+        Before T-A2-2 a record still holding `null` was one whose invocation died between the writes,
+        and its submitter had been told that nothing was saved. Catching the refusal added a second
+        world to the same value - told the truth, needs nothing - and the operator's sweep acts on
+        those two oppositely. That is invariant 1 arriving inside the change that closed another
+        instance of it, and it is why the endpoint writes a sentinel under a DIFFERENT key: the limit
+        that produces the failure is one write per second to the same key, so the store is not
+        unavailable, only that key is. Found by Fable, against the first draft, which argued the
+        silence was forced.
+        """
+        r = run("writeback_fails")
+        marks = sentinels(r)
+>       assert len(marks) == 1, (
+            "no sentinel was written beside the record, so `delivered: null` means both 'the applicant "
+            f"was told the truth' and 'the applicant was told nothing was saved': {r['writes']}")
+E       AssertionError: no sentinel was written beside the record, so `delivered: null` means both 'the applicant was told the truth' and 'the applicant was told nothing was saved': [{'key': 'request:2026-08-21T00:42:10.542Z:ae0b66f4-0f92-45b0-9e9c-41741eebb504', 'stored': True, 'value': {'id': 'ae0b66f4-0f92-45b0-9e9c-41741eebb504', 'received_at': '2026-08-21T00:42:10.542Z', 'repo': 'https://github.com/example-org/example-repo', 'contact': 'applicant@example.com', 'mandate_requested': 'passive', 'mandate_applied': 'passive', 'source_country': None, 'delivered': None}}, {'key': 'request:2026-08-21T00:42:10.542Z:ae0b66f4-0f92-45b0-9e9c-41741eebb504', 'stored': False, 'value': {'id': 'ae0b66f4-0f92-45b0-9e9c-41741eebb504', 'received_at': '2026-08-21T00:42:10.542Z', 'repo': 'https://github.com/example-org/example-repo', 'contact': 'applicant@example.com', 'mandate_requested': 'passive', 'mandate_applied': 'passive', 'source_country': None, 'delivered': False}}]
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+tests/test_intake_survives_a_failed_writeback.py:190: AssertionError
+______________ test_each_refusal_is_marked_under_a_key_of_its_own ______________
+
+    def test_each_refusal_is_marked_under_a_key_of_its_own() -> None:
+        """A constant sentinel key satisfies every other assertion in this file and destroys the
+        sentinel's purpose: concurrent refusals overwrite each other's marks, and a second refusal
+        inside one second is refused by the very same-key limit the sentinel exists to route around.
+        The `of` field was compared to the record's key and the key it is STORED under was not. Found
+        by Fable."""
+        r = run("writeback_fails")
+>       key = [w["key"] for w in r["writes"] if w["key"].startswith("writeback-refused:")][0]
+E       IndexError: list index out of range
+
+tests/test_intake_survives_a_failed_writeback.py:218: IndexError
+________ test_the_refusal_does_not_have_to_be_recognisable_to_be_caught ________
+
+    def test_the_refusal_does_not_have_to_be_recognisable_to_be_caught() -> None:
+        """A gate that exercises one failure shape is a gate about that shape.
+    
+        Measured, not imagined: `catch (e) { if (!String(e).includes("429")) throw e; }` kept the whole
+        of this suite green while the 500-over-a-durable-record defect returned for every other KV
+        failure, because the probe only ever threw a 429. This scenario rejects with something that is
+        not a 429 and not an `Error` at all.
+        """
+        r = run("writeback_fails_unrecognisably")
+>       assert r["outcome"] == "answered" and r["status"] == 200 and r["body"]["ok"] is True, (
+            f"a KV failure the endpoint could not recognise was not caught: {r}")
+E       AssertionError: a KV failure the endpoint could not recognise was not caught: {'scenario': 'writeback_fails_unrecognisably', 'outcome': 'invocation_failed', 'error': 'KV unavailable', 'writes': [{'key': 'request:2026-08-21T00:42:10.677Z:bef7fa5f-5351-4347-952b-e9c5662c2134', 'stored': True, 'value': {'id': 'bef7fa5f-5351-4347-952b-e9c5662c2134', 'received_at': '2026-08-21T00:42:10.677Z', 'repo': 'https://github.com/example-org/example-repo', 'contact': 'applicant@example.com', 'mandate_requested': 'passive', 'mandate_applied': 'passive', 'source_country': None, 'delivered': None}}, {'key': 'request:2026-08-21T00:42:10.677Z:bef7fa5f-5351-4347-952b-e9c5662c2134', 'stored': False, 'value': {'id': 'bef7fa5f-5351-4347-952b-e9c5662c2134', 'received_at': '2026-08-21T00:42:10.677Z', 'repo': 'https://github.com/example-org/example-repo', 'contact': 'applicant@example.com', 'mandate_requested': 'passive', 'mandate_applied': 'passive', 'source_country': None, 'delivered': False}}], 'notices': 0}
+E       assert ('invocation_failed' == 'answered'
+E         
+E         - answered
+E         + invocation_failed)
+
+tests/test_intake_survives_a_failed_writeback.py:232: AssertionError
+______________ test_an_unreachable_notice_is_not_a_delivered_one _______________
+
+    def test_an_unreachable_notice_is_not_a_delivered_one() -> None:
+        """The endpoint's `catch` beside the notice, whose body no scenario reached.
+    
+        Telegram refusing a message and Telegram being unreachable are two branches, and the repair for
+        "the delivery outcome is unmeasured in the false direction" covered only the first. A
+        `catch { delivered = true }` passed all eleven assertions: every applicant told the operator had
+        been notified, every sentinel recording it, and the sweep skipping them all. Found by Fable.
+        """
+        r = run("notice_throws_writeback_fails")
+        assert r["notices"] == 1, "the notice was never attempted; this scenario measures nothing"
+>       assert r["status"] == 200 and r["body"]["ok"] is True
+E       KeyError: 'status'
+
+tests/test_intake_survives_a_failed_writeback.py:249: KeyError
+_______ test_when_the_sentinel_is_refused_too_the_answer_still_goes_out ________
+
+    def test_when_the_sentinel_is_refused_too_the_answer_still_goes_out() -> None:
+        """The nested write is a second chance, never a second way to fail.
+    
+        And what it leaves behind is deliberately not distinguished: a record with no sentinel is what
+        a dead invocation leaves, and the operator reads both as "we cannot tell whether this person
+        was answered" - the true statement about them.
+        """
+        r = run("both_writes_refused")
+>       assert r["outcome"] == "answered" and r["status"] == 200 and r["body"]["ok"] is True, (
+            f"a refused sentinel took the applicant's confirmation down with it: {r}")
+E       AssertionError: a refused sentinel took the applicant's confirmation down with it: {'scenario': 'both_writes_refused', 'outcome': 'invocation_failed', 'error': 'KV PUT failed: 429 rate limited (1 write per second to the same key)', 'writes': [{'key': 'request:2026-08-21T00:42:10.903Z:6af2ed23-b024-4255-b84a-776861ff5822', 'stored': True, 'value': {'id': '6af2ed23-b024-4255-b84a-776861ff5822', 'received_at': '2026-08-21T00:42:10.903Z', 'repo': 'https://github.com/example-org/example-repo', 'contact': 'applicant@example.com', 'mandate_requested': 'passive', 'mandate_applied': 'passive', 'source_country': None, 'delivered': None}}, {'key': 'request:2026-08-21T00:42:10.903Z:6af2ed23-b024-4255-b84a-776861ff5822', 'stored': False, 'value': {'id': '6af2ed23-b024-4255-b84a-776861ff5822', 'received_at': '2026-08-21T00:42:10.903Z', 'repo': 'https://github.com/example-org/example-repo', 'contact': 'applicant@example.com', 'mandate_requested': 'passive', 'mandate_applied': 'passive', 'source_country': None, 'delivered': False}}], 'notices': 0}
+E       assert ('invocation_failed' == 'answered'
+E         
+E         - answered
+E         + invocation_failed)
+
+tests/test_intake_survives_a_failed_writeback.py:280: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_survives_a_failed_writeback.py::test_a_refused_writeback_still_answers_the_applicant_the_truth
+FAILED tests/test_intake_survives_a_failed_writeback.py::test_the_delivery_state_reported_is_the_one_that_was_measured
+FAILED tests/test_intake_survives_a_failed_writeback.py::test_the_delivery_state_is_measured_in_the_false_direction_too
+FAILED tests/test_intake_survives_a_failed_writeback.py::test_a_caught_refusal_is_distinguishable_from_an_invocation_that_died
+FAILED tests/test_intake_survives_a_failed_writeback.py::test_each_refusal_is_marked_under_a_key_of_its_own
+FAILED tests/test_intake_survives_a_failed_writeback.py::test_the_refusal_does_not_have_to_be_recognisable_to_be_caught
+FAILED tests/test_intake_survives_a_failed_writeback.py::test_an_unreachable_notice_is_not_a_delivered_one
+FAILED tests/test_intake_survives_a_failed_writeback.py::test_when_the_sentinel_is_refused_too_the_answer_still_goes_out
+8 failed, 6 passed in 0.87s
+
+# ============================================================================================
+# RED 2.
+# THE OPPOSITE ERROR, and the reason the gate asserts a biconditional: the DURABLE write is swallowed as well, which is what `wrap it in a try/catch` produces when it is aimed one line too high. Every assertion killed by mutation 1 passes here. What dies is the other direction - nothing is stored, so `Nothing was saved` is TRUE, and the endpoint confirms a submission that does not exist. Nobody sweeps for a record that was never written.
+#
+# -   await env.INTAKE.put(key, JSON.stringify({ ...record, delivered: null }));
+# +   try {  // MUTATION: the durable write is swallowed too
+# +   await env.INTAKE.put(key, JSON.stringify({ ...record, delivered: null }));
+# +   } catch { /* MUTATION */ }
+#
+# $ grep -n 'MUTATION' web/functions/api/apply.js
+# 97:  try {  // MUTATION: the durable write is swallowed too
+# 99:  } catch { /* MUTATION */ }
+#
+# $ python3 -m pytest tests/test_intake_survives_a_failed_writeback.py -q
+.........F....                                                           [100%]
+=================================== FAILURES ===================================
+_______ test_a_submission_that_really_was_lost_is_still_reported_as_lost _______
+
+    def test_a_submission_that_really_was_lost_is_still_reported_as_lost() -> None:
+        """When the durable write fails, "Nothing was saved" is TRUE and must still be shown.
+    
+        A biconditional, in LAW-NOTES-ENTRANCE's shape: this gate is as much about not claiming a
+        record that does not exist as about not disclaiming one that does. Catching the whole handler
+        would satisfy every assertion above and quietly turn the intake into a form that always says
+        yes.
+        """
+        r = run("durable_write_fails")
+>       assert stored(r, "") == [], "this scenario is supposed to store nothing"
+E       AssertionError: this scenario is supposed to store nothing
+E       assert [{'id': '314a...le.com', ...}] == []
+E         
+E         Left contains one more item: {'id': '314a0af7-cd12-4ef5-aef7-40c5287ed0ee', 'received_at': '2026-08-21T00:42:11.966Z', 'repo': 'https://github.com/example-org/example-repo', 'contact': 'applicant@example.com', ...}
+E         Use -v to get more diff
+
+tests/test_intake_survives_a_failed_writeback.py:296: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_survives_a_failed_writeback.py::test_a_submission_that_really_was_lost_is_still_reported_as_lost
+1 failed, 13 passed in 0.81s
+
+# ============================================================================================
+# RED 3.
+# THE FIX'S OWN DEFECT, which is what the first draft of this change shipped: the refusal is caught, the applicant is answered honestly, and nothing durable records that it happened - so `delivered: null` means both `told the truth` and `told that nothing was saved`, in the one field the operator's sweep acts on. Found by Fable. The sentinel is still computed and is handed to a call that stores nothing, because a mutation that deleted the block would change what the file PARSES to rather than what it does.
+#
+# -     try {
+# -       await env.INTAKE.put(
+# +     try {
+# +       await Promise.resolve(  // MUTATION: the sentinel is never stored
+#
+# $ grep -n 'MUTATION' web/functions/api/apply.js
+# 174:      await Promise.resolve(  // MUTATION: the sentinel is never stored
+#
+# $ python3 -m pytest tests/test_intake_survives_a_failed_writeback.py -q
+.FFFFFF.......                                                           [100%]
+=================================== FAILURES ===================================
+________ test_the_delivery_state_reported_is_the_one_that_was_measured _________
+
+    def test_the_delivery_state_reported_is_the_one_that_was_measured() -> None:
+        """"Honest" is the load-bearing word: `delivered` is what the notice actually did.
+    
+        This is the path that matters most and the one the 500 hid. The operator HAS been told, so the
+        applicant may be told that too - and answering `ok: true` while flattening `delivered` to
+        `false` would replace one false sentence with a smaller one.
+        """
+        r = run("notice_sent_writeback_fails")
+        assert r["notices"] == 1, "the notice was never attempted; this scenario measures nothing"
+        assert r["outcome"] == "answered", (
+            "the endpoint threw after the operator had already been told. The visitor gets a 500 and "
+            f"reads that nothing was saved, about a record that exists and a notice that went out: {r}")
+        assert r["status"] == 200 and r["body"]["ok"] is True
+        assert r["body"]["delivered"] is True, (
+            f"the notice reached Telegram and the applicant was told otherwise: {r['body']}")
+        assert records(r)[0]["delivered"] is None, (
+            "the write-back was supposed to have been refused in this scenario, so the stored record "
+            "should still carry the value written before the notice.")
+>       assert sentinels(r)[0]["notice_delivered"] is True, (
+            "the sentinel does not carry the delivery outcome the applicant was given, so the operator "
+            "cannot tell from the store what this person was told.")
+E       IndexError: list index out of range
+
+tests/test_intake_survives_a_failed_writeback.py:151: IndexError
+________ test_the_delivery_state_is_measured_in_the_false_direction_too ________
+
+    def test_the_delivery_state_is_measured_in_the_false_direction_too() -> None:
+        """A control that cannot go false measures nothing.
+    
+        The Telegram stub took an `ok` argument that was only ever passed `true`, so `delivered` could
+        be hardcoded to `true` in the endpoint with all ten assertions green - and `delivered` is the
+        whole of "an honest delivery state". The operator's follow-up reads the same value off the
+        sentinel. Found by Fable, who applied exactly that mutation and watched it pass.
+        """
+        r = run("notice_refused_writeback_fails")
+        assert r["notices"] == 1, "the notice was never attempted; this scenario measures nothing"
+        assert r["status"] == 200 and r["body"]["ok"] is True
+        assert r["body"]["delivered"] is False, (
+            f"Telegram refused the message and the applicant was told it went out: {r['body']}")
+>       assert sentinels(r)[0]["notice_delivered"] is False, (
+            "the sentinel says the operator was notified when the notice was refused, so the sweep "
+            "would skip a submission nobody has seen.")
+E       IndexError: list index out of range
+
+tests/test_intake_survives_a_failed_writeback.py:169: IndexError
+____ test_a_caught_refusal_is_distinguishable_from_an_invocation_that_died _____
+
+    def test_a_caught_refusal_is_distinguishable_from_an_invocation_that_died() -> None:
+        """`delivered: null` had ONE meaning and the fix silently gave it two.
+    
+        Before T-A2-2 a record still holding `null` was one whose invocation died between the writes,
+        and its submitter had been told that nothing was saved. Catching the refusal added a second
+        world to the same value - told the truth, needs nothing - and the operator's sweep acts on
+        those two oppositely. That is invariant 1 arriving inside the change that closed another
+        instance of it, and it is why the endpoint writes a sentinel under a DIFFERENT key: the limit
+        that produces the failure is one write per second to the same key, so the store is not
+        unavailable, only that key is. Found by Fable, against the first draft, which argued the
+        silence was forced.
+        """
+        r = run("writeback_fails")
+        marks = sentinels(r)
+>       assert len(marks) == 1, (
+            "no sentinel was written beside the record, so `delivered: null` means both 'the applicant "
+            f"was told the truth' and 'the applicant was told nothing was saved': {r['writes']}")
+E       AssertionError: no sentinel was written beside the record, so `delivered: null` means both 'the applicant was told the truth' and 'the applicant was told nothing was saved': [{'key': 'request:2026-08-21T00:42:12.600Z:fdbc1083-eb9f-4ab4-8285-60363c5d4714', 'stored': True, 'value': {'id': 'fdbc1083-eb9f-4ab4-8285-60363c5d4714', 'received_at': '2026-08-21T00:42:12.600Z', 'repo': 'https://github.com/example-org/example-repo', 'contact': 'applicant@example.com', 'mandate_requested': 'passive', 'mandate_applied': 'passive', 'source_country': None, 'delivered': None}}, {'key': 'request:2026-08-21T00:42:12.600Z:fdbc1083-eb9f-4ab4-8285-60363c5d4714', 'stored': False, 'value': {'id': 'fdbc1083-eb9f-4ab4-8285-60363c5d4714', 'received_at': '2026-08-21T00:42:12.600Z', 'repo': 'https://github.com/example-org/example-repo', 'contact': 'applicant@example.com', 'mandate_requested': 'passive', 'mandate_applied': 'passive', 'source_country': None, 'delivered': False}}]
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+tests/test_intake_survives_a_failed_writeback.py:190: AssertionError
+______________ test_each_refusal_is_marked_under_a_key_of_its_own ______________
+
+    def test_each_refusal_is_marked_under_a_key_of_its_own() -> None:
+        """A constant sentinel key satisfies every other assertion in this file and destroys the
+        sentinel's purpose: concurrent refusals overwrite each other's marks, and a second refusal
+        inside one second is refused by the very same-key limit the sentinel exists to route around.
+        The `of` field was compared to the record's key and the key it is STORED under was not. Found
+        by Fable."""
+        r = run("writeback_fails")
+>       key = [w["key"] for w in r["writes"] if w["key"].startswith("writeback-refused:")][0]
+E       IndexError: list index out of range
+
+tests/test_intake_survives_a_failed_writeback.py:218: IndexError
+________ test_the_refusal_does_not_have_to_be_recognisable_to_be_caught ________
+
+    def test_the_refusal_does_not_have_to_be_recognisable_to_be_caught() -> None:
+        """A gate that exercises one failure shape is a gate about that shape.
+    
+        Measured, not imagined: `catch (e) { if (!String(e).includes("429")) throw e; }` kept the whole
+        of this suite green while the 500-over-a-durable-record defect returned for every other KV
+        failure, because the probe only ever threw a 429. This scenario rejects with something that is
+        not a 429 and not an `Error` at all.
+        """
+        r = run("writeback_fails_unrecognisably")
+        assert r["outcome"] == "answered" and r["status"] == 200 and r["body"]["ok"] is True, (
+            f"a KV failure the endpoint could not recognise was not caught: {r}")
+>       assert sentinels(r)[0]["reason"] == "KV unavailable", (
+            "the sentinel did not record what the store actually said; a rejection that is not an "
+            "Error still carries the only account of why the write failed.")
+E       IndexError: list index out of range
+
+tests/test_intake_survives_a_failed_writeback.py:234: IndexError
+______________ test_an_unreachable_notice_is_not_a_delivered_one _______________
+
+    def test_an_unreachable_notice_is_not_a_delivered_one() -> None:
+        """The endpoint's `catch` beside the notice, whose body no scenario reached.
+    
+        Telegram refusing a message and Telegram being unreachable are two branches, and the repair for
+        "the delivery outcome is unmeasured in the false direction" covered only the first. A
+        `catch { delivered = true }` passed all eleven assertions: every applicant told the operator had
+        been notified, every sentinel recording it, and the sweep skipping them all. Found by Fable.
+        """
+        r = run("notice_throws_writeback_fails")
+        assert r["notices"] == 1, "the notice was never attempted; this scenario measures nothing"
+        assert r["status"] == 200 and r["body"]["ok"] is True
+        assert r["body"]["delivered"] is False, (
+            f"the notice could not be sent at all and the applicant was told it went out: {r['body']}")
+>       assert sentinels(r)[0]["notice_delivered"] is False
+E       IndexError: list index out of range
+
+tests/test_intake_survives_a_failed_writeback.py:252: IndexError
+=========================== short test summary info ============================
+FAILED tests/test_intake_survives_a_failed_writeback.py::test_the_delivery_state_reported_is_the_one_that_was_measured
+FAILED tests/test_intake_survives_a_failed_writeback.py::test_the_delivery_state_is_measured_in_the_false_direction_too
+FAILED tests/test_intake_survives_a_failed_writeback.py::test_a_caught_refusal_is_distinguishable_from_an_invocation_that_died
+FAILED tests/test_intake_survives_a_failed_writeback.py::test_each_refusal_is_marked_under_a_key_of_its_own
+FAILED tests/test_intake_survives_a_failed_writeback.py::test_the_refusal_does_not_have_to_be_recognisable_to_be_caught
+FAILED tests/test_intake_survives_a_failed_writeback.py::test_an_unreachable_notice_is_not_a_delivered_one
+6 failed, 8 passed in 0.85s
+
+# ============================================================================================
+# RED 4.
+# A CATCH NARROWED TO THE FAILURE SHAPE A TEST IS LIKELY TO THROW. It is green against a probe that only ever raises a 429 - which is what this suite did until Fable applied this exact mutation and watched it pass - and it restores the 500-over-a-durable-record defect for every other KV failure.
+#
+# -   } catch (refusal) {
+# +   } catch (refusal) {  // MUTATION: only the shape the stub throws
+# +     if (!String(refusal).includes("429")) throw refusal;
+#
+# $ grep -n 'MUTATION' web/functions/api/apply.js
+# 172:  } catch (refusal) {  // MUTATION: only the shape the stub throws
+#
+# $ python3 -m pytest tests/test_intake_survives_a_failed_writeback.py -q
+.....F........                                                           [100%]
+=================================== FAILURES ===================================
+________ test_the_refusal_does_not_have_to_be_recognisable_to_be_caught ________
+
+    def test_the_refusal_does_not_have_to_be_recognisable_to_be_caught() -> None:
+        """A gate that exercises one failure shape is a gate about that shape.
+    
+        Measured, not imagined: `catch (e) { if (!String(e).includes("429")) throw e; }` kept the whole
+        of this suite green while the 500-over-a-durable-record defect returned for every other KV
+        failure, because the probe only ever threw a 429. This scenario rejects with something that is
+        not a 429 and not an `Error` at all.
+        """
+        r = run("writeback_fails_unrecognisably")
+>       assert r["outcome"] == "answered" and r["status"] == 200 and r["body"]["ok"] is True, (
+            f"a KV failure the endpoint could not recognise was not caught: {r}")
+E       AssertionError: a KV failure the endpoint could not recognise was not caught: {'scenario': 'writeback_fails_unrecognisably', 'outcome': 'invocation_failed', 'error': 'KV unavailable', 'writes': [{'key': 'request:2026-08-21T00:42:13.742Z:47be7f3b-3093-422c-b38c-82f20a1d9226', 'stored': True, 'value': {'id': '47be7f3b-3093-422c-b38c-82f20a1d9226', 'received_at': '2026-08-21T00:42:13.742Z', 'repo': 'https://github.com/example-org/example-repo', 'contact': 'applicant@example.com', 'mandate_requested': 'passive', 'mandate_applied': 'passive', 'source_country': None, 'delivered': None}}, {'key': 'request:2026-08-21T00:42:13.742Z:47be7f3b-3093-422c-b38c-82f20a1d9226', 'stored': False, 'value': {'id': '47be7f3b-3093-422c-b38c-82f20a1d9226', 'received_at': '2026-08-21T00:42:13.742Z', 'repo': 'https://github.com/example-org/example-repo', 'contact': 'applicant@example.com', 'mandate_requested': 'passive', 'mandate_applied': 'passive', 'source_country': None, 'delivered': False}}], 'notices': 0}
+E       assert ('invocation_failed' == 'answered'
+E         
+E         - answered
+E         + invocation_failed)
+
+tests/test_intake_survives_a_failed_writeback.py:232: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_survives_a_failed_writeback.py::test_the_refusal_does_not_have_to_be_recognisable_to_be_caught
+1 failed, 13 passed in 0.82s
+
+# ============================================================================================
+# RED 5.
+# THE VALUE THE OPERATOR ACTS ON, FROZEN. `delivered` stops following the notice and is always true, so every applicant is told the operator was notified and every sentinel records it. This was GREEN until Fable applied it: the probe's Telegram stub took an `ok` argument that was only ever passed `true`, a control that could not go false, in the suite whose subject is claims that outrun their measurement.
+#
+# -       delivered = r.ok;
+# +       delivered = true;  // MUTATION: the delivery outcome is no longer measured
+#
+# $ grep -n 'MUTATION' web/functions/api/apply.js
+# 117:      delivered = true;  // MUTATION: the delivery outcome is no longer measured
+#
+# $ python3 -m pytest tests/test_intake_survives_a_failed_writeback.py -q
+..F...........                                                           [100%]
+=================================== FAILURES ===================================
+________ test_the_delivery_state_is_measured_in_the_false_direction_too ________
+
+    def test_the_delivery_state_is_measured_in_the_false_direction_too() -> None:
+        """A control that cannot go false measures nothing.
+    
+        The Telegram stub took an `ok` argument that was only ever passed `true`, so `delivered` could
+        be hardcoded to `true` in the endpoint with all ten assertions green - and `delivered` is the
+        whole of "an honest delivery state". The operator's follow-up reads the same value off the
+        sentinel. Found by Fable, who applied exactly that mutation and watched it pass.
+        """
+        r = run("notice_refused_writeback_fails")
+        assert r["notices"] == 1, "the notice was never attempted; this scenario measures nothing"
+        assert r["status"] == 200 and r["body"]["ok"] is True
+>       assert r["body"]["delivered"] is False, (
+            f"Telegram refused the message and the applicant was told it went out: {r['body']}")
+E       AssertionError: Telegram refused the message and the applicant was told it went out: {'ok': True, 'id': 'a7c70cbd-bcbc-4d8e-b162-8d60958a325d', 'delivered': True}
+E       assert True is False
+
+tests/test_intake_survives_a_failed_writeback.py:167: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_survives_a_failed_writeback.py::test_the_delivery_state_is_measured_in_the_false_direction_too
+1 failed, 13 passed in 0.83s
+
+# ============================================================================================
+# RED 6.
+# THE SAME VALUE, ONE BRANCH OVER. Telegram REFUSING a message and Telegram being unreachable are two outcomes, and the repair for mutation 5 covered only the first: no scenario made the notice fetch throw, so the `catch` beside it was dead code in every run. Green until Fable applied it, and the state it produces is the worst the sweep can carry - every submission recorded as announced, in the field the whole habit keys on.
+#
+# -     } catch {
+# -       delivered = false;
+# -     }
+# +     } catch {
+# +       delivered = true;  // MUTATION: an unreachable notice reads as sent
+# +     }
+#
+# $ grep -n 'MUTATION' web/functions/api/apply.js
+# 119:      delivered = true;  // MUTATION: an unreachable notice reads as sent
+#
+# $ python3 -m pytest tests/test_intake_survives_a_failed_writeback.py -q
+......F.......                                                           [100%]
+=================================== FAILURES ===================================
+______________ test_an_unreachable_notice_is_not_a_delivered_one _______________
+
+    def test_an_unreachable_notice_is_not_a_delivered_one() -> None:
+        """The endpoint's `catch` beside the notice, whose body no scenario reached.
+    
+        Telegram refusing a message and Telegram being unreachable are two branches, and the repair for
+        "the delivery outcome is unmeasured in the false direction" covered only the first. A
+        `catch { delivered = true }` passed all eleven assertions: every applicant told the operator had
+        been notified, every sentinel recording it, and the sweep skipping them all. Found by Fable.
+        """
+        r = run("notice_throws_writeback_fails")
+        assert r["notices"] == 1, "the notice was never attempted; this scenario measures nothing"
+        assert r["status"] == 200 and r["body"]["ok"] is True
+>       assert r["body"]["delivered"] is False, (
+            f"the notice could not be sent at all and the applicant was told it went out: {r['body']}")
+E       AssertionError: the notice could not be sent at all and the applicant was told it went out: {'ok': True, 'id': 'de5728e1-5d00-47e7-b091-aeb71c3e0ad3', 'delivered': True}
+E       assert True is False
+
+tests/test_intake_survives_a_failed_writeback.py:250: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_survives_a_failed_writeback.py::test_an_unreachable_notice_is_not_a_delivered_one
+1 failed, 13 passed in 0.82s
+
+# ============================================================================================
+# RED 7.
+# THE ONE WRITE WHOSE PURPOSE IS CARRYING THE OUTCOME INTO THE STORE, carrying a constant. Every notice scenario refused the write-back and the only successful write-back sent no notice, so this line was never watched storing a measured `true`. Green until Fable combined the two: it flags every notified applicant as unseen in the operator's sweep.
+#
+# -     await env.INTAKE.put(key, JSON.stringify({ ...record, delivered }));
+# +     await env.INTAKE.put(key, JSON.stringify({ ...record, delivered: false }));  // MUTATION: constant
+#
+# $ grep -n 'MUTATION' web/functions/api/apply.js
+# 171:    await env.INTAKE.put(key, JSON.stringify({ ...record, delivered: false }));  // MUTATION: constant
+#
+# $ python3 -m pytest tests/test_intake_survives_a_failed_writeback.py -q
+.......F......                                                           [100%]
+=================================== FAILURES ===================================
+_________ test_the_write_back_carries_the_delivery_outcome_it_measured _________
+
+    def test_the_write_back_carries_the_delivery_outcome_it_measured() -> None:
+        """The ordinary success path with a notice, which no scenario combined.
+    
+        Every notice scenario refused the write-back and the one successful write-back sent no notice,
+        so the write whose entire purpose is carrying the measured outcome into the store was never
+        observed carrying anything but `false`. `delivered: false` hardcoded on that line passed all
+        eleven assertions and would flag every notified applicant as unseen in the operator's sweep -
+        the sweep acting on a value nothing measured. Found by Fable.
+        """
+        r = run("notice_sent_both_writes_land")
+        assert r["notices"] == 1 and r["body"]["delivered"] is True
+        kept = records(r)
+>       assert len(kept) == 2 and kept[1]["delivered"] is True, (
+            f"the stored record does not carry the delivery outcome the applicant was given: {kept}")
+E       AssertionError: the stored record does not carry the delivery outcome the applicant was given: [{'id': '9619c8a0-3362-4250-b9bd-3dba325aef90', 'received_at': '2026-08-21T00:42:16.952Z', 'repo': 'https://github.com/example-org/example-repo', 'contact': 'applicant@example.com', 'mandate_requested': 'passive', 'mandate_applied': 'passive', 'source_country': None, 'delivered': None}, {'id': '9619c8a0-3362-4250-b9bd-3dba325aef90', 'received_at': '2026-08-21T00:42:16.952Z', 'repo': 'https://github.com/example-org/example-repo', 'contact': 'applicant@example.com', 'mandate_requested': 'passive', 'mandate_applied': 'passive', 'source_country': None, 'delivered': False}]
+E       assert (2 == 2 and False is True)
+E        +  where 2 = len([{'id': '9619c8a0-3362-4250-b9bd-3dba325aef90', 'received_at': '2026-08-21T00:42:16.952Z', 'repo': 'https://github.com...-08-21T00:42:16.952Z', 'repo': 'https://github.com/example-org/example-repo', 'contact': 'applicant@example.com', ...}])
+
+tests/test_intake_survives_a_failed_writeback.py:267: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_survives_a_failed_writeback.py::test_the_write_back_carries_the_delivery_outcome_it_measured
+1 failed, 13 passed in 0.89s
+
+# ============================================================================================
+# RED 8.
+# THE SENTINEL'S ACCOUNT OF WHY, replaced by a plausible sentence. The operations note tells the operator that a documented same-key 429 is a known cost and anything else is a finding; under this mutation every 429 reads as the finding. Green until Fable applied it, because the reason was asserted for truthiness and pinned only in the scenario whose real value the constant happens to match.
+#
+# -           reason: String((refusal && refusal.message) || refusal),
+# +           reason: "KV unavailable",  // MUTATION: not what the store said
+#
+# $ grep -n 'MUTATION' web/functions/api/apply.js
+# 184:          reason: "KV unavailable",  // MUTATION: not what the store said
+#
+# $ python3 -m pytest tests/test_intake_survives_a_failed_writeback.py -q
+...F..........                                                           [100%]
+=================================== FAILURES ===================================
+____ test_a_caught_refusal_is_distinguishable_from_an_invocation_that_died _____
+
+    def test_a_caught_refusal_is_distinguishable_from_an_invocation_that_died() -> None:
+        """`delivered: null` had ONE meaning and the fix silently gave it two.
+    
+        Before T-A2-2 a record still holding `null` was one whose invocation died between the writes,
+        and its submitter had been told that nothing was saved. Catching the refusal added a second
+        world to the same value - told the truth, needs nothing - and the operator's sweep acts on
+        those two oppositely. That is invariant 1 arriving inside the change that closed another
+        instance of it, and it is why the endpoint writes a sentinel under a DIFFERENT key: the limit
+        that produces the failure is one write per second to the same key, so the store is not
+        unavailable, only that key is. Found by Fable, against the first draft, which argued the
+        silence was forced.
+        """
+        r = run("writeback_fails")
+        marks = sentinels(r)
+        assert len(marks) == 1, (
+            "no sentinel was written beside the record, so `delivered: null` means both 'the applicant "
+            f"was told the truth' and 'the applicant was told nothing was saved': {r['writes']}")
+        mark = marks[0]
+        written = [w["key"] for w in r["writes"] if w["key"].startswith("request:")]
+        assert mark["id"] == r["body"]["id"] and mark["of"] == written[0], (
+            # `endswith(id)` was the first draft, and `of: "unrelated:" + id` satisfied it - a sentinel
+            # pointing at a key that does not exist, under an assertion whose message says otherwise.
+            # The whole key is compared now. Found by Fable.
+            f"the sentinel does not point at the record it is about: {mark} vs {written}")
+        assert sentinels(r)[0]["notice_delivered"] is r["body"]["delivered"], (
+            "the sentinel and the applicant were given different delivery outcomes for the same "
+            "submission.")
+>       assert "429" in mark["reason"], (
+            # Truthiness was the first draft, and `reason: "KV unavailable"` - a plausible constant -
+            # satisfied it, so every documented same-key 429 would have read to the operator as the
+            # one thing the doc says is a finding. The store's own words are what is asserted now.
+            f"the sentinel does not carry what the store said. A refusal recorded as a constant cannot "
+            f"tell the operator whether they are looking at the documented same-key limit or at "
+            f"something new - which is the difference between a known cost and a finding: {mark}")
+E       AssertionError: the sentinel does not carry what the store said. A refusal recorded as a constant cannot tell the operator whether they are looking at the documented same-key limit or at something new - which is the difference between a known cost and a finding: {'of': 'request:2026-08-21T00:42:17.736Z:1a9b85d2-da2e-47e4-b4ef-fbb6144d20e1', 'id': '1a9b85d2-da2e-47e4-b4ef-fbb6144d20e1', 'notice_delivered': False, 'refused_at': '2026-08-21T00:42:17.736Z', 'reason': 'KV unavailable'}
+E       assert '429' in 'KV unavailable'
+
+tests/test_intake_survives_a_failed_writeback.py:203: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_survives_a_failed_writeback.py::test_a_caught_refusal_is_distinguishable_from_an_invocation_that_died
+1 failed, 13 passed in 0.88s
+
+# ============================================================================================
+# RED 9.
+# THE SENTINEL ROUTING BACK INTO THE LIMIT IT EXISTS TO AVOID. One constant key means concurrent refusals overwrite each other's marks and a second refusal inside a second is refused by the same-key rule itself. Green until Fable applied it: the gate compared the sentinel's `of` field to the record's key and never the key it was stored under.
+#
+# -         `writeback-refused:${received_at}:${id}`,
+# +         "writeback-refused:always-the-same-key",  // MUTATION: one key for all refusals
+#
+# $ grep -n 'MUTATION' web/functions/api/apply.js
+# 175:        "writeback-refused:always-the-same-key",  // MUTATION: one key for all refusals
+#
+# $ python3 -m pytest tests/test_intake_survives_a_failed_writeback.py -q
+....F.........                                                           [100%]
+=================================== FAILURES ===================================
+______________ test_each_refusal_is_marked_under_a_key_of_its_own ______________
+
+    def test_each_refusal_is_marked_under_a_key_of_its_own() -> None:
+        """A constant sentinel key satisfies every other assertion in this file and destroys the
+        sentinel's purpose: concurrent refusals overwrite each other's marks, and a second refusal
+        inside one second is refused by the very same-key limit the sentinel exists to route around.
+        The `of` field was compared to the record's key and the key it is STORED under was not. Found
+        by Fable."""
+        r = run("writeback_fails")
+        key = [w["key"] for w in r["writes"] if w["key"].startswith("writeback-refused:")][0]
+>       assert key == f"writeback-refused:{records(r)[0]['received_at']}:{r['body']['id']}", (
+            f"the sentinel is not stored under a key of its own: {key}")
+E       AssertionError: the sentinel is not stored under a key of its own: writeback-refused:always-the-same-key
+E       assert 'writeback-re...-the-same-key' == 'writeback-re...-c5d69ae04003'
+E         
+E         - writeback-refused:2026-08-21T00:42:18.847Z:3b243bb6-2463-447b-98e1-c5d69ae04003
+E         + writeback-refused:always-the-same-key
+
+tests/test_intake_survives_a_failed_writeback.py:219: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_survives_a_failed_writeback.py::test_each_refusal_is_marked_under_a_key_of_its_own
+1 failed, 13 passed in 0.82s
+
+# ============================================================================================
+# GREEN, on the restored endpoint, so the reds above are known to be the mutations' doing
+# and not a suite that fails on everything.
+#
+# $ python3 -m pytest tests/test_intake_survives_a_failed_writeback.py -q
+..............                                                           [100%]
+14 passed in 0.82s

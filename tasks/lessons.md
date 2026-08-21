@@ -686,3 +686,52 @@ in the same commit - a pair of facts nobody reconciles is one of them being beli
 
 Anchor: `LAW-BLOCKED-STEP-HAS-A-SENTINEL`, gate `src/transport/erc8004_deployment.py`, test
 `tests/test_validation_target_obligation.py`.
+
+## L-28 Catching a failure creates a state of the world, and the first draft merged it into another
+
+The intake's write-back sat outside any `try`, so a refused second write became a 500 and the form
+told the applicant *nothing was saved* about a record that was already durable. Catching it is the
+whole of T-A2-2 and it is correct. What it also did, invisibly, was give `delivered: null` a second
+meaning. That value had meant one thing - the invocation died between the two writes, and its
+submitter was told the submission was lost - and it now also meant the opposite, that the submitter
+was answered honestly and needs nothing at all. Two states of the world in one value, in the exact
+field the operator's sweep keys on, and the two demand opposite actions from the person reading it.
+Invariant 1, this project's most-counted defect, introduced by the fix for a different instance of
+it and in the same field.
+
+The comment defending the silence is the part worth keeping. It said there was nowhere durable left
+to write, because the store had just refused a write - and that is false in a way that reads as
+careful: the limit producing the failure is one write per second **to the same key**, so the store
+was fine and one key was not. **A constraint remembered without its qualifier becomes a general
+impossibility**, and a general impossibility is what excuses a silence. The repair is a dozen lines: a
+sentinel under a different key, written when the refusal is caught and absent when it is not, so
+`null` beside a mark and `null` alone are two readings instead of one - and it is a dozen because
+the sentinel's own write is caught too, which is the case where the silence really is forced.
+
+Found by Fable, refuting the change that closed the original defect. The lesson generalises past
+this endpoint: **when a fix turns a crash into a handled path, ask what the handled path now looks
+like in the record - a caught failure that leaves the store exactly as an uncaught one did has been
+hidden rather than handled.** It is L-27's family seen from the other end. There the question was
+which of two true things to record and the answer was a second field; here the second state was
+manufactured by the repair itself, so nothing in the diff looked like a choice being made.
+
+**And the same task produced the mirror of it in the evidence.** RED-017's third mutation - "the
+sentinel is never written" - was an `if (false) {` left facing a `catch`. The module stopped
+parsing, every scenario died, and eight tests went red under a heading claiming a property had been
+removed. The transcript was real output of the edit the prose named, which is what L-26 asks for,
+and it established nothing: a file that does not parse fails every test whatever the gate asserts.
+**A red run is evidence only if the subject was still running when it went red.** The generator now
+requires the suite's instrument control - a rejected submission, refusable only by the endpoint's
+own validation - to survive each mutation, and refuses to write the file otherwise. That control
+existed already and was not being read; the check was to ask, of each red, *which tests should NOT
+have died*.
+
+Anchor: `LAW-INTAKE-SAVED-MEANS-SAVED` covers the instance (`web/functions/api/apply.js`,
+`tests/test_intake_survives_a_failed_writeback.py`), and the sentinel's presence and absence are
+both asserted, with nine red runs in
+`evidence/RED-017-nothing-was-saved-about-a-saved-record.txt` - five of which were GREEN when Fable
+first applied them, over three rounds of refutation, which is the more useful thing that file
+records. No code gate for either general
+rule - a checker cannot know which values in a store carry more than one world, nor which of a
+mutation's failures are the point - so they are recorded in L-8's form rather than dressed as
+enforced rules.

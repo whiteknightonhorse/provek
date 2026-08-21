@@ -120,7 +120,75 @@ export async function onRequestPost({ request, env }) {
     }
   }
 
-  await env.INTAKE.put(key, JSON.stringify({ ...record, delivered }));
+  // THE WRITE-BACK IS THE ONLY STEP THAT RUNS AFTER THE SUBMISSION IS ALREADY DURABLE, AND IT WAS
+  // THE ONLY UNCAUGHT ONE. Every other failure in this handler happens before the first `put`, so
+  // the 500 it produces makes the form's sentence - "Not recorded ... Nothing was saved" - true.
+  // A throw HERE produced the same 500 and therefore the same sentence, about a record that was
+  // written eight lines above and a notice that may already have reached the operator. The form
+  // was accurate on every path but the one where it was telling somebody their submission was lost
+  // while it sat in KV. So the failure is caught and the answer is the true one: the request is
+  // recorded, and `delivered` is the delivery outcome that was actually measured.
+  //
+  // NOT A RARE PATH. Workers KV documents one write per second to the same key and rejects the
+  // second with a 429; this is the second write to `key` inside one invocation, separated by at
+  // most a Telegram round trip and, with no Telegram credentials configured, by nothing at all.
+  // On the documented behaviour the failure is ordinary rather than exceptional
+  // (docs/INTAKE_OPERATIONS.md, which measured the limit and predicted this).
+  //
+  // AND THE RESPONSE IS DELIBERATELY THE SAME ONE THE SUCCESS PATH SENDS. The applicant has two
+  // facts to be told - the request is recorded, and whether the operator was notified - and
+  // neither changes with whether we managed to write the second of them down. A field reporting
+  // our own bookkeeping would be a fact about us, sent to the one party who can do nothing with it
+  // and read by nothing on the page.
+  //
+  // THE OPERATOR IS A DIFFERENT MATTER, AND THIS IS WHERE THE FIRST DRAFT WENT WRONG. It caught the
+  // failure, answered honestly, wrote nothing, and defended the silence with "there is nowhere to
+  // write it" - which is false, and false in a way that mattered. The limit that produces this
+  // failure is one write per second TO THE SAME KEY; a different key is a different write and is
+  // not refused by it. So a caught write-back left the record at `delivered: null`, which already
+  // meant "the invocation died before it could answer" - and the fix quietly gave that one value a
+  // second world, in which the applicant was told the truth and needs nothing. Two states of the
+  // world reading identically, in the field the operator's sweep keys on: invariant 1, introduced
+  // by the change that closed a different instance of it. Found by Fable.
+  //
+  // The sentinel is therefore written where the same-key limit does not reach, and it says what
+  // was true at the moment it was written: this invocation survived the refusal and is answering.
+  // A failure of BOTH writes is caught too, and then there genuinely is no durable channel left -
+  // the applicant is still answered, and the record is a bare `null` with no sentinel beside it,
+  // which is exactly what the death case looks like and is read the same way.
+  //
+  // WHAT NO CODE HERE REACHES. Between this sentinel and the `return` below, and between that
+  // return and the browser, the answer can still be lost - to eviction, to a dropped connection -
+  // and the form then says "Nothing was saved" over a durable record with nothing on our side to
+  // show for it. That residue is smaller than it was and it is not empty; L-15 is the standing
+  // form of it, and docs/INTAKE_OPERATIONS.md carries the sweep and the limit rather than a claim
+  // that the case is closed.
+  //
+  // None of this is the fix for the same-key limit itself - one write instead of two, or the record
+  // under two keys. Which of those is right depends on a reading of the namespace that only the
+  // operator can take, and guessing now would spend that reading (docs/INTAKE_OPERATIONS.md).
+  try {
+    await env.INTAKE.put(key, JSON.stringify({ ...record, delivered }));
+  } catch (refusal) {
+    try {
+      await env.INTAKE.put(
+        `writeback-refused:${received_at}:${id}`,
+        // `notice_delivered` rather than `delivered`, so the sweep's filter over the records does
+        // not also match sentinels: this key is read BESIDE a record, never instead of one.
+        JSON.stringify({
+          of: key, id, notice_delivered: delivered,
+          refused_at: new Date().toISOString(),
+          // The store's own words for why it refused. A number or a boolean here would be this
+          // project's oldest defect: the reason is what tells the operator whether they are
+          // looking at the documented same-key limit or at something nobody has seen yet.
+          reason: String((refusal && refusal.message) || refusal),
+        }));
+    } catch {
+      // Both writes refused. There is no durable channel left, the applicant is still answered
+      // honestly, and the state on disk is a record with no sentinel - which reads as "we cannot
+      // tell whether this applicant was answered", the true statement about it.
+    }
+  }
   return Response.json({ ok: true, id, delivered });
 }
 

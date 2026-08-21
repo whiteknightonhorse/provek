@@ -16,7 +16,15 @@ being performed rather than intended.
    the operator, which is a stronger fact than `r.ok` from Telegram measures, and it was corrected
    on the page before it was corrected here.
 6. **And there is a third outcome, which steps 1-5 read as impossible.** If step 4 throws, the
-   record stays at `delivered: null` and the applicant is told nothing was saved — while it was.
+   record stays at `delivered: null`: durable, and carrying no delivery outcome. Until 2026-08-20
+   the applicant was ALSO told that nothing had been saved, because the throw became a 500 and the
+   form reads a 500 as a refusal — the one place on this site where that sentence was false.
+   `apply.js` now catches it and step 5 happens anyway, with the delivery outcome that was actually
+   measured, and it writes a `writeback-refused:` sentinel under a different key — the limit that
+   causes this is one write per second to the same KEY, so the store is not unavailable, only that
+   key is. Without the sentinel `delivered: null` would mean both "answered honestly" and "died
+   before answering", which is the sweep's whole decision (`tests/test_intake_survives_a_failed_writeback.py`,
+   `evidence/RED-017-nothing-was-saved-about-a-saved-record.txt`).
    How often that happens is argued once, under "What one submission costs" below, and deliberately
    not repeated here: it is the claim most likely to be corrected by the next reading of the
    namespace, and a frequency stated in two places is a frequency that will be updated in one.
@@ -28,26 +36,79 @@ being performed rather than intended.
 **Sweep KV for `delivered: false` — and for `delivered: null`, which is the worse case.**
 
 ```bash
-npx wrangler kv key list --namespace-id 5d93877f53d94f3fbc4863a0195fc9a4 \
-  | jq -r '.[].name' \
-  | while read -r k; do
-      npx wrangler kv key get "$k" --namespace-id 5d93877f53d94f3fbc4863a0195fc9a4 \
-        | jq -e 'select(.delivered == false or .delivered == null)' >/dev/null \
-        && echo "UNSEEN: $k"
-    done
+NS=5d93877f53d94f3fbc4863a0195fc9a4
+npx wrangler kv key list --namespace-id "$NS" | jq -r '.[].name' | while read -r k; do
+  v=$(npx wrangler kv key get "$k" --namespace-id "$NS")
+  case "$k" in
+    # A REFUSED WRITE-BACK, and the reason this branch exists rather than one filter for
+    # everything: a sentinel carries no `delivered` key at all, so `.delivered == null` matches it
+    # and the old one-line sweep would have printed it as an unseen submission. An instrument that
+    # reports its own marker as a finding is worse than one that ignores it.
+    writeback-refused:*)
+      echo "SURVIVED TO ANSWER: $k $(jq -c '{of, notice_delivered, reason}' <<<"$v")" ;;
+    *)
+      jq -e 'select(.delivered == false or .delivered == null)' >/dev/null <<<"$v" \
+        && echo "UNSEEN: $k" ;;
+  esac
+done
 ```
 
-`null` is the value the record carries between the durable write and the write-back, so a record
-still holding it is one whose request died in between — and its submitter was told *nothing was
-saved* while this record existed. `false` means the operator was not told; `null` means the
-applicant was told something untrue as well. The reasoning is under "What one submission costs"
-below; the filter is here because the sweep is where it has to be acted on.
+`false` means the operator was not told. `null` means the record never got its outcome written
+back, and it is the worse case: it is what both a refused write-back and a dead invocation leave.
+The reasoning is under "What one submission costs" below; the filter is here because the sweep is
+where it has to be acted on.
 
-Anything it prints is a person whose request nobody saw. On a `false` they were told their request
-was recorded, and the confirmation page promises them that the record is safe and may be read later
-than usual; this sweep is what makes that sentence true rather than consoling. On a `null` they
-were told the opposite — that nothing was saved — so that person needs the record acted on AND a
-correction, and they are the reason to open the printed key rather than only count it.
+*(`false` is itself two states — the notice was attempted and refused, or no Telegram credentials
+were configured so nothing was attempted at all. Invariant 1, open, and named here rather than
+fixed: the production Pages project carries both variables, so the second state is not reachable
+there today, and widening the field's domain would touch the sweep above, the confirmation copy and
+the shipped list of stored fields on the form. It is a task, not a line.)*
+
+Anything it prints as `UNSEEN` is a submission whose fate nobody has confirmed — which is not the
+same as one nobody saw, and this line said the stronger thing until the sentinel made the weaker one
+representable: a `null` paired with a sentinel reading `notice_delivered: true` prints here, and the
+operator WAS told about it, in time, by the notice. Read the pairing below before acting. On a
+`false` they were told their request was recorded, and the confirmation page promises them that the
+record is safe and may be read later than usual; this sweep is what makes that sentence true rather
+than consoling.
+
+**A `null` is read together with the sentinel beside it, and that pairing is the whole of the
+follow-up:**
+
+* **`null` WITH a `writeback-refused:` key for the same id** — the write-back was refused, the
+  endpoint caught it, and it was still running when it wrote the sentinel, one statement before it
+  answered. Act on the record. The store holds no evidence that anything false was said, which is
+  weaker than "nothing false was said" and is deliberately weaker: the sentinel is written *before*
+  the `return`, so a death in between, or an answer lost on the way to the browser, still shows this
+  shape. The sentinel's `reason` is worth reading: the documented same-key 429 is a known cost, and
+  anything else is a finding.
+* **`null` with NO sentinel** — nothing recorded that the endpoint reached its answer. Two ways in:
+  the invocation died, or both writes were refused (the sentinel's own write is caught too, and
+  then the applicant WAS answered honestly). Nothing distinguishes them, so act on the record and
+  treat the person as uninformed. This is the state the sentinel exists to separate out; before it
+  existed, every `null` was this one.
+
+**What a correction may say, in either case.** Not *"you were told your submission was lost"* — we
+do not know that, and in the both-writes-refused case it is false. What we hold is the record, so
+that is what the reply states: the request is here, this is what it says, and this is what happens
+next. A correction that asserts what someone's browser displayed is the same class of claim as the
+one this whole section is about.
+
+**And there is a residue neither of them can see, at any value of `delivered`.** If the answer is
+lost after the record is written — the invocation killed between the last write and the return, the
+connection dropped, a truncated body that fails to parse in the browser — the form shows *"Not
+recorded … Nothing was saved"* over a record that is stored, and the store holds no trace of it: the
+record reads `true` or `false` like any ordinary one and the sweep passes it by — or it reads `null`
+with a sentinel, which the sweep prints under a label about the endpoint and not about the
+applicant. What the browser
+rendered is not observable from here at all, and no code inside a request can witness its own death
+(L-15). It is not "the case is closed": it is a smaller residue than the one this endpoint had, with
+its size unmeasured. **The reply to any applicant who writes to ask is therefore never "our records
+show you were told" — it is the record itself, which is the fact we actually hold.**
+
+The ops channel answers one question and only one: whether the notice went out for a given id. It
+cannot say what the visitor's browser displayed, and an earlier draft of this section used it as the
+tie-breaker for exactly that — the wrong instrument for the quantity (L-10), named by Fable.
 
 **Cadence.** Weekly was proportionate at the volume this form has had, and that volume is the
 volume of a page nobody has been pointed at. The day a link is published that sentence stops being
@@ -69,7 +130,17 @@ machinery nobody maintains.
 ## What one submission costs, and where the plan's ceiling is
 
 One accepted submission is **two KV writes to the same key**: `delivered: null` before the notice,
-then `delivered: true|false` after it (`web/functions/api/apply.js`). The second write is what the
+then `delivered: true|false` after it (`web/functions/api/apply.js`) — plus, only when that second
+write is refused, one write to a *different* key for the `writeback-refused:` sentinel (T-A2-2).
+
+**What the sentinel costs depends on the same unresolved question as everything below**, and the
+first draft of this paragraph said "the ceiling arithmetic is unchanged", which is true only under
+the optimistic reading the rest of this section refuses to plan against. If a refused same-key write
+spends nothing, a refused-writeback submission costs two units and the ceiling is unmoved. If it
+spends a unit — the pessimistic reading, the one the numbers below are calibrated on — it costs
+three, and the ceiling on a day where every write-back is refused is ~333 rather than 500, which
+would make S-4's 125 more than a third of the budget instead of a quarter. Neither number is
+measured; the sweep that settles the first question settles this one with it. Found by Fable. The second write is what the
 sweep reads for its `delivered` value — when it lands; the third bullet below is about the case
 where it does not, and in that case the sweep is reading the first write. Neither write can simply
 be dropped without giving up survival-of-a-failed-notice or the sweep's evidence, which is not the
@@ -113,14 +184,15 @@ Four things follow, and the last two are the ones to hold on to:
   to the same key within 1 second will cause rate limiting (`429`) errors to be thrown."* It also
   gives the instruction this endpoint does the opposite of: *"Consider consolidating your writes to
   a key within a Worker invocation to a single write, or wait at least 1 second between writes."*
-  `apply.js:82` and `apply.js:103` are two writes to one key in one invocation, with at most a
+  The two `put` calls in `apply.js` are two writes to one key in one invocation, with at most a
   Telegram round trip between them and, when no Telegram credentials are configured, nothing at all.
   So the documented behaviour puts the next bullet on the MAIN PATH rather than on a rare failure:
-  it predicts that every submission whose two writes fall inside one second is stored and then
-  reported to its applicant as lost. Not every submission unconditionally — a Telegram round trip
-  longer than a second would separate the writes legitimately — and not "intake is broken", because
-  the record survives; what breaks is the applicant's confirmation and the `delivered` signal the
-  whole habit above keys on.
+  it predicts that every submission whose two writes fall inside one second is stored with its
+  delivery outcome unrecorded. Not every submission unconditionally — a Telegram round trip longer
+  than a second would separate the writes legitimately — and not "intake is broken", because the
+  record survives. Until 2026-08-20 what broke with it was the applicant's confirmation, which said
+  the submission had been lost; that half is fixed. What remains is the `delivered` signal the whole
+  habit above keys on, which stays `null` and is why the sweep matches it.
 
   **Enforcement has not been observed, and the first draft of this paragraph said the only way to
   observe it would be to POST a fabricated submission into the operator's live intake. That was
@@ -138,20 +210,32 @@ Four things follow, and the last two are the ones to hold on to:
 
   Only after that reading is the fix a code change with its own red run — one write instead of two,
   or two distinct keys. It is not taken here.
-* **A failed second write strands a record the sweep was blind to until today, and tells the
-  applicant the opposite of the truth.** The first `put` stores `delivered: null`; if the second
-  `put` throws,
-  nothing catches it — the notice block has its own `try/catch` (`apply.js:88-100`) and a failed
-  notice merely sets `delivered = false`, so the second `put` is the only uncaught step — the
-  Function answers 500, the client renders `HTTP 500` as its reason, and the form says *"Not
-  recorded. … Nothing was saved"* (`web/src/pages/Apply.tsx`, where it is an honest sentence in
-  every other failure). Here the record WAS saved. It sits at `delivered: null`, which the sweep's
-  original filter — `select(.delivered == false)` — does not match, so the one record in the
-  namespace that nobody has seen and nobody will follow up was the one record the habit above
-  skipped. That is exactly the case the sweep exists for, and it is why the filter now matches
-  `null` as well as `false`. The endpoint is still not changed here: a stranded `null` also wants
-  the applicant told something truer than "nothing was saved", and that is a code change with its
-  own red run, not a line in an operations note. Named, dated 2026-08-20, not left as a silence.
+* **A failed second write stranded a record the sweep was blind to, and told the applicant the
+  opposite of the truth. Half of that is fixed and half of it is what the sweep is for.** The first
+  `put` stores `delivered: null`; if the second `put` threw, nothing caught it — the notice block
+  had its own `try/catch` and a failed notice merely sets `delivered = false`, so the second `put`
+  was the only uncaught step — the Function answered 500, the client rendered `HTTP 500` as its
+  reason, and the form said *"Not recorded. … Nothing was saved"* (`web/src/pages/Apply.tsx`, where
+  it is an honest sentence in every other failure). Here the record WAS saved. It sits at
+  `delivered: null`, which the sweep's original filter — `select(.delivered == false)` — does not
+  match, so the one record in the namespace that nobody has seen and nobody will follow up was the
+  one record the habit above skipped. That is exactly the case the sweep exists for, and it is why
+  the filter now matches `null` as well as `false`.
+
+  **The endpoint was changed on 2026-08-20 (T-A2-2), the day after this bullet named the defect and
+  left it.** The write-back is caught, the applicant gets the ordinary confirmation carrying the
+  delivery outcome that was measured, and a `writeback-refused:` sentinel is written under a
+  different key so the two meanings of `delivered: null` stay apart. The gate is a biconditional:
+  red if a durable record is disclaimed, and red if a submission the endpoint tried and failed to
+  store is confirmed (`tests/test_intake_survives_a_failed_writeback.py`, nine mutations in
+  `evidence/RED-017-nothing-was-saved-about-a-saved-record.txt`, five of which were green when
+  they were first applied). Scoped deliberately: the honeypot
+  branch answers `ok: true` for a submission it discards on purpose, before any write, and is
+  outside both directions — see the last bullet of "Two classes of traffic" below.
+
+  What the fix does NOT reach is the record left by a dead invocation, and the residue described
+  under the sweep above. A `null` with no sentinel is still a person who was told the opposite of
+  the truth, and the sweep is still the only instrument that finds them.
 
 The limits page says nothing about `list` and delete ceilings; the **pricing** page does, and the
 first draft of this paragraph called them unknown without opening it. Free plan, read 2026-08-20:
@@ -169,9 +253,24 @@ chosen while the inbox is filling is chosen by whoever is filling it.
 **Junk** has to be countable or the thresholds are a mood. A junk record is one the operator,
 performing the sweep, would not answer: a repository URL that resolves to nothing, a contact no
 reply could go to, or a duplicate of a record already stored. Counted per calendar day by
-`received_at` (UTC), from the records in KV — junk needs the repo and contact, so it needs the
-record. S-3 and S-4 do not: keys are `request:${received_at}:${id}` (`apply.js:77`), so counting
-accepted submissions per hour or per day is one `list` request and no reads at all.
+`received_at` (UTC), from the `request:` records in KV — junk needs the repo and contact, so it
+needs the record. S-3 and S-4 do not: submission keys are `request:${received_at}:${id}` (`apply.js`, the
+`key` binding), so counting them per hour or per day is one `list` request and no reads at all —
+
+```bash
+npx wrangler kv key list --namespace-id "$NS" \
+  | jq -r '[.[].name | select(startswith("request:"))] | length'
+```
+
+**The prefix filter is load-bearing and this line did not have it.** Since T-A2-2 the namespace
+also holds `writeback-refused:` keys, and by the argument two sections up a refused write-back is
+the MAIN path rather than a rare one — so a bare key count reads up to twice the number of
+submissions, and every threshold below would fire at half its stated number while still sounding
+like a count of people — S-3 and S-4, which are key counts. S-1 and S-2 count junk records, which
+the operator classifies by reading them, so they are unaffected; the same filter belongs in that
+reading anyway, because a sentinel is not a submission and cannot be answered. A threshold on a
+quantity that has quietly changed its unit is L-24 in the small: the number stayed correct and
+stopped meaning what it says. Found by Fable, in the sentence this same change had just edited.
 
 * **S-1 — 3 junk records in a day, or 5 across seven days.** Nothing is built. The sweep stays
   daily until two consecutive days read zero, and the daily counts go into the operations log. This
@@ -188,8 +287,8 @@ accepted submissions per hour or per day is one `list` request and no reads at a
 
   **Two rewrites, and the second is the instructive one.** The trigger first read *"5 submissions
   from one IP within an hour, or one IP responsible for more than half of a day's junk"* — and no
-  record in KV carries an IP. `apply.js:69-74` stores id, `received_at`, repo, contact, mandate and
-  `source_country` (`cf-ipcountry`), and the counting method three paragraphs up is "from the
+  record in KV carries an IP. the `record` literal in `apply.js` stores id, `received_at`, repo, contact, both mandate
+  fields and `source_country` (`cf-ipcountry`), and the counting method three paragraphs up is "from the
   records in KV". So the rule could never have fired, in the section whose own
   first sentence is that a threshold on an uncountable quantity is a mood. Nor is storing the IP an
   available fix: the shipped form enumerates every stored field and says *"Nothing further"*
@@ -218,12 +317,23 @@ accepted submissions per hour or per day is one `list` request and no reads at a
   a failure the applicant is told about honestly is still a submission nobody received.
 
 **Two classes of traffic these counts cannot see, and neither may be read as a zero.** A honeypot
-hit is answered `{ ok: true, id: "ignored" }` before any write (`apply.js:43`), and a submission
-that fails URL or address validation is answered 400 (`apply.js:62-65`); neither reaches KV. So
-every number above counts only what got PAST both — which is the traffic Turnstile and a per-IP
-limit exist to stop, so the thresholds still fire on the right quantity, but the quiet they are
-measured against is not evidence of quiet. *No bots came* and *bots came and were absorbed* read
-identically in KV: invariant 1, inside the intake's own instrument.
+hit is answered `{ ok: true, id: "ignored" }` before any write (`apply.js`, the honeypot branch),
+and a submission that fails URL or address validation is answered 400 (`apply.js`, the two
+`bad("That does not look like")` refusals); neither reaches KV. So every number above counts only
+what got PAST both — which is the traffic Turnstile and a per-IP limit exist to stop, so the
+thresholds still fire on the right quantity, but the quiet they are measured against is not evidence
+of quiet. *No bots came* and *bots came and were absorbed* read identically in KV: invariant 1,
+inside the intake's own instrument.
+
+**The honeypot's `ok: true` is the one confirmation on this site that is deliberately false**, and
+it is worth saying out loud beside a gate whose subject is confirmations that outrun their records:
+the form shows *"Your request is recorded … The record itself is safe"* to whoever tripped it, and
+nothing was written. For a bot that is the design. For a human it would be the exact defect T-A2-2
+closed, facing the other way — and the hidden field is `<input name="website">`, which is a name
+form-fillers are known to recognise. Whether any real client fills it here is **not measured**: it
+needs one submission from a browser with a filler enabled, which nobody has made, and it is written
+down as an open question rather than answered by reasoning about browsers. If it turns out to be
+reachable, the answer is a field name no filler targets, not a weaker honeypot.
 
 They are not invisible everywhere, and the first draft of this paragraph said "leaves no trace
 anywhere", which was a stronger claim than the artefact and the wrong lesson. Every one of those

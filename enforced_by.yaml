@@ -242,3 +242,28 @@ laws:
     # flattered the subject and one that would have accused them.
     gate: src/prober/prober.py
     test: tests/test_probe_control.py
+
+  - id: LAW-INTAKE-SAVED-MEANS-SAVED
+    text: "the intake tells an applicant that nothing was saved only where nothing was saved, and a caught refusal leaves a mark wherever the store will take one"
+    # THE FIRST GATE HERE THAT RUNS THE SITE'S CODE INSTEAD OF READING IT. The write-back after the
+    # notice sat outside any try, so a refused second write became a 500 and the form told the
+    # visitor their submission was lost while it sat in KV and the operator's notice had gone out.
+    # Workers KV allows one write per second to the same key and these are two writes to one key in
+    # one invocation, so the path is ordinary rather than exceptional.
+    #
+    # Asserted as a biconditional, because the cheap fix breaks the other half: when the DURABLE
+    # write fails, nothing is stored, "Nothing was saved" is true, and the endpoint must still
+    # fail. A try/catch aimed one line too high satisfies the first direction and turns the intake
+    # into a form that always says yes - and nobody sweeps for a record that was never written.
+    #
+    # AND THE SECOND CLAUSE IS THE FIRST DRAFT'S OWN DEFECT. Catching the refusal silently gave
+    # `delivered: null` a second meaning - it had meant "the invocation died and its submitter was
+    # told nothing was saved", and now also meant "told the truth, needs nothing" - which are
+    # opposite instructions to the operator, in one value. Invariant 1, arriving inside the change
+    # that closed another instance of it, argued away in a comment claiming there was nowhere
+    # durable left to write when the limit is per KEY and a different key was available. So the
+    # law covers the sentinel too: written on a refusal, absent otherwise, carrying the store's own
+    # reason - and absent again when the sentinel's own write is refused, which is the one state
+    # where the silence really is forced and is read as the death case. Found by Fable (L-28).
+    gate: web/functions/api/apply.js
+    test: tests/test_intake_survives_a_failed_writeback.py

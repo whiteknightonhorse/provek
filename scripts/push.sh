@@ -53,6 +53,18 @@ echo "5/7 lint";     python3 -m ruff check src tests scripts
 # never a silently unenforced threshold, which is the whole reason the floor is stated as a flag
 # here rather than read off a report afterwards.
 #
+# It also needs `node`, since T-A2-2: tests/test_intake_survives_a_failed_writeback.py RUNS the
+# intake endpoint rather than reading it, and reports a missing node as a red rather than a skip.
+# NODE'S VERSION IS A DIVERGENCE NOTHING COMPARES. CI pins 22 through `actions/setup-node`; this
+# runs whatever the host has, v20.20.2 measured on 2026-08-21. The door/arbiter gate matches
+# commands, not toolchains, so it is blind to this by construction - the workflow comment's "a
+# version nothing here declares" is now true of the door instead. The probe's floor is NOT
+# measured: it needs a global `crypto.randomUUID`, which arrived unflagged in Node 19, so the first
+# draft of this line calling it harmless "while the probe uses nothing newer than Node 18" named a
+# version on which it would not have run at all. What IS measured is both ends - 20.20.2 here, 22
+# in CI - and the divergence is named rather than left for the day it stops being harmless. Found
+# by Fable.
+#
 # The door builds with the `node_modules` already on this host while CI installs from the lockfile
 # with `npm ci`. That difference is named rather than closed: a clean install at every push costs
 # more than the drift it would catch. If `node_modules` is absent the build fails loudly, which is
