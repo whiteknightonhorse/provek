@@ -990,3 +990,57 @@ suite proved nothing about three decorative helpers once already (L-21). The red
 red is correct behaviour rather than a defect to route around: a standing permission to send
 unauthenticated requests at a live system should be renewed by somebody deliberately, and widening
 the window to restore a green build would be the measurement fitted to the verdict (L-13).
+
+## D-24. Bing ownership is closed by the published file, and it lifts nothing but itself
+
+**Measured 2026-08-21.** `provek.dev` is a verified property in Bing Webmaster. `VerifySite`
+returned `true`, and — because a call that reports on its own success is not evidence — the account
+was re-read afterwards: `GetUserSites` shows `IsVerified: true` where it showed `false` eleven
+minutes earlier. The sitemap is accepted, and "accepted" here is Bing's word rather than ours:
+`GetFeeds` reports `Status: Success` with `UrlCount: 13`, a number Bing could not hold without
+having fetched and parsed the file. Thirteen URLs were submitted against a quota **read** from
+`GetUrlSubmissionQuota` (100 that day), and the daily remainder moved 87 → 74 across the send. The
+snapshot is `~/orchestra/logs/bing_state.json`, taken after the verification rather than before it.
+
+**What actually closed it was the deploy, and this withdraws a request to the operator.** D-19 and
+the reasoning behind the notes ceiling both record Bing as answering `ErrorCode 14` until ownership
+verification is closed, and D-19 offers the cheap way through: a **DNS CNAME record**, one line on
+the operator's side. That request is withdrawn — not completed, withdrawn. `BingSiteAuth.xml` has
+been reachable at the site root since the publication channel began working on 2026-08-20, and the
+root file closed the verification with no DNS record and no operator action at all. The CNAME was
+the cheapest path only while the site could not be published; it stopped being needed the moment
+that changed, and a standing ask that no longer buys anything is a claim on somebody's attention
+that our own records no longer support.
+
+**It does not lift the notes ceiling, and the temptation to read it as though it did is the point.**
+`LAW-NOTES-CEILING` releases on "an indexation reading from a verified Bing Webmaster property".
+That condition has two halves and exactly one of them just became true. The reading itself does not
+exist: `GetQueryStats` and `GetLinkCounts` now answer instead of refusing, and both return zero —
+but so does `defycard.com`, an old and verified property, which means the zero is a statement about
+what those calls can see here and not about whether anyone has found this site. The snapshot records
+them as `instrument_blind` rather than as zero impressions, and three notes still stand. Reading
+`is_verified: true` as the release condition would have raised a publishing rate on the strength of
+a gate we had merely walked halfway through.
+
+**The instrument was wrong in our own signature way, and the red run is kept.** `SubmitUrlBatch`
+answers success with an empty body; the first version of `submit_urls` therefore wrote
+`state: "accepted"` whenever the call did not raise, and funnelled every failure — including a
+dropped connection, after which Bing may well be holding the URLs — into `submitted: 0` with
+`count_state: "measured"`. A refusal of the instrument, published as a fact about the world, in the
+client written to catch exactly that. The verdict is now computed from a quantity read twice: the
+strongest word available is `received_quota_charged`, and it is deliberately not "accepted" or
+"indexed", because the quota decrements on receipt and nothing in this API promises a crawl. An
+unanswered call yields `sent: null` and `check_did_not_run`. Seven simulated worlds now produce six
+distinct states; against the discarded version they produced two, and that run is kept at
+`~/orchestra/logs/RED-bing-submit-states.txt` (`bing_states_check.py --prove-red`).
+
+**Two things left unmeasured, named rather than rounded off.** Bing reports the sitemap's
+`FileSize` as 2197 bytes; the file served from `https://provek.dev/sitemap.xml` is 1491 bytes to
+every client we asked, including `bingbot`, and `web/dist/sitemap.xml` matches the served copy
+exactly. The `UrlCount` agrees with ours at 13, so Bing parsed the document we published, but the
+size disagreement has no explanation here and is recorded without one. And durability: the three
+readings of `is_verified: true` span three minutes, which cannot distinguish a settled verification
+from an optimistic flag that reverts on Bing's next independent fetch. The known revert mechanism is
+guarded — the file is in `web/public/` and reaches `web/dist/`, so a deploy cannot silently drop it
+— but the distinguishing measurement is a re-read after Bing's own re-crawl, and it has not happened
+yet.

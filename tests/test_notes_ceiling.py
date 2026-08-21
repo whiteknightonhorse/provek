@@ -2,17 +2,28 @@
 
 The precedent this work was modelled on gates its publishing rate on indexation health from Google
 Search Console: 5-10 pages a day, then 30, then 50, each step unlocked by a measured reading. We
-have no Search Console. The instrument that could answer the same question here is Bing Webmaster,
-and it answers `ErrorCode 14 / NotAuthorized` to every per-site call because ownership verification
-is unfinished - it needs a file published by a deploy this host cannot perform.
+have no Search Console. The instrument that could answer the same question here is Bing Webmaster.
+
+WHAT CHANGED ON 2026-08-21, AND WHY IT CHANGES NOTHING HERE (D-24). Until that day this docstring
+said Bing answers `ErrorCode 14 / NotAuthorized` to every per-site call because ownership
+verification was unfinished. It is finished: `provek.dev` is a verified property and the per-site
+calls answer. The release condition has two halves and only the FIRST of them is now true. There is
+still no indexation reading - `GetQueryStats` and `GetLinkCounts` return zero for this property, and
+they return zero for an old verified control site as well, so that zero describes what those calls
+can see rather than whether anyone has found us. The snapshot files it as `instrument_blind`.
+
+The ceiling therefore stands at three, and the reason belongs in the file that enforces it: "the
+property is verified" reads like the condition and is only half of it, and a rate lifted on that
+half would be a publishing schedule justified by a gate we walked halfway through.
 
 A rate gated on an instrument that does not exist is not a gate (L-4). The honest form is a ceiling
 with a named condition for lifting it, and a ceiling that lives in a sentence is a promise rather
 than a gate - so it lives here, and the fourth note fails the build.
 
 CONDITION FOR RAISING IT, named so that it cannot be raised by mood: an indexation reading taken
-from a verified `provek.dev` property in Bing Webmaster. Not a date, not a decision that enough
-time has passed, and not the operator's or this agent's judgement that three feels thin.
+from the verified `provek.dev` property in Bing Webmaster - a reading, not the verification. Not a
+date, not a decision that enough time has passed, and not the operator's or this agent's judgement
+that three feels thin.
 """
 from __future__ import annotations
 

@@ -28,9 +28,12 @@ const MANIFEST = join(REPO, "web/notes/manifest.json");
 const KEYWORDS = join(REPO, "seo/keywords.csv");
 
 /** ASSIGNED 2026-08-20, no reading behind it. Three notes stand until an indexation reading exists
- *  from a verified Bing Webmaster property; the property answers ErrorCode 14 until the operator's
- *  next deploy closes ownership verification. A ceiling that is a promise is not a ceiling, so it
- *  is also `tests/test_notes_ceiling.py`. */
+ *  from a verified Bing Webmaster property. The property became verified on 2026-08-21 and the
+ *  reading still does not exist: the query and link calls answer zero for this site and zero for an
+ *  old verified control, which is a fact about those calls and not about our readers (D-24). The
+ *  verification is half the release condition and reads like all of it, which is the mistake this
+ *  comment exists to prevent. A ceiling that is a promise is not a ceiling, so it is also
+ *  `tests/test_notes_ceiling.py`. */
 export const NOTE_CEILING = 3;
 
 const esc = (s) =>
