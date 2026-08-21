@@ -1,0 +1,1580 @@
+# RED-018 - a sweep that finds the record and cannot say what it found
+#
+# Produced by evidence/RED-018-generator.py, checked in beside this file so the runs below can be
+# repeated rather than believed (L-26). It establishes that the gate landing with T-A2-3 CAN fail
+# in each of the twenty-two directions it holds. FOURTEEN OF THE TWENTY-TWO WERE GREEN when Fable
+# applied them, over three rounds against three drafts of the gate, and that is the honest summary
+# of this file: each round refuted the repairs made for the one before it.
+#
+# Round one, mutations 9 to 13: the sweep's own `no submission has ever been made` sentence printed
+# over a namespace it had failed to read; the `get` pointed at another namespace while the `list`
+# stayed right; two counters silently reading zero; an unparseable refusal mark printed as a healthy
+# one.
+#
+# Round two, mutations 14 to 19: two counters transposed in the summary line, invisible while the
+# fixture written to catch a DROPPED counter gave every bucket the count 1; two branches printing a
+# finding and reporting it in a clean exit status, because `rc` is one variable set in four places
+# and one of them was ever reached; a third counter reading a false zero; the repair for the
+# unreadable mark narrowed to the one input its own new test used, so a mark storing `null`, `{}` or
+# nothing at all still printed as a mark that had been read; and a mark's measured
+# `notice_delivered: false` read as an absent field by a truthiness test.
+#
+# Round three, mutations 20 to 22: a finding filed under the exit status that means the sweep did
+# NOT run - a misfiled `rc` rather than a dropped one, which the round-two repairs did not arm; and
+# two of the sentinel's three required fields left unchecked, because the missing-field fixture
+# omitted the third alone. The same narrowing as round two, inside the fix for it.
+#
+# Each is a number, a sentence or a status the operator acts on, and each passed a suite that
+# already RAN the sweep. A gate that runs the code is still a gate about the shapes it runs.
+#
+# THE SUBJECT IS A FENCED BLOCK IN A DOCUMENT. `docs/INTAKE_OPERATIONS.md` carries the KV sweep the
+# operator runs by hand - the only instrument that finds a submission nobody has followed up - and
+# a document does not fail a build. That block had been edited twice with nothing behind either
+# edit: once to match `delivered == null` as well as `false`, and once to print them, and the
+# second edit printed both under one word. So the gate EXTRACTS the block and RUNS it against a
+# stubbed namespace (tests/kv_stub.py, put on PATH under the name `npx`), and these mutations are
+# applied to the document itself, because the document is the source under test.
+#
+# WHAT EACH MUTATION IS, in the order they appear below: 1-2, the filter that skips the state both
+# of T-A2-2's failures land in, and one label over the two states that are followed up differently;
+# 3-4, a refused read classified as a malformed record, and a refused `list` swept as an empty
+# namespace; 5, the delivery outcome rendered as text so a stored string reads as a measured
+# boolean; 6, the endpoint's own sentinel reported as an unconfirmed submission; 7-8, the exit
+# status flattened to 0, and the count removed so that a quiet day and a sweep that read nothing are
+# the same empty terminal; 9, `no submission has ever been made` guarded on readable records alone,
+# so it prints over a namespace that refused to be read; 10, the `get` pointed at another namespace
+# while the `list` stays right; 11, 13 and 17, three counters that stop counting and report zero;
+# 12 and 18, a refusal mark printed as one that had been read - first unparseable, then storing
+# `null`, `{}` or nothing at all; 14, two counters transposed in the summary; 15, 16 and 20, a
+# finding printed and then reported in a clean exit status, twice by a dropped `rc` and once by an
+# `rc` filed under the status that means the sweep did not run; 19, a mark's measured
+# `notice_delivered: false` read as an absent field; and 21-22, the sentinel's `of` and
+# `notice_delivered` dropped from the three fields the check requires.
+#
+# WHAT THE GENERATOR REFUSES TO WRITE THIS FILE OVER:
+#
+#   * a mutation that does not go red, or whose marker does not appear in the document afterwards;
+#   * a pytest that did not RUN - only exit 1 is a suite that ran and failed;
+#   * a mutation that kills the INSTRUMENT CONTROL - the test asserting the sweep still called the
+#     store, once per listed key. A block that stopped reaching KV would fail most of the suite and
+#     establish nothing about what it prints. The namespace test was in that list until mutation 10
+#     was written: it is the property that mutation removes, and a test cannot be both the control
+#     for a mutation and the thing the mutation is about;
+#   * two mutations with the same failure set;
+#   * a document not restored byte for byte, or not green afterwards.
+#
+# The diff blocks are printed from the same strings that perform the edits, so the prose and the
+# edit cannot disagree.
+#
+# Everything below each `$` line is verbatim output of the command shown.
+#
+# ============================================================================================
+# RED 1.
+# THE DEFECT T-A2-3 IS FILED UNDER: `select(.delivered == false)`, which is blind to the state both of T-A2-2's failures land in. The record is durable, its submitter may have been told the opposite, and the one instrument that would find it passes over it. The branch is kept and emptied rather than deleted, so what changes is what the sweep DOES and not whether the block parses.
+#
+# -       null)  echo "NO OUTCOME: $k - stored, and nothing recorded what the notice did."
+# -              no_outcome=$((no_outcome + 1)); rc=1 ;;
+# +       null)  : ;;  # MUTATION: back to matching only `delivered == false`
+#
+# $ grep -n 'MUTATION' docs/INTAKE_OPERATIONS.md
+# 127:      null)  : ;;  # MUTATION: back to matching only `delivered == false`
+#
+# $ python3 -m pytest tests/test_intake_sweep_distinguishes_its_states.py -q
+FF...............F.....F....                                             [100%]
+=================================== FAILURES ===================================
+______________ test_a_record_that_never_got_its_outcome_is_found _______________
+
+    def test_a_record_that_never_got_its_outcome_is_found() -> None:
+        """`delivered: null` is what both of T-A2-2's failures leave, and the original filter skipped it.
+    
+        This is the whole of the original defect: the one record in the namespace nobody has confirmed
+        was the one record the habit passed over.
+        """
+        r = run(dict([record(NULL, None)]))
+>       assert NULL in labels(r), (
+            "a record whose delivery outcome never landed was not printed at all. That is the state a "
+            f"refused write-back and a dead invocation both leave: {r['out']!r}")
+E       AssertionError: a record whose delivery outcome never landed was not printed at all. That is the state a refused write-back and a dead invocation both leave: 'SWEPT 1 records and 0 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 0.\n'
+E       assert 'request:2026-08-21T10:02:00.000Z:cccccccc' in {}
+E        +  where {} = labels({'status': 0, 'out': 'SWEPT 1 records and 0 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 0.\n',...9a4', 'wrangler kv key get request:2026-08-21T10:02:00.000Z:cccccccc --namespace-id 5d93877f53d94f3fbc4863a0195fc9a4']})
+
+tests/test_intake_sweep_distinguishes_its_states.py:176: AssertionError
+___________________ test_the_two_states_are_not_one_finding ____________________
+
+    def test_the_two_states_are_not_one_finding() -> None:
+        """A measured `false` and an absent measurement are followed up differently.
+    
+        `false`: the record is stored and the operator was not told, so the operator reads it now.
+        `null`: nothing recorded what the notice did, and the follow-up turns on a sentinel that has no
+        meaning for a `false` at all. One label over both is a count the operator cannot act on -
+        invariant 1, one level up from the field it is usually about.
+        """
+        r = run(dict([record(FALSE, False), record(NULL, None)]))
+        seen = labels(r)
+>       assert FALSE in seen and NULL in seen, f"a state was not printed at all: {r['out']!r}"
+E       AssertionError: a state was not printed at all: 'NOT NOTIFIED: request:2026-08-21T10:01:00.000Z:bbbbbbbb - stored, and the notice to the operator did not go out.\nSWEPT 2 records and 0 refusal marks: notified 0, NOT NOTIFIED 1, NO OUTCOME 0, UNREADABLE 0.\n'
+E       assert ('request:2026-08-21T10:01:00.000Z:bbbbbbbb' in {'request:2026-08-21T10:01:00.000Z:bbbbbbbb': 'NOT NOTIFIED'} and 'request:2026-08-21T10:02:00.000Z:cccccccc' in {'request:2026-08-21T10:01:00.000Z:bbbbbbbb': 'NOT NOTIFIED'})
+
+tests/test_intake_sweep_distinguishes_its_states.py:192: AssertionError
+__________________ test_every_number_in_the_count_is_counted ___________________
+
+    def test_every_number_in_the_count_is_counted() -> None:
+        """The count line printing is not the same fact as its numbers being true.
+    
+        Asserted over one namespace holding every state at once, because a counter is only observed to
+        work when it has something to count: with `notified`, `UNREADABLE` and the refusal marks each
+        exercised only in runs where their true value was zero, dropping any of those three increments
+        left the whole suite green and printed `notified 0` on a day with three notified records - a
+        counter reading a false zero, which is invariant 1's literal subject. Found by Fable, who
+        applied all three.
+    
+        AND A DIFFERENT COUNT IN EVERY BUCKET, where the draft before this one gave each of them
+        exactly 1.
+        Four counters holding the same number print the same line under every permutation of
+        themselves, so swapping `$notified` and `$not_notified` in the summary - a day with four
+        notified records reported as four unseen ones, and the operator writing to all of them - kept
+        the suite green. That is RED-013's transposition, reintroduced by the fixture written to close
+        a different defect in the same line. Found by Fable.
+        """
+        keys = dict([record(TRUE, True), record(FALSE, False), record(NULL, None),
+                     (MARK, {"value": SENTINEL})])
+        for n in range(3):  # notified: 4
+            keys.update([record(f"request:2026-08-21T11:0{n}:00.000Z:1111111{n}", True)])
+        for n in range(2):  # not notified: 3
+            keys.update([record(f"request:2026-08-21T12:0{n}:00.000Z:2222222{n}", False)])
+        keys.update([record("request:2026-08-21T13:00:00.000Z:33333333", None)])  # no outcome: 2
+        keys["request:2026-08-21T14:00:00.000Z:44444444"] = {"refuse": True}  # unreadable: 1
+        keys["writeback-refused:2026-08-21T15:00:00.000Z:55555555"] = {"value": SENTINEL}  # marks: 2
+        r = run(keys)
+>       assert ("SWEPT 10 records and 2 refusal marks: notified 4, NOT NOTIFIED 3, NO OUTCOME 2, "
+                "UNREADABLE 1." in r["out"]), (
+            f"the count does not describe the namespace it swept: {r['out']!r}. Every state above is "
+            "present a different number of times, so a number that is wrong cannot be a number that "
+            "was copied from its neighbour.")
+E       AssertionError: the count does not describe the namespace it swept: 'NOT NOTIFIED: request:2026-08-21T10:01:00.000Z:bbbbbbbb - stored, and the notice to the operator did not go out.\nSURVIVED TO ANSWER: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc {"of":"request:2026-08-21T10:02:00.000Z:cccccccc","notice_delivered":true,"reason":"KV PUT failed: 429 Too Many Requests"}\nNOT NOTIFIED: request:2026-08-21T12:00:00.000Z:22222220 - stored, and the notice to the operator did not go out.\nNOT NOTIFIED: request:2026-08-21T12:01:00.000Z:22222221 - stored, and the notice to the operator did not go out.\nUNREADABLE: request:2026-08-21T14:00:00.000Z:44444444 - the store refused the read.\nSURVIVED TO ANSWER: writeback-refused:2026-08-21T15:00:00.000Z:55555555 {"of":"request:2026-08-21T10:02:00.000Z:cccccccc","notice_delivered":true,"reason":"KV PUT failed: 429 Too Many Requests"}\nSWEPT 10 records and 2 refusal marks: notified 4, NOT NOTIFIED 3, NO OUTCOME 0, UNREADABLE 1.\n'. Every state above is present a different number of times, so a number that is wrong cannot be a number that was copied from its neighbour.
+E       assert 'SWEPT 10 records and 2 refusal marks: notified 4, NOT NOTIFIED 3, NO OUTCOME 2, UNREADABLE 1.' in 'NOT NOTIFIED: request:2026-08-21T10:01:00.000Z:bbbbbbbb - stored, and the notice to the operator did not go out.\nSUR...9 Too Many Requests"}\nSWEPT 10 records and 2 refusal marks: notified 4, NOT NOTIFIED 3, NO OUTCOME 0, UNREADABLE 1.\n'
+
+tests/test_intake_sweep_distinguishes_its_states.py:455: AssertionError
+__________________ test_the_exit_status_carries_three_states ___________________
+
+    def test_the_exit_status_carries_three_states() -> None:
+        """0 / 1 / 2 - nothing qualified, act on these, did not run. Asserted together, because the
+        three are only meaningful against each other."""
+        clean = run(dict([record(TRUE, True)]))
+        found = run(dict([record(NULL, None)]))
+        refused = run({}, list_state="refuse")
+>       assert (clean["status"], found["status"], refused["status"]) == (0, 1, 2), (
+            "the sweep's exit status does not distinguish a clean read, a finding and a reading that "
+            f"never happened: {clean['status']}, {found['status']}, {refused['status']}")
+E       AssertionError: the sweep's exit status does not distinguish a clean read, a finding and a reading that never happened: 0, 0, 2
+E       assert (0, 0, 2) == (0, 1, 2)
+E         
+E         At index 1 diff: 0 != 1
+E         Use -v to get more diff
+
+tests/test_intake_sweep_distinguishes_its_states.py:535: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_record_that_never_got_its_outcome_is_found
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_the_two_states_are_not_one_finding
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_every_number_in_the_count_is_counted
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_the_exit_status_carries_three_states
+4 failed, 24 passed in 4.87s
+
+# ============================================================================================
+# RED 2.
+# WHAT T-A2-2'S OWN COMMIT SHIPPED: the filter finds both states and prints them under one word. Every count above stays correct and stops meaning anything - the operator gets a list they cannot act on, because `false` is answered by reading the record now and `null` is answered against the sentinel beside it, and neither instruction is derivable from the other. Invariant 1 one level up from the field it is usually about.
+#
+# -       null)  echo "NO OUTCOME: $k - stored, and nothing recorded what the notice did."
+# +       null)  echo "NOT NOTIFIED: $k - one label for two states."  # MUTATION
+#
+# $ grep -n 'MUTATION' docs/INTAKE_OPERATIONS.md
+# 127:      null)  echo "NOT NOTIFIED: $k - one label for two states."  # MUTATION
+#
+# $ python3 -m pytest tests/test_intake_sweep_distinguishes_its_states.py -q
+.F..........................                                             [100%]
+=================================== FAILURES ===================================
+___________________ test_the_two_states_are_not_one_finding ____________________
+
+    def test_the_two_states_are_not_one_finding() -> None:
+        """A measured `false` and an absent measurement are followed up differently.
+    
+        `false`: the record is stored and the operator was not told, so the operator reads it now.
+        `null`: nothing recorded what the notice did, and the follow-up turns on a sentinel that has no
+        meaning for a `false` at all. One label over both is a count the operator cannot act on -
+        invariant 1, one level up from the field it is usually about.
+        """
+        r = run(dict([record(FALSE, False), record(NULL, None)]))
+        seen = labels(r)
+        assert FALSE in seen and NULL in seen, f"a state was not printed at all: {r['out']!r}"
+>       assert seen[FALSE] != seen[NULL], (
+            f"both states are printed as {seen[FALSE]!r}. The sweep finds them and cannot say which is "
+            "which, so the operator either treats a notified applicant as uninformed or the reverse.")
+E       AssertionError: both states are printed as 'NOT NOTIFIED'. The sweep finds them and cannot say which is which, so the operator either treats a notified applicant as uninformed or the reverse.
+E       assert 'NOT NOTIFIED' != 'NOT NOTIFIED'
+
+tests/test_intake_sweep_distinguishes_its_states.py:193: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_the_two_states_are_not_one_finding
+1 failed, 27 passed in 3.86s
+
+# ============================================================================================
+# RED 3.
+# THE INSTRUMENT'S OWN REFUSAL, SWALLOWED. The exit status of the `get` is ignored, so a key the store declined to hand over is classified from an empty string. It still prints - the empty value has no readable outcome in it - and it prints the WRONG account: the operator is told the record is malformed when what actually happened is that nobody read it. A refusal recorded as a property of the data is §2.9 inside the tool the habit rests on.
+#
+# -     if ! v=$(npx wrangler kv key get "$k" --namespace-id "$NS" </dev/null); then
+# -       echo "UNREADABLE: $k - the store refused the read."
+# -       unreadable=$((unreadable + 1)); rc=1; continue
+# -     fi
+# +     v=$(npx wrangler kv key get "$k" --namespace-id "$NS" </dev/null)  # MUTATION: status ignored
+#
+# $ grep -n 'MUTATION' docs/INTAKE_OPERATIONS.md
+# 83:    v=$(npx wrangler kv key get "$k" --namespace-id "$NS" </dev/null)  # MUTATION: status ignored
+#
+# $ python3 -m pytest tests/test_intake_sweep_distinguishes_its_states.py -q
+....F.......................                                             [100%]
+=================================== FAILURES ===================================
+_____ test_a_refused_read_and_an_unreadable_value_are_not_the_same_account _____
+
+    def test_a_refused_read_and_an_unreadable_value_are_not_the_same_account() -> None:
+        """Both are `UNREADABLE`, and the operator does two different things with them.
+    
+        A read the store refused is retried; a value that is not a record is a finding about what wrote
+        it. Checking only that something printed leaves the exit status of the `get` ignorable - and
+        ignoring it classifies a key nobody read from the empty string it left behind, which reports a
+        refusal as a property of the data.
+        """
+        r = run({FALSE: {"refuse": True}, NULL: {"value": "<html>an error page</html>"}})
+        said = {}
+        for line in r["out"].splitlines():
+            if line.startswith("UNREADABLE: "):
+                key, _, why = line[len("UNREADABLE: "):].partition(" - ")
+                said[key] = why
+        assert set(said) == {FALSE, NULL}, f"both were expected to be unreadable: {r['out']!r}"
+>       assert "refused the read" in said[FALSE], (
+            f"a key the store would not hand over was reported as a bad record: {said[FALSE]!r}. The "
+            "sweep did not read it, and saying anything about its contents is a claim about a value "
+            "nobody has.")
+E       AssertionError: a key the store would not hand over was reported as a bad record: 'no readable delivery outcome in the record (got: ).'. The sweep did not read it, and saying anything about its contents is a claim about a value nobody has.
+E       assert 'refused the read' in 'no readable delivery outcome in the record (got: ).'
+
+tests/test_intake_sweep_distinguishes_its_states.py:250: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_refused_read_and_an_unreadable_value_are_not_the_same_account
+1 failed, 27 passed in 4.36s
+
+# ============================================================================================
+# RED 4.
+# THE SAME DEFECT ONE LEVEL UP, AND THE WORSE ONE: it is silent about every record at once. A failed `list` yields no keys, no keys is what an empty namespace yields, and the sweep reports `SWEPT 0 records` and exits 0 - which the document reads as the finding that no submission has ever been made. A reading that never happened, published as a measurement.
+#
+# -   if ! raw=$(npx wrangler kv key list --namespace-id "$NS" </dev/null); then
+# -     echo "SWEEP DID NOT RUN: the namespace could not be listed, so nothing below was measured."
+# -     return 2
+# -   fi
+# +   raw=$(npx wrangler kv key list --namespace-id "$NS" </dev/null)  # MUTATION: status ignored
+#
+# $ grep -n 'MUTATION' docs/INTAKE_OPERATIONS.md
+# 60:  raw=$(npx wrangler kv key list --namespace-id "$NS" </dev/null)  # MUTATION: status ignored
+#
+# $ python3 -m pytest tests/test_intake_sweep_distinguishes_its_states.py -q
+.....F.................F....                                             [100%]
+=================================== FAILURES ===================================
+________________ test_a_refused_list_is_not_an_empty_namespace _________________
+
+    def test_a_refused_list_is_not_an_empty_namespace() -> None:
+        """The same defect one level up, and the more dangerous one: it is silent about EVERY record."""
+        r = run({}, list_state="refuse")
+>       assert "SWEEP DID NOT RUN" in r["out"], (
+            f"the namespace could not be listed and the sweep did not say so: {r['out']!r}")
+E       AssertionError: the namespace could not be listed and the sweep did not say so: 'SWEPT 0 records and 0 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 0.\nZero keys is a reading of its own: no submission has ever been made.\n'
+E       assert 'SWEEP DID NOT RUN' in 'SWEPT 0 records and 0 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 0.\nZero keys is a reading of its own: no submission has ever been made.\n'
+
+tests/test_intake_sweep_distinguishes_its_states.py:262: AssertionError
+__________________ test_the_exit_status_carries_three_states ___________________
+
+    def test_the_exit_status_carries_three_states() -> None:
+        """0 / 1 / 2 - nothing qualified, act on these, did not run. Asserted together, because the
+        three are only meaningful against each other."""
+        clean = run(dict([record(TRUE, True)]))
+        found = run(dict([record(NULL, None)]))
+        refused = run({}, list_state="refuse")
+>       assert (clean["status"], found["status"], refused["status"]) == (0, 1, 2), (
+            "the sweep's exit status does not distinguish a clean read, a finding and a reading that "
+            f"never happened: {clean['status']}, {found['status']}, {refused['status']}")
+E       AssertionError: the sweep's exit status does not distinguish a clean read, a finding and a reading that never happened: 0, 1, 0
+E       assert (0, 1, 0) == (0, 1, 2)
+E         
+E         At index 2 diff: 0 != 2
+E         Use -v to get more diff
+
+tests/test_intake_sweep_distinguishes_its_states.py:535: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_refused_list_is_not_an_empty_namespace
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_the_exit_status_carries_three_states
+2 failed, 26 passed in 4.39s
+
+# ============================================================================================
+# RED 5.
+# `jq -r` INSTEAD OF `jq -c`, which is the smallest edit in this file and looks like tidying. The delivery outcome stops being compared as a value and starts being compared as text, so a stored string "false" - which this endpoint never writes, and which is therefore a record written by something else - is reported as a measured `NOT NOTIFIED`. The operator would then write to an applicant about a notice that was never attempted.
+#
+# -     d=$(jq -c 'if type == "object" and has("delivered") then .delivered else "no-such-field" end' \
+# -           <<<"$v" 2>/dev/null) || d=unreadable
+# +     d=$(jq -r 'if type == "object" and has("delivered") then .delivered else "no-such-field" end' \
+# +           <<<"$v" 2>/dev/null) || d=unreadable  # MUTATION: rendered, not read
+#
+# $ grep -n 'MUTATION' docs/INTAKE_OPERATIONS.md
+# 122:          <<<"$v" 2>/dev/null) || d=unreadable  # MUTATION: rendered, not read
+#
+# $ python3 -m pytest tests/test_intake_sweep_distinguishes_its_states.py -q
+........F...................                                             [100%]
+=================================== FAILURES ===================================
+________________ test_a_stored_string_is_not_a_measured_boolean ________________
+
+    def test_a_stored_string_is_not_a_measured_boolean() -> None:
+        """`tostring` renders the string "false" and the boolean `false` identically.
+    
+        The endpoint writes a boolean or `null` and nothing else, so a string in that field is a record
+        written by something other than this endpoint - which is a finding, and specifically not the
+        finding "the operator was not told", whose follow-up asserts to an applicant what happened.
+        """
+        r = run({FALSE: {"value": json.dumps({"id": "bbbbbbbb", "delivered": "false"})}})
+>       assert labels(r).get(FALSE) == "UNREADABLE", (
+            f"a stored string was read as the delivery outcome the endpoint measures: {r['out']!r}")
+E       AssertionError: a stored string was read as the delivery outcome the endpoint measures: 'NOT NOTIFIED: request:2026-08-21T10:01:00.000Z:bbbbbbbb - stored, and the notice to the operator did not go out.\nSWEPT 1 records and 0 refusal marks: notified 0, NOT NOTIFIED 1, NO OUTCOME 0, UNREADABLE 0.\n'
+E       assert 'NOT NOTIFIED' == 'UNREADABLE'
+E         
+E         - UNREADABLE
+E         + NOT NOTIFIED
+
+tests/test_intake_sweep_distinguishes_its_states.py:302: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_stored_string_is_not_a_measured_boolean
+1 failed, 27 passed in 4.09s
+
+# ============================================================================================
+# RED 6.
+# THE MARKER READ AS A FINDING. A `writeback-refused:` key carries no `delivered` field at all, so every filter over that field matches it: the branch that recognises it is left in place and stops matching, and the sweep reports the endpoint's own mark as an unconfirmed submission, doubles the count of people on the main path, and drops the store's reason for the refusal - the one field that says whether this is the documented 429 or a finding.
+#
+# -       writeback-refused:*) mark=1; marks=$((marks + 1)) ;;
+# +       writeback-refused-NEVER-MATCHES:*) mark=1; marks=$((marks + 1)) ;;  # MUTATION
+#
+# $ grep -n 'MUTATION' docs/INTAKE_OPERATIONS.md
+# 76:      writeback-refused-NEVER-MATCHES:*) mark=1; marks=$((marks + 1)) ;;  # MUTATION
+#
+# $ python3 -m pytest tests/test_intake_sweep_distinguishes_its_states.py -q
+.........F....F..F.F........                                             [100%]
+=================================== FAILURES ===================================
+__________ test_the_sweep_does_not_report_its_own_marker_as_a_finding __________
+
+    def test_the_sweep_does_not_report_its_own_marker_as_a_finding() -> None:
+        """A `writeback-refused:` key carries no `delivered` field, so every filter over that field
+        matches it. An instrument that reports its own marker as a finding is worse than one that
+        ignores it: the operator would follow up a sentinel, and the count of people would double."""
+        r = run(dict([record(NULL, None), (MARK, {"value": SENTINEL})]))
+        seen = labels(r)
+>       assert seen.get(MARK) == "SURVIVED TO ANSWER", (
+            f"the sentinel was printed as though it were a submission: {r['out']!r}")
+E       AssertionError: the sentinel was printed as though it were a submission: 'NO OUTCOME: request:2026-08-21T10:02:00.000Z:cccccccc - stored, and nothing recorded what the notice did.\nUNREADABLE: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc - no readable delivery outcome in the record (got: "no-such-field").\nSWEPT 2 records and 0 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 1, UNREADABLE 1.\n'
+E       assert 'UNREADABLE' == 'SURVIVED TO ANSWER'
+E         
+E         - SURVIVED TO ANSWER
+E         + UNREADABLE
+
+tests/test_intake_sweep_distinguishes_its_states.py:314: AssertionError
+______ test_a_mark_recording_a_notice_that_did_not_go_out_is_still_a_mark ______
+
+    def test_a_mark_recording_a_notice_that_did_not_go_out_is_still_a_mark() -> None:
+        """The other direction of the check above, and the reason it asks `has()` rather than a
+        truthy value: `notice_delivered: false` is a MEASURED outcome, and a sentinel carrying it is
+        the one the operator most needs read out - the applicant was answered and nobody was told."""
+        value = json.dumps({"of": NULL, "id": "cccccccc", "notice_delivered": False,
+                            "refused_at": "2026-08-21T10:02:01.000Z", "reason": "429"})
+        r = run({MARK: {"value": value}})
+>       assert labels(r).get(MARK) == "SURVIVED TO ANSWER", (
+            f"a mark recording an undelivered notice was read as unreadable: {r['out']!r}")
+E       AssertionError: a mark recording an undelivered notice was read as unreadable: 'UNREADABLE: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc - no readable delivery outcome in the record (got: "no-such-field").\nSWEPT 1 records and 0 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 1.\n'
+E       assert 'UNREADABLE' == 'SURVIVED TO ANSWER'
+E         
+E         - SURVIVED TO ANSWER
+E         + UNREADABLE
+
+tests/test_intake_sweep_distinguishes_its_states.py:384: AssertionError
+__________________ test_every_number_in_the_count_is_counted ___________________
+
+    def test_every_number_in_the_count_is_counted() -> None:
+        """The count line printing is not the same fact as its numbers being true.
+    
+        Asserted over one namespace holding every state at once, because a counter is only observed to
+        work when it has something to count: with `notified`, `UNREADABLE` and the refusal marks each
+        exercised only in runs where their true value was zero, dropping any of those three increments
+        left the whole suite green and printed `notified 0` on a day with three notified records - a
+        counter reading a false zero, which is invariant 1's literal subject. Found by Fable, who
+        applied all three.
+    
+        AND A DIFFERENT COUNT IN EVERY BUCKET, where the draft before this one gave each of them
+        exactly 1.
+        Four counters holding the same number print the same line under every permutation of
+        themselves, so swapping `$notified` and `$not_notified` in the summary - a day with four
+        notified records reported as four unseen ones, and the operator writing to all of them - kept
+        the suite green. That is RED-013's transposition, reintroduced by the fixture written to close
+        a different defect in the same line. Found by Fable.
+        """
+        keys = dict([record(TRUE, True), record(FALSE, False), record(NULL, None),
+                     (MARK, {"value": SENTINEL})])
+        for n in range(3):  # notified: 4
+            keys.update([record(f"request:2026-08-21T11:0{n}:00.000Z:1111111{n}", True)])
+        for n in range(2):  # not notified: 3
+            keys.update([record(f"request:2026-08-21T12:0{n}:00.000Z:2222222{n}", False)])
+        keys.update([record("request:2026-08-21T13:00:00.000Z:33333333", None)])  # no outcome: 2
+        keys["request:2026-08-21T14:00:00.000Z:44444444"] = {"refuse": True}  # unreadable: 1
+        keys["writeback-refused:2026-08-21T15:00:00.000Z:55555555"] = {"value": SENTINEL}  # marks: 2
+        r = run(keys)
+>       assert ("SWEPT 10 records and 2 refusal marks: notified 4, NOT NOTIFIED 3, NO OUTCOME 2, "
+                "UNREADABLE 1." in r["out"]), (
+            f"the count does not describe the namespace it swept: {r['out']!r}. Every state above is "
+            "present a different number of times, so a number that is wrong cannot be a number that "
+            "was copied from its neighbour.")
+E       AssertionError: the count does not describe the namespace it swept: 'NOT NOTIFIED: request:2026-08-21T10:01:00.000Z:bbbbbbbb - stored, and the notice to the operator did not go out.\nNO OUTCOME: request:2026-08-21T10:02:00.000Z:cccccccc - stored, and nothing recorded what the notice did.\nUNREADABLE: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc - no readable delivery outcome in the record (got: "no-such-field").\nNOT NOTIFIED: request:2026-08-21T12:00:00.000Z:22222220 - stored, and the notice to the operator did not go out.\nNOT NOTIFIED: request:2026-08-21T12:01:00.000Z:22222221 - stored, and the notice to the operator did not go out.\nNO OUTCOME: request:2026-08-21T13:00:00.000Z:33333333 - stored, and nothing recorded what the notice did.\nUNREADABLE: request:2026-08-21T14:00:00.000Z:44444444 - the store refused the read.\nUNREADABLE: writeback-refused:2026-08-21T15:00:00.000Z:55555555 - no readable delivery outcome in the record (got: "no-such-field").\nSWEPT 12 records and 0 refusal marks: notified 4, NOT NOTIFIED 3, NO OUTCOME 2, UNREADABLE 3.\n'. Every state above is present a different number of times, so a number that is wrong cannot be a number that was copied from its neighbour.
+E       assert 'SWEPT 10 records and 2 refusal marks: notified 4, NOT NOTIFIED 3, NO OUTCOME 2, UNREADABLE 1.' in 'NOT NOTIFIED: request:2026-08-21T10:01:00.000Z:bbbbbbbb - stored, and the notice to the operator did not go out.\nNO ...ot: "no-such-field").\nSWEPT 12 records and 0 refusal marks: notified 4, NOT NOTIFIED 3, NO OUTCOME 2, UNREADABLE 3.\n'
+
+tests/test_intake_sweep_distinguishes_its_states.py:455: AssertionError
+____________ test_the_count_accounts_for_every_key_that_was_listed _____________
+
+    def test_the_count_accounts_for_every_key_that_was_listed() -> None:
+        """`records + marks` is the whole namespace, readable or not.
+    
+        A key the store refused was still LISTED, so a count that rises only on a successful read drops
+        exactly the keys the sweep exists to surface - and then reports a smaller namespace than the one
+        it swept, which reads as though those submissions had never been made.
+        """
+        r = run({FALSE: {"refuse": True}, MARK: {"refuse": True}})
+>       assert "SWEPT 1 records and 1 refusal marks" in r["out"], (
+            f"keys that could not be read fell out of the count of what was swept: {r['out']!r}")
+E       AssertionError: keys that could not be read fell out of the count of what was swept: 'UNREADABLE: request:2026-08-21T10:01:00.000Z:bbbbbbbb - the store refused the read.\nUNREADABLE: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc - the store refused the read.\nSWEPT 2 records and 0 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 2.\n'
+E       assert 'SWEPT 1 records and 1 refusal marks' in 'UNREADABLE: request:2026-08-21T10:01:00.000Z:bbbbbbbb - the store refused the read.\nUNREADABLE: writeback-refused:20...tore refused the read.\nSWEPT 2 records and 0 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 2.\n'
+
+tests/test_intake_sweep_distinguishes_its_states.py:489: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_the_sweep_does_not_report_its_own_marker_as_a_finding
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_mark_recording_a_notice_that_did_not_go_out_is_still_a_mark
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_every_number_in_the_count_is_counted
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_the_count_accounts_for_every_key_that_was_listed
+4 failed, 24 passed in 4.35s
+
+# ============================================================================================
+# RED 7.
+# THE EXIT STATUS FLATTENED. The document says this becomes a scheduled job the day a record is ever found this way, and a job whose instrument always returns 0 is the shape of every silence in this repository. The `return 2` paths are untouched, so what dies is precisely the difference between `nothing qualified` and `act on these`.
+#
+# -   return $rc
+# +   return 0  # MUTATION: nothing qualified and act-on-these are one status
+#
+# $ grep -n 'MUTATION' docs/INTAKE_OPERATIONS.md
+# 148:  return 0  # MUTATION: nothing qualified and act-on-these are one status
+#
+# $ python3 -m pytest tests/test_intake_sweep_distinguishes_its_states.py -q
+F..F......FF........FF.F....                                             [100%]
+=================================== FAILURES ===================================
+______________ test_a_record_that_never_got_its_outcome_is_found _______________
+
+    def test_a_record_that_never_got_its_outcome_is_found() -> None:
+        """`delivered: null` is what both of T-A2-2's failures leave, and the original filter skipped it.
+    
+        This is the whole of the original defect: the one record in the namespace nobody has confirmed
+        was the one record the habit passed over.
+        """
+        r = run(dict([record(NULL, None)]))
+        assert NULL in labels(r), (
+            "a record whose delivery outcome never landed was not printed at all. That is the state a "
+            f"refused write-back and a dead invocation both leave: {r['out']!r}")
+>       assert r["status"] != 0, "the sweep found an unconfirmed submission and reported success"
+E       AssertionError: the sweep found an unconfirmed submission and reported success
+E       assert 0 != 0
+
+tests/test_intake_sweep_distinguishes_its_states.py:179: AssertionError
+________ test_a_refused_read_is_not_a_record_with_nothing_wrong_with_it ________
+
+    def test_a_refused_read_is_not_a_record_with_nothing_wrong_with_it() -> None:
+        """A `get` that failed printed nothing, and nothing is what a healthy record prints.
+    
+        §2.9: a refusal returned as an ordinary answer takes from the follow-up its only evidence that
+        anything was missed. The draft before this one read `$v` whatever the exit status.
+        """
+        r = run({FALSE: {"refuse": True}})
+        seen = labels(r)
+        assert FALSE in seen, (
+            f"a key the store refused to hand over was passed over in silence: {r['out']!r}")
+        assert seen[FALSE] == "UNREADABLE", (
+            f"a refused read was reported as a measured state ({seen[FALSE]}), which is a claim about a "
+            "value nobody read.")
+        # `!= 0` WAS THE FIRST DRAFT, and `rc=2` on this branch satisfied it: a sweep that ran, printed
+        # its count and found an unreadable key, reporting the status reserved for a sweep that did not
+        # run - which the document says appears instead of the count and never beside it. A dropped
+        # status and a misfiled one are two defects, and only the first was armed. Found by Fable.
+>       assert r["status"] == 1, (
+            f"a refused read was reported with status {r['status']}, not as something to act on. 2 is "
+            f"reserved for a reading that never happened, and this one happened: {r['out']!r}")
+E       AssertionError: a refused read was reported with status 0, not as something to act on. 2 is reserved for a reading that never happened, and this one happened: 'UNREADABLE: request:2026-08-21T10:01:00.000Z:bbbbbbbb - the store refused the read.\nSWEPT 1 records and 0 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 1.\n'
+E       assert 0 == 1
+
+tests/test_intake_sweep_distinguishes_its_states.py:230: AssertionError
+_____ test_a_sentinel_that_cannot_be_read_is_not_a_sentinel_that_was_read ______
+
+    def test_a_sentinel_that_cannot_be_read_is_not_a_sentinel_that_was_read() -> None:
+        """`jq` writes its parse errors to stderr, so an unparseable mark printed under the healthy
+        label with an empty summary after it - and the emptiness is invisible to anything capturing
+        stdout, which is what the scheduled job the document anticipates would do. The operator would
+        read a mark as saying its applicant survived to be answered, off a value that said nothing.
+        Found by Fable."""
+        r = run({MARK: {"value": "<html>an error page</html>"}})
+        assert labels(r).get(MARK) == "UNREADABLE", (
+            f"an unreadable refusal mark was reported as one that had been read: {r['out']!r}")
+>       assert "UNREADABLE 1" in r["out"] and r["status"] != 0, (
+            f"an unreadable mark was counted as measured: {r['out']!r}")
+E       AssertionError: an unreadable mark was counted as measured: 'UNREADABLE: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc - the refusal mark itself could not be read.\nSWEPT 0 records and 1 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 1.\n'
+E       assert ('UNREADABLE 1' in 'UNREADABLE: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc - the refusal mark itself could not be read.\nSWEPT 0 records and 1 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 1.\n' and 0 != 0)
+
+tests/test_intake_sweep_distinguishes_its_states.py:333: AssertionError
+_________ test_a_mark_that_carries_nothing_is_not_a_mark_that_was_read _________
+
+    def test_a_mark_that_carries_nothing_is_not_a_mark_that_was_read() -> None:
+        """The repair for the case above, refuted: it checked that `jq` had not FAILED.
+    
+        `{of, notice_delivered, reason}` over a stored `null` or `{}` builds an object of three nulls
+        and succeeds, and on jq 1.6 an empty value exits 0 having printed nothing at all - so each of
+        these printed `SURVIVED TO ANSWER` with an empty or hollow summary and exited 0, which is the
+        exact symptom the previous test is about. A fix that narrows a defect to the inputs its own
+        test used is the shape this whole file is filed under. Found by Fable, on the repair.
+        """
+        for name, value in (("empty", ""), ("JSON null", "null"), ("an empty object", "{}"),
+                            ("an object missing `reason`",
+                             json.dumps({"of": NULL, "notice_delivered": True}))):
+            r = run({MARK: {"value": value}})
+            assert labels(r).get(MARK) == "UNREADABLE", (
+                f"a refusal mark whose value is {name} was reported as one that had been read: "
+                f"{r['out']!r}")
+>           assert r["status"] == 1, (
+                f"a mark carrying nothing was swept as a clean run: {r['status']} {r['out']!r}")
+E           AssertionError: a mark carrying nothing was swept as a clean run: 0 'UNREADABLE: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc - the refusal mark itself could not be read.\nSWEPT 0 records and 1 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 1.\n'
+E           assert 0 == 1
+
+tests/test_intake_sweep_distinguishes_its_states.py:353: AssertionError
+____ test_a_submission_nobody_was_told_about_is_a_finding_in_the_status_too ____
+
+    def test_a_submission_nobody_was_told_about_is_a_finding_in_the_status_too() -> None:
+        """`rc` is one variable and four branches set it; the exit-status test reaches it through a
+        `NO OUTCOME` alone. So dropping `rc=1` from the `NOT NOTIFIED` branch - a submission the
+        operator was never told about, printed and then reported as a clean run to the scheduled job
+        the document anticipates - left the suite green. Found by Fable.
+    
+        ONE STATE PER TEST, not a loop over all of them: a loop stops at its first failure and reports
+        one finding for two defects, which is how mutations 15 and 16 of RED-018 arrived carrying the
+        same transcript.
+        """
+        r = run(dict([record(FALSE, False)]))
+>       assert r["status"] == 1, (
+            f"the sweep printed a submission the operator was never told about and exited "
+            f"{r['status']}, which is what it exits when there is nothing to act on: {r['out']!r}")
+E       AssertionError: the sweep printed a submission the operator was never told about and exited 0, which is what it exits when there is nothing to act on: 'NOT NOTIFIED: request:2026-08-21T10:01:00.000Z:bbbbbbbb - stored, and the notice to the operator did not go out.\nSWEPT 1 records and 0 refusal marks: notified 0, NOT NOTIFIED 1, NO OUTCOME 0, UNREADABLE 0.\n'
+E       assert 0 == 1
+
+tests/test_intake_sweep_distinguishes_its_states.py:506: AssertionError
+_____ test_a_record_that_could_not_be_read_is_a_finding_in_the_status_too ______
+
+    def test_a_record_that_could_not_be_read_is_a_finding_in_the_status_too() -> None:
+        """The same branch one state over, and the worse half: what went unmeasured is not a delivery
+        outcome but the record itself."""
+        r = run({NULL: {"value": "<html>an error page</html>"}})
+>       assert r["status"] == 1, (
+            f"the sweep could not read a stored record and reported a clean run: {r['out']!r}")
+E       AssertionError: the sweep could not read a stored record and reported a clean run: 'UNREADABLE: request:2026-08-21T10:02:00.000Z:cccccccc - no readable delivery outcome in the record (got: unreadable).\nSWEPT 1 records and 0 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 1.\n'
+E       assert 0 == 1
+
+tests/test_intake_sweep_distinguishes_its_states.py:515: AssertionError
+__________________ test_the_exit_status_carries_three_states ___________________
+
+    def test_the_exit_status_carries_three_states() -> None:
+        """0 / 1 / 2 - nothing qualified, act on these, did not run. Asserted together, because the
+        three are only meaningful against each other."""
+        clean = run(dict([record(TRUE, True)]))
+        found = run(dict([record(NULL, None)]))
+        refused = run({}, list_state="refuse")
+>       assert (clean["status"], found["status"], refused["status"]) == (0, 1, 2), (
+            "the sweep's exit status does not distinguish a clean read, a finding and a reading that "
+            f"never happened: {clean['status']}, {found['status']}, {refused['status']}")
+E       AssertionError: the sweep's exit status does not distinguish a clean read, a finding and a reading that never happened: 0, 0, 2
+E       assert (0, 0, 2) == (0, 1, 2)
+E         
+E         At index 1 diff: 0 != 1
+E         Use -v to get more diff
+
+tests/test_intake_sweep_distinguishes_its_states.py:535: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_record_that_never_got_its_outcome_is_found
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_refused_read_is_not_a_record_with_nothing_wrong_with_it
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_sentinel_that_cannot_be_read_is_not_a_sentinel_that_was_read
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_mark_that_carries_nothing_is_not_a_mark_that_was_read
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_submission_nobody_was_told_about_is_a_finding_in_the_status_too
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_record_that_could_not_be_read_is_a_finding_in_the_status_too
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_the_exit_status_carries_three_states
+7 failed, 21 passed in 3.84s
+
+# ============================================================================================
+# RED 8.
+# THE COUNT REMOVED, which is the version of this sweep that looks cleanest: findings only, no chatter. It cannot then say `I read eleven records and none of them qualified`, so a quiet day is an empty terminal - indistinguishable from a sweep that listed nothing, and from one the operator never ran. The zero that has to name which zero it is.
+#
+# -   echo "SWEPT $records records and $marks refusal marks: notified $notified," \
+# -        "NOT NOTIFIED $not_notified, NO OUTCOME $no_outcome, UNREADABLE $unreadable."
+# +   : "MUTATION: the sweep prints findings only"
+#
+# $ grep -n 'MUTATION' docs/INTAKE_OPERATIONS.md
+# 139:  : "MUTATION: the sweep prints findings only"
+#
+# $ python3 -m pytest tests/test_intake_sweep_distinguishes_its_states.py -q
+.........FF....F.FFF..F.....                                             [100%]
+=================================== FAILURES ===================================
+__________ test_the_sweep_does_not_report_its_own_marker_as_a_finding __________
+
+    def test_the_sweep_does_not_report_its_own_marker_as_a_finding() -> None:
+        """A `writeback-refused:` key carries no `delivered` field, so every filter over that field
+        matches it. An instrument that reports its own marker as a finding is worse than one that
+        ignores it: the operator would follow up a sentinel, and the count of people would double."""
+        r = run(dict([record(NULL, None), (MARK, {"value": SENTINEL})]))
+        seen = labels(r)
+        assert seen.get(MARK) == "SURVIVED TO ANSWER", (
+            f"the sentinel was printed as though it were a submission: {r['out']!r}")
+        assert "429" in r["out"], (
+            "the sentinel's reason was not printed. It is what tells the operator whether they are "
+            "looking at the documented same-key limit or at something nobody has seen yet.")
+>       assert re.search(r"SWEPT 1 records and 1 refusal marks", r["out"]), (
+            f"the sentinel was counted among the records, so the count of submissions is not one: "
+            f"{r['out']!r}")
+E       AssertionError: the sentinel was counted among the records, so the count of submissions is not one: 'NO OUTCOME: request:2026-08-21T10:02:00.000Z:cccccccc - stored, and nothing recorded what the notice did.\nSURVIVED TO ANSWER: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc {"of":"request:2026-08-21T10:02:00.000Z:cccccccc","notice_delivered":true,"reason":"KV PUT failed: 429 Too Many Requests"}\n'
+E       assert None
+E        +  where None = <function search at 0x7f0ca44bf6d0>('SWEPT 1 records and 1 refusal marks', 'NO OUTCOME: request:2026-08-21T10:02:00.000Z:cccccccc - stored, and nothing recorded what the notice did.\nSURVIVED T..."request:2026-08-21T10:02:00.000Z:cccccccc","notice_delivered":true,"reason":"KV PUT failed: 429 Too Many Requests"}\n')
+E        +    where <function search at 0x7f0ca44bf6d0> = re.search
+
+tests/test_intake_sweep_distinguishes_its_states.py:319: AssertionError
+_____ test_a_sentinel_that_cannot_be_read_is_not_a_sentinel_that_was_read ______
+
+    def test_a_sentinel_that_cannot_be_read_is_not_a_sentinel_that_was_read() -> None:
+        """`jq` writes its parse errors to stderr, so an unparseable mark printed under the healthy
+        label with an empty summary after it - and the emptiness is invisible to anything capturing
+        stdout, which is what the scheduled job the document anticipates would do. The operator would
+        read a mark as saying its applicant survived to be answered, off a value that said nothing.
+        Found by Fable."""
+        r = run({MARK: {"value": "<html>an error page</html>"}})
+        assert labels(r).get(MARK) == "UNREADABLE", (
+            f"an unreadable refusal mark was reported as one that had been read: {r['out']!r}")
+>       assert "UNREADABLE 1" in r["out"] and r["status"] != 0, (
+            f"an unreadable mark was counted as measured: {r['out']!r}")
+E       AssertionError: an unreadable mark was counted as measured: 'UNREADABLE: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc - the refusal mark itself could not be read.\n'
+E       assert ('UNREADABLE 1' in 'UNREADABLE: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc - the refusal mark itself could not be read.\n')
+
+tests/test_intake_sweep_distinguishes_its_states.py:333: AssertionError
+____________ test_an_empty_namespace_is_a_reading_and_not_a_silence ____________
+
+    def test_an_empty_namespace_is_a_reading_and_not_a_silence() -> None:
+        """Zero keys means no submission has ever been made - the state the endpoint has never once
+        been exercised in end to end, which the document reads as a finding about the launch. A sweep
+        whose findings are its whole output cannot say it, and cannot be told apart from one that
+        refused."""
+        r = run({})
+>       assert "SWEPT 0 records" in r["out"], (
+            f"an empty namespace produced no statement that it was read: {r['out']!r}")
+E       AssertionError: an empty namespace produced no statement that it was read: 'Zero keys is a reading of its own: no submission has ever been made.\n'
+E       assert 'SWEPT 0 records' in 'Zero keys is a reading of its own: no submission has ever been made.\n'
+
+tests/test_intake_sweep_distinguishes_its_states.py:401: AssertionError
+__________________ test_every_number_in_the_count_is_counted ___________________
+
+    def test_every_number_in_the_count_is_counted() -> None:
+        """The count line printing is not the same fact as its numbers being true.
+    
+        Asserted over one namespace holding every state at once, because a counter is only observed to
+        work when it has something to count: with `notified`, `UNREADABLE` and the refusal marks each
+        exercised only in runs where their true value was zero, dropping any of those three increments
+        left the whole suite green and printed `notified 0` on a day with three notified records - a
+        counter reading a false zero, which is invariant 1's literal subject. Found by Fable, who
+        applied all three.
+    
+        AND A DIFFERENT COUNT IN EVERY BUCKET, where the draft before this one gave each of them
+        exactly 1.
+        Four counters holding the same number print the same line under every permutation of
+        themselves, so swapping `$notified` and `$not_notified` in the summary - a day with four
+        notified records reported as four unseen ones, and the operator writing to all of them - kept
+        the suite green. That is RED-013's transposition, reintroduced by the fixture written to close
+        a different defect in the same line. Found by Fable.
+        """
+        keys = dict([record(TRUE, True), record(FALSE, False), record(NULL, None),
+                     (MARK, {"value": SENTINEL})])
+        for n in range(3):  # notified: 4
+            keys.update([record(f"request:2026-08-21T11:0{n}:00.000Z:1111111{n}", True)])
+        for n in range(2):  # not notified: 3
+            keys.update([record(f"request:2026-08-21T12:0{n}:00.000Z:2222222{n}", False)])
+        keys.update([record("request:2026-08-21T13:00:00.000Z:33333333", None)])  # no outcome: 2
+        keys["request:2026-08-21T14:00:00.000Z:44444444"] = {"refuse": True}  # unreadable: 1
+        keys["writeback-refused:2026-08-21T15:00:00.000Z:55555555"] = {"value": SENTINEL}  # marks: 2
+        r = run(keys)
+>       assert ("SWEPT 10 records and 2 refusal marks: notified 4, NOT NOTIFIED 3, NO OUTCOME 2, "
+                "UNREADABLE 1." in r["out"]), (
+            f"the count does not describe the namespace it swept: {r['out']!r}. Every state above is "
+            "present a different number of times, so a number that is wrong cannot be a number that "
+            "was copied from its neighbour.")
+E       AssertionError: the count does not describe the namespace it swept: 'NOT NOTIFIED: request:2026-08-21T10:01:00.000Z:bbbbbbbb - stored, and the notice to the operator did not go out.\nNO OUTCOME: request:2026-08-21T10:02:00.000Z:cccccccc - stored, and nothing recorded what the notice did.\nSURVIVED TO ANSWER: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc {"of":"request:2026-08-21T10:02:00.000Z:cccccccc","notice_delivered":true,"reason":"KV PUT failed: 429 Too Many Requests"}\nNOT NOTIFIED: request:2026-08-21T12:00:00.000Z:22222220 - stored, and the notice to the operator did not go out.\nNOT NOTIFIED: request:2026-08-21T12:01:00.000Z:22222221 - stored, and the notice to the operator did not go out.\nNO OUTCOME: request:2026-08-21T13:00:00.000Z:33333333 - stored, and nothing recorded what the notice did.\nUNREADABLE: request:2026-08-21T14:00:00.000Z:44444444 - the store refused the read.\nSURVIVED TO ANSWER: writeback-refused:2026-08-21T15:00:00.000Z:55555555 {"of":"request:2026-08-21T10:02:00.000Z:cccccccc","notice_delivered":true,"reason":"KV PUT failed: 429 Too Many Requests"}\n'. Every state above is present a different number of times, so a number that is wrong cannot be a number that was copied from its neighbour.
+E       assert 'SWEPT 10 records and 2 refusal marks: notified 4, NOT NOTIFIED 3, NO OUTCOME 2, UNREADABLE 1.' in 'NOT NOTIFIED: request:2026-08-21T10:01:00.000Z:bbbbbbbb - stored, and the notice to the operator did not go out.\nNO ..."request:2026-08-21T10:02:00.000Z:cccccccc","notice_delivered":true,"reason":"KV PUT failed: 429 Too Many Requests"}\n'
+
+tests/test_intake_sweep_distinguishes_its_states.py:455: AssertionError
+______ test_a_day_on_which_nothing_was_notified_reports_nothing_notified _______
+
+    def test_a_day_on_which_nothing_was_notified_reports_nothing_notified() -> None:
+        """A zero in the count that has to BE a zero, and the pair that tells two defects apart.
+    
+        A counter that stopped counting and a counter transposed with its neighbour both print a wrong
+        summary over a namespace holding every state, and they print DIFFERENT wrong summaries here:
+        with nothing notified and three submissions unseen, a `notified` that stopped counting is still
+        right, and one carrying its neighbour's value reports three notified applicants who do not
+        exist. Without this the two are one finding, which is the transposition RED-013 was corrected
+        for, this time between mutations rather than inside one.
+        """
+        keys = dict([record(FALSE, False)])
+        for n in range(2):
+            keys.update([record(f"request:2026-08-21T16:0{n}:00.000Z:6666666{n}", False)])
+        r = run(keys)
+>       assert "notified 0, NOT NOTIFIED 3" in r["out"], (
+            f"three submissions nobody was told about were not counted as three, or the run invented "
+            f"notified records to sit beside them: {r['out']!r}")
+E       AssertionError: three submissions nobody was told about were not counted as three, or the run invented notified records to sit beside them: 'NOT NOTIFIED: request:2026-08-21T10:01:00.000Z:bbbbbbbb - stored, and the notice to the operator did not go out.\nNOT NOTIFIED: request:2026-08-21T16:00:00.000Z:66666660 - stored, and the notice to the operator did not go out.\nNOT NOTIFIED: request:2026-08-21T16:01:00.000Z:66666661 - stored, and the notice to the operator did not go out.\n'
+E       assert 'notified 0, NOT NOTIFIED 3' in 'NOT NOTIFIED: request:2026-08-21T10:01:00.000Z:bbbbbbbb - stored, and the notice to the operator did not go out.\nNOT...t.\nNOT NOTIFIED: request:2026-08-21T16:01:00.000Z:66666661 - stored, and the notice to the operator did not go out.\n'
+
+tests/test_intake_sweep_distinguishes_its_states.py:476: AssertionError
+____________ test_the_count_accounts_for_every_key_that_was_listed _____________
+
+    def test_the_count_accounts_for_every_key_that_was_listed() -> None:
+        """`records + marks` is the whole namespace, readable or not.
+    
+        A key the store refused was still LISTED, so a count that rises only on a successful read drops
+        exactly the keys the sweep exists to surface - and then reports a smaller namespace than the one
+        it swept, which reads as though those submissions had never been made.
+        """
+        r = run({FALSE: {"refuse": True}, MARK: {"refuse": True}})
+>       assert "SWEPT 1 records and 1 refusal marks" in r["out"], (
+            f"keys that could not be read fell out of the count of what was swept: {r['out']!r}")
+E       AssertionError: keys that could not be read fell out of the count of what was swept: 'UNREADABLE: request:2026-08-21T10:01:00.000Z:bbbbbbbb - the store refused the read.\nUNREADABLE: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc - the store refused the read.\n'
+E       assert 'SWEPT 1 records and 1 refusal marks' in 'UNREADABLE: request:2026-08-21T10:01:00.000Z:bbbbbbbb - the store refused the read.\nUNREADABLE: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc - the store refused the read.\n'
+
+tests/test_intake_sweep_distinguishes_its_states.py:489: AssertionError
+_________ test_a_value_that_could_not_be_read_is_counted_as_unmeasured _________
+
+    def test_a_value_that_could_not_be_read_is_counted_as_unmeasured() -> None:
+        """The unreadable-VALUE branch, whose counter was only ever exercised through the refused-READ
+        branch: dropping the increment printed `UNREADABLE 0` directly beneath an `UNREADABLE:` line -
+        a false zero in the number that says how much of the namespace went unmeasured. Found by Fable.
+        """
+        r = run({NULL: {"value": "<html>an error page</html>"}})
+>       assert "UNREADABLE 1" in r["out"], (
+            f"a record that could not be read was not counted as unmeasured: {r['out']!r}")
+E       AssertionError: a record that could not be read was not counted as unmeasured: 'UNREADABLE: request:2026-08-21T10:02:00.000Z:cccccccc - no readable delivery outcome in the record (got: unreadable).\n'
+E       assert 'UNREADABLE 1' in 'UNREADABLE: request:2026-08-21T10:02:00.000Z:cccccccc - no readable delivery outcome in the record (got: unreadable).\n'
+
+tests/test_intake_sweep_distinguishes_its_states.py:525: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_the_sweep_does_not_report_its_own_marker_as_a_finding
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_sentinel_that_cannot_be_read_is_not_a_sentinel_that_was_read
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_an_empty_namespace_is_a_reading_and_not_a_silence
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_every_number_in_the_count_is_counted
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_day_on_which_nothing_was_notified_reports_nothing_notified
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_the_count_accounts_for_every_key_that_was_listed
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_value_that_could_not_be_read_is_counted_as_unmeasured
+7 failed, 21 passed in 4.59s
+
+# ============================================================================================
+# RED 9.
+# THE SWEEP'S STRONGEST SENTENCE, PRINTED OVER THREE DIFFERENT ZEROS. `no submission has ever been made` is a claim about the endpoint's whole history, and guarding it on the count of READABLE records means a namespace holding one submission the store refused to hand over prints it - directly underneath the `UNREADABLE` line naming that key - and so does a namespace holding a refusal mark, which is written only after a submission was stored. GREEN against the first draft of this gate: the fixture that elicits it was already in the suite and no assertion looked at the line.
+#
+# -   [ "$records" -eq 0 ] && [ "$marks" -eq 0 ] &&
+# -     echo "Zero keys is a reading of its own: no submission has ever been made."
+# +   [ "$records" -eq 0 ] &&
+# +     echo "Zero keys is a reading of its own: no submission has ever been made."  # MUTATION: readable records only
+#
+# $ grep -n 'MUTATION' docs/INTAKE_OPERATIONS.md
+# 147:    echo "Zero keys is a reading of its own: no submission has ever been made."  # MUTATION: readable records only
+#
+# $ python3 -m pytest tests/test_intake_sweep_distinguishes_its_states.py -q
+................F...........                                             [100%]
+=================================== FAILURES ===================================
+____ test_a_namespace_it_could_not_read_is_not_a_namespace_nobody_has_used _____
+
+    def test_a_namespace_it_could_not_read_is_not_a_namespace_nobody_has_used() -> None:
+        """The sweep's own strongest sentence, and the first draft printed it over three different zeros.
+    
+        `no submission has ever been made` is a claim about the whole history of the endpoint. It was
+        guarded on the count of READABLE records, so a namespace holding one submission the store
+        refused to hand over printed it - underneath the `UNREADABLE` line naming that very key - and so
+        did a namespace holding a refusal mark, which exists only because a submission was made. A claim
+        about values nobody read, in the sentence this document exists to forbid. Found by Fable.
+        """
+        refused = run({FALSE: {"refuse": True}})
+        assert NEVER_MADE not in refused["out"], (
+            f"the sweep listed a submission, failed to read it, and reported that no submission has "
+            f"ever been made: {refused['out']!r}")
+        mark_only = run({MARK: {"value": SENTINEL}})
+>       assert NEVER_MADE not in mark_only["out"], (
+            f"a namespace holding the endpoint's own refusal mark - which is written only after a "
+            f"submission was stored - was read as one that has never had a submission: "
+            f"{mark_only['out']!r}")
+E       AssertionError: a namespace holding the endpoint's own refusal mark - which is written only after a submission was stored - was read as one that has never had a submission: 'SURVIVED TO ANSWER: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc {"of":"request:2026-08-21T10:02:00.000Z:cccccccc","notice_delivered":true,"reason":"KV PUT failed: 429 Too Many Requests"}\nSWEPT 0 records and 1 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 0.\nZero keys is a reading of its own: no submission has ever been made.\n'
+E       assert 'no submissi...er been made' not in 'SURVIVED TO...been made.\n'
+E         
+E         'no submission has ever been made' is contained here:
+E            its own: no submission has ever been made.
+
+tests/test_intake_sweep_distinguishes_its_states.py:421: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_namespace_it_could_not_read_is_not_a_namespace_nobody_has_used
+1 failed, 27 passed in 4.57s
+
+# ============================================================================================
+# RED 10.
+# THE `get` POINTED ELSEWHERE while the `list` stays correct - which is the half a control over one call cannot see. In production every value would come back missing and the whole namespace would print as UNREADABLE; the point is that the gate said it covered this and covered it for the `list` only. GREEN against the first draft, which ran its namespace control over an EMPTY namespace, where no `get` is issued at all.
+#
+# -     if ! v=$(npx wrangler kv key get "$k" --namespace-id "$NS" </dev/null); then
+# +     if ! v=$(npx wrangler kv key get "$k" --namespace-id 0 </dev/null); then  # MUTATION
+#
+# $ grep -n 'MUTATION' docs/INTAKE_OPERATIONS.md
+# 83:    if ! v=$(npx wrangler kv key get "$k" --namespace-id 0 </dev/null); then  # MUTATION
+#
+# $ python3 -m pytest tests/test_intake_sweep_distinguishes_its_states.py -q
+.........................F..                                             [100%]
+=================================== FAILURES ===================================
+__________ test_the_sweep_addresses_the_namespace_the_document_names ___________
+
+    def test_the_sweep_addresses_the_namespace_the_document_names() -> None:
+        """A sweep pointed at another namespace would pass every assertion above against the stub and
+        read nothing in production. The id is the one fact in the block that no run can check.
+    
+        OVER A NAMESPACE WITH KEYS IN IT, because the first draft ran this against an empty one: the
+        only call it could inspect was the `list`, and the id on the `get` - the call that fetches every
+        value the operator acts on - was never in the transcript at all. The docstring said "a sweep
+        pointed at another namespace", the assertion covered half of one, and pointing the `get`
+        elsewhere kept the whole suite green. Found by Fable.
+        """
+        r = run(dict([record(TRUE, True), (MARK, {"value": SENTINEL})]))
+        verbs = {c.split()[3] for c in r["calls"]}
+        assert verbs == {"list", "get"}, (
+            f"this control did not observe both calls, so it cannot speak for both: {r['calls']}")
+        for call in r["calls"]:
+>           assert f"--namespace-id {NS}" in call, (
+                f"a call went to a namespace other than the one the document names: {call!r}")
+E           AssertionError: a call went to a namespace other than the one the document names: 'wrangler kv key get request:2026-08-21T10:00:00.000Z:aaaaaaaa --namespace-id 0'
+E           assert '--namespace-id 5d93877f53d94f3fbc4863a0195fc9a4' in 'wrangler kv key get request:2026-08-21T10:00:00.000Z:aaaaaaaa --namespace-id 0'
+
+tests/test_intake_sweep_distinguishes_its_states.py:575: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_the_sweep_addresses_the_namespace_the_document_names
+1 failed, 27 passed in 4.27s
+
+# ============================================================================================
+# RED 11.
+# `notified` STOPS BEING COUNTED, so a day with three notified records reports `notified 0` under a count line whose other numbers are right. Invariant 1's literal subject - a counter that can read zero - inside the summary written to satisfy it. GREEN against the first draft, where `notified` was only ever exercised in runs whose true value was zero.
+#
+# -       true)  notified=$((notified + 1)) ;;
+# +       true)  : ;;  # MUTATION: notified is no longer counted
+#
+# $ grep -n 'MUTATION' docs/INTAKE_OPERATIONS.md
+# 124:      true)  : ;;  # MUTATION: notified is no longer counted
+#
+# $ python3 -m pytest tests/test_intake_sweep_distinguishes_its_states.py -q
+.................F..........                                             [100%]
+=================================== FAILURES ===================================
+__________________ test_every_number_in_the_count_is_counted ___________________
+
+    def test_every_number_in_the_count_is_counted() -> None:
+        """The count line printing is not the same fact as its numbers being true.
+    
+        Asserted over one namespace holding every state at once, because a counter is only observed to
+        work when it has something to count: with `notified`, `UNREADABLE` and the refusal marks each
+        exercised only in runs where their true value was zero, dropping any of those three increments
+        left the whole suite green and printed `notified 0` on a day with three notified records - a
+        counter reading a false zero, which is invariant 1's literal subject. Found by Fable, who
+        applied all three.
+    
+        AND A DIFFERENT COUNT IN EVERY BUCKET, where the draft before this one gave each of them
+        exactly 1.
+        Four counters holding the same number print the same line under every permutation of
+        themselves, so swapping `$notified` and `$not_notified` in the summary - a day with four
+        notified records reported as four unseen ones, and the operator writing to all of them - kept
+        the suite green. That is RED-013's transposition, reintroduced by the fixture written to close
+        a different defect in the same line. Found by Fable.
+        """
+        keys = dict([record(TRUE, True), record(FALSE, False), record(NULL, None),
+                     (MARK, {"value": SENTINEL})])
+        for n in range(3):  # notified: 4
+            keys.update([record(f"request:2026-08-21T11:0{n}:00.000Z:1111111{n}", True)])
+        for n in range(2):  # not notified: 3
+            keys.update([record(f"request:2026-08-21T12:0{n}:00.000Z:2222222{n}", False)])
+        keys.update([record("request:2026-08-21T13:00:00.000Z:33333333", None)])  # no outcome: 2
+        keys["request:2026-08-21T14:00:00.000Z:44444444"] = {"refuse": True}  # unreadable: 1
+        keys["writeback-refused:2026-08-21T15:00:00.000Z:55555555"] = {"value": SENTINEL}  # marks: 2
+        r = run(keys)
+>       assert ("SWEPT 10 records and 2 refusal marks: notified 4, NOT NOTIFIED 3, NO OUTCOME 2, "
+                "UNREADABLE 1." in r["out"]), (
+            f"the count does not describe the namespace it swept: {r['out']!r}. Every state above is "
+            "present a different number of times, so a number that is wrong cannot be a number that "
+            "was copied from its neighbour.")
+E       AssertionError: the count does not describe the namespace it swept: 'NOT NOTIFIED: request:2026-08-21T10:01:00.000Z:bbbbbbbb - stored, and the notice to the operator did not go out.\nNO OUTCOME: request:2026-08-21T10:02:00.000Z:cccccccc - stored, and nothing recorded what the notice did.\nSURVIVED TO ANSWER: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc {"of":"request:2026-08-21T10:02:00.000Z:cccccccc","notice_delivered":true,"reason":"KV PUT failed: 429 Too Many Requests"}\nNOT NOTIFIED: request:2026-08-21T12:00:00.000Z:22222220 - stored, and the notice to the operator did not go out.\nNOT NOTIFIED: request:2026-08-21T12:01:00.000Z:22222221 - stored, and the notice to the operator did not go out.\nNO OUTCOME: request:2026-08-21T13:00:00.000Z:33333333 - stored, and nothing recorded what the notice did.\nUNREADABLE: request:2026-08-21T14:00:00.000Z:44444444 - the store refused the read.\nSURVIVED TO ANSWER: writeback-refused:2026-08-21T15:00:00.000Z:55555555 {"of":"request:2026-08-21T10:02:00.000Z:cccccccc","notice_delivered":true,"reason":"KV PUT failed: 429 Too Many Requests"}\nSWEPT 10 records and 2 refusal marks: notified 0, NOT NOTIFIED 3, NO OUTCOME 2, UNREADABLE 1.\n'. Every state above is present a different number of times, so a number that is wrong cannot be a number that was copied from its neighbour.
+E       assert 'SWEPT 10 records and 2 refusal marks: notified 4, NOT NOTIFIED 3, NO OUTCOME 2, UNREADABLE 1.' in 'NOT NOTIFIED: request:2026-08-21T10:01:00.000Z:bbbbbbbb - stored, and the notice to the operator did not go out.\nNO ...9 Too Many Requests"}\nSWEPT 10 records and 2 refusal marks: notified 0, NOT NOTIFIED 3, NO OUTCOME 2, UNREADABLE 1.\n'
+
+tests/test_intake_sweep_distinguishes_its_states.py:455: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_every_number_in_the_count_is_counted
+1 failed, 27 passed in 3.96s
+
+# ============================================================================================
+# RED 12.
+# THE SENTINEL'S PARSE, UNCHECKED. `jq` writes its errors to stderr, so a mark whose stored value cannot be read prints under `SURVIVED TO ANSWER` with an empty summary after it - and the emptiness is invisible to anything capturing stdout, which is what the scheduled job this document anticipates would do. The operator reads a mark as saying its applicant survived to be answered, off a value that said nothing. GREEN against the first draft.
+#
+# -       if ! m=$(jq -ce 'if type == "object" and has("of") and has("notice_delivered")
+# -                           and has("reason")
+# -                        then {of, notice_delivered, reason}
+# -                        else error("not a refusal mark") end' <<<"$v" 2>/dev/null) || [ -z "$m" ]; then
+# -         echo "UNREADABLE: $k - the refusal mark itself could not be read."
+# -         unreadable=$((unreadable + 1)); rc=1
+# -       else
+# -         echo "SURVIVED TO ANSWER: $k $m"
+# -       fi
+# +       m=$(jq -c '{of, notice_delivered, reason}' <<<"$v" 2>/dev/null)  # MUTATION: parse unchecked
+# +       echo "SURVIVED TO ANSWER: $k $m"
+#
+# $ grep -n 'MUTATION' docs/INTAKE_OPERATIONS.md
+# 107:      m=$(jq -c '{of, notice_delivered, reason}' <<<"$v" 2>/dev/null)  # MUTATION: parse unchecked
+#
+# $ python3 -m pytest tests/test_intake_sweep_distinguishes_its_states.py -q
+..........FFFF..............                                             [100%]
+=================================== FAILURES ===================================
+_____ test_a_sentinel_that_cannot_be_read_is_not_a_sentinel_that_was_read ______
+
+    def test_a_sentinel_that_cannot_be_read_is_not_a_sentinel_that_was_read() -> None:
+        """`jq` writes its parse errors to stderr, so an unparseable mark printed under the healthy
+        label with an empty summary after it - and the emptiness is invisible to anything capturing
+        stdout, which is what the scheduled job the document anticipates would do. The operator would
+        read a mark as saying its applicant survived to be answered, off a value that said nothing.
+        Found by Fable."""
+        r = run({MARK: {"value": "<html>an error page</html>"}})
+>       assert labels(r).get(MARK) == "UNREADABLE", (
+            f"an unreadable refusal mark was reported as one that had been read: {r['out']!r}")
+E       AssertionError: an unreadable refusal mark was reported as one that had been read: 'SURVIVED TO ANSWER: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc \nSWEPT 0 records and 1 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 0.\n'
+E       assert 'SURVIVED TO ANSWER' == 'UNREADABLE'
+E         
+E         - UNREADABLE
+E         + SURVIVED TO ANSWER
+
+tests/test_intake_sweep_distinguishes_its_states.py:331: AssertionError
+_________ test_a_mark_that_carries_nothing_is_not_a_mark_that_was_read _________
+
+    def test_a_mark_that_carries_nothing_is_not_a_mark_that_was_read() -> None:
+        """The repair for the case above, refuted: it checked that `jq` had not FAILED.
+    
+        `{of, notice_delivered, reason}` over a stored `null` or `{}` builds an object of three nulls
+        and succeeds, and on jq 1.6 an empty value exits 0 having printed nothing at all - so each of
+        these printed `SURVIVED TO ANSWER` with an empty or hollow summary and exited 0, which is the
+        exact symptom the previous test is about. A fix that narrows a defect to the inputs its own
+        test used is the shape this whole file is filed under. Found by Fable, on the repair.
+        """
+        for name, value in (("empty", ""), ("JSON null", "null"), ("an empty object", "{}"),
+                            ("an object missing `reason`",
+                             json.dumps({"of": NULL, "notice_delivered": True}))):
+            r = run({MARK: {"value": value}})
+>           assert labels(r).get(MARK) == "UNREADABLE", (
+                f"a refusal mark whose value is {name} was reported as one that had been read: "
+                f"{r['out']!r}")
+E           AssertionError: a refusal mark whose value is empty was reported as one that had been read: 'SURVIVED TO ANSWER: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc \nSWEPT 0 records and 1 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 0.\n'
+E           assert 'SURVIVED TO ANSWER' == 'UNREADABLE'
+E             
+E             - UNREADABLE
+E             + SURVIVED TO ANSWER
+
+tests/test_intake_sweep_distinguishes_its_states.py:350: AssertionError
+_____ test_a_mark_that_does_not_say_which_record_it_is_about_is_unreadable _____
+
+    def test_a_mark_that_does_not_say_which_record_it_is_about_is_unreadable() -> None:
+        """`of` is the whole of the pairing the follow-up runs on: a mark without it cannot be read
+        beside anything, and the operator is left with a `NO OUTCOME` record and a mark that does not
+        claim to be its. Its own test, because the check is a conjunction of three fields and the case
+        above exercised one of them - so deleting either of the other two conjuncts was green, which is
+        this file's own subject a third time. Found by Fable."""
+        r = run({MARK: {"value": json.dumps({"notice_delivered": True, "reason": "429"})}})
+>       assert labels(r).get(MARK) == "UNREADABLE", (
+            f"a refusal mark that names no record was read as one that does: {r['out']!r}")
+E       AssertionError: a refusal mark that names no record was read as one that does: 'SURVIVED TO ANSWER: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc {"of":null,"notice_delivered":true,"reason":"429"}\nSWEPT 0 records and 1 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 0.\n'
+E       assert 'SURVIVED TO ANSWER' == 'UNREADABLE'
+E         
+E         - UNREADABLE
+E         + SURVIVED TO ANSWER
+
+tests/test_intake_sweep_distinguishes_its_states.py:364: AssertionError
+_______ test_a_mark_that_does_not_carry_a_delivery_outcome_is_unreadable _______
+
+    def test_a_mark_that_does_not_carry_a_delivery_outcome_is_unreadable() -> None:
+        """The field the mark exists to carry. Without it the pairing says the endpoint survived to
+        answer and cannot say what the applicant was told, which is the state the sentinel was
+        introduced to end."""
+        r = run({MARK: {"value": json.dumps({"of": NULL, "reason": "429"})}})
+>       assert labels(r).get(MARK) == "UNREADABLE", (
+            f"a refusal mark carrying no delivery outcome was read as a complete one: {r['out']!r}")
+E       AssertionError: a refusal mark carrying no delivery outcome was read as a complete one: 'SURVIVED TO ANSWER: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc {"of":"request:2026-08-21T10:02:00.000Z:cccccccc","notice_delivered":null,"reason":"429"}\nSWEPT 0 records and 1 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 0.\n'
+E       assert 'SURVIVED TO ANSWER' == 'UNREADABLE'
+E         
+E         - UNREADABLE
+E         + SURVIVED TO ANSWER
+
+tests/test_intake_sweep_distinguishes_its_states.py:373: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_sentinel_that_cannot_be_read_is_not_a_sentinel_that_was_read
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_mark_that_carries_nothing_is_not_a_mark_that_was_read
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_mark_that_does_not_say_which_record_it_is_about_is_unreadable
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_mark_that_does_not_carry_a_delivery_outcome_is_unreadable
+4 failed, 24 passed in 4.27s
+
+# ============================================================================================
+# RED 13.
+# THE SAME FALSE ZERO ON THE OTHER COUNTER: `refusal marks 0` printed directly beneath a `SURVIVED TO ANSWER` line. It also breaks the accounting the count line rests on - records plus marks is every key that was listed - so the namespace reported is smaller than the one that was swept. GREEN against the first draft.
+#
+# -       writeback-refused:*) mark=1; marks=$((marks + 1)) ;;
+# +       writeback-refused:*) mark=1 ;;  # MUTATION: marks are no longer counted
+#
+# $ grep -n 'MUTATION' docs/INTAKE_OPERATIONS.md
+# 76:      writeback-refused:*) mark=1 ;;  # MUTATION: marks are no longer counted
+#
+# $ python3 -m pytest tests/test_intake_sweep_distinguishes_its_states.py -q
+.........F......FF.F........                                             [100%]
+=================================== FAILURES ===================================
+__________ test_the_sweep_does_not_report_its_own_marker_as_a_finding __________
+
+    def test_the_sweep_does_not_report_its_own_marker_as_a_finding() -> None:
+        """A `writeback-refused:` key carries no `delivered` field, so every filter over that field
+        matches it. An instrument that reports its own marker as a finding is worse than one that
+        ignores it: the operator would follow up a sentinel, and the count of people would double."""
+        r = run(dict([record(NULL, None), (MARK, {"value": SENTINEL})]))
+        seen = labels(r)
+        assert seen.get(MARK) == "SURVIVED TO ANSWER", (
+            f"the sentinel was printed as though it were a submission: {r['out']!r}")
+        assert "429" in r["out"], (
+            "the sentinel's reason was not printed. It is what tells the operator whether they are "
+            "looking at the documented same-key limit or at something nobody has seen yet.")
+>       assert re.search(r"SWEPT 1 records and 1 refusal marks", r["out"]), (
+            f"the sentinel was counted among the records, so the count of submissions is not one: "
+            f"{r['out']!r}")
+E       AssertionError: the sentinel was counted among the records, so the count of submissions is not one: 'NO OUTCOME: request:2026-08-21T10:02:00.000Z:cccccccc - stored, and nothing recorded what the notice did.\nSURVIVED TO ANSWER: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc {"of":"request:2026-08-21T10:02:00.000Z:cccccccc","notice_delivered":true,"reason":"KV PUT failed: 429 Too Many Requests"}\nSWEPT 1 records and 0 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 1, UNREADABLE 0.\n'
+E       assert None
+E        +  where None = <function search at 0x7f8a36dc36d0>('SWEPT 1 records and 1 refusal marks', 'NO OUTCOME: request:2026-08-21T10:02:00.000Z:cccccccc - stored, and nothing recorded what the notice did.\nSURVIVED T...29 Too Many Requests"}\nSWEPT 1 records and 0 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 1, UNREADABLE 0.\n')
+E        +    where <function search at 0x7f8a36dc36d0> = re.search
+
+tests/test_intake_sweep_distinguishes_its_states.py:319: AssertionError
+____ test_a_namespace_it_could_not_read_is_not_a_namespace_nobody_has_used _____
+
+    def test_a_namespace_it_could_not_read_is_not_a_namespace_nobody_has_used() -> None:
+        """The sweep's own strongest sentence, and the first draft printed it over three different zeros.
+    
+        `no submission has ever been made` is a claim about the whole history of the endpoint. It was
+        guarded on the count of READABLE records, so a namespace holding one submission the store
+        refused to hand over printed it - underneath the `UNREADABLE` line naming that very key - and so
+        did a namespace holding a refusal mark, which exists only because a submission was made. A claim
+        about values nobody read, in the sentence this document exists to forbid. Found by Fable.
+        """
+        refused = run({FALSE: {"refuse": True}})
+        assert NEVER_MADE not in refused["out"], (
+            f"the sweep listed a submission, failed to read it, and reported that no submission has "
+            f"ever been made: {refused['out']!r}")
+        mark_only = run({MARK: {"value": SENTINEL}})
+>       assert NEVER_MADE not in mark_only["out"], (
+            f"a namespace holding the endpoint's own refusal mark - which is written only after a "
+            f"submission was stored - was read as one that has never had a submission: "
+            f"{mark_only['out']!r}")
+E       AssertionError: a namespace holding the endpoint's own refusal mark - which is written only after a submission was stored - was read as one that has never had a submission: 'SURVIVED TO ANSWER: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc {"of":"request:2026-08-21T10:02:00.000Z:cccccccc","notice_delivered":true,"reason":"KV PUT failed: 429 Too Many Requests"}\nSWEPT 0 records and 0 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 0.\nZero keys is a reading of its own: no submission has ever been made.\n'
+E       assert 'no submissi...er been made' not in 'SURVIVED TO...been made.\n'
+E         
+E         'no submission has ever been made' is contained here:
+E            its own: no submission has ever been made.
+
+tests/test_intake_sweep_distinguishes_its_states.py:421: AssertionError
+__________________ test_every_number_in_the_count_is_counted ___________________
+
+    def test_every_number_in_the_count_is_counted() -> None:
+        """The count line printing is not the same fact as its numbers being true.
+    
+        Asserted over one namespace holding every state at once, because a counter is only observed to
+        work when it has something to count: with `notified`, `UNREADABLE` and the refusal marks each
+        exercised only in runs where their true value was zero, dropping any of those three increments
+        left the whole suite green and printed `notified 0` on a day with three notified records - a
+        counter reading a false zero, which is invariant 1's literal subject. Found by Fable, who
+        applied all three.
+    
+        AND A DIFFERENT COUNT IN EVERY BUCKET, where the draft before this one gave each of them
+        exactly 1.
+        Four counters holding the same number print the same line under every permutation of
+        themselves, so swapping `$notified` and `$not_notified` in the summary - a day with four
+        notified records reported as four unseen ones, and the operator writing to all of them - kept
+        the suite green. That is RED-013's transposition, reintroduced by the fixture written to close
+        a different defect in the same line. Found by Fable.
+        """
+        keys = dict([record(TRUE, True), record(FALSE, False), record(NULL, None),
+                     (MARK, {"value": SENTINEL})])
+        for n in range(3):  # notified: 4
+            keys.update([record(f"request:2026-08-21T11:0{n}:00.000Z:1111111{n}", True)])
+        for n in range(2):  # not notified: 3
+            keys.update([record(f"request:2026-08-21T12:0{n}:00.000Z:2222222{n}", False)])
+        keys.update([record("request:2026-08-21T13:00:00.000Z:33333333", None)])  # no outcome: 2
+        keys["request:2026-08-21T14:00:00.000Z:44444444"] = {"refuse": True}  # unreadable: 1
+        keys["writeback-refused:2026-08-21T15:00:00.000Z:55555555"] = {"value": SENTINEL}  # marks: 2
+        r = run(keys)
+>       assert ("SWEPT 10 records and 2 refusal marks: notified 4, NOT NOTIFIED 3, NO OUTCOME 2, "
+                "UNREADABLE 1." in r["out"]), (
+            f"the count does not describe the namespace it swept: {r['out']!r}. Every state above is "
+            "present a different number of times, so a number that is wrong cannot be a number that "
+            "was copied from its neighbour.")
+E       AssertionError: the count does not describe the namespace it swept: 'NOT NOTIFIED: request:2026-08-21T10:01:00.000Z:bbbbbbbb - stored, and the notice to the operator did not go out.\nNO OUTCOME: request:2026-08-21T10:02:00.000Z:cccccccc - stored, and nothing recorded what the notice did.\nSURVIVED TO ANSWER: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc {"of":"request:2026-08-21T10:02:00.000Z:cccccccc","notice_delivered":true,"reason":"KV PUT failed: 429 Too Many Requests"}\nNOT NOTIFIED: request:2026-08-21T12:00:00.000Z:22222220 - stored, and the notice to the operator did not go out.\nNOT NOTIFIED: request:2026-08-21T12:01:00.000Z:22222221 - stored, and the notice to the operator did not go out.\nNO OUTCOME: request:2026-08-21T13:00:00.000Z:33333333 - stored, and nothing recorded what the notice did.\nUNREADABLE: request:2026-08-21T14:00:00.000Z:44444444 - the store refused the read.\nSURVIVED TO ANSWER: writeback-refused:2026-08-21T15:00:00.000Z:55555555 {"of":"request:2026-08-21T10:02:00.000Z:cccccccc","notice_delivered":true,"reason":"KV PUT failed: 429 Too Many Requests"}\nSWEPT 10 records and 0 refusal marks: notified 4, NOT NOTIFIED 3, NO OUTCOME 2, UNREADABLE 1.\n'. Every state above is present a different number of times, so a number that is wrong cannot be a number that was copied from its neighbour.
+E       assert 'SWEPT 10 records and 2 refusal marks: notified 4, NOT NOTIFIED 3, NO OUTCOME 2, UNREADABLE 1.' in 'NOT NOTIFIED: request:2026-08-21T10:01:00.000Z:bbbbbbbb - stored, and the notice to the operator did not go out.\nNO ...9 Too Many Requests"}\nSWEPT 10 records and 0 refusal marks: notified 4, NOT NOTIFIED 3, NO OUTCOME 2, UNREADABLE 1.\n'
+
+tests/test_intake_sweep_distinguishes_its_states.py:455: AssertionError
+____________ test_the_count_accounts_for_every_key_that_was_listed _____________
+
+    def test_the_count_accounts_for_every_key_that_was_listed() -> None:
+        """`records + marks` is the whole namespace, readable or not.
+    
+        A key the store refused was still LISTED, so a count that rises only on a successful read drops
+        exactly the keys the sweep exists to surface - and then reports a smaller namespace than the one
+        it swept, which reads as though those submissions had never been made.
+        """
+        r = run({FALSE: {"refuse": True}, MARK: {"refuse": True}})
+>       assert "SWEPT 1 records and 1 refusal marks" in r["out"], (
+            f"keys that could not be read fell out of the count of what was swept: {r['out']!r}")
+E       AssertionError: keys that could not be read fell out of the count of what was swept: 'UNREADABLE: request:2026-08-21T10:01:00.000Z:bbbbbbbb - the store refused the read.\nUNREADABLE: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc - the store refused the read.\nSWEPT 1 records and 0 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 2.\n'
+E       assert 'SWEPT 1 records and 1 refusal marks' in 'UNREADABLE: request:2026-08-21T10:01:00.000Z:bbbbbbbb - the store refused the read.\nUNREADABLE: writeback-refused:20...tore refused the read.\nSWEPT 1 records and 0 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 2.\n'
+
+tests/test_intake_sweep_distinguishes_its_states.py:489: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_the_sweep_does_not_report_its_own_marker_as_a_finding
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_namespace_it_could_not_read_is_not_a_namespace_nobody_has_used
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_every_number_in_the_count_is_counted
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_the_count_accounts_for_every_key_that_was_listed
+4 failed, 24 passed in 4.63s
+
+# ============================================================================================
+# RED 14.
+# RED-013'S TRANSPOSITION, IN THE LINE THE OPERATOR READS. `notified` and `not_notified` swap places in the summary, so a day with four notified records and three unseen ones reports the reverse - and the operator writes to four people who were already told and leaves three who were not. Green until the fixture stopped giving every bucket the count 1: four counters holding the same number print the same line under every permutation of themselves, which is a count that cannot be wrong because it cannot be read.
+#
+# -   echo "SWEPT $records records and $marks refusal marks: notified $notified," \
+# -        "NOT NOTIFIED $not_notified, NO OUTCOME $no_outcome, UNREADABLE $unreadable."
+# +   echo "SWEPT $records records and $marks refusal marks: notified $not_notified," \
+# +        "NOT NOTIFIED $notified, NO OUTCOME $no_outcome, UNREADABLE $unreadable."  # MUTATION: transposed
+#
+# $ grep -n 'MUTATION' docs/INTAKE_OPERATIONS.md
+# 140:       "NOT NOTIFIED $notified, NO OUTCOME $no_outcome, UNREADABLE $unreadable."  # MUTATION: transposed
+#
+# $ python3 -m pytest tests/test_intake_sweep_distinguishes_its_states.py -q
+.................FF.........                                             [100%]
+=================================== FAILURES ===================================
+__________________ test_every_number_in_the_count_is_counted ___________________
+
+    def test_every_number_in_the_count_is_counted() -> None:
+        """The count line printing is not the same fact as its numbers being true.
+    
+        Asserted over one namespace holding every state at once, because a counter is only observed to
+        work when it has something to count: with `notified`, `UNREADABLE` and the refusal marks each
+        exercised only in runs where their true value was zero, dropping any of those three increments
+        left the whole suite green and printed `notified 0` on a day with three notified records - a
+        counter reading a false zero, which is invariant 1's literal subject. Found by Fable, who
+        applied all three.
+    
+        AND A DIFFERENT COUNT IN EVERY BUCKET, where the draft before this one gave each of them
+        exactly 1.
+        Four counters holding the same number print the same line under every permutation of
+        themselves, so swapping `$notified` and `$not_notified` in the summary - a day with four
+        notified records reported as four unseen ones, and the operator writing to all of them - kept
+        the suite green. That is RED-013's transposition, reintroduced by the fixture written to close
+        a different defect in the same line. Found by Fable.
+        """
+        keys = dict([record(TRUE, True), record(FALSE, False), record(NULL, None),
+                     (MARK, {"value": SENTINEL})])
+        for n in range(3):  # notified: 4
+            keys.update([record(f"request:2026-08-21T11:0{n}:00.000Z:1111111{n}", True)])
+        for n in range(2):  # not notified: 3
+            keys.update([record(f"request:2026-08-21T12:0{n}:00.000Z:2222222{n}", False)])
+        keys.update([record("request:2026-08-21T13:00:00.000Z:33333333", None)])  # no outcome: 2
+        keys["request:2026-08-21T14:00:00.000Z:44444444"] = {"refuse": True}  # unreadable: 1
+        keys["writeback-refused:2026-08-21T15:00:00.000Z:55555555"] = {"value": SENTINEL}  # marks: 2
+        r = run(keys)
+>       assert ("SWEPT 10 records and 2 refusal marks: notified 4, NOT NOTIFIED 3, NO OUTCOME 2, "
+                "UNREADABLE 1." in r["out"]), (
+            f"the count does not describe the namespace it swept: {r['out']!r}. Every state above is "
+            "present a different number of times, so a number that is wrong cannot be a number that "
+            "was copied from its neighbour.")
+E       AssertionError: the count does not describe the namespace it swept: 'NOT NOTIFIED: request:2026-08-21T10:01:00.000Z:bbbbbbbb - stored, and the notice to the operator did not go out.\nNO OUTCOME: request:2026-08-21T10:02:00.000Z:cccccccc - stored, and nothing recorded what the notice did.\nSURVIVED TO ANSWER: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc {"of":"request:2026-08-21T10:02:00.000Z:cccccccc","notice_delivered":true,"reason":"KV PUT failed: 429 Too Many Requests"}\nNOT NOTIFIED: request:2026-08-21T12:00:00.000Z:22222220 - stored, and the notice to the operator did not go out.\nNOT NOTIFIED: request:2026-08-21T12:01:00.000Z:22222221 - stored, and the notice to the operator did not go out.\nNO OUTCOME: request:2026-08-21T13:00:00.000Z:33333333 - stored, and nothing recorded what the notice did.\nUNREADABLE: request:2026-08-21T14:00:00.000Z:44444444 - the store refused the read.\nSURVIVED TO ANSWER: writeback-refused:2026-08-21T15:00:00.000Z:55555555 {"of":"request:2026-08-21T10:02:00.000Z:cccccccc","notice_delivered":true,"reason":"KV PUT failed: 429 Too Many Requests"}\nSWEPT 10 records and 2 refusal marks: notified 3, NOT NOTIFIED 4, NO OUTCOME 2, UNREADABLE 1.\n'. Every state above is present a different number of times, so a number that is wrong cannot be a number that was copied from its neighbour.
+E       assert 'SWEPT 10 records and 2 refusal marks: notified 4, NOT NOTIFIED 3, NO OUTCOME 2, UNREADABLE 1.' in 'NOT NOTIFIED: request:2026-08-21T10:01:00.000Z:bbbbbbbb - stored, and the notice to the operator did not go out.\nNO ...9 Too Many Requests"}\nSWEPT 10 records and 2 refusal marks: notified 3, NOT NOTIFIED 4, NO OUTCOME 2, UNREADABLE 1.\n'
+
+tests/test_intake_sweep_distinguishes_its_states.py:455: AssertionError
+______ test_a_day_on_which_nothing_was_notified_reports_nothing_notified _______
+
+    def test_a_day_on_which_nothing_was_notified_reports_nothing_notified() -> None:
+        """A zero in the count that has to BE a zero, and the pair that tells two defects apart.
+    
+        A counter that stopped counting and a counter transposed with its neighbour both print a wrong
+        summary over a namespace holding every state, and they print DIFFERENT wrong summaries here:
+        with nothing notified and three submissions unseen, a `notified` that stopped counting is still
+        right, and one carrying its neighbour's value reports three notified applicants who do not
+        exist. Without this the two are one finding, which is the transposition RED-013 was corrected
+        for, this time between mutations rather than inside one.
+        """
+        keys = dict([record(FALSE, False)])
+        for n in range(2):
+            keys.update([record(f"request:2026-08-21T16:0{n}:00.000Z:6666666{n}", False)])
+        r = run(keys)
+>       assert "notified 0, NOT NOTIFIED 3" in r["out"], (
+            f"three submissions nobody was told about were not counted as three, or the run invented "
+            f"notified records to sit beside them: {r['out']!r}")
+E       AssertionError: three submissions nobody was told about were not counted as three, or the run invented notified records to sit beside them: 'NOT NOTIFIED: request:2026-08-21T10:01:00.000Z:bbbbbbbb - stored, and the notice to the operator did not go out.\nNOT NOTIFIED: request:2026-08-21T16:00:00.000Z:66666660 - stored, and the notice to the operator did not go out.\nNOT NOTIFIED: request:2026-08-21T16:01:00.000Z:66666661 - stored, and the notice to the operator did not go out.\nSWEPT 3 records and 0 refusal marks: notified 3, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 0.\n'
+E       assert 'notified 0, NOT NOTIFIED 3' in 'NOT NOTIFIED: request:2026-08-21T10:01:00.000Z:bbbbbbbb - stored, and the notice to the operator did not go out.\nNOT...erator did not go out.\nSWEPT 3 records and 0 refusal marks: notified 3, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 0.\n'
+
+tests/test_intake_sweep_distinguishes_its_states.py:476: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_every_number_in_the_count_is_counted
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_day_on_which_nothing_was_notified_reports_nothing_notified
+2 failed, 26 passed in 4.56s
+
+# ============================================================================================
+# RED 15.
+# THE FINDING PRINTED AND THE STATUS SAYING OTHERWISE. `rc` stops rising on the `NOT NOTIFIED` branch, so a namespace whose only submission never reached the operator exits 0 - `nothing qualified`, to the scheduled job the document anticipates. Green because the exit-status test reached `rc` through a `NO OUTCOME` alone: one variable, four branches that set it, one of them ever exercised.
+#
+# -       false) echo "NOT NOTIFIED: $k - stored, and the notice to the operator did not go out."
+# -              not_notified=$((not_notified + 1)); rc=1 ;;
+# +       false) echo "NOT NOTIFIED: $k - stored, and the notice did not go out."
+# +              not_notified=$((not_notified + 1)) ;;  # MUTATION: no longer a finding
+#
+# $ grep -n 'MUTATION' docs/INTAKE_OPERATIONS.md
+# 126:             not_notified=$((not_notified + 1)) ;;  # MUTATION: no longer a finding
+#
+# $ python3 -m pytest tests/test_intake_sweep_distinguishes_its_states.py -q
+....................F.......                                             [100%]
+=================================== FAILURES ===================================
+____ test_a_submission_nobody_was_told_about_is_a_finding_in_the_status_too ____
+
+    def test_a_submission_nobody_was_told_about_is_a_finding_in_the_status_too() -> None:
+        """`rc` is one variable and four branches set it; the exit-status test reaches it through a
+        `NO OUTCOME` alone. So dropping `rc=1` from the `NOT NOTIFIED` branch - a submission the
+        operator was never told about, printed and then reported as a clean run to the scheduled job
+        the document anticipates - left the suite green. Found by Fable.
+    
+        ONE STATE PER TEST, not a loop over all of them: a loop stops at its first failure and reports
+        one finding for two defects, which is how mutations 15 and 16 of RED-018 arrived carrying the
+        same transcript.
+        """
+        r = run(dict([record(FALSE, False)]))
+>       assert r["status"] == 1, (
+            f"the sweep printed a submission the operator was never told about and exited "
+            f"{r['status']}, which is what it exits when there is nothing to act on: {r['out']!r}")
+E       AssertionError: the sweep printed a submission the operator was never told about and exited 0, which is what it exits when there is nothing to act on: 'NOT NOTIFIED: request:2026-08-21T10:01:00.000Z:bbbbbbbb - stored, and the notice did not go out.\nSWEPT 1 records and 0 refusal marks: notified 0, NOT NOTIFIED 1, NO OUTCOME 0, UNREADABLE 0.\n'
+E       assert 0 == 1
+
+tests/test_intake_sweep_distinguishes_its_states.py:506: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_submission_nobody_was_told_about_is_a_finding_in_the_status_too
+1 failed, 27 passed in 4.08s
+
+# ============================================================================================
+# RED 16.
+# THE SAME BRANCH ONE STATE OVER: a record whose value came back unreadable is printed and the run still exits 0. The worse half of mutation 15, because what went unmeasured here is not a delivery outcome but the record itself.
+#
+# -       *)     echo "UNREADABLE: $k - no readable delivery outcome in the record (got: $d)."
+# -              unreadable=$((unreadable + 1)); rc=1 ;;
+# +       *)     echo "UNREADABLE: $k - no readable delivery outcome (got: $d)."
+# +              unreadable=$((unreadable + 1)) ;;  # MUTATION: no longer a finding
+#
+# $ grep -n 'MUTATION' docs/INTAKE_OPERATIONS.md
+# 130:             unreadable=$((unreadable + 1)) ;;  # MUTATION: no longer a finding
+#
+# $ python3 -m pytest tests/test_intake_sweep_distinguishes_its_states.py -q
+.....................F......                                             [100%]
+=================================== FAILURES ===================================
+_____ test_a_record_that_could_not_be_read_is_a_finding_in_the_status_too ______
+
+    def test_a_record_that_could_not_be_read_is_a_finding_in_the_status_too() -> None:
+        """The same branch one state over, and the worse half: what went unmeasured is not a delivery
+        outcome but the record itself."""
+        r = run({NULL: {"value": "<html>an error page</html>"}})
+>       assert r["status"] == 1, (
+            f"the sweep could not read a stored record and reported a clean run: {r['out']!r}")
+E       AssertionError: the sweep could not read a stored record and reported a clean run: 'UNREADABLE: request:2026-08-21T10:02:00.000Z:cccccccc - no readable delivery outcome (got: unreadable).\nSWEPT 1 records and 0 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 1.\n'
+E       assert 0 == 1
+
+tests/test_intake_sweep_distinguishes_its_states.py:515: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_record_that_could_not_be_read_is_a_finding_in_the_status_too
+1 failed, 27 passed in 4.21s
+
+# ============================================================================================
+# RED 17.
+# THE THIRD FALSE ZERO, and the one that reads worst: `UNREADABLE 0` printed directly beneath an `UNREADABLE:` line. The number that says how much of the namespace went unmeasured, reporting that all of it was. Green because that counter was only ever exercised through the refused-READ branch beside it.
+#
+# -       *)     echo "UNREADABLE: $k - no readable delivery outcome in the record (got: $d)."
+# -              unreadable=$((unreadable + 1)); rc=1 ;;
+# +       *)     echo "UNREADABLE: $k - no readable delivery outcome in the record (got: $d)."
+# +              rc=1 ;;  # MUTATION: the unreadable records stop being counted
+#
+# $ grep -n 'MUTATION' docs/INTAKE_OPERATIONS.md
+# 130:             rc=1 ;;  # MUTATION: the unreadable records stop being counted
+#
+# $ python3 -m pytest tests/test_intake_sweep_distinguishes_its_states.py -q
+......................F.....                                             [100%]
+=================================== FAILURES ===================================
+_________ test_a_value_that_could_not_be_read_is_counted_as_unmeasured _________
+
+    def test_a_value_that_could_not_be_read_is_counted_as_unmeasured() -> None:
+        """The unreadable-VALUE branch, whose counter was only ever exercised through the refused-READ
+        branch: dropping the increment printed `UNREADABLE 0` directly beneath an `UNREADABLE:` line -
+        a false zero in the number that says how much of the namespace went unmeasured. Found by Fable.
+        """
+        r = run({NULL: {"value": "<html>an error page</html>"}})
+>       assert "UNREADABLE 1" in r["out"], (
+            f"a record that could not be read was not counted as unmeasured: {r['out']!r}")
+E       AssertionError: a record that could not be read was not counted as unmeasured: 'UNREADABLE: request:2026-08-21T10:02:00.000Z:cccccccc - no readable delivery outcome in the record (got: unreadable).\nSWEPT 1 records and 0 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 0.\n'
+E       assert 'UNREADABLE 1' in 'UNREADABLE: request:2026-08-21T10:02:00.000Z:cccccccc - no readable delivery outcome in the record (got: unreadable).\nSWEPT 1 records and 0 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 0.\n'
+
+tests/test_intake_sweep_distinguishes_its_states.py:525: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_value_that_could_not_be_read_is_counted_as_unmeasured
+1 failed, 27 passed in 4.08s
+
+# ============================================================================================
+# RED 18.
+# THE REPAIR FOR MUTATION 12, NARROWED TO THE INPUT ITS OWN TEST USED. Checking that `jq` did not FAIL is not checking that a mark was read: `{of, notice_delivered, reason}` over a stored `null` or `{}` builds an object of three nulls and succeeds, and jq 1.6 exits 0 on an empty value having printed nothing at all. Each prints `SURVIVED TO ANSWER` with a hollow summary - mutation 12's exact symptom, surviving its own fix. Green.
+#
+# -       if ! m=$(jq -ce 'if type == "object" and has("of") and has("notice_delivered")
+# -                           and has("reason")
+# -                        then {of, notice_delivered, reason}
+# -                        else error("not a refusal mark") end' <<<"$v" 2>/dev/null) || [ -z "$m" ]; then
+# +       if ! m=$(jq -ce '{of, notice_delivered, reason}' <<<"$v" 2>/dev/null); then  # MUTATION: failure checked, emptiness not
+#
+# $ grep -n 'MUTATION' docs/INTAKE_OPERATIONS.md
+# 107:      if ! m=$(jq -ce '{of, notice_delivered, reason}' <<<"$v" 2>/dev/null); then  # MUTATION: failure checked, emptiness not
+#
+# $ python3 -m pytest tests/test_intake_sweep_distinguishes_its_states.py -q
+...........FFF..............                                             [100%]
+=================================== FAILURES ===================================
+_________ test_a_mark_that_carries_nothing_is_not_a_mark_that_was_read _________
+
+    def test_a_mark_that_carries_nothing_is_not_a_mark_that_was_read() -> None:
+        """The repair for the case above, refuted: it checked that `jq` had not FAILED.
+    
+        `{of, notice_delivered, reason}` over a stored `null` or `{}` builds an object of three nulls
+        and succeeds, and on jq 1.6 an empty value exits 0 having printed nothing at all - so each of
+        these printed `SURVIVED TO ANSWER` with an empty or hollow summary and exited 0, which is the
+        exact symptom the previous test is about. A fix that narrows a defect to the inputs its own
+        test used is the shape this whole file is filed under. Found by Fable, on the repair.
+        """
+        for name, value in (("empty", ""), ("JSON null", "null"), ("an empty object", "{}"),
+                            ("an object missing `reason`",
+                             json.dumps({"of": NULL, "notice_delivered": True}))):
+            r = run({MARK: {"value": value}})
+>           assert labels(r).get(MARK) == "UNREADABLE", (
+                f"a refusal mark whose value is {name} was reported as one that had been read: "
+                f"{r['out']!r}")
+E           AssertionError: a refusal mark whose value is empty was reported as one that had been read: 'SURVIVED TO ANSWER: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc \nSWEPT 0 records and 1 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 0.\n'
+E           assert 'SURVIVED TO ANSWER' == 'UNREADABLE'
+E             
+E             - UNREADABLE
+E             + SURVIVED TO ANSWER
+
+tests/test_intake_sweep_distinguishes_its_states.py:350: AssertionError
+_____ test_a_mark_that_does_not_say_which_record_it_is_about_is_unreadable _____
+
+    def test_a_mark_that_does_not_say_which_record_it_is_about_is_unreadable() -> None:
+        """`of` is the whole of the pairing the follow-up runs on: a mark without it cannot be read
+        beside anything, and the operator is left with a `NO OUTCOME` record and a mark that does not
+        claim to be its. Its own test, because the check is a conjunction of three fields and the case
+        above exercised one of them - so deleting either of the other two conjuncts was green, which is
+        this file's own subject a third time. Found by Fable."""
+        r = run({MARK: {"value": json.dumps({"notice_delivered": True, "reason": "429"})}})
+>       assert labels(r).get(MARK) == "UNREADABLE", (
+            f"a refusal mark that names no record was read as one that does: {r['out']!r}")
+E       AssertionError: a refusal mark that names no record was read as one that does: 'SURVIVED TO ANSWER: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc {"of":null,"notice_delivered":true,"reason":"429"}\nSWEPT 0 records and 1 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 0.\n'
+E       assert 'SURVIVED TO ANSWER' == 'UNREADABLE'
+E         
+E         - UNREADABLE
+E         + SURVIVED TO ANSWER
+
+tests/test_intake_sweep_distinguishes_its_states.py:364: AssertionError
+_______ test_a_mark_that_does_not_carry_a_delivery_outcome_is_unreadable _______
+
+    def test_a_mark_that_does_not_carry_a_delivery_outcome_is_unreadable() -> None:
+        """The field the mark exists to carry. Without it the pairing says the endpoint survived to
+        answer and cannot say what the applicant was told, which is the state the sentinel was
+        introduced to end."""
+        r = run({MARK: {"value": json.dumps({"of": NULL, "reason": "429"})}})
+>       assert labels(r).get(MARK) == "UNREADABLE", (
+            f"a refusal mark carrying no delivery outcome was read as a complete one: {r['out']!r}")
+E       AssertionError: a refusal mark carrying no delivery outcome was read as a complete one: 'SURVIVED TO ANSWER: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc {"of":"request:2026-08-21T10:02:00.000Z:cccccccc","notice_delivered":null,"reason":"429"}\nSWEPT 0 records and 1 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 0.\n'
+E       assert 'SURVIVED TO ANSWER' == 'UNREADABLE'
+E         
+E         - UNREADABLE
+E         + SURVIVED TO ANSWER
+
+tests/test_intake_sweep_distinguishes_its_states.py:373: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_mark_that_carries_nothing_is_not_a_mark_that_was_read
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_mark_that_does_not_say_which_record_it_is_about_is_unreadable
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_mark_that_does_not_carry_a_delivery_outcome_is_unreadable
+3 failed, 25 passed in 4.10s
+
+# ============================================================================================
+# RED 19.
+# THE OTHER DIRECTION OF THAT CHECK, which is why it asks `has()` and not for a value. A mark carrying `notice_delivered: false` is the one the operator most needs read out - the applicant was answered and nobody was told - and a truthiness test files it under UNREADABLE, where the reason nobody was told is no longer printed at all.
+#
+# - has("notice_delivered")
+# + (.notice_delivered == true)  # MUTATION: a measured false reads as absent
+#
+# $ grep -n 'MUTATION' docs/INTAKE_OPERATIONS.md
+# 107:      if ! m=$(jq -ce 'if type == "object" and has("of") and (.notice_delivered == true)  # MUTATION: a measured false reads as absent
+#
+# $ python3 -m pytest tests/test_intake_sweep_distinguishes_its_states.py -q
+..............F.............                                             [100%]
+=================================== FAILURES ===================================
+______ test_a_mark_recording_a_notice_that_did_not_go_out_is_still_a_mark ______
+
+    def test_a_mark_recording_a_notice_that_did_not_go_out_is_still_a_mark() -> None:
+        """The other direction of the check above, and the reason it asks `has()` rather than a
+        truthy value: `notice_delivered: false` is a MEASURED outcome, and a sentinel carrying it is
+        the one the operator most needs read out - the applicant was answered and nobody was told."""
+        value = json.dumps({"of": NULL, "id": "cccccccc", "notice_delivered": False,
+                            "refused_at": "2026-08-21T10:02:01.000Z", "reason": "429"})
+        r = run({MARK: {"value": value}})
+>       assert labels(r).get(MARK) == "SURVIVED TO ANSWER", (
+            f"a mark recording an undelivered notice was read as unreadable: {r['out']!r}")
+E       AssertionError: a mark recording an undelivered notice was read as unreadable: 'UNREADABLE: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc - the refusal mark itself could not be read.\nSWEPT 0 records and 1 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 1.\n'
+E       assert 'UNREADABLE' == 'SURVIVED TO ANSWER'
+E         
+E         - SURVIVED TO ANSWER
+E         + UNREADABLE
+
+tests/test_intake_sweep_distinguishes_its_states.py:384: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_mark_recording_a_notice_that_did_not_go_out_is_still_a_mark
+1 failed, 27 passed in 4.48s
+
+# ============================================================================================
+# RED 20.
+# NOT A DROPPED STATUS BUT A MISFILED ONE, which is why mutations 15 and 16 did not arm it. A refused read sets `rc=2` - the status reserved for a sweep that never ran - so the scheduled job the document anticipates is told `did not run` about a sweep that ran, printed its count and found an unreadable key, and the operator loses the one distinction the three statuses exist for. Green because the refused-read test asserted `!= 0`.
+#
+# -       unreadable=$((unreadable + 1)); rc=1; continue
+# +       unreadable=$((unreadable + 1)); rc=2; continue  # MUTATION: misfiled, not dropped
+#
+# $ grep -n 'MUTATION' docs/INTAKE_OPERATIONS.md
+# 85:      unreadable=$((unreadable + 1)); rc=2; continue  # MUTATION: misfiled, not dropped
+#
+# $ python3 -m pytest tests/test_intake_sweep_distinguishes_its_states.py -q
+...F........................                                             [100%]
+=================================== FAILURES ===================================
+________ test_a_refused_read_is_not_a_record_with_nothing_wrong_with_it ________
+
+    def test_a_refused_read_is_not_a_record_with_nothing_wrong_with_it() -> None:
+        """A `get` that failed printed nothing, and nothing is what a healthy record prints.
+    
+        §2.9: a refusal returned as an ordinary answer takes from the follow-up its only evidence that
+        anything was missed. The draft before this one read `$v` whatever the exit status.
+        """
+        r = run({FALSE: {"refuse": True}})
+        seen = labels(r)
+        assert FALSE in seen, (
+            f"a key the store refused to hand over was passed over in silence: {r['out']!r}")
+        assert seen[FALSE] == "UNREADABLE", (
+            f"a refused read was reported as a measured state ({seen[FALSE]}), which is a claim about a "
+            "value nobody read.")
+        # `!= 0` WAS THE FIRST DRAFT, and `rc=2` on this branch satisfied it: a sweep that ran, printed
+        # its count and found an unreadable key, reporting the status reserved for a sweep that did not
+        # run - which the document says appears instead of the count and never beside it. A dropped
+        # status and a misfiled one are two defects, and only the first was armed. Found by Fable.
+>       assert r["status"] == 1, (
+            f"a refused read was reported with status {r['status']}, not as something to act on. 2 is "
+            f"reserved for a reading that never happened, and this one happened: {r['out']!r}")
+E       AssertionError: a refused read was reported with status 2, not as something to act on. 2 is reserved for a reading that never happened, and this one happened: 'UNREADABLE: request:2026-08-21T10:01:00.000Z:bbbbbbbb - the store refused the read.\nSWEPT 1 records and 0 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 1.\n'
+E       assert 2 == 1
+
+tests/test_intake_sweep_distinguishes_its_states.py:230: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_refused_read_is_not_a_record_with_nothing_wrong_with_it
+1 failed, 27 passed in 4.08s
+
+# ============================================================================================
+# RED 21.
+# THE FIRST OF THE THREE REQUIRED FIELDS, DROPPED FROM THE CHECK. `of` is the whole of the pairing the follow-up runs on, and without it a mark prints `SURVIVED TO ANSWER` carrying `"of": null` - a mark beside a record it does not claim to be about. Green: the missing-field case in the suite omitted `reason` only, so the fix for mutation 18 was itself narrowed to the input its own new test used, which is what mutation 18 was about.
+#
+# - has("of") and 
+# +   # MUTATION: `of` no longer required
+# +                           
+#
+# $ grep -n 'MUTATION' docs/INTAKE_OPERATIONS.md
+# 107:      if ! m=$(jq -ce 'if type == "object" and   # MUTATION: `of` no longer required
+#
+# $ python3 -m pytest tests/test_intake_sweep_distinguishes_its_states.py -q
+............F...............                                             [100%]
+=================================== FAILURES ===================================
+_____ test_a_mark_that_does_not_say_which_record_it_is_about_is_unreadable _____
+
+    def test_a_mark_that_does_not_say_which_record_it_is_about_is_unreadable() -> None:
+        """`of` is the whole of the pairing the follow-up runs on: a mark without it cannot be read
+        beside anything, and the operator is left with a `NO OUTCOME` record and a mark that does not
+        claim to be its. Its own test, because the check is a conjunction of three fields and the case
+        above exercised one of them - so deleting either of the other two conjuncts was green, which is
+        this file's own subject a third time. Found by Fable."""
+        r = run({MARK: {"value": json.dumps({"notice_delivered": True, "reason": "429"})}})
+>       assert labels(r).get(MARK) == "UNREADABLE", (
+            f"a refusal mark that names no record was read as one that does: {r['out']!r}")
+E       AssertionError: a refusal mark that names no record was read as one that does: 'SURVIVED TO ANSWER: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc {"of":null,"notice_delivered":true,"reason":"429"}\nSWEPT 0 records and 1 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 0.\n'
+E       assert 'SURVIVED TO ANSWER' == 'UNREADABLE'
+E         
+E         - UNREADABLE
+E         + SURVIVED TO ANSWER
+
+tests/test_intake_sweep_distinguishes_its_states.py:364: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_mark_that_does_not_say_which_record_it_is_about_is_unreadable
+1 failed, 27 passed in 4.32s
+
+# ============================================================================================
+# RED 22.
+# THE SECOND OF THE THREE, and the field the mark exists to carry. Without it the pairing says the endpoint survived to answer and cannot say what the applicant was told - the state the sentinel was introduced to end. Green for the same reason as mutation 21: one missing-field fixture cannot arm a conjunction of three.
+#
+# - and has("notice_delivered")
+# +   # MUTATION: the delivery outcome is no longer required
+#
+# $ grep -n 'MUTATION' docs/INTAKE_OPERATIONS.md
+# 107:      if ! m=$(jq -ce 'if type == "object" and has("of")   # MUTATION: the delivery outcome is no longer required
+#
+# $ python3 -m pytest tests/test_intake_sweep_distinguishes_its_states.py -q
+.............F..............                                             [100%]
+=================================== FAILURES ===================================
+_______ test_a_mark_that_does_not_carry_a_delivery_outcome_is_unreadable _______
+
+    def test_a_mark_that_does_not_carry_a_delivery_outcome_is_unreadable() -> None:
+        """The field the mark exists to carry. Without it the pairing says the endpoint survived to
+        answer and cannot say what the applicant was told, which is the state the sentinel was
+        introduced to end."""
+        r = run({MARK: {"value": json.dumps({"of": NULL, "reason": "429"})}})
+>       assert labels(r).get(MARK) == "UNREADABLE", (
+            f"a refusal mark carrying no delivery outcome was read as a complete one: {r['out']!r}")
+E       AssertionError: a refusal mark carrying no delivery outcome was read as a complete one: 'SURVIVED TO ANSWER: writeback-refused:2026-08-21T10:02:00.000Z:cccccccc {"of":"request:2026-08-21T10:02:00.000Z:cccccccc","notice_delivered":null,"reason":"429"}\nSWEPT 0 records and 1 refusal marks: notified 0, NOT NOTIFIED 0, NO OUTCOME 0, UNREADABLE 0.\n'
+E       assert 'SURVIVED TO ANSWER' == 'UNREADABLE'
+E         
+E         - UNREADABLE
+E         + SURVIVED TO ANSWER
+
+tests/test_intake_sweep_distinguishes_its_states.py:373: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_sweep_distinguishes_its_states.py::test_a_mark_that_does_not_carry_a_delivery_outcome_is_unreadable
+1 failed, 27 passed in 4.60s
+
+# ============================================================================================
+# GREEN, on the restored document, so the reds above are known to be the mutations' doing
+# and not a suite that fails on everything.
+#
+# $ python3 -m pytest tests/test_intake_sweep_distinguishes_its_states.py -q
+............................                                             [100%]
+28 passed in 4.27s

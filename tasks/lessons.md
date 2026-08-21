@@ -735,3 +735,72 @@ records. No code gate for either general
 rule - a checker cannot know which values in a store carry more than one world, nor which of a
 mutation's failures are the point - so they are recorded in L-8's form rather than dressed as
 enforced rules.
+
+## L-29 The store learned to tell two states apart and the instrument printed one word
+
+T-A2-2 made `delivered: null` mean two things and repaired it in the STORE - a sentinel under a
+different key, so "the applicant was told the truth" and "the invocation died" stopped sharing a
+value. The same commit widened the operator's sweep to match `null` as well as `false`, so it found
+the records. It printed all of them as `UNSEEN`.
+
+The distinction existed and was destroyed on the way out. **A state is only as distinguishable as
+the instrument that reports it**, and the last stage - the label, the column heading, the exit
+status - is where a repair is least likely to be looked for, because the field it was made in
+demonstrably carries the difference. `false` is answered by reading the record now; `null` is
+answered by reading the sentinel beside it; the operator holding one list cannot derive either
+instruction. Invariant 1, one level up from the field it is usually about, arriving in the commit
+that closed it one level down.
+
+**And the same sweep could not report its own refusal.** `v=$(npx wrangler kv key get ...)` was read
+whatever the exit status, so a key the store declined to hand over printed nothing - which is what a
+healthy record prints. One level up, a failed `list` yielded no keys, and no keys is what an empty
+namespace yields, in a document that reads an empty namespace as the finding that no submission has
+ever been made. A reading that never happened would have published as a measurement. The sweep now
+answers in three exit statuses rather than two - nothing qualified, act on these, did not run - and
+prints its count on every run that ran, because **a zero has to say which zero it is even when the
+zero is the whole output**.
+
+**Why it survived two edits: nothing could go red over a fenced block in a document.** Both previous
+corrections were made by editing Markdown, believed, and shipped. The gate now EXTRACTS the block
+and RUNS it against a stubbed namespace, and a grep-based gate would have passed every defect above
+- each of them contains the strings a grep would look for. **The question to ask of any instrument
+described in prose is which command turns it red.**
+
+**And the repair's own new sentence was false before anybody read it back.** The count added here
+ends, on an empty namespace, with *no submission has ever been made* - a claim about the endpoint's
+whole history, guarded on the number of READABLE records. A namespace holding one submission the
+store refused to hand over printed it directly underneath the `UNREADABLE` line naming that key, and
+so did a namespace holding a refusal mark, which exists only because a submission was stored. The
+new gate was green over all of it, on a fixture it already had. Fable found it, with four more of
+the same family: two counters that could be silenced into reporting zero, a namespace control that
+covered the `list` and not the `get`, and an unparseable sentinel printed as one that had been read.
+**A change that adds an OUTPUT adds a claim, and that claim is unmeasured until something can go red
+over its wording** - not over the code path that produces it, which in all five of these was
+exercised and green. They are mutations 9 to 13 of RED-018.
+
+**The second round then refuted the repairs, and six more were green.** Two counters transposed in
+the summary line survived because the fixture written to catch a DROPPED counter gave every bucket
+the count 1, and four numbers holding the same value print the same line under every permutation of
+themselves - RED-013's transposition, reintroduced by the test that closed a neighbouring defect in
+the same line. Two branches printed a finding and then reported it in a clean exit status, because
+`rc` is one variable set in four places and the status test had only ever reached it through one.
+And the repair for the unparseable sentinel checked that `jq` had not FAILED, which `null`, `{}` and
+an empty value all pass - **a fix narrowed to the inputs its own new test used**, which is the same
+error as a gate about the shapes it runs, committed while fixing one.
+
+**The third round found the same shape inside the second round's fixes**, twice: a finding filed
+under the exit status reserved for a sweep that did NOT run - a misfiled `rc` where the round before
+had only armed dropped ones - and two of the sentinel's three required fields left unchecked,
+because the missing-field fixture written in round two omitted the third alone. **A test built from
+one example of a defect arms the gate against that example.**
+
+The honest summary of this task: the gate written to end one class of false green shipped fourteen
+of them across three drafts, and every one was found by applying an edit and watching the suite stay
+green rather than by reading the code. **The question is never whether a gate asserts the property;
+it is which edit it has been watched to survive.**
+
+Anchor: `LAW-INTAKE-SWEEP-NAMES-ITS-STATES` covers the instance (`docs/INTAKE_OPERATIONS.md`,
+`tests/test_intake_sweep_distinguishes_its_states.py`), with twenty-two red runs in
+`evidence/RED-018-a-sweep-that-cannot-name-what-it-found.txt`. The general rule - a repair is not
+finished until the tool that READS the repaired state can name it - has no code gate, for L-8's
+reason: no checker knows which of a program's outputs is the one a human acts on.

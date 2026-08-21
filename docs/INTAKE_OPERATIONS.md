@@ -33,30 +33,157 @@ being performed rather than intended.
 
 ## The habit — daily for the week the link goes out, weekly after it
 
-**Sweep KV for `delivered: false` — and for `delivered: null`, which is the worse case.**
+**Sweep KV for every record whose delivery outcome is not `true`, and print the states apart.**
+
+Three drafts of this filter, and the third is what this section is now about. It matched
+`delivered == false` alone — blind to the state both of T-A2-2's failures land in — then
+`false or null`, which finds them and printed both under one word, `UNSEEN`. Those are not one
+finding. `false` is a MEASURED outcome: the notice was attempted and did not reach the operator.
+`null` is the ABSENCE of that measurement: the record never got its outcome written back and
+carries nothing about what the notice did. They are followed up differently — the pairing two
+paragraphs down is entirely about `null` — so a label covering both hands the operator a count that
+cannot be acted on. Invariant 1, in the instrument this project keeps for enforcing it.
 
 ```bash
 NS=5d93877f53d94f3fbc4863a0195fc9a4
-npx wrangler kv key list --namespace-id "$NS" | jq -r '.[].name' | while read -r k; do
-  v=$(npx wrangler kv key get "$k" --namespace-id "$NS")
-  case "$k" in
-    # A REFUSED WRITE-BACK, and the reason this branch exists rather than one filter for
-    # everything: a sentinel carries no `delivered` key at all, so `.delivered == null` matches it
-    # and the old one-line sweep would have printed it as an unseen submission. An instrument that
-    # reports its own marker as a finding is worse than one that ignores it.
-    writeback-refused:*)
-      echo "SURVIVED TO ANSWER: $k $(jq -c '{of, notice_delivered, reason}' <<<"$v")" ;;
-    *)
-      jq -e 'select(.delivered == false or .delivered == null)' >/dev/null <<<"$v" \
-        && echo "UNSEEN: $k" ;;
-  esac
-done
+
+# A FUNCTION, because two of the branches below have to be able to say "this sweep did not run"
+# with an exit status, and `exit` in a pasted-in snippet closes the terminal it was pasted into.
+# Paste once; on any later day the sweep is the word `sweep`.
+sweep() {
+  local raw keys k v d m mark rc=0
+  local records=0 notified=0 not_notified=0 no_outcome=0 unreadable=0 marks=0
+
+  # THE LIST IS AN INSTRUMENT AND IT CAN REFUSE, and a refused list prints exactly what an empty
+  # namespace prints: nothing. Reported as a state of its own rather than folded into the clean
+  # line - a sweep that did not run is not a sweep that found nothing.
+  if ! raw=$(npx wrangler kv key list --namespace-id "$NS" </dev/null); then
+    echo "SWEEP DID NOT RUN: the namespace could not be listed, so nothing below was measured."
+    return 2
+  fi
+  if ! keys=$(jq -r '.[].name' <<<"$raw" 2>/dev/null); then
+    echo "SWEEP DID NOT RUN: the key list came back unreadable, so nothing below was measured."
+    return 2
+  fi
+
+  while read -r k; do
+    [ -n "$k" ] || continue
+    # WHAT A KEY IS, BEFORE ANYTHING IS READ FROM IT. A submission and a sentinel are told apart by
+    # the key prefix, exactly as the threshold counts below do it, and both are counted here rather
+    # than after a successful read - a key the store will not hand over was still LISTED, and a
+    # count that only rises on a readable value drops the ones that matter most.
+    case "$k" in
+      writeback-refused:*) mark=1; marks=$((marks + 1)) ;;
+      *)                   mark=0; records=$((records + 1)) ;;
+    esac
+
+    # A REFUSED READ IS NOT A RECORD WITH NOTHING WRONG WITH IT. The draft before this one assigned
+    # the output of a failed `get` into `$v` and read on, so the one key the store would not hand
+    # over printed nothing - which is what a healthy `delivered: true` prints.
+    if ! v=$(npx wrangler kv key get "$k" --namespace-id "$NS" </dev/null); then
+      echo "UNREADABLE: $k - the store refused the read."
+      unreadable=$((unreadable + 1)); rc=1; continue
+    fi
+
+    # A REFUSED WRITE-BACK, and the reason this branch exists rather than one filter for everything:
+    # a sentinel carries no `delivered` key at all, so a filter over that field matches it and the
+    # old one-line sweep would have printed it as an unseen submission. An instrument that reports
+    # its own marker as a finding is worse than one that ignores it.
+    if [ "$mark" = 1 ]; then
+      # AND THE MARK IS READ RATHER THAN ASSUMED. `jq` writes its parse errors to stderr, so an
+      # unreadable sentinel printed as a healthy one with an empty summary after it - and the
+      # emptiness is invisible to anything capturing stdout, which is what a scheduled job does.
+      #
+      # THE THREE FIELDS ARE REQUIRED TO BE THERE, and the draft that only checked that `jq` had
+      # not failed is why. `{of, notice_delivered, reason}` over a stored `null` or `{}` builds an
+      # object of three nulls and succeeds, so a mark carrying nothing printed as a mark that had
+      # been read. `has()` rather than a truthiness test, because `notice_delivered: false` is a
+      # measured value and must not read as an absent one. The `-z` is the same defect once more,
+      # from the tool: jq 1.6 - measured, the version on the audit host - exits 0 on empty input
+      # having printed nothing at all, so a mark stored empty passed a check on jq's exit status.
+      # What other versions do is NOT measured here, which is the reason the emptiness is tested in
+      # the shell rather than inherited from whichever jq the operator's laptop has.
+      # Found by Fable, twice on this branch.
+      if ! m=$(jq -ce 'if type == "object" and has("of") and has("notice_delivered")
+                          and has("reason")
+                       then {of, notice_delivered, reason}
+                       else error("not a refusal mark") end' <<<"$v" 2>/dev/null) || [ -z "$m" ]; then
+        echo "UNREADABLE: $k - the refusal mark itself could not be read."
+        unreadable=$((unreadable + 1)); rc=1
+      else
+        echo "SURVIVED TO ANSWER: $k $m"
+      fi
+      continue
+    fi
+
+    # The value itself and not a rendering of it: `tostring` would print the string "false" and the
+    # boolean `false` identically, and only one of those is a delivery outcome this endpoint writes.
+    d=$(jq -c 'if type == "object" and has("delivered") then .delivered else "no-such-field" end' \
+          <<<"$v" 2>/dev/null) || d=unreadable
+    case "$d" in
+      true)  notified=$((notified + 1)) ;;
+      false) echo "NOT NOTIFIED: $k - stored, and the notice to the operator did not go out."
+             not_notified=$((not_notified + 1)); rc=1 ;;
+      null)  echo "NO OUTCOME: $k - stored, and nothing recorded what the notice did."
+             no_outcome=$((no_outcome + 1)); rc=1 ;;
+      *)     echo "UNREADABLE: $k - no readable delivery outcome in the record (got: $d)."
+             unreadable=$((unreadable + 1)); rc=1 ;;
+    esac
+  done <<<"$keys"
+
+  # RECORDS PLUS MARKS IS EVERY LINE THE LIST YIELDED, whether or not it could be read, so the two
+  # numbers account for the namespace and `UNREADABLE` says how much of it was not measured. A key
+  # containing a newline would be counted as two, and one padded with spaces read under a name it
+  # does not have; `apply.js` builds every key from a timestamp and a UUID, so neither shape can
+  # come from this endpoint, and both are named here rather than defended against. Found by Fable.
+  echo "SWEPT $records records and $marks refusal marks: notified $notified," \
+       "NOT NOTIFIED $not_notified, NO OUTCOME $no_outcome, UNREADABLE $unreadable."
+  # ONLY WHEN THE NAMESPACE WAS EMPTY, and the first draft of this line asked `records == 0` alone.
+  # A refused read leaves `records` at zero on a namespace holding a submission, and a sentinel
+  # exists only because a submission was made - so that draft printed "no submission has ever been
+  # made" over both, which is a claim about values nobody read, in the sentence this document keeps
+  # in order to forbid exactly that. Found by Fable.
+  [ "$records" -eq 0 ] && [ "$marks" -eq 0 ] &&
+    echo "Zero keys is a reading of its own: no submission has ever been made."
+  return $rc
+}
+
+sweep
 ```
 
-`false` means the operator was not told. `null` means the record never got its outcome written
-back, and it is the worse case: it is what both a refused write-back and a dead invocation leave.
-The reasoning is under "What one submission costs" below; the filter is here because the sweep is
-where it has to be acted on.
+**Four labels, a count that always prints, and one line that replaces all of them.**
+
+* **`NOT NOTIFIED`** — `delivered: false`: the record is stored and the operator was not told. The
+  applicant was told their request was recorded and that the record is safe and may be read later
+  than usual; this sweep is what makes that sentence true rather than consoling.
+* **`NO OUTCOME`** — `delivered: null`: stored, carrying no delivery outcome, and the worse case,
+  because it is what both a refused write-back and a dead invocation leave. Printing here is not the
+  same as nobody having been told — a `null` paired with a sentinel reading `notice_delivered: true`
+  prints here and the operator WAS told about it, in time, by the notice. Read the pairing below
+  before acting.
+* **`UNREADABLE`** — the store refused the read, or what came back is not a record carrying a
+  `delivered` field, or it is a sentinel that could not be parsed. A refusal that returns as an
+  ordinary answer takes from the follow-up its only evidence that anything was missed (§2.9), and
+  this is the label that keeps it. It is the one label that is not about the applicant: it says
+  which part of the namespace this run did not measure.
+* **`SURVIVED TO ANSWER`** — a `writeback-refused:` sentinel, under its own label because it is not
+  a submission and cannot be answered, and only once its `of`, `notice_delivered` and `reason` have
+  actually been read out of it.
+* **`SWEPT n records and m refusal marks: …`** — printed on every run that ran, including
+  `SWEPT 0 … and 0 …`. A sweep whose findings are its whole output cannot say *I read eleven records
+  and none of them qualified*, which is the reading that ends a quiet day. `n + m` is every key that
+  was LISTED, readable or not, so the two numbers account for the namespace and `UNREADABLE` says
+  how much of it went unmeasured. And zero keys is itself a reading: no submission has ever been
+  made — the state in which the endpoint has never once been exercised end to end. That sentence is
+  printed only for zero keys, never for zero readable ones; a sentinel with no readable record beside
+  it is a namespace that has had a submission.
+* **`SWEEP DID NOT RUN`** — instead of the count, never beside it. Nothing was measured, and that is
+  not an empty namespace.
+
+**The exit status carries the same three states**, for the day this stops being a habit and becomes
+a scheduled job: `0` ran and nothing qualified, `1` ran and there is something to act on, `2` did
+not run. A job that reported *did not run* as `0` would go quiet in precisely the way this whole
+document is about.
 
 *(`false` is itself two states — the notice was attempted and refused, or no Telegram credentials
 were configured so nothing was attempted at all. Invariant 1, open, and named here rather than
@@ -64,15 +191,11 @@ fixed: the production Pages project carries both variables, so the second state 
 there today, and widening the field's domain would touch the sweep above, the confirmation copy and
 the shipped list of stored fields on the form. It is a task, not a line.)*
 
-Anything it prints as `UNSEEN` is a submission whose fate nobody has confirmed — which is not the
-same as one nobody saw, and this line said the stronger thing until the sentinel made the weaker one
-representable: a `null` paired with a sentinel reading `notice_delivered: true` prints here, and the
-operator WAS told about it, in time, by the notice. Read the pairing below before acting. On a
-`false` they were told their request was recorded, and the confirmation page promises them that the
-record is safe and may be read later than usual; this sweep is what makes that sentence true rather
-than consoling.
+What any of the three findings names is a submission whose fate nobody has CONFIRMED, which is not
+the same as one nobody saw: this line said the stronger thing until the sentinel made the weaker one
+representable. Which is why a `NO OUTCOME` is not acted on by its label alone.
 
-**A `null` is read together with the sentinel beside it, and that pairing is the whole of the
+**A `NO OUTCOME` is read together with the sentinel beside it, and that pairing is the whole of the
 follow-up:**
 
 * **`null` WITH a `writeback-refused:` key for the same id** — the write-back was refused, the
@@ -220,7 +343,11 @@ Four things follow, and the last two are the ones to hold on to:
   `delivered: null`, which the sweep's original filter — `select(.delivered == false)` — does not
   match, so the one record in the namespace that nobody has seen and nobody will follow up was the
   one record the habit above skipped. That is exactly the case the sweep exists for, and it is why
-  the filter now matches `null` as well as `false`.
+  the filter matches `null` as well as `false` — and why, since T-A2-3, it prints them under
+  different labels and a gate that RUNS the sweep fails the build if it stops
+  (`tests/test_intake_sweep_distinguishes_its_states.py`,
+  `evidence/RED-018-a-sweep-that-cannot-name-what-it-found.txt`). Until then the correction lived
+  only in a fenced block in a document, where nothing could go red over it.
 
   **The endpoint was changed on 2026-08-20 (T-A2-2), the day after this bullet named the defect and
   left it.** The write-back is caught, the applicant gets the ordinary confirmation carrying the

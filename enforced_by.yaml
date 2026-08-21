@@ -267,3 +267,31 @@ laws:
     # where the silence really is forced and is read as the death case. Found by Fable (L-28).
     gate: web/functions/api/apply.js
     test: tests/test_intake_survives_a_failed_writeback.py
+
+  - id: LAW-INTAKE-SWEEP-NAMES-ITS-STATES
+    text: "the sweep finds every record whose delivery outcome is not true, prints the states under different labels, and reports its own refusal as neither a finding nor a clean run"
+    # THE GATE IS A FENCED BLOCK IN A DOCUMENT, and that is the point of it. The KV sweep is the
+    # only instrument that finds a submission nobody has followed up, and nothing in a Markdown
+    # file fails a build: it had been edited twice with no run behind either edit. The filter
+    # matched `delivered == false` alone - blind to the state both of T-A2-2's failures land in -
+    # and the widening that found them printed both under one word, which is invariant 1 one level
+    # up from the field it is usually about. `false` is answered by reading the record now;
+    # `null` is answered against the sentinel beside it; neither instruction is derivable from the
+    # other.
+    #
+    # AND AN INSTRUMENT THAT CANNOT REPORT ITS OWN REFUSAL. A failed `get` printed nothing, which
+    # is what a healthy record prints; a failed `list` produced no keys, which is what an empty
+    # namespace produces - and the document reads an empty namespace as the finding that no
+    # submission has ever been made. So the exit status carries three states rather than two, and
+    # the count is printed on every run that ran.
+    #
+    # The test EXTRACTS the block and RUNS it against a stubbed namespace (tests/kv_stub.py): a
+    # gate that grepped the document would pass over every one of those defects, since each of
+    # them contains the strings a grep would look for. Twenty-two red runs in
+    # evidence/RED-018-a-sweep-that-cannot-name-what-it-found.txt, FOURTEEN of which were GREEN
+    # when Fable applied them over three rounds - including the sweep's own sentence "no submission has
+    # ever been made", which the first draft printed over a namespace holding a submission it had
+    # failed to read. A claim stronger than the artefact, introduced by the change that closed one,
+    # in the instrument this document keeps for finding them.
+    gate: docs/INTAKE_OPERATIONS.md
+    test: tests/test_intake_sweep_distinguishes_its_states.py
