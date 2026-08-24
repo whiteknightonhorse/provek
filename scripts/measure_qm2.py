@@ -14,6 +14,7 @@ import os
 import resource
 import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 # A BARE ASSIGNMENT DOES NOT BELONG ABOVE THESE IMPORTS. Hoisting the repository root into a
@@ -27,8 +28,8 @@ from src.abs_profile.identity import Binding, BindingKind
 from src.abs_profile.ladder import L
 from src.abs_profile.measured import NotMeasured
 from src.collector import github as gh
-from src.passport.passport import Accountability, Provenance, build
-from src.registry.public_registry import PublicRegistry
+from src.passport.passport import Accountability, Passport, Provenance, build
+from src.registry.public_registry import PublicRegistry, Row
 from src.transport.file_transport import FileTransport
 from src.verify.control_map import Capability, ControlMap, ControlPath, Coverage, Surface
 from src.verify.scorer import Confidence, OperationScore, projection, score_operation
@@ -117,6 +118,19 @@ def score_subject(ev: gh.GitHubEvidence, cmap: ControlMap) -> OperationScore:
                            weak_mixed_signal=True, runtime_trace=ev.has_runtime_trace)
 
 
+def registry_row(subject_id: str, p: Passport, ref: str) -> Row:
+    """The registry row one measured subject would produce - pulled out of the loop for the same
+    reason `score_subject` was (T-S8): a test can check it against a built passport with no
+    network call, instead of only being exercisable by running the whole script live.
+    """
+    m = p.to_machine()
+    return Row(subject_id=subject_id, status=p.status,
+              projection=m["verified"]["projection"],
+              absent_reason=m["verified"]["projection_absent_reason"],
+              protocol_version=PROV.protocol_version, valid_until=p.valid_until,
+              passport_ref=ref, verifier_affiliation="same_owner")
+
+
 if __name__ == "__main__":
     rows = []
     for full in SUBJECTS:
@@ -132,8 +146,15 @@ if __name__ == "__main__":
                   score_operation("treasury_control", None, ())]
         p = build(b, scores, cmap, projection(scores), PROV, Accountability(),
                   verifier_affiliation="same_owner")
-        transport.publish(b.as_subject_id(), p.to_machine(),
-                          p.to_machine()["verified"]["projection"])
+        ref = transport.publish(b.as_subject_id(), p.to_machine(),
+                                p.to_machine()["verified"]["projection"])
+        # A REAL PASS PUBLISHES TO THE REGISTRY, NOT ONLY THE PASSPORT (T-S10). Building a passport
+        # and never upserting it into the registry undercounts "one full verification pass" by the
+        # one step production's `pipeline.verify()` always takes after `transport.publish`. Timed
+        # inside the loop, same as everything else here, so the number this script reports is the
+        # per-project cost a continuously-running verifier actually pays.
+        registry.upsert(registry_row(b.as_subject_id(), p, ref))
+        registry.write(datetime.now(timezone.utc))
 
         rows.append({"subject": full.split("/")[1],
                      "read": ev.read,
