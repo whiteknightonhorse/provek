@@ -113,4 +113,15 @@ scripts/measure_qm1_step2.py:     [ABI-25-3, ABI-13-6]
 src/governance/__init__.py:       [ABI-13-3]
 src/governance/thresholds.py:     [ABI-13-3, ABI-25-3, ABI-29-5]
 
-# CI configuration is data, not code, and carries no ABI mapping.
+# T-S1: the door asked about the code the PIPELINE runs, rather than about the code we wrote.
+# ABI-32-1 because this is "the gates judge the artefact that leaves" turned inwards - a workflow
+# that runs somebody else's TAG runs code no gate here has ever seen, and the artefact leaving is
+# built by it. ABI-16-11 rather than a second copy of ABI-32-1 because the load-bearing part is not
+# that it compares SHAs: it is that a lookup which did not complete stays NOT_MEASURED instead of
+# becoming a MATCH. A pin nobody could verify is the one shape that looks exactly like a pin that
+# was, which is why this module exists at all rather than the pinning being a one-time edit.
+scripts/verify_action_pins.py:    [ABI-32-1, ABI-16-11]
+
+# CI configuration is data, not code, and carries no ABI mapping. The `uses:` lines inside it are
+# not data, though - they name executable code fetched at run time - and `scripts/verify_action_pins.py`
+# above is what judges them.

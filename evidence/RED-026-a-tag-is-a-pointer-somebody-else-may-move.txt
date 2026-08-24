@@ -1,0 +1,58 @@
+RED-026 - the workflows as they stood at 5c915d7, judged by the gate that now holds them
+====================================================================================================
+
+This is not a synthetic input. Every line below is `scripts/verify_action_pins.py` and
+`token_problems()` reading the three workflow files EXACTLY as they were
+committed at 5c915d7, recovered with `git show`. It is the state code scanning reported as 19
+`PinnedDependenciesID` and 5 `actions/missing-workflow-permissions`.
+
+Invariant 5: a test must be able to fail, and the red run is the artefact that proves it did.
+Without this file the checker is a claim about a state nobody watched it reject.
+
+-- SHAPE: 17 `uses:` lines read, 16 of them unpinned --
+
+  X codeql.yml:45: `actions/checkout@v4` is pinned to a MOVABLE ref. The owner of that action may repoint it at any commit, and our CI would run it with our token.
+  X codeql.yml:48: `github/codeql-action/init@v3` is pinned to a MOVABLE ref. The owner of that action may repoint it at any commit, and our CI would run it with our token.
+  X codeql.yml:54: `github/codeql-action/analyze@v3` is pinned to a MOVABLE ref. The owner of that action may repoint it at any commit, and our CI would run it with our token.
+  X gates.yml:46: `actions/checkout@v4` is pinned to a MOVABLE ref. The owner of that action may repoint it at any commit, and our CI would run it with our token.
+  X gates.yml:49: `actions/setup-python@v5` is pinned to a MOVABLE ref. The owner of that action may repoint it at any commit, and our CI would run it with our token.
+  X gates.yml:66: `actions/checkout@v4` is pinned to a MOVABLE ref. The owner of that action may repoint it at any commit, and our CI would run it with our token.
+  X gates.yml:67: `actions/setup-python@v5` is pinned to a MOVABLE ref. The owner of that action may repoint it at any commit, and our CI would run it with our token.
+  X gates.yml:79: `actions/setup-node@v4` is pinned to a MOVABLE ref. The owner of that action may repoint it at any commit, and our CI would run it with our token.
+  X gates.yml:103: `actions/checkout@v4` is pinned to a MOVABLE ref. The owner of that action may repoint it at any commit, and our CI would run it with our token.
+  X gates.yml:104: `actions/setup-node@v4` is pinned to a MOVABLE ref. The owner of that action may repoint it at any commit, and our CI would run it with our token.
+  X gates.yml:109: `actions/setup-python@v5` is pinned to a MOVABLE ref. The owner of that action may repoint it at any commit, and our CI would run it with our token.
+  X gates.yml:128: `actions/checkout@v4` is pinned to a MOVABLE ref. The owner of that action may repoint it at any commit, and our CI would run it with our token.
+  X gates.yml:129: `actions/setup-python@v5` is pinned to a MOVABLE ref. The owner of that action may repoint it at any commit, and our CI would run it with our token.
+  X gates.yml:177: `actions/checkout@v4` is pinned to a MOVABLE ref. The owner of that action may repoint it at any commit, and our CI would run it with our token.
+  X scorecard.yml:43: `actions/checkout@v4` is pinned to a MOVABLE ref. The owner of that action may repoint it at any commit, and our CI would run it with our token.
+  X scorecard.yml:61: `github/codeql-action/upload-sarif@v3` is pinned to a MOVABLE ref. The owner of that action may repoint it at any commit, and our CI would run it with our token.
+
+-- TOKEN: jobs left on GitHub's default permissions --
+
+  gates.yml: ['ratchets', 'tests', 'shipped', 'lint', 'secrets']
+  codeql.yml: bounded
+  scorecard.yml: bounded
+
+  5 unbounded jobs
+
+-- THE VERDICT THE GATE TAKES ON THAT TREE --
+
+  shape_problems -> 16 findings -> scripts/verify_action_pins.py exits 1
+  token_problems -> 5 jobs      -> tests/test_actions_pinned.py FAILS
+
+  This file states the RED reading and stops there. An earlier draft ended with "and on the tree as
+  it stands after this commit, both are empty and 17/17 pins MATCH" - a GREEN claim about the
+  network half, asserted inside a red artefact with not one line of captured output behind it. This
+  file would have looked byte-for-byte the same had one of the pins been forged. Fable refuted it;
+  the green reading now lives where its transcript lives, in
+  evidence/GREEN-004-every-pin-re-derived-from-its-owner.txt.
+
+WHAT THIS RED DOES NOT PROVE, kept here because the omission is the interesting part of the task.
+The shape check above would pass just as green on `actions/checkout@<any forty hex characters>
+# v4.4.0`, whether or not that commit has ever existed in `actions/checkout`. A pin to somebody
+else's SHA is strictly worse than no pin: it defeats review by appearing to have passed it. That
+half is not judged from this tree at all - it is re-derived from each action's own repository by
+`resolve_tags()`, whose MISMATCH / TAG_ABSENT / NOT_MEASURED arms are driven from the test with a
+stubbed resolver, because an arm nobody has watched fire is a promise (L-16).
+

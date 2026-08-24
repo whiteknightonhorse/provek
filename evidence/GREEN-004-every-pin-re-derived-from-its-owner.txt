@@ -1,0 +1,64 @@
+GREEN-004 - every pin in this tree re-derived from the repository that owns the action
+====================================================================================================
+
+WHY THIS FILE EXISTS. T-S1 replaced sixteen tag references with commit SHAs. A pin to the WRONG
+commit is worse than no pin: it looks exactly like diligence and defeats review by appearing to
+have passed it. So the claim "these SHAs are the tags they say they are" needed a transcript rather
+than a sentence - Fable refuted the first draft of this work for asserting "two independent
+instruments agreed" with no captured output anywhere in evidence/, which is a claim stronger than
+its artefact (L-30) inside a repository built to detect exactly that.
+
+Two instruments, deliberately not sharing a code path: the git wire protocol, and the REST API.
+Annotated tags are dereferenced through their `^{}` peel - github/codeql-action's tags are
+annotated, actions/checkout's are not, so both arms are exercised by the real pins below.
+
+-- INSTRUMENT 1: git ls-remote (git wire protocol) --
+
+  actions/checkout  11d5960a326750d5838078e36cf38b85af677262	refs/tags/v4.4.0
+  actions/setup-python  5ccb29d8773c3f3f653e1705f474dfaa8a06a912	refs/tags/v4.4.0
+  actions/setup-python  a26af69be951a213d495a4c3e4e4022e16d87065	refs/tags/v5.6.0
+  actions/setup-node  49933ea5288caeca8642d1e84afbd3f7d6820020	refs/tags/v4.4.0
+  github/codeql-action  e4d2851c4593439ac10bdcd57c5b06cac73b4775	refs/tags/v3.37.8
+  github/codeql-action  42947a340483f03ba47bb1a039b2c519aab3df85	refs/tags/v3.37.8^{}
+  ossf/scorecard-action  55891bbd73f2425e97637d96e306fc9d491d0b21	refs/tags/v2.4.4
+  ossf/scorecard-action  2d1146689b8cda280b9bc96326124645441f03bc	refs/tags/v2.4.4^{}
+
+-- INSTRUMENT 2: api.github.com tag refs (annotated tags dereferenced) --
+
+  actions/checkout             v4.4.0    11d5960a326750d5838078e36cf38b85af677262  (commit tag)
+  actions/setup-python         v5.6.0    a26af69be951a213d495a4c3e4e4022e16d87065  (commit tag)
+  actions/setup-node           v4.4.0    49933ea5288caeca8642d1e84afbd3f7d6820020  (commit tag)
+  github/codeql-action         v3.37.8   42947a340483f03ba47bb1a039b2c519aab3df85  (tag tag)
+  ossf/scorecard-action        v2.4.4    2d1146689b8cda280b9bc96326124645441f03bc  (tag tag)
+
+-- THE GATE, READING THE TREE AND ASKING EACH OWNER --
+
+  MATCH        codeql.yml:45 actions/checkout@11d5960a3267  # v4.4.0 - v4.4.0 = 11d5960a326750d5838078e36cf38b85af677262
+  MATCH        codeql.yml:48 github/codeql-action/init@42947a340483  # v3.37.8 - v3.37.8 = 42947a340483f03ba47bb1a039b2c519aab3df85
+  MATCH        codeql.yml:54 github/codeql-action/analyze@42947a340483  # v3.37.8 - v3.37.8 = 42947a340483f03ba47bb1a039b2c519aab3df85
+  MATCH        gates.yml:69 actions/checkout@11d5960a3267  # v4.4.0 - v4.4.0 = 11d5960a326750d5838078e36cf38b85af677262
+  MATCH        gates.yml:72 actions/setup-python@a26af69be951  # v5.6.0 - v5.6.0 = a26af69be951a213d495a4c3e4e4022e16d87065
+  MATCH        gates.yml:89 actions/checkout@11d5960a3267  # v4.4.0 - v4.4.0 = 11d5960a326750d5838078e36cf38b85af677262
+  MATCH        gates.yml:90 actions/setup-python@a26af69be951  # v5.6.0 - v5.6.0 = a26af69be951a213d495a4c3e4e4022e16d87065
+  MATCH        gates.yml:102 actions/setup-node@49933ea5288c  # v4.4.0 - v4.4.0 = 49933ea5288caeca8642d1e84afbd3f7d6820020
+  MATCH        gates.yml:126 actions/checkout@11d5960a3267  # v4.4.0 - v4.4.0 = 11d5960a326750d5838078e36cf38b85af677262
+  MATCH        gates.yml:127 actions/setup-node@49933ea5288c  # v4.4.0 - v4.4.0 = 49933ea5288caeca8642d1e84afbd3f7d6820020
+  MATCH        gates.yml:132 actions/setup-python@a26af69be951  # v5.6.0 - v5.6.0 = a26af69be951a213d495a4c3e4e4022e16d87065
+  MATCH        gates.yml:151 actions/checkout@11d5960a3267  # v4.4.0 - v4.4.0 = 11d5960a326750d5838078e36cf38b85af677262
+  MATCH        gates.yml:152 actions/setup-python@a26af69be951  # v5.6.0 - v5.6.0 = a26af69be951a213d495a4c3e4e4022e16d87065
+  MATCH        gates.yml:200 actions/checkout@11d5960a3267  # v4.4.0 - v4.4.0 = 11d5960a326750d5838078e36cf38b85af677262
+  MATCH        scorecard.yml:43 actions/checkout@11d5960a3267  # v4.4.0 - v4.4.0 = 11d5960a326750d5838078e36cf38b85af677262
+  MATCH        scorecard.yml:54 ossf/scorecard-action@2d1146689b8c  # v2.4.4 - v2.4.4 = 2d1146689b8cda280b9bc96326124645441f03bc
+  MATCH        scorecard.yml:61 github/codeql-action/upload-sarif@42947a340483  # v3.37.8 - v3.37.8 = 42947a340483f03ba47bb1a039b2c519aab3df85
+T-S1: clean (17 actions, every pin re-derived from the action's repository)
+
+-- DATE OF THIS CAPTURE --
+  2026-08-24T11:08:58Z  (host: audit)
+
+WHAT THIS DOES NOT PROVE. That these five actions' code is safe - only that the commit named here
+is the commit the tag named at the moment of capture. A pin is a statement about IDENTITY, never
+about quality, and this repository's standing rule is that a badge says a check RAN.
+
+Fable could not confirm these SHAs independently: all four of its instruments were refused by its
+sandbox, so its reading of point 1 was NOT_MEASURED rather than agreement. That is recorded because
+a refusal reported as a second opinion would be this project's founding defect.

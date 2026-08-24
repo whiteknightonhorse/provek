@@ -38,15 +38,38 @@ on:
   schedule:
     - cron: "17 7 * * *"
 
+# THE TOKEN THIS WORKFLOW HANDS TO SOMEBODY ELSE'S CODE, NARROWED TO WHAT IT ACTUALLY USES.
+#
+# With no `permissions:` key at all, GitHub grants the default set, and that default is wider than
+# any job here needs. Every job below only ever READS this tree: it checks out, installs an
+# interpreter, and runs a checker. None of the five writes an issue, a package, a check run or a
+# commit - so every one of those was a permission handed out on the strength of nobody having said
+# otherwise.
+#
+# That mattered here for a reason narrower than hygiene. The steps below run third-party actions,
+# and until this commit they named those actions BY TAG. A tag is a movable pointer the action's
+# owner may repoint at any commit, so the code executing with this token was whatever somebody
+# else's tag resolved to at the moment of the run. Two halves of one defect: pin the code (every
+# `uses:` line below) and bound what the code is trusted with (here). Either half alone leaves the
+# other standing.
+#
+# DECLARED ONCE, AT WORKFLOW LEVEL, RATHER THAN FIVE TIMES. All five jobs need exactly
+# `contents: read` and nothing else, and a rule written in more than one place survives its own
+# repeal (L-2) - five copies of one line is five places for a later job to be granted more by a
+# hand that only meant to edit one. A job that genuinely needs more must say so at job level, which
+# overrides this and is visible in the diff of that job.
+permissions:
+  contents: read
+
 jobs:
   ratchets:
     name: ratchets (scope, laws, language)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
           fetch-depth: 0          # the language gate reads commit messages, so history is needed
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: "3.10"
 
@@ -63,8 +86,8 @@ jobs:
     name: tests and coverage
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: "3.10"
       # NODE IS AN INSTRUMENT OF THIS JOB, NAMED RATHER THAN ASSUMED.
@@ -76,7 +99,7 @@ jobs:
       # depend on whatever the runner image happens to preinstall: a version nothing here declares,
       # and a green that turns red the day the image changes. No `npm ci` - the probe imports one
       # module and installs nothing.
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4.4.0
         with:
           node-version: "22"
       - run: pip install --quiet pytest pytest-cov
@@ -100,13 +123,13 @@ jobs:
     # gate and test are present. Present is not armed; that is the whole of L-16.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4.4.0
         with:
           node-version: "22"
           cache: npm
           cache-dependency-path: web/package-lock.json
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: "3.10"
       - run: pip install --quiet pytest
@@ -125,8 +148,8 @@ jobs:
     name: lint and types
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: "3.10"
       - run: pip install --quiet ruff mypy
@@ -174,7 +197,7 @@ jobs:
     name: secret scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
           fetch-depth: 0
       - name: repository secret scan

@@ -59,6 +59,30 @@ setting: it sends the result to the OpenSSF, so the badge in the root `README.md
 Expect the score to be middling and expect that to be accurate. Several checks describe practices
 this repository has not adopted; a low true number is worth more than a high tuned one.
 
+## Every action is pinned to a commit, and three pip commands are not
+
+All three workflows named their actions by TAG (`actions/checkout@v4`) until 2026-08-24. A tag is a
+pointer its owner may repoint at any commit, so what ran here with this repository's token was
+whatever somebody else's tag resolved to at the moment of the run. Every `uses:` is now a 40-hex
+commit SHA with the tag beside it as a comment.
+
+**The pins were re-derived, not copied.** A pin to the wrong commit is worse than no pin — it looks
+exactly like diligence and defeats review by appearing to have passed it. Each SHA was resolved
+from the action's own repository by two independent instruments that agreed: `git ls-remote` over
+the git protocol, and the REST API's tag endpoint. `scripts/verify_action_pins.py` repeats that
+derivation on demand and reports a lookup it could not complete as `NOT_MEASURED` rather than as a
+match. `tests/test_actions_pinned.py` holds the shape — pinned, labelled, token bounded — on every
+push, and drives the script's mismatch and refusal arms against a stubbed resolver so they are seen
+to fire rather than merely present.
+
+**What is still unpinned, named rather than left to be found.** The OpenSSF's `Pinned-Dependencies`
+count of 19 was 16 actions plus **three `pip install` commands** — `gates.yml`'s `pytest`,
+`pytest-cov`, `ruff` and `mypy` installs. Scorecard counts a pip command as pinned only under
+`--require-hashes` (`checks/raw/shell_download_validate.go`), which needs a fully hash-pinned
+transitive requirements set per job. That is a change with its own failure mode — a stale or
+incomplete hash set turns all of CI red — and its own standing cost, so it is a decision rather
+than a tidy-up. Those three remain open and are recorded as a finding.
+
 ## Standing caveats
 
 **The badges state that a check RAN, not that the code is clean.** A green `codeql` badge means the
