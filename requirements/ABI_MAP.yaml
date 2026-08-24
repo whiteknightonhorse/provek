@@ -79,6 +79,13 @@ src/pipeline.py:                  [ABI-5-1, ABI-5-3, ABI-22-1]
 scripts/secret_scan.sh:           [ABI-4-4, ABI-30-7]
 scripts/run_budgeted.sh:          [ABI-33-1, ABI-16-4]
 scripts/push.sh:                  [ABI-32-1, ABI-4-4]
+# T-H1: the door outward for the SITE has a second half, and it is a reading rather than a gate.
+# ABI-16-5 rather than a copy of push.sh's requirements because what this takes is runtime evidence
+# about the shipped artefact - the same half of the divergence comparison the prober carries, turned
+# on our own deployment. ABI-16-11 because its load-bearing property is not that it checks six
+# addresses: it is that "the address answered wrongly" and "we could not read the address" stay
+# apart, which is where `curl -w '%{http_code}'` hands you a 000 to mistake for a verdict.
+scripts/verify_live.sh:           [ABI-16-5, ABI-16-11]
 src/collector/github.py:          [ABI-5-1, ABI-5-2, ABI-4-4, ABI-30-7]
 scripts/ratchet_language.py:      [ABI-32-1, ABI-32-3]
 scripts/cohort.py:                [ABI-18-3, ABI-31-3, ABI-31-4]

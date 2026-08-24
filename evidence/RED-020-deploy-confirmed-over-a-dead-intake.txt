@@ -1,0 +1,518 @@
+RED-020 - the deploy check, proved able to go red on a dead intake
+
+DATE (UTC): 2026-08-24
+SUBJECT   : scripts/verify_live.sh, judged by tests/test_verify_live_reads_the_function.py
+
+WHY THIS FILE EXISTS. Invariant 5: a test must be ABLE to fail, and the red run is the
+only proof of it. The check this one replaces read five static addresses and printed
+DEPLOY CONFIRMED; the address the site's only call to action depends on was not among
+them, and answered 404 through every confirmation it printed.
+
+THE CHECK THAT PRINTED THE CONFIRMATION, kept here because the edit that replaced it
+destroyed the only copy - ~/orchestra is not a git repository and held no backup:
+
+    echo "== сверка ЖИВОГО сайта, а не отчёта =="
+    sleep 8
+    fail=0
+    for u in / /apply/ /registry/ /method/ /phase-2/; do
+      code=$(curl -s -o /dev/null -w '%{http_code}' -m 20 "https://provek.dev$u")
+      printf '  %-12s %s\n' "$u" "$code"
+      [ "$code" = "200" ] || fail=1
+    done
+    if [ "$fail" = "1" ]; then
+      echo "ДЕПЛОЙ НЕ ПОДТВЕРЖДЁН: не все адреса отдают 200"
+      exit 1
+    fi
+    echo "ДЕПЛОЙ ПОДТВЕРЖДЁН на $SHA"
+
+THE DEFECT, MEASURED ON THE LIVE SITE BEFORE THE FIX:
+
+    $ ./scripts/verify_live.sh                                    # 2026-08-24T01:23Z, before the fix
+    == live reading of https://provek.dev (GET only; a POST here would create an intake record) ==
+      /            200          expected 200
+      /apply/      200          expected 200
+      /registry/   200          expected 200
+      /method/     200          expected 200
+      /phase-2/    200          expected 200
+      /api/apply   404          EXPECTED 405
+                   ^ the Pages Function is NOT published: this deployment shipped
+                     web/dist and nothing else, so the intake form on /apply/ cannot
+                     succeed on any input. Deploy from web/ so that web/functions/ is
+                     in wrangler's working directory.
+    LIVE READING RED: 1 address(es) did not answer as they must.
+    $ echo $?
+    1
+
+Five green lines and one red one. The check above reads only the five.
+
+BASELINE (pristine script): 11 passed in 6.07s
+CONTROL (must stay green under every mutation): test_the_probe_never_writes
+
+COMMAND: python3 evidence/RED-020-generator.py
+
+----- MUTATION 1: THE DEFECT ITSELF - the five-address check restored -----
+
+WHY IT MATTERS. The address list loses /api/apply, which is exactly the check that shipped: five static pages answering 200 while the endpoint behind the only button on the site answered 404.
+
+  "/api/apply:405"
+    ->  (deleted)
+
+FAILED: test_a_static_only_deployment_reads_RED_and_is_named, test_every_address_is_actually_visited[/api/apply]
+
+..F...F....                                                              [100%]
+=================================== FAILURES ===================================
+_____________ test_a_static_only_deployment_reads_RED_and_is_named _____________
+
+    def test_a_static_only_deployment_reads_RED_and_is_named():
+        """THE ONE THIS FILE WAS WRITTEN FOR. Five 200s and a 404 on the endpoint: the exact state
+        provek.dev was in on 2026-08-21 and 2026-08-24, under the words DEPLOY CONFIRMED."""
+        codes = dict(HEALTHY)
+        codes["/api/apply"] = 404
+        with _Origin(codes) as origin:
+            run = _run(origin.base)
+>       assert run.returncode != 0, "a dead intake passed the deploy check - the T-H1 defect, restored"
+E       AssertionError: a dead intake passed the deploy check - the T-H1 defect, restored
+E       assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['/home/incubator/incubator/scripts/verify_live.sh', 'http://127.0.0.1:40945'], returncode=0, st...0          expected 200\nLIVE READING GREEN: all 5 addresses answered as they must, /api/apply included.\n', stderr='').returncode
+
+tests/test_verify_live_reads_the_function.py:111: AssertionError
+______________ test_every_address_is_actually_visited[/api/apply] ______________
+
+path = '/api/apply'
+
+    @pytest.mark.parametrize("path", sorted(HEALTHY))
+    def test_every_address_is_actually_visited(path: str):
+        """A list the script carries but never walks would pass all of the above. Break one address at
+        a time and require the run to notice that one."""
+        codes = dict(HEALTHY)
+        codes[path] = 418
+        with _Origin(codes) as origin:
+            run = _run(origin.base)
+>       assert run.returncode != 0, f"{path} is in the list and is not read"
+E       AssertionError: /api/apply is in the list and is not read
+E       assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['/home/incubator/incubator/scripts/verify_live.sh', 'http://127.0.0.1:38053'], returncode=0, st...0          expected 200\nLIVE READING GREEN: all 5 addresses answered as they must, /api/apply included.\n', stderr='').returncode
+
+tests/test_verify_live_reads_the_function.py:158: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_verify_live_reads_the_function.py::test_a_static_only_deployment_reads_RED_and_is_named
+FAILED tests/test_verify_live_reads_the_function.py::test_every_address_is_actually_visited[/api/apply]
+2 failed, 9 passed in 5.92s
+
+----- MUTATION 2: 404 accepted as the healthy answer -----
+
+WHY IT MATTERS. The address is walked, and the dead state is what the script calls alive. A check can name an address and still be blind to it if it expects the failure.
+
+  "/api/apply:405"
+    ->  "/api/apply:404"
+
+FAILED: test_a_published_function_reads_green, test_a_static_only_deployment_reads_RED_and_is_named
+
+F.F........                                                              [100%]
+=================================== FAILURES ===================================
+____________________ test_a_published_function_reads_green _____________________
+
+    def test_a_published_function_reads_green():
+        with _Origin(dict(HEALTHY)) as origin:
+            run = _run(origin.base)
+>       assert run.returncode == 0, run.stdout + run.stderr
+E       AssertionError: == live reading of http://127.0.0.1:41217 (GET only; a POST here would create an intake record) ==
+E           /            200          expected 200
+E           /apply/      200          expected 200
+E           /registry/   200          expected 200
+E           /method/     200          expected 200
+E           /phase-2/    200          expected 200
+E           /api/apply   405          EXPECTED 404
+E         LIVE READING RED: 1 address(es) did not answer as they must.
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/home/incubator/incubator/scripts/verify_live.sh', 'http://127.0.0.1:41217'], returncode=1, st...\n  /api/apply   405          EXPECTED 404\nLIVE READING RED: 1 address(es) did not answer as they must.\n', stderr='').returncode
+
+tests/test_verify_live_reads_the_function.py:92: AssertionError
+_____________ test_a_static_only_deployment_reads_RED_and_is_named _____________
+
+    def test_a_static_only_deployment_reads_RED_and_is_named():
+        """THE ONE THIS FILE WAS WRITTEN FOR. Five 200s and a 404 on the endpoint: the exact state
+        provek.dev was in on 2026-08-21 and 2026-08-24, under the words DEPLOY CONFIRMED."""
+        codes = dict(HEALTHY)
+        codes["/api/apply"] = 404
+        with _Origin(codes) as origin:
+            run = _run(origin.base)
+>       assert run.returncode != 0, "a dead intake passed the deploy check - the T-H1 defect, restored"
+E       AssertionError: a dead intake passed the deploy check - the T-H1 defect, restored
+E       assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['/home/incubator/incubator/scripts/verify_live.sh', 'http://127.0.0.1:36121'], returncode=0, st...4          expected 404\nLIVE READING GREEN: all 6 addresses answered as they must, /api/apply included.\n', stderr='').returncode
+
+tests/test_verify_live_reads_the_function.py:111: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_verify_live_reads_the_function.py::test_a_published_function_reads_green
+FAILED tests/test_verify_live_reads_the_function.py::test_a_static_only_deployment_reads_RED_and_is_named
+2 failed, 9 passed in 6.04s
+
+----- MUTATION 3: red, with the cause unnamed -----
+
+WHY IT MATTERS. The run goes red and says only that a code was not the expected one. The operator is left to guess between a broken function, a routing change and a deploy that shipped no function at all - which is L-23, a number offered where a reason is owed.
+
+  if [ "$path" = "/api/apply" ] && [ "$code" = "404" ]; then
+    ->  if false; then
+
+FAILED: test_a_static_only_deployment_reads_RED_and_is_named
+
+..F........                                                              [100%]
+=================================== FAILURES ===================================
+_____________ test_a_static_only_deployment_reads_RED_and_is_named _____________
+
+    def test_a_static_only_deployment_reads_RED_and_is_named():
+        """THE ONE THIS FILE WAS WRITTEN FOR. Five 200s and a 404 on the endpoint: the exact state
+        provek.dev was in on 2026-08-21 and 2026-08-24, under the words DEPLOY CONFIRMED."""
+        codes = dict(HEALTHY)
+        codes["/api/apply"] = 404
+        with _Origin(codes) as origin:
+            run = _run(origin.base)
+        assert run.returncode != 0, "a dead intake passed the deploy check - the T-H1 defect, restored"
+        assert "/api/apply" in run.stdout
+>       assert "NOT published" in run.stdout, "red is not enough; the operator must be told what 404 means"
+E       AssertionError: red is not enough; the operator must be told what 404 means
+E       assert 'NOT published' in '== live reading of http://127.0.0.1:40785 (GET only; a POST here would create an intake record) ==\n  /            20...expected 200\n  /api/apply   404          EXPECTED 405\nLIVE READING RED: 1 address(es) did not answer as they must.\n'
+E        +  where '== live reading of http://127.0.0.1:40785 (GET only; a POST here would create an intake record) ==\n  /            20...expected 200\n  /api/apply   404          EXPECTED 405\nLIVE READING RED: 1 address(es) did not answer as they must.\n' = CompletedProcess(args=['/home/incubator/incubator/scripts/verify_live.sh', 'http://127.0.0.1:40785'], returncode=1, st...\n  /api/apply   404          EXPECTED 405\nLIVE READING RED: 1 address(es) did not answer as they must.\n', stderr='').stdout
+
+tests/test_verify_live_reads_the_function.py:113: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_verify_live_reads_the_function.py::test_a_static_only_deployment_reads_RED_and_is_named
+1 failed, 10 passed in 6.14s
+
+----- MUTATION 4: the instrument's refusal wearing an HTTP code -----
+
+WHY IT MATTERS. The curl exit status stops being consulted, so `%{http_code}` prints 000 for a request that never happened and the run reports it as a code that merely was not 200. 'The site answered wrongly' and 'we could not ask' become one line: invariant 1.
+
+  if [ "$rc" != "0" ]; then
+    ->  if [ "$rc" = "-1" ]; then
+
+FAILED: test_an_unreachable_origin_is_UNREADABLE_and_not_a_code
+
+....F......                                                              [100%]
+=================================== FAILURES ===================================
+___________ test_an_unreachable_origin_is_UNREADABLE_and_not_a_code ____________
+
+    def test_an_unreachable_origin_is_UNREADABLE_and_not_a_code():
+        """Invariant 1 in its operational form. `curl -w '%{http_code}'` prints `000` when no HTTP
+        exchange happened; read as a code that is merely "not 200", indistinguishable from a site that
+        answered badly. The two send the operator to different places - one to Cloudflare, one to this
+        host's own network - so they may not collapse into one line."""
+        with _Origin(dict(HEALTHY)) as origin:
+            dead = origin.base  # bound, then torn down on exit: nothing is listening on this port now
+        run = _run(dead)
+        assert run.returncode != 0, "an address we could not read must never pass"
+>       assert "UNREADABLE" in run.stdout
+E       AssertionError: assert 'UNREADABLE' in '== live reading of http://127.0.0.1:33187 (GET only; a POST here would create an intake record) ==\n  /            00...EXPECTED 200\n  /api/apply   000          EXPECTED 405\nLIVE READING RED: 6 address(es) did not answer as they must.\n'
+E        +  where '== live reading of http://127.0.0.1:33187 (GET only; a POST here would create an intake record) ==\n  /            00...EXPECTED 200\n  /api/apply   000          EXPECTED 405\nLIVE READING RED: 6 address(es) did not answer as they must.\n' = CompletedProcess(args=['/home/incubator/incubator/scripts/verify_live.sh', 'http://127.0.0.1:33187'], returncode=1, st...\n  /api/apply   000          EXPECTED 405\nLIVE READING RED: 6 address(es) did not answer as they must.\n', stderr='').stdout
+
+tests/test_verify_live_reads_the_function.py:135: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_verify_live_reads_the_function.py::test_an_unreachable_origin_is_UNREADABLE_and_not_a_code
+1 failed, 10 passed in 6.15s
+
+----- MUTATION 5: a list carried but never walked -----
+
+WHY IT MATTERS. Only the first address is read. The remaining five are still printed in the source for a reader to be reassured by, which is the difference between a check and a declaration.
+
+  want="${entry##*:}"
+    ->  want="${entry##*:}"
+  [ "$path" = "/" ] || continue
+
+FAILED: test_a_broken_page_still_reads_RED, test_a_static_only_deployment_reads_RED_and_is_named, test_every_address_is_actually_visited[/api/apply], test_every_address_is_actually_visited[/apply/], test_every_address_is_actually_visited[/method/], test_every_address_is_actually_visited[/phase-2/], test_every_address_is_actually_visited[/registry/]
+
+..FF..FFFFF                                                              [100%]
+=================================== FAILURES ===================================
+_____________ test_a_static_only_deployment_reads_RED_and_is_named _____________
+
+    def test_a_static_only_deployment_reads_RED_and_is_named():
+        """THE ONE THIS FILE WAS WRITTEN FOR. Five 200s and a 404 on the endpoint: the exact state
+        provek.dev was in on 2026-08-21 and 2026-08-24, under the words DEPLOY CONFIRMED."""
+        codes = dict(HEALTHY)
+        codes["/api/apply"] = 404
+        with _Origin(codes) as origin:
+            run = _run(origin.base)
+>       assert run.returncode != 0, "a dead intake passed the deploy check - the T-H1 defect, restored"
+E       AssertionError: a dead intake passed the deploy check - the T-H1 defect, restored
+E       assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['/home/incubator/incubator/scripts/verify_live.sh', 'http://127.0.0.1:45143'], returncode=0, st...0          expected 200\nLIVE READING GREEN: all 6 addresses answered as they must, /api/apply included.\n', stderr='').returncode
+
+tests/test_verify_live_reads_the_function.py:111: AssertionError
+______________________ test_a_broken_page_still_reads_RED ______________________
+
+    def test_a_broken_page_still_reads_RED():
+        """The five static addresses did not stop being checked when the sixth was added."""
+        codes = dict(HEALTHY)
+        codes["/registry/"] = 500
+        with _Origin(codes) as origin:
+            run = _run(origin.base)
+>       assert run.returncode != 0
+E       AssertionError: assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['/home/incubator/incubator/scripts/verify_live.sh', 'http://127.0.0.1:45457'], returncode=0, st...0          expected 200\nLIVE READING GREEN: all 6 addresses answered as they must, /api/apply included.\n', stderr='').returncode
+
+tests/test_verify_live_reads_the_function.py:122: AssertionError
+______________ test_every_address_is_actually_visited[/api/apply] ______________
+
+path = '/api/apply'
+
+    @pytest.mark.parametrize("path", sorted(HEALTHY))
+    def test_every_address_is_actually_visited(path: str):
+        """A list the script carries but never walks would pass all of the above. Break one address at
+        a time and require the run to notice that one."""
+        codes = dict(HEALTHY)
+        codes[path] = 418
+        with _Origin(codes) as origin:
+            run = _run(origin.base)
+>       assert run.returncode != 0, f"{path} is in the list and is not read"
+E       AssertionError: /api/apply is in the list and is not read
+E       assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['/home/incubator/incubator/scripts/verify_live.sh', 'http://127.0.0.1:40787'], returncode=0, st...0          expected 200\nLIVE READING GREEN: all 6 addresses answered as they must, /api/apply included.\n', stderr='').returncode
+
+tests/test_verify_live_reads_the_function.py:158: AssertionError
+_______________ test_every_address_is_actually_visited[/apply/] ________________
+
+path = '/apply/'
+
+    @pytest.mark.parametrize("path", sorted(HEALTHY))
+    def test_every_address_is_actually_visited(path: str):
+        """A list the script carries but never walks would pass all of the above. Break one address at
+        a time and require the run to notice that one."""
+        codes = dict(HEALTHY)
+        codes[path] = 418
+        with _Origin(codes) as origin:
+            run = _run(origin.base)
+>       assert run.returncode != 0, f"{path} is in the list and is not read"
+E       AssertionError: /apply/ is in the list and is not read
+E       assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['/home/incubator/incubator/scripts/verify_live.sh', 'http://127.0.0.1:42753'], returncode=0, st...0          expected 200\nLIVE READING GREEN: all 6 addresses answered as they must, /api/apply included.\n', stderr='').returncode
+
+tests/test_verify_live_reads_the_function.py:158: AssertionError
+_______________ test_every_address_is_actually_visited[/method/] _______________
+
+path = '/method/'
+
+    @pytest.mark.parametrize("path", sorted(HEALTHY))
+    def test_every_address_is_actually_visited(path: str):
+        """A list the script carries but never walks would pass all of the above. Break one address at
+        a time and require the run to notice that one."""
+        codes = dict(HEALTHY)
+        codes[path] = 418
+        with _Origin(codes) as origin:
+            run = _run(origin.base)
+>       assert run.returncode != 0, f"{path} is in the list and is not read"
+E       AssertionError: /method/ is in the list and is not read
+E       assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['/home/incubator/incubator/scripts/verify_live.sh', 'http://127.0.0.1:45837'], returncode=0, st...0          expected 200\nLIVE READING GREEN: all 6 addresses answered as they must, /api/apply included.\n', stderr='').returncode
+
+tests/test_verify_live_reads_the_function.py:158: AssertionError
+______________ test_every_address_is_actually_visited[/phase-2/] _______________
+
+path = '/phase-2/'
+
+    @pytest.mark.parametrize("path", sorted(HEALTHY))
+    def test_every_address_is_actually_visited(path: str):
+        """A list the script carries but never walks would pass all of the above. Break one address at
+        a time and require the run to notice that one."""
+        codes = dict(HEALTHY)
+        codes[path] = 418
+        with _Origin(codes) as origin:
+            run = _run(origin.base)
+>       assert run.returncode != 0, f"{path} is in the list and is not read"
+E       AssertionError: /phase-2/ is in the list and is not read
+E       assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['/home/incubator/incubator/scripts/verify_live.sh', 'http://127.0.0.1:39519'], returncode=0, st...0          expected 200\nLIVE READING GREEN: all 6 addresses answered as they must, /api/apply included.\n', stderr='').returncode
+
+tests/test_verify_live_reads_the_function.py:158: AssertionError
+______________ test_every_address_is_actually_visited[/registry/] ______________
+
+path = '/registry/'
+
+    @pytest.mark.parametrize("path", sorted(HEALTHY))
+    def test_every_address_is_actually_visited(path: str):
+        """A list the script carries but never walks would pass all of the above. Break one address at
+        a time and require the run to notice that one."""
+        codes = dict(HEALTHY)
+        codes[path] = 418
+        with _Origin(codes) as origin:
+            run = _run(origin.base)
+>       assert run.returncode != 0, f"{path} is in the list and is not read"
+E       AssertionError: /registry/ is in the list and is not read
+E       assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['/home/incubator/incubator/scripts/verify_live.sh', 'http://127.0.0.1:36459'], returncode=0, st...0          expected 200\nLIVE READING GREEN: all 6 addresses answered as they must, /api/apply included.\n', stderr='').returncode
+
+tests/test_verify_live_reads_the_function.py:158: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_verify_live_reads_the_function.py::test_a_static_only_deployment_reads_RED_and_is_named
+FAILED tests/test_verify_live_reads_the_function.py::test_a_broken_page_still_reads_RED
+FAILED tests/test_verify_live_reads_the_function.py::test_every_address_is_actually_visited[/api/apply]
+FAILED tests/test_verify_live_reads_the_function.py::test_every_address_is_actually_visited[/apply/]
+FAILED tests/test_verify_live_reads_the_function.py::test_every_address_is_actually_visited[/method/]
+FAILED tests/test_verify_live_reads_the_function.py::test_every_address_is_actually_visited[/phase-2/]
+FAILED tests/test_verify_live_reads_the_function.py::test_every_address_is_actually_visited[/registry/]
+7 failed, 4 passed in 5.74s
+
+----- MUTATION 6: a gate you can walk past -----
+
+WHY IT MATTERS. Every address is read, every failure is printed, and the script exits 0 anyway. This is the shape push.sh was written after: a check whose finding does not stop anything is a check that manufactures confidence.
+
+  echo "LIVE READING RED: ${failed} address(es) did not answer as they must."
+  exit 1
+    ->  echo "LIVE READING RED: ${failed} address(es) did not answer as they must."
+  exit 0
+
+FAILED: test_a_broken_page_still_reads_RED, test_a_static_only_deployment_reads_RED_and_is_named, test_every_address_is_actually_visited[/], test_every_address_is_actually_visited[/api/apply], test_every_address_is_actually_visited[/apply/], test_every_address_is_actually_visited[/method/], test_every_address_is_actually_visited[/phase-2/], test_every_address_is_actually_visited[/registry/]
+
+..FF.FFFFFF                                                              [100%]
+=================================== FAILURES ===================================
+_____________ test_a_static_only_deployment_reads_RED_and_is_named _____________
+
+    def test_a_static_only_deployment_reads_RED_and_is_named():
+        """THE ONE THIS FILE WAS WRITTEN FOR. Five 200s and a 404 on the endpoint: the exact state
+        provek.dev was in on 2026-08-21 and 2026-08-24, under the words DEPLOY CONFIRMED."""
+        codes = dict(HEALTHY)
+        codes["/api/apply"] = 404
+        with _Origin(codes) as origin:
+            run = _run(origin.base)
+>       assert run.returncode != 0, "a dead intake passed the deploy check - the T-H1 defect, restored"
+E       AssertionError: a dead intake passed the deploy check - the T-H1 defect, restored
+E       assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['/home/incubator/incubator/scripts/verify_live.sh', 'http://127.0.0.1:33793'], returncode=0, st...          in wrangler's working directory.\nLIVE READING RED: 1 address(es) did not answer as they must.\n", stderr='').returncode
+
+tests/test_verify_live_reads_the_function.py:111: AssertionError
+______________________ test_a_broken_page_still_reads_RED ______________________
+
+    def test_a_broken_page_still_reads_RED():
+        """The five static addresses did not stop being checked when the sixth was added."""
+        codes = dict(HEALTHY)
+        codes["/registry/"] = 500
+        with _Origin(codes) as origin:
+            run = _run(origin.base)
+>       assert run.returncode != 0
+E       AssertionError: assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['/home/incubator/incubator/scripts/verify_live.sh', 'http://127.0.0.1:37821'], returncode=0, st...\n  /api/apply   405          expected 405\nLIVE READING RED: 1 address(es) did not answer as they must.\n', stderr='').returncode
+
+tests/test_verify_live_reads_the_function.py:122: AssertionError
+__________________ test_every_address_is_actually_visited[/] ___________________
+
+path = '/'
+
+    @pytest.mark.parametrize("path", sorted(HEALTHY))
+    def test_every_address_is_actually_visited(path: str):
+        """A list the script carries but never walks would pass all of the above. Break one address at
+        a time and require the run to notice that one."""
+        codes = dict(HEALTHY)
+        codes[path] = 418
+        with _Origin(codes) as origin:
+            run = _run(origin.base)
+>       assert run.returncode != 0, f"{path} is in the list and is not read"
+E       AssertionError: / is in the list and is not read
+E       assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['/home/incubator/incubator/scripts/verify_live.sh', 'http://127.0.0.1:35363'], returncode=0, st...\n  /api/apply   405          expected 405\nLIVE READING RED: 1 address(es) did not answer as they must.\n', stderr='').returncode
+
+tests/test_verify_live_reads_the_function.py:158: AssertionError
+______________ test_every_address_is_actually_visited[/api/apply] ______________
+
+path = '/api/apply'
+
+    @pytest.mark.parametrize("path", sorted(HEALTHY))
+    def test_every_address_is_actually_visited(path: str):
+        """A list the script carries but never walks would pass all of the above. Break one address at
+        a time and require the run to notice that one."""
+        codes = dict(HEALTHY)
+        codes[path] = 418
+        with _Origin(codes) as origin:
+            run = _run(origin.base)
+>       assert run.returncode != 0, f"{path} is in the list and is not read"
+E       AssertionError: /api/apply is in the list and is not read
+E       assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['/home/incubator/incubator/scripts/verify_live.sh', 'http://127.0.0.1:41699'], returncode=0, st...\n  /api/apply   418          EXPECTED 405\nLIVE READING RED: 1 address(es) did not answer as they must.\n', stderr='').returncode
+
+tests/test_verify_live_reads_the_function.py:158: AssertionError
+_______________ test_every_address_is_actually_visited[/apply/] ________________
+
+path = '/apply/'
+
+    @pytest.mark.parametrize("path", sorted(HEALTHY))
+    def test_every_address_is_actually_visited(path: str):
+        """A list the script carries but never walks would pass all of the above. Break one address at
+        a time and require the run to notice that one."""
+        codes = dict(HEALTHY)
+        codes[path] = 418
+        with _Origin(codes) as origin:
+            run = _run(origin.base)
+>       assert run.returncode != 0, f"{path} is in the list and is not read"
+E       AssertionError: /apply/ is in the list and is not read
+E       assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['/home/incubator/incubator/scripts/verify_live.sh', 'http://127.0.0.1:46063'], returncode=0, st...\n  /api/apply   405          expected 405\nLIVE READING RED: 1 address(es) did not answer as they must.\n', stderr='').returncode
+
+tests/test_verify_live_reads_the_function.py:158: AssertionError
+_______________ test_every_address_is_actually_visited[/method/] _______________
+
+path = '/method/'
+
+    @pytest.mark.parametrize("path", sorted(HEALTHY))
+    def test_every_address_is_actually_visited(path: str):
+        """A list the script carries but never walks would pass all of the above. Break one address at
+        a time and require the run to notice that one."""
+        codes = dict(HEALTHY)
+        codes[path] = 418
+        with _Origin(codes) as origin:
+            run = _run(origin.base)
+>       assert run.returncode != 0, f"{path} is in the list and is not read"
+E       AssertionError: /method/ is in the list and is not read
+E       assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['/home/incubator/incubator/scripts/verify_live.sh', 'http://127.0.0.1:44267'], returncode=0, st...\n  /api/apply   405          expected 405\nLIVE READING RED: 1 address(es) did not answer as they must.\n', stderr='').returncode
+
+tests/test_verify_live_reads_the_function.py:158: AssertionError
+______________ test_every_address_is_actually_visited[/phase-2/] _______________
+
+path = '/phase-2/'
+
+    @pytest.mark.parametrize("path", sorted(HEALTHY))
+    def test_every_address_is_actually_visited(path: str):
+        """A list the script carries but never walks would pass all of the above. Break one address at
+        a time and require the run to notice that one."""
+        codes = dict(HEALTHY)
+        codes[path] = 418
+        with _Origin(codes) as origin:
+            run = _run(origin.base)
+>       assert run.returncode != 0, f"{path} is in the list and is not read"
+E       AssertionError: /phase-2/ is in the list and is not read
+E       assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['/home/incubator/incubator/scripts/verify_live.sh', 'http://127.0.0.1:40499'], returncode=0, st...\n  /api/apply   405          expected 405\nLIVE READING RED: 1 address(es) did not answer as they must.\n', stderr='').returncode
+
+tests/test_verify_live_reads_the_function.py:158: AssertionError
+______________ test_every_address_is_actually_visited[/registry/] ______________
+
+path = '/registry/'
+
+    @pytest.mark.parametrize("path", sorted(HEALTHY))
+    def test_every_address_is_actually_visited(path: str):
+        """A list the script carries but never walks would pass all of the above. Break one address at
+        a time and require the run to notice that one."""
+        codes = dict(HEALTHY)
+        codes[path] = 418
+        with _Origin(codes) as origin:
+            run = _run(origin.base)
+>       assert run.returncode != 0, f"{path} is in the list and is not read"
+E       AssertionError: /registry/ is in the list and is not read
+E       assert 0 != 0
+E        +  where 0 = CompletedProcess(args=['/home/incubator/incubator/scripts/verify_live.sh', 'http://127.0.0.1:35029'], returncode=0, st...\n  /api/apply   405          expected 405\nLIVE READING RED: 1 address(es) did not answer as they must.\n', stderr='').returncode
+
+tests/test_verify_live_reads_the_function.py:158: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_verify_live_reads_the_function.py::test_a_static_only_deployment_reads_RED_and_is_named
+FAILED tests/test_verify_live_reads_the_function.py::test_a_broken_page_still_reads_RED
+FAILED tests/test_verify_live_reads_the_function.py::test_every_address_is_actually_visited[/]
+FAILED tests/test_verify_live_reads_the_function.py::test_every_address_is_actually_visited[/api/apply]
+FAILED tests/test_verify_live_reads_the_function.py::test_every_address_is_actually_visited[/apply/]
+FAILED tests/test_verify_live_reads_the_function.py::test_every_address_is_actually_visited[/method/]
+FAILED tests/test_verify_live_reads_the_function.py::test_every_address_is_actually_visited[/phase-2/]
+FAILED tests/test_verify_live_reads_the_function.py::test_every_address_is_actually_visited[/registry/]
+8 failed, 3 passed in 6.15s
+
+----- RESTORED -----
+
+...........                                                              [100%]
+11 passed in 6.11s
