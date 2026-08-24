@@ -199,8 +199,24 @@ def test_every_address_is_actually_visited(path: str):
 # This is a FLOOR and not a second mirror of the list, and the difference is what keeps it from
 # being the drift again: adding an address does not touch it, so it never goes stale on growth. It
 # fires in one direction only, when something load-bearing stops being read at all.
+#
+# IT COVERED HALF THE LIST ON ITS FIRST DRAFT, and the half it left out was the worse one. Four
+# addresses were pinned - the two note routes, `/api/apply` and `/` - so `/apply/`, `/registry/`,
+# `/method/` and `/phase-2/` could still be deleted from the script with the whole suite green.
+# `/apply/` is the page carrying the intake form, which is the entire reason `/api/apply` is
+# checked at all: the endpoint was pinned and the page a person actually visits to reach it was
+# not. Found by Fable, refuting the change that introduced the floor.
+#
+# Every address the script checks is pinned now. That is not the drifting copy this file started
+# with, because the direction is what matters: an address ADDED to the script needs no edit here
+# and cannot make this stale, while an address REMOVED must be argued for in this dict. Deleting
+# one from a deploy gate should cost somebody a sentence.
 REQUIRED = {
     "/": 200,                                            # the origin talks to us at all
+    "/apply/": 200,                                      # the page the intake form lives on
+    "/registry/": 200,                                   # the product's front door
+    "/method/": 200,                                     # the methodology the verdicts cite
+    "/phase-2/": 200,                                    # specified and not built, and says so
     "/api/apply": 405,                                   # T-H1: the half of the site that is code
     "/method/notes/": 200,                               # T-C4: the note index
     "/method/notes/not-measured-is-not-zero/": 200,      # T-C4: the first published capture
@@ -219,5 +235,10 @@ def test_the_address_list_cannot_silently_shrink():
 def test_the_floor_pins_the_code_and_not_only_the_path():
     """`/api/apply` present but expected to answer 200 would be the T-H1 defect with the address
     still in the list - a static 404 page answering 200 is exactly what it looked like."""
-    wrong = {p: (HEALTHY[p], c) for p, c in REQUIRED.items() if HEALTHY.get(p) != c}
+    # `HEALTHY.get(p)` and not `HEALTHY[p]`: a path absent from the script is the test above's
+    # finding, and indexing it here raised KeyError instead - an ERROR where an assertion belongs.
+    # A crash and a failed assertion are not the same report, and the crash arrived with a stack
+    # trace about a dict rather than a sentence about a deploy gate.
+    wrong = {p: (HEALTHY.get(p), c) for p, c in REQUIRED.items()
+             if p in HEALTHY and HEALTHY[p] != c}
     assert not wrong, f"{SCRIPT.name} expects the wrong code for {wrong} (got, wanted)"

@@ -67,7 +67,7 @@ tests/test_verify_live_reads_the_function.py:62: in _checks_from_script
     raise AssertionError(f"{SCRIPT.name}: CHECKS parsed to zero addresses")
 E   AssertionError: verify_live.sh: CHECKS parsed to zero addresses
 !!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
-1 error in 0.13s
+1 error in 0.12s
 
 ==================================================================================================
 MUTATION 2 [refused-to-build] - the array is renamed, so the parser finds nothing to read
@@ -116,7 +116,7 @@ pytest exit code: 1
 
 Everything below this line is verbatim tool output.
 --------------------------------------------------------------------------------------------------
-............FF                                                           [100%]
+............F.                                                           [100%]
 =================================== FAILURES ===================================
 _________________ test_the_address_list_cannot_silently_shrink _________________
 
@@ -130,30 +130,52 @@ _________________ test_the_address_list_cannot_silently_shrink _________________
 E       AssertionError: verify_live.sh no longer checks ['/method/notes/']. Removing an address shrinks what a 'DEPLOY CONFIRMED' covers; if that is intended, this floor is the place to argue it.
 E       assert not ['/method/notes/']
 
-tests/test_verify_live_reads_the_function.py:213: AssertionError
-______________ test_the_floor_pins_the_code_and_not_only_the_path ______________
-
-    def test_the_floor_pins_the_code_and_not_only_the_path():
-        """`/api/apply` present but expected to answer 200 would be the T-H1 defect with the address
-        still in the list - a static 404 page answering 200 is exactly what it looked like."""
->       wrong = {p: (HEALTHY[p], c) for p, c in REQUIRED.items() if HEALTHY.get(p) != c}
-
-tests/test_verify_live_reads_the_function.py:222: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-.0 = <dict_itemiterator object at 0x7f9a2f024630>
-
->   wrong = {p: (HEALTHY[p], c) for p, c in REQUIRED.items() if HEALTHY.get(p) != c}
-E   KeyError: '/method/notes/'
-
-tests/test_verify_live_reads_the_function.py:222: KeyError
+tests/test_verify_live_reads_the_function.py:229: AssertionError
 =========================== short test summary info ============================
 FAILED tests/test_verify_live_reads_the_function.py::test_the_address_list_cannot_silently_shrink
-FAILED tests/test_verify_live_reads_the_function.py::test_the_floor_pins_the_code_and_not_only_the_path
-2 failed, 12 passed in 6.82s
+1 failed, 13 passed in 6.79s
 
 ==================================================================================================
-MUTATION 4 [assertion-red] - the intake endpoint is expected to answer 200
+MUTATION 4 [assertion-red] - the page carrying the intake form is dropped from the address list
+==================================================================================================
+
+FILE:    scripts/verify_live.sh
+REMOVED: '  "/apply/:200"\n'
+ADDED:   ''
+
+WHY THIS MUTATION:
+  THE FLOOR'S FIRST DRAFT WAS GREEN OVER THIS EDIT, and mutation 3 could not have found
+  it: that one deletes a route the draft happened to pin, so it fired for the same
+  reason a test passes on the one example it was built from. Four of the eight
+  addresses were unpinned, and `/apply/` is the sharpest of them - it is the page the
+  intake form lives on, so the endpoint was protected while the door to it was not.
+  Found by Fable, refuting the change that added the floor.
+
+pytest exit code: 1
+
+Everything below this line is verbatim tool output.
+--------------------------------------------------------------------------------------------------
+............F.                                                           [100%]
+=================================== FAILURES ===================================
+_________________ test_the_address_list_cannot_silently_shrink _________________
+
+    def test_the_address_list_cannot_silently_shrink():
+        """An address removed from the script is a smaller deploy gate, and must not be a green suite."""
+        missing = sorted(REQUIRED.keys() - HEALTHY.keys())
+>       assert not missing, (
+            f"{SCRIPT.name} no longer checks {missing}. Removing an address shrinks what a "
+            f"'DEPLOY CONFIRMED' covers; if that is intended, this floor is the place to argue it."
+        )
+E       AssertionError: verify_live.sh no longer checks ['/apply/']. Removing an address shrinks what a 'DEPLOY CONFIRMED' covers; if that is intended, this floor is the place to argue it.
+E       assert not ['/apply/']
+
+tests/test_verify_live_reads_the_function.py:229: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_verify_live_reads_the_function.py::test_the_address_list_cannot_silently_shrink
+1 failed, 13 passed in 6.83s
+
+==================================================================================================
+MUTATION 5 [assertion-red] - the intake endpoint is expected to answer 200
 ==================================================================================================
 
 FILE:    scripts/verify_live.sh
@@ -177,12 +199,17 @@ ______________ test_the_floor_pins_the_code_and_not_only_the_path ______________
     def test_the_floor_pins_the_code_and_not_only_the_path():
         """`/api/apply` present but expected to answer 200 would be the T-H1 defect with the address
         still in the list - a static 404 page answering 200 is exactly what it looked like."""
-        wrong = {p: (HEALTHY[p], c) for p, c in REQUIRED.items() if HEALTHY.get(p) != c}
+        # `HEALTHY.get(p)` and not `HEALTHY[p]`: a path absent from the script is the test above's
+        # finding, and indexing it here raised KeyError instead - an ERROR where an assertion belongs.
+        # A crash and a failed assertion are not the same report, and the crash arrived with a stack
+        # trace about a dict rather than a sentence about a deploy gate.
+        wrong = {p: (HEALTHY.get(p), c) for p, c in REQUIRED.items()
+                 if p in HEALTHY and HEALTHY[p] != c}
 >       assert not wrong, f"{SCRIPT.name} expects the wrong code for {wrong} (got, wanted)"
 E       AssertionError: verify_live.sh expects the wrong code for {'/api/apply': (200, 405)} (got, wanted)
 E       assert not {'/api/apply': (200, 405)}
 
-tests/test_verify_live_reads_the_function.py:223: AssertionError
+tests/test_verify_live_reads_the_function.py:244: AssertionError
 =========================== short test summary info ============================
 FAILED tests/test_verify_live_reads_the_function.py::test_the_floor_pins_the_code_and_not_only_the_path
-1 failed, 14 passed in 7.34s
+1 failed, 14 passed in 7.26s

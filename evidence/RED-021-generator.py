@@ -136,6 +136,22 @@ MUTATIONS = [
         ),
     },
     {
+        "name": "the page carrying the intake form is dropped from the address list",
+        "klass": ASSERTION_RED,
+        "file": SCRIPT,
+        "anchor": '  "/apply/:200"\n',
+        "replace": "",
+        "expect": "test_the_address_list_cannot_silently_shrink",
+        "why": (
+            "THE FLOOR'S FIRST DRAFT WAS GREEN OVER THIS EDIT, and mutation 3 could not have found\n"
+            "  it: that one deletes a route the draft happened to pin, so it fired for the same\n"
+            "  reason a test passes on the one example it was built from. Four of the eight\n"
+            "  addresses were unpinned, and `/apply/` is the sharpest of them - it is the page the\n"
+            "  intake form lives on, so the endpoint was protected while the door to it was not.\n"
+            "  Found by Fable, refuting the change that added the floor."
+        ),
+    },
+    {
         "name": "the intake endpoint is expected to answer 200",
         "klass": ASSERTION_RED,
         "file": SCRIPT,
@@ -165,6 +181,28 @@ def failed_tests(out: str) -> set[str]:
         for ln in out.splitlines()
         if ln.startswith("FAILED") and "::" in ln
     }
+
+
+def failure_lines(out: str) -> tuple[str, ...]:
+    """The FAILED lines verbatim, message and all - the fingerprint the distinctness check uses.
+
+    IT USED TO BE THE SET OF TEST NAMES, AND THAT WAS TOO COARSE RATHER THAN TOO STRICT. Two
+    mutations that delete different addresses both fail `test_the_address_list_cannot_silently_
+    shrink` and were refused as duplicates, although their output differs in the part that matters:
+    each names the address that went missing. Widening the floor to cover all eight addresses is
+    what made them collide, so the coarse fingerprint would have blocked exactly the fix for the
+    blind spot Fable found.
+
+    This is STRICTER, not looser, and the direction is worth stating because relaxing a guard to
+    let one's own evidence through is the failure this file is otherwise about. RED-013's defect
+    was a transcript carrying another run's output; that produces byte-identical failure lines and
+    is still caught here. What is no longer caught is the case where the same assertion fires with
+    a demonstrably different message, which was never the thing being guarded against.
+    """
+    # The `E ` lines, which carry the assertion's own message and therefore the ADDRESS that went
+    # missing. The `FAILED` summary lines under `-q` carry only test names and are identical for
+    # any two deletions, which is what made the first version of this too coarse.
+    return tuple(sorted(ln.strip() for ln in out.splitlines() if ln.startswith("E ")))
 
 
 def die(msg: str) -> None:
@@ -220,7 +258,7 @@ def main() -> int:
             if CONTROL in failures:
                 die(f"mutation {i}: the instrument control {CONTROL} died, so the suite was not "
                     f"exercising the script and this red establishes nothing (L-28)")
-            fingerprint = "failed:" + ",".join(sorted(failures))
+            fingerprint = "failed:" + "|".join(failure_lines(out))
 
         if fingerprint in seen_failures:
             die(f"mutation {i}: identical failure set to mutation {seen_failures[fingerprint]}; "
