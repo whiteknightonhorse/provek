@@ -98,17 +98,26 @@ export function loadNotes() {
 // --- figures, computed from the artefacts --------------------------------------------------------
 
 /** Every colour is a design token or `currentColor`. A hex literal here would route around
- *  DESIGN.md's palette through the one element nobody thinks to look at. */
-const HATCH = `<defs>
-  <pattern id="pv-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+ *  DESIGN.md's palette through the one element nobody thinks to look at.
+ *
+ *  THE IDS ARE NAMESPACED PER FIGURE, and they were not until the first note carried two of them.
+ *  These `<defs>` were a module constant, so every figure emitted the same `pv-hatch` and
+ *  `pv-cross`; one figure to a page hid it, and the first page to place two shipped duplicate IDs.
+ *  The Nu validator names it, and the browser consequence is worse than the validation error: both
+ *  `<pattern>` elements answer to one name, so `url(#pv-hatch)` in the second figure resolves to
+ *  the first figure's definition. The hatch that distinguishes an instrument's refusal from a small
+ *  measurement is exactly the paint that would have gone wrong. Measured on the live page, not in
+ *  the tree - see `evidence/MARKUP-001.txt`. */
+const hatchDefs = (ns) => `<defs>
+  <pattern id="${ns}-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
     <line x1="0" y1="0" x2="0" y2="6" stroke="var(--color-unknown)" stroke-width="2"/>
   </pattern>
-  <pattern id="pv-cross" width="6" height="6" patternUnits="userSpaceOnUse">
+  <pattern id="${ns}-cross" width="6" height="6" patternUnits="userSpaceOnUse">
     <path d="M0 0 L6 6 M6 0 L0 6" stroke="var(--color-unknown)" stroke-width="1.2" fill="none"/>
   </pattern>
 </defs>`;
 
-function registryCoverage() {
+function registryCoverage(ns) {
   // The SERVED copy, `web/public/data/`, not the emitted-artefact copy under `public/`. They are
   // byte-identical today and a test holds them so; the figure reads the one a visitor fetches
   // because that is the artefact a claim on this page is about (L-3).
@@ -146,7 +155,7 @@ function registryCoverage() {
     const cells = r.cells.map((c, ci) => {
       const x = LEFT + ci * CELL + 6;
       const fill = c.state === "measured" ? "var(--color-pass)"
-        : c.state === "unreadable" ? "url(#pv-cross)" : "url(#pv-hatch)";
+        : c.state === "unreadable" ? `url(#${ns}-cross)` : `url(#${ns}-hatch)`;
       const label = c.label
         ? `<text x="${x + 56}" y="${y + 13}" text-anchor="middle" font-size="10.5"
              fill="var(--color-paper)" font-family="var(--font-mono)">${esc(c.label)}</text>` : "";
@@ -159,8 +168,8 @@ function registryCoverage() {
 
   const legend = [
     ["var(--color-pass)", "measured"],
-    ["url(#pv-hatch)", "check_did_not_run"],
-    ["url(#pv-cross)", "unreadable"],
+    [`url(#${ns}-hatch)`, "check_did_not_run"],
+    [`url(#${ns}-cross)`, "unreadable"],
   ].map(([fill, label], i) =>
     `<rect x="${i * 190}" y="${H - 22}" width="14" height="11" fill="${fill}"
        stroke="var(--color-line-2)" stroke-width="0.75"/>
@@ -176,14 +185,14 @@ function registryCoverage() {
   return {
     svg: `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" xmlns="http://www.w3.org/2000/svg"
       aria-label="${cells} operations across ${rows.length} subjects. ${measured} are measured; the rest carry a named absence.">
-      ${HATCH}${head}${body}${legend}</svg>`,
+      ${hatchDefs(ns)}${head}${body}${legend}</svg>`,
     caption: `Every operation on every subject in the registry, as at ${reg.generated_at.slice(0, 10)}. `
       + `No total is drawn: a single coverage number would turn a named shortfall into a score. `
       + `Read from <code>public/registry/registry.json</code> and the eight passports beside it.`,
   };
 }
 
-function keywordDemandStates() {
+function keywordDemandStates(ns) {
   const src = JSON.parse(readFileSync(join(REPO, "seo/sources.json"), "utf8"));
   const d = src.demand_states;
   const order = ["measured", "nothing_qualified", "unreadable", "check_did_not_run"];
@@ -197,7 +206,7 @@ function keywordDemandStates() {
     // An instrument's refusal is not a quantity of demand. It gets the same hatch the passport
     // gives an absent level, so the eye cannot read it as a smaller measurement.
     const fill = k === "measured" ? "var(--color-accent)"
-      : k === "nothing_qualified" ? "var(--color-line-2)" : "url(#pv-hatch)";
+      : k === "nothing_qualified" ? "var(--color-line-2)" : `url(#${ns}-hatch)`;
     return `<text x="0" y="${y + 15}" font-size="11" fill="var(--color-ink-2)"
               font-family="var(--font-mono)">${k}</text>
             <rect x="${LEFT}" y="${y + 3}" width="${w}" height="16" fill="${fill}"
@@ -214,7 +223,7 @@ function keywordDemandStates() {
   return {
     svg: `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" xmlns="http://www.w3.org/2000/svg"
       aria-label="${esc(spoken)}">
-      ${HATCH}${bars}</svg>`,
+      ${hatchDefs(ns)}${bars}</svg>`,
     caption: `The demand states of all ${src.totals.keys} keys captured on ${src.captured_at}. `
       + `The two hatched rows are not small numbers - they are rows where the instrument did not `
       + `answer. Read from <code>seo/sources.json</code>.`,
@@ -240,6 +249,10 @@ const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-
 
 export function renderBody(body) {
   const out = [];
+  // The namespace is the figure's POSITION on the page, not its name. Either would have fixed the
+  // collision that shipped, and a counter also holds if the same figure is ever placed twice - a
+  // case the declared/placed check permits, because it compares sets.
+  let figureSeq = 0;
   for (const block of body.split(/\n{2,}/)) {
     const b = block.trim();
     if (!b) continue;
@@ -247,7 +260,7 @@ export function renderBody(body) {
     if ((m = b.match(/^\{\{figure:([a-z0-9-]+)\}\}$/))) {
       const build = FIGURES[m[1]];
       if (!build) throw new Error(`notes: unknown figure ${m[1]}`);
-      const { svg, caption } = build();
+      const { svg, caption } = build(`pv-f${figureSeq++}`);
       out.push(
         `<figure class="my-7 border border-[var(--color-line)] bg-[var(--color-paper)] p-4">` +
         `${svg}<figcaption class="mt-3 text-xs text-[var(--color-ink-3)]">${inline(caption)}</figcaption></figure>`);

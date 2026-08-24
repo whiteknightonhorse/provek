@@ -213,6 +213,15 @@ laws:
     # the defect: the other four skip themselves when nothing is captured.
     gate: web/src/pages/Method.tsx
     test: tests/test_notes_entrance.py
+  - id: LAW-EMITTED-IDS-UNIQUE
+    text: "no emitted page defines the same id twice, because a url(#x) reference resolves to the first match and paints the second element from the wrong definition"
+    # Found by the W3C validator on the LIVE note page and not by any test here: the figure hatch
+    # patterns were a module constant with fixed ids, which one figure to a page hid completely,
+    # and the first page ever to place two of them shipped the collision. The sweep reads every
+    # emitted page rather than the notes alone - nothing about colliding ids is note-specific, and
+    # the emitted document is the only place the collision is visible (L-3).
+    gate: web/notes/emit.mjs
+    test: tests/test_emitted_ids_are_unique.py
   - id: LAW-SURVEY-ABSENCE
     text: "in a sampled measurement, an identity we failed to read is never counted as one that failed to qualify"
     # LAW-NOT-MEASURED restated for a DENOMINATOR, because that is where it hides. A survey has the
