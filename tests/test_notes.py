@@ -163,6 +163,17 @@ def test_the_provenance_of_the_capture_is_recorded_on_the_note():
     What can decide it is `~/orchestra/notes_pin_verify.py`, which reads the pin against the
     generator's own history and against the step names the capture logged, with a known mispin as
     its control. Both live notes were judged MATCH there on 2026-08-24.
+
+    `topics_sha256` is the same sentence with the second half missing, and this line is added
+    because the loop below asserts the two fields identically. `notes_topics.json` does not reach a
+    clone either, so the pin is unresolvable here for the same reason - and no instrument decides it
+    anywhere: the verifier above knows only the generator. For that field a present pin is the whole
+    of what any reading in this repository establishes. What the capture guarantees instead is
+    structural and invisible from here: since 2026-08-24 the generator parses the topic spec and
+    hashes it from ONE read, so the pin cannot name bytes the run did not plan from. Before that it
+    re-read the file at the end of a capture, thirteen to sixteen minutes later, and the red run
+    that reproduces the mispin is `~/orchestra/evidence/RED-H9-H10-*`, outside this tree with
+    everything else about the capture (D-17).
     """
     for front, _ in sources():
         p = front["provenance"]
