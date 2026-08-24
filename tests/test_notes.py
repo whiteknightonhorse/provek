@@ -152,6 +152,18 @@ def test_faq_answers_are_quotable_and_every_question_came_from_the_base():
 
 
 def test_the_provenance_of_the_capture_is_recorded_on_the_note():
+    """The fields are PRESENT. Whether `generator_sha256` is TRUE is not decidable here.
+
+    D-17 keeps the capture outside this repository, and the named cost has a second half worth
+    stating where a reader meets the field: the bytes that hash to `generator_sha256` are not in a
+    clone, so nothing under `tests/` can resolve the pin. A green here means the note carries a
+    pin, never that the pin names the code that produced the note - and the two read alike unless
+    the difference is written down.
+
+    What can decide it is `~/orchestra/notes_pin_verify.py`, which reads the pin against the
+    generator's own history and against the step names the capture logged, with a known mispin as
+    its control. Both live notes were judged MATCH there on 2026-08-24.
+    """
     for front, _ in sources():
         p = front["provenance"]
         assert p["plan_model"] == "claude-sonnet-5"
