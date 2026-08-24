@@ -38,11 +38,13 @@ function Masthead({ route }) {
 				children: [
 					link("/registry/", "Registry", route.startsWith("/registry") || route.startsWith("/p/")),
 					link("/method/", "Method", route === "/method/"),
-					/* @__PURE__ */ jsx("span", {
+					/* @__PURE__ */ jsxs("span", {
 						className: "px-3 py-2.5 min-h-11 inline-flex items-center text-sm text-[var(--color-ink-disabled)] cursor-default select-none",
 						"aria-disabled": "true",
-						"aria-label": "Corpus, not available",
-						children: "Corpus"
+						children: ["Corpus", /* @__PURE__ */ jsx("span", {
+							className: "sr-only",
+							children: ", not available"
+						})]
 					})
 				]
 			})]
