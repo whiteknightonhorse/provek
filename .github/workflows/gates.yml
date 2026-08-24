@@ -109,7 +109,23 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4.4.0
         with:
           node-version: "22"
-      - run: pip install --quiet pytest pytest-cov
+      # THE THIRD LEG OF THE PINNING: WHAT pip RESOLVES, NOT ONLY WHAT `uses:` NAMES.
+      #
+      # The comment above the `permissions:` block calls a pinned action and a bounded token two
+      # halves of one defect. This is the half neither of them covered. `pip install pytest
+      # pytest-cov` names two packages and installs TEN, at whatever version and from whatever
+      # artefact PyPI served at the moment of the run - and that code executes on this tree with
+      # the same token the `uses:` lines were pinned to protect. A tag is a movable pointer; an
+      # unpinned dependency set is a pointer that moves on somebody else's release schedule.
+      #
+      # So each job installs a COMPILED set instead: the full transitive closure, resolved once
+      # under this job's own Python 3.10 and committed as `requirements/ci-*.txt` with a hash per
+      # artefact. `--require-hashes` makes pip REFUSE anything that does not match, which also
+      # forecloses the quieter case where a resolver serves a different wheel for the same version.
+      #
+      # WHEN THIS GOES RED IT IS WORKING, NOT FLAKY. The policy for moving these sets is D-30, and
+      # the short of it is that a set changes by a deliberate edit and never by CI upgrading itself.
+      - run: pip install --quiet --require-hashes --only-binary=:all: -r requirements/ci-tests.txt
 
       - name: build the site
         # Must run BEFORE the suite: a gate that reads an absent artefact reports
@@ -145,7 +161,10 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: "3.10"
-      - run: pip install --quiet pytest
+      # Hash-pinned, for the reason written out once in the `tests` job above. A SEPARATE file from
+      # that job's: this one runs the dist-dependent assertions and needs no coverage plugin, and
+      # sharing one file to save a file would install the plugin here on no job's behalf.
+      - run: pip install --quiet --require-hashes --only-binary=:all: -r requirements/ci-shipped.txt
 
       - name: build the site
         working-directory: web
@@ -165,7 +184,12 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: "3.10"
-      - run: pip install --quiet ruff mypy
+      # Hash-pinned, for the reason written out once in the `tests` job above. mypy's version is
+      # load-bearing here in a way ruff's is not: the step below goes RED if mypy reports ZERO
+      # errors, so a mypy that got BETTER could redden `main` on an afternoon nobody touched this
+      # tree. Pinned, that can only happen when somebody moves the set on purpose - which is the
+      # whole of D-30, and the case that makes the policy worth writing down rather than assuming.
+      - run: pip install --quiet --require-hashes --only-binary=:all: -r requirements/ci-lint.txt
 
       - name: ruff
         run: ruff check src tests scripts

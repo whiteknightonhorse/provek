@@ -1294,3 +1294,162 @@ would have quarantined work that was lying in the tree before the task began.
 The quarantine of 06:34 was made by hand, and what the red run above exercises is the shipped text
 of `orch.sh` extracted at run time against a fixture, not a real failed task. Until a cycle takes
 that branch, "the orchestra recovers from untracked damage" is a claim about a fixture.
+
+## D-30. The CI toolchain is pinned by hash, and a set that goes stale reddens `main` on purpose
+
+**What was still unpinned after the actions were.** `ca539ec` replaced sixteen tag references with
+commit shas and narrowed the workflow token to `contents: read`, on the argument that a tag is a
+movable pointer and the code it resolves to runs on this tree with that token. Three lines in the
+same file were the identical defect in another spelling: `pip install --quiet pytest pytest-cov`,
+`pip install --quiet pytest`, and `pip install --quiet ruff mypy`. Between them they name five
+package specifiers — four distinct packages — and install ten, eight and eight respectively: the
+transitive closure is resolved fresh on every run,
+from whatever PyPI serves at that minute, and it executes with the same token the sha-pinning was
+performed to bound. Pinning half the supply chain and leaving the interpreter's half open is the
+shape of defence this repository exists to name.
+
+**Decision: each job installs a compiled, hash-checked set.** `requirements/ci-tests.txt`,
+`ci-shipped.txt` and `ci-lint.txt` hold the full closure with a hash per artefact, compiled by
+`pip-compile --generate-hashes` under the same Python 3.10 the jobs run, from committed `.in` files
+that record the intent separately from the resolution. `--require-hashes` makes pip refuse anything
+that does not match, which also closes the quieter case a version number alone leaves open: the
+same version re-served as a different artefact.
+
+**And `--only-binary=:all:` beside it, which is not tidiness.** `--generate-hashes` records the
+digests of source distributions too, and hash-checking mode will accept one. Building an sdist runs
+PEP 517 in an isolated environment whose build dependencies are fetched **without** hashes and
+appear in no committed set — so the guarantee would end quietly, one layer below where it is
+written, on the day some project stops shipping a wheel for the runner's platform. Every pin here
+resolves to a wheel today, so the flag changes no outcome now; it is there so that when it would,
+the run REFUSES instead of widening. Named by Fable, which also declined to call the branch closed
+merely because it is currently asleep.
+
+**Three files rather than one, deliberately — and the price, which the first draft omitted.**
+`shipped` runs the dist-dependent assertions and has no use for a coverage plugin; `lint` shares
+nothing with either. One shared file would install each job's dependencies on the other two jobs'
+behalf, and the widest install would become the floor for all three. The cost is that `pytest`,
+`tomli` and `typing-extensions` are each pinned in more than one file, so a bump applied to one and
+not its siblings leaves two jobs measuring the same tree with different instruments, both green and
+only one current. That is a fact about the tree, so it is not left to care: `verify_pip_pins.py`
+fails on a package pinned to different versions across the sets.
+
+**The update policy, which is the half worth writing down.** A hash set moves by a deliberate edit
+— change the `.in`, re-run the `pip-compile` command recorded in its header, commit both files —
+and never by CI upgrading itself. There is no scheduled refresh and no `--upgrade` anywhere in the
+workflow. The consequence is intended and is stated here so that nobody repairs it in a hurry: **CI
+that goes red because a set has gone stale is the ratchet working as designed, not a flake.** The
+red is the notification that somebody else's release schedule has moved under this tree, and the
+fix is to read what moved and decide, not to unpin the line that reported it. A hash set quietly
+refreshed by a machine would restore precisely the property being removed here, while leaving the
+`--require-hashes` flag in place to vouch for it.
+
+**Why this does not repeal D-26's unpinned `wrangler@4`, though it looks like it.** That decision
+floats a tool that talks to somebody else's API and holds our deploy credential, on the ground that
+security updates to it are worth more than the breakage a float can cause — *provided the breakage
+is caught by measurement*. The proviso is what separates the two cases. Wrangler's output is
+measured after the fact by `scripts/verify_live.sh` reading the live site, so a bad float is caught
+by an instrument that does not depend on the float. The three sets here ARE the instruments: a
+floating pytest, ruff or mypy changes what the gates themselves report, and there is no outer check
+that would catch it — a drift in the measuring tool arrives as a verdict about the tree.
+
+*Float what is measured; pin what measures* is the short form, and it is a rule of thumb rather
+than a law, because this very workflow does not obey it. `node-version: "22"` floats across minors
+and runs the intake gate and the site build; `python-version: "3.10"` floats across patch releases
+and is the interpreter every gate executes on; `ubuntu-latest` floats entirely. All three measure,
+and none is pinned. They are named here rather than left for a reader to notice, because a maxim
+that the file it is written in contradicts is the kind of rule that gets quoted at the next
+decision and is not true of this one. What is claimed is narrower: **the three sets pinned here are
+the tools whose drift arrives disguised as a finding about our own code**, and that is the class
+this decision closes. The runner floats are a separate, unclosed exposure and belong in
+`FINDINGS.md`, not in a sentence that implies they were handled. Found by Fable.
+
+**mypy is the concrete case, not a hypothetical.** The `lint` step goes RED when mypy reports ZERO
+errors, because that is the condition `.github/workflows/README.md` promised would end its advisory
+state (D-22). Unpinned, a mypy release that got BETTER at nothing in particular could turn `main`
+red on an afternoon when nobody touched this tree, and the reader would meet a red build whose
+cause is not in the diff. Pinned, that transition can only be reached by a hand that moved the set.
+
+**Measured before it was committed, on this host, under Python 3.10.12 — the jobs' own version.**
+All three sets install under `--require-hashes --only-binary=:all:`; the pinned `ruff==0.16.4`
+reports `All checks passed` on `src tests scripts`; the pinned `mypy==2.3.1` exits 1 with 40 errors,
+which is the advisory branch and not the zero-error branch that would redden the step; the full
+suite under the pinned `pytest==9.1.1` and `pytest-cov==7.1.0` is 642 passed, 1 skipped, coverage
+92.87% against a floor of 70. A pinning commit that had never run the pinned tools would be
+asserting compatibility rather than measuring it — so the transcript is kept, in
+`evidence/GREEN-005-the-pinned-toolchain-was-run-before-it-was-committed.txt`, rather than the
+numbers being recited here alone. The first draft of this paragraph recited them alone, and Fable
+refused the change for it: the identical refusal, on the identical ground, that produced GREEN-004
+one commit earlier (L-30).
+
+**Armed by `LAW-CI-PIP-HASH-PINNED`, after the first draft argued no gate was possible.** That
+argument said the property that matters — the set was moved by somebody who read what changed — is
+a fact about an edit rather than about the tree, and filed the whole decision under L-8's honestly
+gateless class. Half of it was true, and the half that was true was being used to carry the half
+that was not. Whether a bump was WISE is unreadable by any checker and stays prose. Whether
+`--require-hashes` is still on the line is a fact about the tree, readable offline, and able to go
+red — and it needed arming for exactly the reason `test_actions_pinned.py` gives about its own
+subject: **a one-time edit drifts back.** Worse here than there, because no other gate in this
+repository could see it happen — `tests/test_door_matches_ci.py` classifies any step beginning
+`pip install` as runner preparation, so the reverted line would be waved through as setup by the
+gate built to catch steps that slipped the table. `scripts/verify_pip_pins.py` holds the shape:
+the flags are present, the requirements file is a path inside this tree rather than a URL, it
+exists, every pin in it carries a hash, and shared packages agree across the sets. The red run
+where the reverted line is actually caught is
+`evidence/RED-027-a-pinned-line-is-one-edit-from-unpinned.txt`. Refuted into existence by Fable.
+
+**And then the gate itself was refuted, which is the part worth keeping in the record.** Its first
+version could be walked past four ways, two of them found by Fable and two implied by those: a
+trailing `#` comment, whose text the reader kept and bash discards, so
+`pip install evilpkg  # --require-hashes ... -r requirements/ci-tests.txt` reported no problem
+while the runner installed one unpinned package holding the token; the same trick with a later
+`echo` on the line vouching for the install; and two block-scalar headers - `run: |2` and
+`run: &a |` - that the hand-written reader did not recognise, so it skipped the body IN SILENCE and
+reported clean over an empty measurement, with the vacuity guard held quiet by the three genuine
+installs elsewhere in the file. A gate blinded without a signal is invariant 1 pointed at the
+instrument. All four are captured before and after in
+`evidence/RED-028-a-gate-that-could-be-walked-past-four-ways.txt`. The lesson is the one this
+repository keeps paying for: **a substring test run against text that is not the command** — the
+same shape `tests/test_door_matches_ci.py` was burned by twice before this, arriving by a third
+route in the gate written with those two lessons in view.
+
+**Then the repair was refuted, and that is where the record stops being flattering.** The next round
+found three more ways past, TWO OF THEM INTRODUCED BY THE REPAIR. Its two new loops each tracked
+quotes and neither knew about the backslash, so `\"` inverted their idea of quoting against bash's —
+one blindness producing a false GREEN on an unpinned install hidden behind `echo "\"" ;` and a
+false RED on an honest `grep -r "\"" logs && pip install --require-hashes ...`. The false red is the
+more expensive of the two: a gate that reddens correct work teaches people to route around it (L-5).
+The third was `run: | # collect coverage`, a block header carrying a comment — the silent-skip class
+RED-028 had just declared closed. Captured in
+`evidence/RED-029-the-repair-carried-the-same-defect-one-layer-down.txt`; the two loops are now one
+`_lex`, because that was one rule written in two places with two identical holes (L-2).
+
+**And an eighth, in the round after that — command substitution.** `echo $(pip install evilpkg)
+--require-hashes ... -r requirements/ci-tests.txt` holds no `&&`, `;` or `|`, so the splitter handed
+the whole line over as one command carrying every flag, while bash ran the install inside the
+substitution. The same vouching class as before, in the spelling the splitter did not know — and not
+an exotic one: `$(` was already in `tests/test_door_matches_ci.CHAINS`, put there when the trick was
+found against the door. The lesson had landed in one gate and not the other. Three spellings are
+closed (`$( )`, backticks, and a substitution inside double quotes, which is why the lexer now
+answers "is this quoted" and "would a substitution open here" separately), together with a false RED
+in the same round: an honest install wrapped over two lines with a trailing backslash was read as
+two commands and reddened. See
+`evidence/RED-030-the-eighth-way-past-and-the-honest-line-it-would-have-reddened.txt`.
+
+**What is claimed about this gate, at the strength the artefacts support.** Eleven named bypasses are
+closed and each has a test that fails without its fix. That is not a proof that an eighth does not
+exist, and the honest expectation is that one does: this is a hand-written approximation of a shell
+lexer inside a hand-written approximation of a YAML reader. What the law buys is not impossibility
+but cost — the ORDINARY regression, somebody editing `--require-hashes` off a line, now fails the
+build instead of passing unnoticed. THREE consecutive rounds of refutation landing on the INSTRUMENT
+rather than on the change is worth recording as its own finding: the tool written to catch claims
+stronger than their artefacts made one about itself each time, and each time what was wrong was a
+closing sentence rather than a measurement. The previous draft of this paragraph expected an eighth
+bypass to exist; it was found in the next round, which is the best argument available that the
+qualifier is load-bearing and should not be edited out by whoever patches the ninth.
+
+**What the gate does NOT check, since the split is the whole of its honesty.** That a
+`--hash=sha256:...` is the digest PyPI really serves is not verified from this tree — and unlike a
+sha beside a tag comment, it does not need to be. A wrong action pin looks exactly like a right one
+and defeats review; a wrong hash is recomputed and REFUSED by pip on every install. Truth is
+enforced by the installer at run time, and what is left for a gate is the one thing the installer
+never sees: whether it was asked to enforce anything at all.

@@ -1,0 +1,10 @@
+# What the `shipped` job in .github/workflows/gates.yml asks for, before resolution.
+#
+# Deliberately NOT the same file as `ci-tests.in`: this job runs the dist-dependent assertions and
+# needs no coverage plugin, and a shared file would install the plugin here to save one file.
+# The compiled sibling `ci-shipped.txt` is what the job installs.
+#
+# Regenerate with, from the repository root:
+#   pip-compile --generate-hashes --strip-extras --output-file=requirements/ci-shipped.txt \
+#       requirements/ci-shipped.in
+pytest

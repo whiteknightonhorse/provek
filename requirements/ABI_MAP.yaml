@@ -122,6 +122,13 @@ src/governance/thresholds.py:     [ABI-13-3, ABI-25-3, ABI-29-5]
 # was, which is why this module exists at all rather than the pinning being a one-time edit.
 scripts/verify_action_pins.py:    [ABI-32-1, ABI-16-11]
 
+# T-S1, second half, and the same requirement pair for the same reason one layer down. What the
+# `uses:` lines are to third-party actions, the `pip install` lines are to third-party PYTHON: code
+# fetched at run time and executed on this tree with the workflow's token. ABI-16-11 again because
+# the load-bearing part is again a state rather than a comparison - a workflow or a set that cannot
+# be READ stays unmeasured here instead of counting as no violations found.
+scripts/verify_pip_pins.py:       [ABI-32-1, ABI-16-11]
+
 # CI configuration is data, not code, and carries no ABI mapping. The `uses:` lines inside it are
 # not data, though - they name executable code fetched at run time - and `scripts/verify_action_pins.py`
 # above is what judges them.

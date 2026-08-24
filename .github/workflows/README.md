@@ -59,7 +59,7 @@ setting: it sends the result to the OpenSSF, so the badge in the root `README.md
 Expect the score to be middling and expect that to be accurate. Several checks describe practices
 this repository has not adopted; a low true number is worth more than a high tuned one.
 
-## Every action is pinned to a commit, and three pip commands are not
+## Every action is pinned to a commit, and so is every pip install
 
 All three workflows named their actions by TAG (`actions/checkout@v4`) until 2026-08-24. A tag is a
 pointer its owner may repoint at any commit, so what ran here with this repository's token was
@@ -75,13 +75,21 @@ match. `tests/test_actions_pinned.py` holds the shape — pinned, labelled, toke
 push, and drives the script's mismatch and refusal arms against a stubbed resolver so they are seen
 to fire rather than merely present.
 
-**What is still unpinned, named rather than left to be found.** The OpenSSF's `Pinned-Dependencies`
-count of 19 was 16 actions plus **three `pip install` commands** — `gates.yml`'s `pytest`,
-`pytest-cov`, `ruff` and `mypy` installs. Scorecard counts a pip command as pinned only under
-`--require-hashes` (`checks/raw/shell_download_validate.go`), which needs a fully hash-pinned
-transitive requirements set per job. That is a change with its own failure mode — a stale or
-incomplete hash set turns all of CI red — and its own standing cost, so it is a decision rather
-than a tidy-up. Those three remain open and are recorded as a finding.
+**The pip half, closed second.** The OpenSSF's `Pinned-Dependencies` count of 19 was 16 actions
+plus **three `pip install` commands** — `gates.yml`'s `pytest`, `pytest-cov`, `ruff` and `mypy`
+installs. Scorecard counts a pip command as pinned only under `--require-hashes`
+(`checks/raw/shell_download_validate.go`), which needs a fully hash-pinned transitive requirements
+set per job. Each job now installs one: `requirements/ci-tests.txt`, `ci-shipped.txt` and
+`ci-lint.txt`, compiled by `pip-compile --generate-hashes` under the same Python 3.10 the jobs run,
+from committed `.in` files that keep the intent separate from the resolution.
+
+The failure mode named here when those three were still open is real and was accepted rather than
+avoided: **a stale hash set turns CI red, and that is the ratchet working rather than a flake.**
+The policy for moving a set — a deliberate edit, never a scheduled refresh — is D-30, which is also
+where the reason this does not repeal D-26's deliberately unpinned `wrangler@4` is written out.
+`scripts/verify_pip_pins.py` holds the shape on every push and `tests/test_pip_pinned.py` is
+watched to fire, because a one-time edit drifts back and no other gate here can see this one go:
+the door-versus-CI comparison reads any line beginning `pip install` as runner preparation.
 
 ## Standing caveats
 

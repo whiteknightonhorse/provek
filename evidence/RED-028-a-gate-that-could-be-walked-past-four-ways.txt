@@ -1,0 +1,73 @@
+RED-028 - the gate written to catch an unpinned pip line could be walked past four ways
+====================================================================================================
+
+WHY THIS FILE EXISTS. `RED-027` shows `LAW-CI-PIP-HASH-PINNED` catching the edit it was built for:
+a `pip install` line reverted to bare packages. Fable then refuted the gate itself, on the ground
+that a control is judged by what gets PAST it, and found two ways in - a trailing shell comment and
+a block-scalar header the hand-written reader did not recognise. Both were green. Both are in the
+core of the guarantee rather than at its edge, and the first is reachable by an ordinary edit:
+a developer comments out the tail of a command while debugging and does not put it back.
+
+The four cases below are the two findings plus the two neighbours they implied - the `echo` variant
+of the comment bypass, which is the printed excuse containing the string being matched, and the
+anchor spelling of the block header.
+
+WHAT WAS DONE. Both readings were run against the SAME fixtures: the gate as it stood when Fable
+refuted it, taken from the git index, and the repaired gate. Nothing was reverted in the tree; the
+before-copy was loaded from `git show :scripts/verify_pip_pins.py` into a separate module, so the
+working file was never edited and its sha256 was verified unchanged either side of the run.
+
+THE RUN, captured rather than described:
+
+  CASE: trailing shell comment vouches for the command
+    BEFORE: installs seen=1  ->  GREEN - bypass succeeds
+    AFTER : installs seen=1  ->  RED - 3 problem(s)
+             `pip install evilpkg` does not pass --require-hashes
+             `pip install evilpkg` does not pass --only-binary=:all:
+             `pip install evilpkg` installs packages named on the command line rather than a committed requirements file, so what it resolves is not in this repository
+  
+  CASE: a later echo on the line vouches for the install
+    BEFORE: installs seen=1  ->  GREEN - bypass succeeds
+    AFTER : installs seen=1  ->  RED - 3 problem(s)
+             `pip install evilpkg` does not pass --require-hashes
+             `pip install evilpkg` does not pass --only-binary=:all:
+             `pip install evilpkg` installs packages named on the command line rather than a committed requirements file, so what it resolves is not in this repository
+  
+  CASE: block scalar with an indentation indicator (|2)
+    BEFORE: installs seen=0  ->  GREEN - bypass succeeds
+    AFTER : installs seen=1  ->  RED - 3 problem(s)
+             `pip install evilpkg` does not pass --require-hashes
+             `pip install evilpkg` does not pass --only-binary=:all:
+             `pip install evilpkg` installs packages named on the command line rather than a committed requirements file, so what it resolves is not in this repository
+  
+  CASE: block scalar behind an anchor (&a |)
+    BEFORE: installs seen=0  ->  GREEN - bypass succeeds
+    AFTER : installs seen=1  ->  RED - 3 problem(s)
+             `pip install evilpkg` does not pass --require-hashes
+             `pip install evilpkg` does not pass --only-binary=:all:
+             `pip install evilpkg` installs packages named on the command line rather than a committed requirements file, so what it resolves is not in this repository
+  
+
+READING IT. `installs seen=0` in the two block-scalar cases is the worse of the two failures and the
+reason neither was caught by anything else here. The reader did not merely misjudge the line - it
+never saw it, and reported clean over an empty measurement. The vacuity guard in `check()` exists
+for exactly that and could not fire, because the three genuine inline installs in `gates.yml` keep
+the count above zero. A gate blinded WITHOUT a signal is indistinguishable from a gate that looked
+and found nothing, which is invariant 1 turned on the instrument.
+
+THE REPAIR. `strip_comment` cuts at an unquoted `#`, tracking quotes so that a `#` inside them stays
+data; `segments` splits a line into the commands a shell would actually run, so a later `echo`
+cannot vouch for an earlier install; `BLOCK_HEADER` recognises the indentation and chomping
+indicators and an anchor or tag in front of them. Quoted text is KEPT, unlike the door's reader,
+because `pip install "--require-hashes"` really does pass the flag - removing it would invent a
+false red instead of catching a true one.
+
+WHAT IS STILL NOT CLAIMED. This reads the TEXT of `run:` steps, not what they execute. A step that
+runs a shell script which installs packages from inside is invisible here; no such indirection
+exists in this tree, and the limit is written in the function's own docstring rather than left for
+the next reader to discover. Found by Fable, third finding of the same round.
+
+AND THE REPAIR ABOVE WAS ITSELF REFUTED - read `RED-029` next. Three more ways past were found in
+the round that reviewed this one, two of them introduced BY the repair recorded here. The four
+cases below are closed instances, not a closed class, and this paragraph is the correction of a
+closing sentence that once implied otherwise.

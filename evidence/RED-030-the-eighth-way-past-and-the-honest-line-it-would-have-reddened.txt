@@ -1,0 +1,80 @@
+RED-030 - the eighth way past, and the honest line the gate would have reddened
+====================================================================================================
+
+WHY THIS FILE EXISTS. RED-029 closed by predicting an eighth bypass would exist. It did, and Fable
+found it in the next round: COMMAND SUBSTITUTION. `echo $(pip install evilpkg) --require-hashes
+--only-binary=:all: -r requirements/ci-tests.txt` holds no `&&`, no `;` and no `|`, so the splitter
+written to stop neighbouring text from vouching for an install handed the whole line over as ONE
+command - carrying every required flag. Reported clean. bash runs `pip install evilpkg` inside the
+substitution and the flags decorate the harmless `echo` wrapped around it.
+
+It is the same class as the `echo "..."` vouching case RED-028 recorded, in the one spelling the
+splitter did not know, and it was not an unforeseeable spelling: `$(` is already listed in
+`tests/test_door_matches_ci.CHAINS`, put there when the same trick was found against the door.
+The lesson landed in one gate and not in the other.
+
+Three spellings are closed, because the difference between them is where a reader goes wrong:
+`$(...)`, backticks, and a substitution INSIDE DOUBLE QUOTES. The third is why the lexer now
+reports two flags per character rather than one - bash expands `$(...)` inside `"..."` and only
+single quotes suppress it, so "is this quoted" and "would a substitution open here" are different
+questions and the reader that asked only the first would have kept the hole for quoted spellings.
+The control in the other direction is kept too: inside `'...'` nothing is split, because splitting
+there would invent a command that never runs.
+
+AND THE FALSE RED, which is the half this project treats as the more expensive. An honest install
+wrapped over two lines for readability -
+
+    pip install --require-hashes --only-binary=:all: \
+        -r requirements/ci-tests.txt
+
+- was read as two physical lines. The first carries both flags and no `-r`, so a CORRECT and fully
+pinned install was reported as installing packages named on the command line. The three lines D-30
+pinned are precisely the candidates for being wrapped this way one day, and the person who wrapped
+them would have met a red build blaming the pins. A gate that reddens correct work teaches people
+to route around it (L-5), which costs more than the miss it prevents. Continuations are now joined
+before the line is read.
+
+THE RUN, captured rather than described. Same method as RED-028 and RED-029: the gate as it stood
+when Fable refuted it, taken from the git index, against the repaired gate, on identical fixtures.
+The working file was not edited.
+
+  CASE: command substitution $( ) hides the install (should be RED)
+    BEFORE: installs seen=1  verdict=GREEN  [WRONG]
+    AFTER : installs seen=1  verdict=RED    [correct]
+             `pip install evilpkg` does not pass --require-hashes
+             `pip install evilpkg` does not pass --only-binary=:all:
+             `pip install evilpkg` installs packages named on the command line rather than a committed requirements file, so what it resolves is not in this repository
+  
+  CASE: backtick substitution (should be RED)
+    BEFORE: installs seen=1  verdict=GREEN  [WRONG]
+    AFTER : installs seen=1  verdict=RED    [correct]
+             `pip install evilpkg` does not pass --require-hashes
+             `pip install evilpkg` does not pass --only-binary=:all:
+             `pip install evilpkg` installs packages named on the command line rather than a committed requirements file, so what it resolves is not in this repository
+  
+  CASE: substitution inside double quotes (should be RED)
+    BEFORE: installs seen=1  verdict=GREEN  [WRONG]
+    AFTER : installs seen=1  verdict=RED    [correct]
+             `pip install evilpkg` does not pass --require-hashes
+             `pip install evilpkg` does not pass --only-binary=:all:
+             `pip install evilpkg` installs packages named on the command line rather than a committed requirements file, so what it resolves is not in this repository
+  
+  CASE: honest install wrapped with a trailing backslash (should be CLEAN)
+    BEFORE: installs seen=1  verdict=RED    [WRONG]
+             `pip install --require-hashes --only-binary=:all: \` installs packages named on the command line rather than a committed requirements file, so what it resolves is not in this repository
+    AFTER : installs seen=1  verdict=GREEN  [correct]
+  
+
+WHERE THIS LEAVES THE COUNT. Eleven named bypasses are now closed - four in RED-028, three in
+RED-029, four here - and each is held by a test that fails without its fix. RED-029 said plainly
+that this was not a proof the class was empty and that an eighth was expected; the eighth arrived
+in the very next round, which is the strongest available evidence that the qualifier belongs there
+and should stay. A hand-written approximation of a shell lexer inside a hand-written approximation
+of a YAML reader does not become complete by being patched four times.
+
+STILL NOT CLAIMED, and now with a named limit rather than a general disclaimer. A heredoc (`<<EOF`)
+body is read as commands, so text inside one could produce a finding about a command nobody runs;
+no heredoc appears in any workflow in this tree. And this still reads the TEXT of `run:` steps, not
+what they execute - a step invoking a shell script that installs packages from inside remains
+invisible. Both are the false-RED and blind directions respectively, both are named here rather
+than discovered later, and neither is exercised by anything in this repository today.

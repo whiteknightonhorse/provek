@@ -1,0 +1,71 @@
+RED-029 - the repair of the gate carried the same defect one layer down, in both directions
+====================================================================================================
+
+WHY THIS FILE EXISTS. `RED-028` records four ways past the first version of
+`scripts/verify_pip_pins.py` and the repair that closed them. Fable then refuted THAT repair. The
+two loops it added - one to strip shell comments, one to split a line into commands - each tracked
+quotes, and neither knew about the backslash. bash reads `\"` inside double quotes as a literal
+quote and stays inside the string; the loops read it as a close followed by an open. From that
+character on, their idea of what was quoted was INVERTED against bash's.
+
+One blindness, two opposite failures, which is why it is worth a file:
+
+  * A FALSE GREEN. `echo "\"" ; pip install evilpkg  # --require-hashes ... -r requirements/...`
+    reads to bash as three things: print a quote, then install one unpinned package, then a comment
+    it discards. The gate saw one quoted segment, so the `;` never split it and the `#` never cut
+    it, and all three flags were "found" - in a comment, on a command that never receives them.
+  * A FALSE RED. `grep -r "\"" logs && pip install --require-hashes ... -r requirements/...` is
+    entirely correct. The same inversion swallowed the `&&`, so grep's `-r` was read as a second
+    requirements reference pointing outside `requirements/`, and an honest line went red. This is
+    the more expensive half: a gate that reddens correct work teaches people to route around it
+    (L-5), which costs more than the miss it prevents.
+
+And a third, of the class RED-028 had just declared closed: `run: | # collect coverage` is ordinary
+YAML, the header regex required the line to end at the indicator, so the body was skipped IN
+SILENCE and `installs seen=0` was reported as clean - with the vacuity guard held quiet by the three
+genuine installs elsewhere in the file.
+
+WHAT WAS DONE. The same fixtures were run against the gate as it stood when Fable refuted it, taken
+from the git index, and against the repaired gate. The working file was not edited; the before-copy
+was loaded from `git show :scripts/verify_pip_pins.py` as a separate module.
+
+THE RUN, captured rather than described:
+
+  CASE: escaped quote hides the separator and the comment (should be RED)
+    BEFORE: installs seen=1  verdict=GREEN  [WRONG]
+    AFTER : installs seen=1  verdict=RED    [correct]
+             `pip install evilpkg` does not pass --require-hashes
+             `pip install evilpkg` does not pass --only-binary=:all:
+             `pip install evilpkg` installs packages named on the command line rather than a committed requirements file, so what it resolves is not in this repository
+  
+  CASE: escaped quote on an HONEST line (should be clean)
+    BEFORE: installs seen=1  verdict=RED    [WRONG]
+             `grep -r "\"" logs && pip install --require-hashes --only-binary=:all: -r requirements/ci-tests.txt` reads requirements from "\"", outside `requirements/`
+    AFTER : installs seen=1  verdict=GREEN  [correct]
+  
+  CASE: block header carrying a comment (should be RED)
+    BEFORE: installs seen=0  verdict=GREEN  [WRONG]
+    AFTER : installs seen=1  verdict=RED    [correct]
+             `pip install evilpkg` does not pass --require-hashes
+             `pip install evilpkg` does not pass --only-binary=:all:
+             `pip install evilpkg` installs packages named on the command line rather than a committed requirements file, so what it resolves is not in this repository
+  
+
+THE REPAIR. The two quote loops are now one `_lex`, which resolves quotes and backslashes once and
+reports, per character, whether bash would read it as syntax or as data. A rule written in two
+places survives its own repeal (L-2) - here it was one rule with two identical holes, and merging
+them is what makes the next fix land in both callers. A line that leaves a quote unclosed is now
+REFUSED rather than parsed: past a stray quote every separator is data, so any verdict would be
+about a string the reader cannot segment.
+
+WHAT IS AND IS NOT CLAIMED, corrected from RED-028. That file's closing read as though the gate
+could no longer be walked past. It could - three more ways, found in the next round, two of them in
+the repair itself. What is demonstrated here is narrower and is all that is ever demonstrated by a
+file like this: SEVEN NAMED INSTANCES are closed and each is watched by a test that fails without
+the fix. That is not a proof that the class is empty. This reader is a hand-written approximation of
+a shell lexer inside a hand-written approximation of a YAML reader, and the honest expectation is
+that an eighth exists. What the gate buys is not impossibility; it is that the ordinary regression -
+somebody edits `--require-hashes` off a line - now costs a red build instead of nothing at all.
+Two consecutive rounds of refutation landing on the instrument rather than on the change is itself
+the measurement worth keeping: the tool written to catch claims stronger than their artefacts made
+one about itself, twice.

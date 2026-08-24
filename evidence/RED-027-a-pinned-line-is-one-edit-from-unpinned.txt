@@ -1,0 +1,63 @@
+RED-027 - a pinned pip line is one edit away from unpinned, and nothing here could see it
+====================================================================================================
+
+WHY THIS FILE EXISTS. D-30 replaced three `pip install` lines in `.github/workflows/gates.yml` with
+hash-checked requirement sets. The first draft of that decision argued that NO gate was possible -
+that "the set was moved by somebody who read what changed" is a fact about an edit rather than
+about the tree, and so belonged to L-8's honestly-gateless class. Fable refused the change over it.
+The argument was true of the JUDGEMENT and false of the SHAPE: whether `--require-hashes` is still
+on the line is a fact about the tree, readable offline, and able to go red. Under cover of the
+unmeasurable half, the measurable half was being waved through.
+
+The aggravating detail, and the reason the reverted line is not merely theoretical: no other gate
+in this repository can see this edit. `tests/test_door_matches_ci.py` classifies any step whose
+command begins `pip install` as runner preparation, so a line reverted to bare packages is waved
+through as setup by the gate specifically built to catch steps that slipped past the table. The
+OpenSSF scan would raise a fresh `PinnedDependenciesID` days later, in a tab nobody is reading at
+the moment of the push.
+
+WHAT WAS DONE. Line 128 of `gates.yml` was edited back to the exact text that stood there before
+D-30 - `- run: pip install --quiet pytest pytest-cov` - and the gate and its suite were run against
+that tree. The file was restored from a byte copy afterwards and its sha256 verified identical, per
+the rollback rule in CLAUDE.md; no `git` restore was used, so nothing untracked was at risk.
+
+THE RUN, captured rather than described:
+
+  --- the gate, run against the reverted tree ---
+  
+  X T-S1-PIP-PINS:
+    - gates.yml: `pip install --quiet pytest pytest-cov` does not pass --require-hashes
+    - gates.yml: `pip install --quiet pytest pytest-cov` does not pass --only-binary=:all:
+    - gates.yml: `pip install --quiet pytest pytest-cov` installs packages named on the command line rather than a committed requirements file, so what it resolves is not in this repository
+  exit=1
+  
+  --- the suite that holds the law ---
+  ____________ test_every_pip_install_in_gates_names_a_committed_set _____________
+  
+      def test_every_pip_install_in_gates_names_a_committed_set():
+          """The three lines the task was about, found rather than assumed to be there."""
+          text = (ROOT / ".github" / "workflows" / "gates.yml").read_text(encoding="utf-8")
+          lines = pip_install_lines(text)
+          # THE COUNT IS ASSERTED because "all of them are pinned" is satisfied vacuously by finding none,
+          # and a refactor that moved an install into a block scalar this reader missed would do exactly
+          # that - report perfect compliance over an empty set.
+          assert len(lines) == 3, f"expected three pip installs in gates.yml, read {len(lines)}: {lines}"
+          for line in lines:
+  >           assert line_problems(line) == []
+  E           AssertionError: assert ['`pip instal...s repository'] == []
+  E             
+  E             Left contains 3 more items, first extra item: '`pip install --quiet pytest pytest-cov` does not pass --require-hashes'
+  E             Use -v to get more diff
+  
+  tests/test_pip_pinned.py:52: AssertionError
+  =========================== short test summary info ============================
+  FAILED tests/test_pip_pinned.py::test_the_workflows_in_this_tree_are_clean - ...
+  FAILED tests/test_pip_pinned.py::test_every_pip_install_in_gates_names_a_committed_set
+  2 failed, 16 passed in 0.26s
+
+WHAT THIS PROVES AND WHAT IT DOES NOT. It proves the law can FAIL, on the one edit it exists to
+catch, which is invariant 5. It does not prove the digests in the committed sets are the ones PyPI
+serves - that is not checked from this tree at all, and does not need to be: `pip` recomputes every
+hash at install time and refuses the artefact on a mismatch. The division is deliberate and is
+written out in the docstring of `scripts/verify_pip_pins.py` - pip enforces truth on every run, and
+what is left for a gate is the shape pip never gets to see, namely whether it was asked to.

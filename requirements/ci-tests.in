@@ -1,0 +1,14 @@
+# What the `tests` job in .github/workflows/gates.yml asks for, before resolution.
+#
+# The job installs the COMPILED sibling, `ci-tests.txt`, which names this set plus everything it
+# drags in, each with its hashes. This file is the intent; that one is what runs.
+#
+# Regenerate with, from the repository root:
+#   pip-compile --generate-hashes --strip-extras --output-file=requirements/ci-tests.txt \
+#       requirements/ci-tests.in
+#
+# NOTHING ELSE BELONGS HERE. `tests/test_door_matches_ci.py` deliberately imports no PyYAML on the
+# ground that this job installs pytest and pytest-cov and nothing more; adding a line here quietly
+# widens what that file is allowed to assume.
+pytest
+pytest-cov

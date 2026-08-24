@@ -442,3 +442,19 @@ laws:
     text: "the deployment answering on the live site is the one this run published; liveness is not freshness"
     gate: scripts/deploy_stamp.sh
     test: tests/test_deploy_stamp.py
+
+  # T-S1, second half. `ca539ec` pinned the actions; three `pip install` lines in the same file
+  # resolved their transitive closure fresh from PyPI on every run, with the same token. D-30 pins
+  # them to hash-checked sets - and this law exists because that pinning is one edit from being
+  # undone, in a repository where no other gate could see it happen: `test_door_matches_ci.py`
+  # classifies any line beginning `pip install` as runner preparation, so the reverted line would be
+  # waved through by the gate built to catch steps that slipped the table.
+  #
+  # The law is about SHAPE, which is a fact about the tree. Whether a digest is the one PyPI serves
+  # is enforced by pip itself on every install, and whether a bump was WISE is a fact about an edit
+  # that no checker can read - that half stays prose in D-30, which is L-8's honest kind of
+  # gateless rather than a cover for the half that is measurable.
+  - id: LAW-CI-PIP-HASH-PINNED
+    text: "every pip install in a workflow names a committed, fully hash-checked set inside this tree"
+    gate: scripts/verify_pip_pins.py
+    test: tests/test_pip_pinned.py

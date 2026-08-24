@@ -1,0 +1,14 @@
+# What the `lint` job in .github/workflows/gates.yml asks for, before resolution.
+#
+# The compiled sibling `ci-lint.txt` is what the job installs, hashes and all.
+#
+# Regenerate with, from the repository root:
+#   pip-compile --generate-hashes --strip-extras --output-file=requirements/ci-lint.txt \
+#       requirements/ci-lint.in
+#
+# mypy's version is load-bearing in a way ruff's is not: the `lint` job goes RED if mypy reports
+# ZERO errors, because that is the condition .github/workflows/README.md promised would end its
+# advisory state. So a mypy bump can turn `main` red by getting BETTER, and that is the ratchet
+# working - see D-30.
+ruff
+mypy

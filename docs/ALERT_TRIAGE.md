@@ -55,9 +55,15 @@ as a remark, because a finding this triage produced itself is the one most likel
 - `#8` unused import `existsSync` in `web/prerender.mjs` - measured: the name occurs once, on the
   import line. `#9` `ref` in `scripts/cohort.py:193` and `#10` `TOKEN_HOLDER` in
   `scripts/measure_qm2.py:50`, both assigned and never read.
-- `#28`, `#38`, `#50` `PinnedDependenciesID` - three unpinned `pip install` lines in `gates.yml`
-  (113, 149, 169). The preceding commit pinned every **action** to a commit and closed 21 of these;
-  pip was not in its scope, and `#50` was raised by the scan that ran after it.
+- `#28`, `#38`, `#50` `PinnedDependenciesID` - three unpinned `pip install` lines in `gates.yml`.
+  An earlier commit pinned every **action** to a commit and closed 21 of these; pip was not in its
+  scope, and `#50` was raised by the scan that ran after it. **Fixed in the tree by D-30** - all
+  three now install hash-checked sets under `--require-hashes` - and still counted as open here,
+  because what closes a code-scanning alert is the SCAN, which runs after the push. Listing them as
+  closed on the strength of the edit that should close them would be a claim about an instrument
+  that has not yet reported (invariant 1). The reading that settles it is
+  `GET /code-scanning/alerts?state=open`; until it is taken, these three are `not_measured`, not
+  `clean`.
 - `#29` `SecurityPolicyID` - no `SECURITY.md` exists in the tree or in `.github/`. Closes by work.
 - **No alert number, raised by this triage:** `web/src/App.tsx:281` fetches a path built from an
   unvalidated route substring (see above). Closes when the fetch is guarded on `known` - for a

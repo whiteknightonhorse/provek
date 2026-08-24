@@ -1,0 +1,77 @@
+GREEN-005 - the pinned toolchain was RUN before it was committed
+====================================================================================================
+
+WHY THIS FILE EXISTS. D-30 pins the three CI jobs to exact versions of pytest, pytest-cov,
+coverage, ruff and mypy. A pinning commit whose author never ran the pinned tools is asserting
+compatibility rather than measuring it - and the assertion is the dangerous half here, because the
+`lint` job carries a step that goes RED when mypy reports ZERO errors (D-22), so a pin to a mypy
+that had got better at nothing in particular would redden `main` on a tree nobody touched.
+
+Fable refused the first draft of this change for making these claims in prose with no transcript
+anywhere under `evidence/` - the same refusal, on the same ground, that produced GREEN-004 one
+commit earlier (L-30: a claim stronger than its artefact, in the repository built to detect them).
+Its own re-derivation of these numbers returned NOT_MEASURED rather than agreement: the sandbox it
+reads in cannot execute, so it could not run pytest, mypy or ruff. That refusal is exactly why the
+transcript belongs in the tree instead of in the author's memory.
+
+WHERE THIS WAS RUN. On the audit host, under Python 3.10.12 - the same 3.10 the jobs request from
+`actions/setup-python`, and the version `pip-compile` resolved the sets against. It is NOT the
+GitHub runner, and the difference is named rather than glossed: `python-version: "3.10"` floats
+across patch releases, so the runner may install a different 3.10.x. Every pin here resolves to a
+`py3-none-any` or `cp310` wheel, so that float cannot change which artefact is selected; it could
+still change how a tool behaves, and this transcript does not claim otherwise.
+
+THE RUN, captured rather than described:
+
+  host python: Python 3.10.12
+  
+  --- pip install --require-hashes --only-binary=:all: -r requirements/ci-tests.txt ---
+  Installing collected packages: typing-extensions, tomli, pygments, pluggy, packaging, iniconfig, coverage, exceptiongroup, pytest, pytest-cov
+  Successfully installed coverage-7.15.4 exceptiongroup-1.3.1 iniconfig-2.3.0 packaging-26.3 pluggy-1.6.0 pygments-2.21.0 pytest-9.1.1 pytest-cov-7.1.0 tomli-2.4.1 typing-extensions-4.16.0
+  exit=0
+  packages installed: 10
+  
+  --- pip install --require-hashes --only-binary=:all: -r requirements/ci-lint.txt ---
+  Installing collected packages: typing-extensions, tomli, ruff, pathspec, mypy-extensions, librt, ast-serialize, mypy
+  Successfully installed ast-serialize-0.8.0 librt-0.15.0 mypy-2.3.1 mypy-extensions-1.1.0 pathspec-1.1.1 ruff-0.16.4 tomli-2.4.1 typing-extensions-4.16.0
+  exit=0
+  packages installed: 8
+  
+  --- pip install --require-hashes --only-binary=:all: -r requirements/ci-shipped.txt ---
+  Installing collected packages: typing-extensions, tomli, pygments, pluggy, packaging, iniconfig, exceptiongroup, pytest
+  Successfully installed exceptiongroup-1.3.1 iniconfig-2.3.0 packaging-26.3 pluggy-1.6.0 pygments-2.21.0 pytest-9.1.1 tomli-2.4.1 typing-extensions-4.16.0
+  exit=0
+  packages installed: 8
+  
+  --- ruff check src tests scripts (pinned) ---
+  ruff 0.16.4
+  All checks passed!
+  exit=0
+  
+  --- mypy src --ignore-missing-imports (pinned) ---
+  mypy 2.3.1 (compiled: yes)
+  exit=1
+  errors: 40
+  
+  --- full suite (pinned pytest/pytest-cov) ---
+  TOTAL                                  1403    100    93%
+  Required test coverage of 70% reached. Total coverage: 92.87%
+  642 passed, 1 skipped
+
+READING IT. All three sets install under `--require-hashes --only-binary=:all:` - the second flag
+is what makes a source distribution a refusal instead of a silent build whose own dependencies are
+fetched unhashed. `ruff==0.16.4` passes. `mypy==2.3.1` exits 1 with 40 errors, which is the
+advisory branch of the `lint` step and NOT the zero-error branch that would redden it; the count
+stood at 28 across 7 files when the advisory was armed on 2026-08-20, so the backlog has grown
+rather than cleared and the expiry of 2026-10-15 in `tests/test_door_matches_ci.py` is still the
+thing that ends it. The suite is 642 passed, 1 skipped, coverage 92.87% against a floor of 70.
+
+ON THE TEST COUNT, because a number that moves without an account is how a suite quietly loses
+tests. It was 608 before this change, and the 34 added break down as follows: 33 in
+`tests/test_pip_pinned.py`, plus exactly one more in `tests/test_granted_channel_only.py`, which
+parametrises over every `*.py` under `src` and `scripts` and therefore grows by one case when
+`scripts/verify_pip_pins.py` is committed. Of those 33, FIFTEEN were added after the gate was first
+written, against bypasses Fable found in the gate itself across three rounds - RED-028, RED-029 and
+RED-030. The gate cost several times more review than the three-line change it guards, which is
+recorded rather than tidied away: it is the honest measure of how hard it is to read a shell command
+out of a YAML file without a parser for either.
