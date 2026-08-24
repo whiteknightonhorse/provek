@@ -1671,3 +1671,146 @@ and was logged as `unreadable` rather than as "closed" or as zero. That 401 was 
 credential in hand, not about the alert. Invariant 1 held in both directions here: the refusal was
 not written down as a zero, and it was not left standing as one once an instrument existed that
 could read it.
+
+## D-32. The workflow files are read by a YAML parser, and `pyyaml` enters the pinned set by decision
+
+**Decision.** `tests/test_workflows_parse.py` calls `yaml.safe_load` on every
+`.github/workflows/*.yml` and `*.yaml` on every push and at the door, through
+`scripts/verify_workflow_yaml.py`. `pyyaml` is added to `requirements/ci-tests.in` and
+`ci-tests.txt` is recompiled — this entry is the deliberate edit D-30 requires for a hash set to
+move, written in the same commit as the edit. `LAW-WORKFLOWS-PARSE` arms it.
+
+**The fork this closes, and it was left open on purpose.**
+`evidence/RED-031-seven-green-gates-and-a-workflow-that-never-parsed.txt` ends by naming the gap and
+declining to close it, because closing it means either a new dependency in a hash-pinned set — which
+D-30 says moves by a decision and not by a repair — or a second hand-written rule bolted onto the
+scanner whose permissiveness IS the finding. The judge took the first. So the set grew by one line,
+and the line has an entry.
+
+**What was measured, on `66f61ea`.** Seven green gates on this host, 642 passed, coverage 92.87% —
+and `main` red in the same second the push landed. `--only-binary=:all: ` sat in a plain scalar,
+`: ` ended the key, and the run was created and concluded in the same second with ZERO jobs. Nothing
+in the workflow failed because nothing in it started, and a startup failure publishes no check run
+at all: `/commits/66f61ea/check-runs` answered with three successes for a commit whose gates were
+red. `total_count: 3` looked like data and was absence.
+
+**Why the existing gates could not have caught it, which is the whole of the argument.**
+`scripts/verify_pip_pins.py` read all three broken lines correctly and reported them hash-pinned. It
+still does, byte for byte, after the repair. It was not fooled and it did not lie — it reads the
+file with what D-30 calls in its own words "a hand-written approximation of a shell lexer inside a
+hand-written approximation of a YAML reader", and that approximation was WIDER than the machine it
+stands in for. That direction is the silent one: a stricter approximation announces itself as a
+false red on a working file, while a looser one stays quiet until the real parser refuses a document
+seven gates have already blessed. Written up as **L-31**, and held in executable form by
+`test_the_scanner_that_passed_the_broken_file_still_passes_it`, which runs BOTH readers over the
+same fixture and asserts the disagreement — so the day somebody widens the hand-written reader, the
+finding has to be deleted deliberately rather than quietly outlived.
+
+**What this gate does NOT claim, since the split is the honesty of it.** PyYAML is not GitHub's
+parser: GitHub reads these files with its own implementation, and PyYAML implements YAML 1.1 where
+most modern parsers implement 1.2. A file accepted here is therefore not proven to be a file GitHub
+accepts, and no schema is checked by anything in this tree — a misspelt key, an unknown `runs-on`,
+a job that cannot start, all parse perfectly and fail where this gate cannot see. A duplicated
+`jobs:` key parses too, and PyYAML silently keeps the last one; that boundary is asserted as a
+control in the suite rather than left for a reader to assume otherwise.
+
+**And the residue is not merely a smaller version of the same risk — for one class the T-S2
+measurement trap stands entirely intact.** A `gates.yml` that PARSES and breaks GitHub's workflow
+*schema* reproduces the RED-031 symptom in full: a startup failure, zero jobs, and a
+`/commits/{sha}/check-runs` that answers with the other workflows' successes and cannot show the
+failure at all. Neither the door nor CI sees that class, so `actions/runs?head_sha=` remains the
+only instrument that can close "is `main` green" for it — which is why every push touching this
+directory is measured that way rather than by a check-runs reading. Saying only "we do not check the
+schema" would have left a reader to infer that the rest of the safety net catches it. Found by
+Fable. What is bought is the class
+of defect that was actually paid for — a document that is not well-formed YAML — refused at the
+door instead of on `main`. Closing the residue means running GitHub's parser, which is not on this
+host, so it is named here rather than covered by the word "parses".
+
+**Where this gate bites is NOT where the others do, and that is the sentence most likely to be
+misread out of this entry.** In CI the test cannot catch a broken `gates.yml`: a workflow that does
+not parse runs no job, so the job that would run the test never starts — the defect deletes its own
+detector, which is exactly how `66f61ea` produced seven green gates and three green check runs. What
+the CI copy does catch is a broken `codeql.yml` or `scorecard.yml`, separate documents whose failure
+does not stop the `gates` workflow. The copy that catches the RED-031 case is the one at the DOOR,
+which runs the suite while the push does not yet exist. That inverts this repository's usual
+arrangement — `gates.yml` opens by saying the door depends on the pusher's discipline and CI does
+not — and the inversion is stated here because "the gate runs in CI" would otherwise be read as a
+protection it structurally cannot give.
+
+**Three states the gate reports rather than folding into a clean line.** An ABSENT workflow
+directory, a workflow directory holding NO workflow file, and a file that cannot be decoded are each
+their own reading. So is an absent PyYAML: `parse_problems` says `not_measured` and deliberately
+does NOT say `DOES NOT PARSE`, because every fixture in the suite asserts that marker — without the
+split, a host with no parser installed would run the whole file GREEN over documents nobody read,
+which is invariant 1 arriving inside the gate written about instruments that do not measure what
+they claim.
+
+**The prose this falsified, corrected in the same commit rather than left to be found.**
+`requirements/ci-tests.in` ended "NOTHING ELSE BELONGS HERE", and two test docstrings —
+`tests/test_door_matches_ci.py` and `tests/test_reissue_obligation.py` — justified hand-parsing YAML
+on the ground that the `tests` job installs pytest and pytest-cov and nothing more. That ground is
+gone as of this entry. All three are corrected where they stand; a stale reason left in place is
+what makes an inherited arrangement read as a decided one (L-2), and the copy in `ci-tests.in` was
+the one that would have kept the other two sounding reasoned. **Rewriting those two hand-parsers
+onto PyYAML is NOT done here** and is a named deferral rather than an oversight: each has measured
+limits and fixtures around its reader, and swapping it is a change that must be watched to fire in
+its own right. `scripts/ratchet_scope.py` keeps the original reason unchanged and unaffected — the
+`ratchets` job installs nothing at all, so a ratchet importing PyYAML would not run there.
+
+**The pin was run before it was committed**, by the standard D-30 set for itself and GREEN-005 kept:
+`requirements/ci-tests.txt` was recompiled under this host's Python 3.10.12 — the jobs' own version
+— with `pip-compile --generate-hashes`, and the diff is ONE package. Every other pin is byte for
+byte what it was, because the set was compiled without `--upgrade`; a recompilation that quietly
+bumped pytest would have moved the instrument this repository measures itself with, under cover of
+a decision about a parser. The install under `--require-hashes --only-binary=:all:` and the suite
+run under it are in
+`evidence/GREEN-006-the-parser-was-installed-from-the-pinned-set-before-the-gate-relied-on-it.txt`.
+
+**A divergence between the door and CI, named rather than closed.** CI installs `pyyaml==6.0.3`
+from the hash-pinned set; the audit host carries PyYAML 5.4.1 from the system packages, and
+`scripts/push.sh` runs the suite against whatever the host has. So the door and the arbiter parse
+with two different parser versions. It is the same shape as the node divergence already recorded in
+`push.sh` — 20.20.2 here, 22 there — and it is named for the same reason: the door/arbiter gate
+matches commands, not toolchains, and is blind to this by construction. Both readings are measured
+and the RED-031 form is refused by both.
+
+**The red run is kept, and it is the real one rather than a mutation of the subject.**
+`evidence/RED-034-*` restores the exact three lines `66f61ea` shipped into this tree's `gates.yml`,
+takes both readings on that file — `verify_pip_pins.py` clean, this gate red at line 128, column 69
+— and then mutates the gate itself, each edit in the permissive direction, to show the suite can
+fail (L-21). The generator is checked in beside it so the run can be repeated rather than believed,
+and the counts are kept in the artefact rather than recited here.
+
+**That sentence read "six ways … each assertion in the suite is load-bearing" until Fable counted,
+and both halves were wrong.** There were seven mutations, not six — the decision entry disagreeing
+with the artefact it cites, which is the one thing this file exists not to do — and four tests were
+killed by nothing at all. Two rounds of repair followed. Five mutations were added: the parser's
+message dropped so the gate can say a file fails and not WHERE, and its LOCATION dropped separately;
+the clean line stripped of the names it read; the directory listing replaced by a remembered
+filename; and an absent parser folded into a clean tree ONE LEVEL ABOVE the function that reports
+it — an edit no test on a host that HAS PyYAML could have seen, which is every host that runs the
+suite. Two tests were SPLIT, because an assertion sitting under an earlier `assert` in the same test
+cannot be shown to matter by an instrument that reads node ids out of pytest's summary: the mutation
+dropping only the parser's position killed the identical test as the one dropping its whole message,
+the generator refused the pair as indistinguishable, and splitting the test was the repair.
+Declaring the granularity unreachable would have been the easier one.
+
+**What is still uncovered is COUNTED in the evidence file**, as a subtraction over pytest's own
+collection. Three tests survive: the acceptance control, which a permissive-only generator can never
+legitimately kill; a stated boundary reachable only by a STRICTER edit; and a fact about
+`requirements/ci-tests.txt` rather than about the gate. The unit is TESTS, and that limit is written
+at the foot of the evidence file instead of being papered over with the word "assertion".
+
+**The guard on that list is an instruction to a person, and calling it more than that was the last
+thing Fable took out.** The generator refuses to rewrite its artefact while the measured set differs
+from the one it expects, and the refusal names all four places these three tests are written down —
+its own constant, the paragraph under the list, the suite's docstring and this entry — so a moved
+list cannot appear under an unmoved explanation. But the check compares a frozenset: updating the
+frozenset alone satisfies it. The previous draft of this paragraph said the explanation "cannot
+outlive the measurement", which one edit to one field falsifies — an anti-drift repair making
+exactly the claim it was written to end, in the entry about claims stronger than their artefacts.
+It is also LATENT: nothing regenerates this evidence on a push, so between a test being added and
+somebody regenerating, the drift is invisible. That is a property of a snapshot kept as evidence
+rather than a defect to fix — the generator mutates its subject and runs the suite fifteen times,
+which is not something a door can do on every push.

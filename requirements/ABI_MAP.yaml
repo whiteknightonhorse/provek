@@ -129,6 +129,17 @@ scripts/verify_action_pins.py:    [ABI-32-1, ABI-16-11]
 # be READ stays unmeasured here instead of counting as no violations found.
 scripts/verify_pip_pins.py:       [ABI-32-1, ABI-16-11]
 
+# T-S7, and the same pair a third time because it is the same door asked its FIRST question rather
+# than a later one. The two modules above judge what a workflow NAMES; this one asks whether the
+# file naming it is a file GitHub can open at all. ABI-32-1 because a workflow that never parses
+# runs no gate, so "the gates judge the artefact that leaves" was untrue of `66f61ea` in the
+# strongest available sense - seven green gates over a commit whose CI never started. ABI-16-11
+# because the load-bearing part is again a state and not a comparison: an absent parser, an
+# unreadable file and an empty workflow directory each report themselves here instead of arriving
+# as "no problems found", which is exactly how the gap this module closes stayed invisible.
+scripts/verify_workflow_yaml.py:  [ABI-32-1, ABI-16-11]
+
 # CI configuration is data, not code, and carries no ABI mapping. The `uses:` lines inside it are
 # not data, though - they name executable code fetched at run time - and `scripts/verify_action_pins.py`
-# above is what judges them.
+# above is what judges them. NEITHER IS THE FILE ITSELF DATA IN THE SENSE THAT MATTERS: it is the
+# document a parser must accept before any of it runs, which is what the module above measures.

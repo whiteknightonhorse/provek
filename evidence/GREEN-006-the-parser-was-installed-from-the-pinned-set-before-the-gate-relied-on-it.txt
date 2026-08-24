@@ -1,0 +1,121 @@
+GREEN-006 - the parser was installed from the pinned set before the gate was allowed to rely on it
+====================================================================================================
+
+WHY THIS FILE EXISTS. D-32 moves a hash-pinned CI set: `pyyaml` enters `requirements/ci-tests.in`
+and `ci-tests.txt` is recompiled, so that `tests/test_workflows_parse.py` can ask a real parser
+whether GitHub can open the files that run every gate. D-30 says a set moves by a deliberate edit
+and never by CI upgrading itself, and GREEN-005 established the standard for making one: a commit
+that pins a tool without RUNNING it is asserting compatibility rather than measuring it. Fable
+refused an earlier change for exactly that (L-30), so the transcript belongs in the tree rather
+than in the author's memory.
+
+WHERE THIS WAS RUN. On the audit host, under Python 3.10.12 - the same 3.10 the jobs request from
+`actions/setup-python`, and the version `pip-compile` resolved the set against. It is NOT the
+GitHub runner: `python-version: "3.10"` floats across patch releases and `ubuntu-latest` floats
+entirely, which D-30 names as an unclosed exposure. `pyyaml==6.0.3` resolves to a `cp310`
+manylinux wheel, so that float cannot change which artefact is selected; it could still change how
+the tool behaves, and this transcript does not claim otherwise.
+
+THE DIFF IS ONE PACKAGE, AND IT IS MEASURED WITH AN INSTRUMENT THAT COULD SEE OTHERWISE. The first
+draft of this paragraph proved the claim with
+
+  $ diff <(git show HEAD:requirements/ci-tests.txt | grep -E '^[a-zA-Z0-9]') \
+         <(grep -E '^[a-zA-Z0-9]' requirements/ci-tests.txt)
+  8a9
+  > pyyaml==6.0.3 \
+
+and that grep keeps only `name==version` lines. HASH LINES BEGIN WITH SPACES AND DO NOT SURVIVE IT,
+so a substituted digest on an existing package would have passed the shown check in silence - the
+sentence "every existing pin is byte for byte what it was" was true and the instrument printed
+beside it could not establish it. That is L-31's own shape inside the evidence file for L-31, found
+by Fable. The unfiltered reading:
+
+  $ git diff --numstat requirements/ci-tests.txt
+  76      1       requirements/ci-tests.txt
+
+  $ git diff -U0 requirements/ci-tests.txt | grep -E '^[-+]' | grep -vE '^(\+\+\+|---)' \
+      | grep -vi 'pyyaml\|sha256'
+  -#    pip-compile --generate-hashes --strip-extras --output-file=requirements/ci-tests.txt requirements/ci-tests.in
+  +#    pip-compile --generate-hashes --output-file=requirements/ci-tests.txt --strip-extras requirements/ci-tests.in
+  +    # via -r requirements/ci-tests.in
+
+One line deleted and 76 added. THAT PAIR STILL DOES NOT ESTABLISH THE CLAIM, and the second draft of
+this paragraph stopped there. A substituted digest would have shown 77/2 - but an ADDED
+`--hash=sha256:` line on some other package, with the `pyyaml` block one line shorter, reads as the
+same 76/1 and passes the same filter, and pip accepts EITHER digest for a package carrying two. The
+instrument that closes it is the hunk list, which says whether the insertion is one contiguous block
+or two scattered ones:
+
+  $ git diff -U0 requirements/ci-tests.txt | grep '@@'
+  @@ -5 +5 @@
+  @@ -161,0 +162,75 @@ pytest-cov==7.1.0 \
+
+Two hunks: the header line, and 75 lines inserted in ONE run after line 161. Nothing was added
+anywhere else, so no other package gained a digest. The 75 are the `pyyaml==6.0.3` line, its `# via`
+comment and its hashes:
+
+  $ git diff -U0 requirements/ci-tests.txt | grep '^+' | grep -c 'hash=sha256'
+  73
+
+1 + 1 + 73 = 75, plus the header line = 76, counted rather than asserted. Found by Fable twice: the
+filtered diff first, then this - the same defect one layer down, which is the shape this repository
+keeps paying for. The header line itself changed only in the order pip-tools echoes its own flags -
+`--generate-hashes --strip-extras --output-file=X` came back as `--generate-hashes
+--output-file=X --strip-extras`. Same invocation, written by the tool rather than by hand.
+
+A recompilation that quietly bumped `pytest` or `coverage` would have moved the instrument this
+repository measures itself with, under cover of a decision about a parser. That is the failure this
+paragraph exists to rule out by measurement.
+
+THE TOOL THAT RECOMPILED THE PINNED SET IS ITSELF UNPINNED, and that is named rather than left for
+a reader to wonder about. `pip-tools 7.6.1` with `pip 26.2.1`, installed into a throwaway
+virtualenv on this host on 2026-08-24; it appears in no committed set, because it runs on the
+author's machine and never in CI. What it produces is checked by the thing that does run there:
+`--require-hashes` makes pip recompute every digest at install time, so a compiler that emitted a
+wrong hash is refused by the installer rather than trusted. What an unpinned compiler CAN do
+unnoticed is reformat - the flag reordering above is exactly that - and this transcript records the
+version so a later reformatting can be attributed instead of guessed at.
+
+THE INSTALL, in a clean virtualenv, under the flags the job uses:
+
+  $ python3 -m venv .ts7pin
+  $ .ts7pin/bin/pip install --require-hashes --only-binary=:all: -r requirements/ci-tests.txt
+  Installing collected packages: typing-extensions, tomli, pyyaml, pygments, pluggy, packaging, iniconfig, coverage, exceptiongroup, pytest, pytest-cov
+  Successfully installed coverage-7.15.4 exceptiongroup-1.3.1 iniconfig-2.3.0 packaging-26.3 pluggy-1.6.0 pygments-2.21.0 pytest-9.1.1 pytest-cov-7.1.0 pyyaml-6.0.3 tomli-2.4.1 typing-extensions-4.16.0
+  exit=0
+  packages installed: 11 (was 10)
+
+THE GATE, RUN UNDER THAT INTERPRETER rather than under the host's own:
+
+  $ .ts7pin/bin/python scripts/verify_workflow_yaml.py
+  T-S7: clean (3 workflow files parsed by yaml.safe_load: codeql.yml, gates.yml, scorecard.yml)
+  exit=0
+
+THE FULL SUITE, under the pinned toolchain:
+
+  $ .ts7pin/bin/python -m pytest tests -q --cov=src --cov-fail-under=70
+  694 passed, 1 skipped in 20.86s
+  TOTAL 1403 statements, 100 missed, 93%
+  Required test coverage of 70% reached. Total coverage: 92.87%
+  exit=0
+
+THE DOOR AND THE ARBITER PARSE WITH TWO DIFFERENT PARSERS, and it is measured rather than assumed.
+CI installs `pyyaml==6.0.3` from the set above; the audit host carries PyYAML 5.4.1 from its system
+packages, and `scripts/push.sh` runs the suite against whatever the host has. Both were shown the
+document `66f61ea` shipped, and both refuse it in the same words at the same position:
+
+  6.0.3: mapping values are not allowed here
+           in "<unicode string>", line 128, column 69
+  5.4.1: mapping values are not allowed here
+           in "<unicode string>", line 128, column 69
+
+That is a reading about ONE document, not a proof that the two versions agree in general. The
+divergence stands, named in D-32 and in the same form as the node divergence `push.sh` already
+records - 20.20.2 here, 22 in CI - because the door-versus-CI gate matches commands and not
+toolchains, and is blind to this by construction.
+
+WHAT THIS TRANSCRIPT DOES NOT SHOW. That a `--hash=sha256:...` in the set is the digest PyPI really
+serves: pip recomputes and refuses on every install, so truth there is enforced by the installer at
+run time rather than by a file in this tree (D-30). And that GitHub's own parser agrees with
+PyYAML - it is not on this host, and D-32 names that residue rather than covering it with the word
+"parses".

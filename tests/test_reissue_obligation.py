@@ -79,10 +79,17 @@ def _has_cron(workflow: str) -> bool:
     ones. False greens on the defect and false reds on valid YAML, in the check written to prove a
     clock exists. Found by Fable.
 
-    PyYAML is the obvious tool and is deliberately not used: the CI `tests` job installs only
-    pytest and pytest-cov, so importing it would make this check fail in the one place it most
-    needs to run. The repository already hand-parses its own YAML for the same reason
-    (`scripts/ratchet_scope.py`).
+    PyYAML is the obvious tool, and THE REASON GIVEN HERE FOR NOT USING IT HAS LAPSED. It read:
+    the CI `tests` job installs only pytest and pytest-cov, so importing it would make this check
+    fail in the one place it most needs to run. That job installs PyYAML as of D-32. The sentence
+    is corrected where it stands rather than quietly kept, because a lapsed reason left in place is
+    how an inherited arrangement goes on reading as a decided one (L-2).
+
+    The hand-parser stays for now and its replacement is a named deferral, not an oversight: the
+    limits below are measured and the fixtures exercise them, and swapping the reader is a change
+    that has to be watched to fire in its own right. `scripts/ratchet_scope.py` keeps the original
+    reason unchanged - the `ratchets` job installs nothing, so a ratchet importing PyYAML would not
+    run at all.
 
     LIMITS, NAMED RATHER THAN LEFT TO BE FOUND. Comments are stripped without respect for quoting,
     which is safe for cron expressions and would not be for a value containing `#`. An aliased

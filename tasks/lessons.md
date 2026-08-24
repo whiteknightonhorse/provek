@@ -878,3 +878,32 @@ Anchor: no code gate, and this is the honest kind of gateless rather than the re
 checker cannot read a paragraph of prose about a repair and know who wrote the repair. Recorded in
 L-8's form; naming a `LAW-*` for it would be the fake anchor L-8 refuses, in a lesson about claims
 made without checking.
+
+## L-31 A checker more permissive than the machine it stands in for certifies files that machine cannot run
+
+`66f61ea` left this host with seven green gates - 642 passed, coverage 92.87% - and turned `main`
+RED in the same second it landed. Three `run:` lines carried `--only-binary=:all: ` in a plain
+scalar; `: ` is how YAML spells "the key ended here", so GitHub read a mapping inside a mapping and
+refused the document. The run was created and concluded in the same second with ZERO jobs: nothing
+in the workflow failed, because nothing in it ever started.
+
+**Every gate that vouched for that commit was correct about what it measures.**
+`scripts/verify_pip_pins.py` read all three lines and reported them hash-pinned - it still does
+after the repair, byte for byte the same text. It reads the file with what D-30 calls, in its own
+words, "a hand-written approximation of a shell lexer inside a hand-written approximation of a YAML
+reader", and the two readers disagreed in the one direction that cannot be seen from inside: the
+approximation was WIDER than the real thing. A stricter approximation announces itself immediately,
+as a false red on a file that works. A looser one is silent until the machine it stands in for
+refuses a document the checker has already blessed.
+
+The general form is not about YAML. Wherever a gate re-implements somebody else's reader - a shell
+lexer, a URL parser, a glob, a version comparison - the two can disagree, and only one of the two
+directions is self-reporting. **Ask the real parser when the real parser is available**, and where
+it is not, say which of the two directions the approximation errs in.
+
+The instance is closed and the class is not: PyYAML implements YAML 1.1, GitHub's parser is neither
+PyYAML nor on this host, and no schema is checked by either. What `LAW-WORKFLOWS-PARSE` buys is the
+defect that was actually paid for, refused at the door instead of on `main` - and the residue is
+written down in D-32 rather than covered by the word "parses".
+
+Anchor: LAW-WORKFLOWS-PARSE.

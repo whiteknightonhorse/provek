@@ -507,3 +507,33 @@ laws:
     text: "the concurrency lock is opened on a path the project owns and verified to BE that path, and a lock that could not be taken is a named refusal that runs nothing, never a report of contention"
     gate: scripts/run_budgeted.sh
     test: tests/test_run_budgeted_names_its_refusals.py
+
+  # T-S7. `66f61ea` was pushed with 7/7 gates green here and turned `main` RED in the same second:
+  # `--only-binary=:all: ` sat in a PLAIN scalar, `: ` ended the key, and the run was created and
+  # concluded with ZERO jobs. Nothing in the workflow failed, because nothing in it ever started.
+  #
+  # The law is about the FILE, not about its contents, and that is the whole distinction it adds.
+  # `scripts/verify_pip_pins.py` and `scripts/verify_action_pins.py` judge what the workflow NAMES
+  # and both read it with a hand-written scanner; that scanner accepted a document the real parser
+  # refuses, so seven gates certified a file the machine they stand in for could not open. Until
+  # this law nothing in this repository loaded a workflow with a YAML parser.
+  #
+  # WHAT IT DOES NOT CLAIM, since the split is the honesty of it: PyYAML is not GitHub's parser and
+  # implements YAML 1.1 where most modern parsers implement 1.2, so acceptance here is not proof of
+  # acceptance there, and no schema is checked - a misspelt key parses perfectly. A `gates.yml` that
+  # PARSES and breaks GitHub's workflow schema reproduces the whole RED-031 symptom, startup failure
+  # and blind `/check-runs` included, and for that class `actions/runs?head_sha=` is still the only
+  # instrument. What is bought is the class of defect that was actually paid for, refused at the
+  # door instead of on `main`. The residue is named in D-32 rather than closed, because closing it
+  # needs GitHub's own parser.
+  #
+  # THE LAW SAYS "AT THE DOOR" AND NOT "BEFORE IT IS PUSHED", and the difference is load-bearing
+  # rather than pedantic. In CI this gate cannot judge `gates.yml`: a workflow that does not parse
+  # runs no job, so the job holding the test never starts and the defect deletes its own detector.
+  # The first draft of this line said "before it is pushed", which reads as a property of the
+  # pipeline when it is a property of `scripts/push.sh` - and this is the one line the ratchet
+  # reads, so it will outlive the paragraphs in D-32 and the README that say so. Found by Fable.
+  - id: LAW-WORKFLOWS-PARSE
+    text: "every workflow file is loaded by a real YAML parser AT THE DOOR - in CI a file that does not parse runs no job, so this cannot judge itself there - and a parser that is absent, a file that cannot be read and a directory with no workflows are each their own state rather than a clean tree"
+    gate: scripts/verify_workflow_yaml.py
+    test: tests/test_workflows_parse.py

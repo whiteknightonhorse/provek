@@ -1,0 +1,830 @@
+RED-034 - the file every gate read, and no parser had ever opened
+
+DATE (UTC): 2026-08-24
+SUBJECT   : scripts/verify_workflow_yaml.py, judged by tests/test_workflows_parse.py
+LAW       : LAW-WORKFLOWS-PARSE
+PRODUCED  : evidence/RED-034-generator.py, checked in beside this file so the runs below can be
+            repeated rather than believed.
+
+WHY THIS FILE EXISTS
+
+`66f61ea` was pushed with a local TREE GREEN behind it - 7/7 gates, 642 passed, coverage 92.87% -
+and turned `main` RED in the same second it landed. `--only-binary=:all: ` sat in a PLAIN scalar,
+`: ` is how YAML spells "the key ended here", and the run GitHub created was concluded in the same
+second holding ZERO jobs: nothing in the workflow failed, because nothing in it ever started. The
+diagnosis is kept in evidence/RED-031-seven-green-gates-and-a-workflow-that-never-parsed.txt, which
+ends by naming the gap and declining to close it - closing it meant either a new dependency in a
+hash-pinned set, which D-30 says moves by a DECISION and not by a repair, or another hand-written
+rule bolted onto the scanner whose permissiveness is the finding. D-32 is that decision.
+
+WHAT IS BEING SHOWN HERE, IN TWO PARTS
+
+PART ONE is not a mutation and not a fixture. The document 66f61ea shipped is fetched out of git and
+written back into this tree, and both gates read it: the hand-written scanner reports it CLEAN, the
+parser refuses it at line 128, column 69. That pair is L-31 in one screen - a checker more
+permissive than the machine it stands in for will certify files that machine cannot run.
+
+PART TWO answers the obvious next question, which is whether the new gate can fail at all
+(invariant 5). Twelve mutations, each in the PERMISSIVE direction, each restored byte for byte and
+verified by sha256, each with its output captured into its own buffer.
+
+IT WAS SEVEN, AND THE COUNT IS PART OF THE RECORD. D-32 closed over those seven with "each
+assertion in the suite is load-bearing", and Fable counted what they did not reach: four whole
+tests and several sub-assertions hidden behind an earlier `assert` in the same test. Five mutations
+were added over two rounds - the parser's message dropped, its location dropped separately, the
+clean line stripped of what it read, the directory listing replaced by a remembered name, and an
+absent parser folded into a clean tree one level ABOVE the function that reports it, which no test
+on a host WITH PyYAML could have seen. What remains uncovered is COUNTED at the foot of this file,
+in TESTS, with the granularity limit named there rather than covered by the word "assertion".
+
+WHERE THE GATE BITES, WHICH PART ONE MAKES LOOK STRONGER THAN IT IS. The runs below are taken at the
+DOOR, and that is not incidental: in CI this test cannot catch a broken gates.yml, because a
+workflow that does not parse runs no job and the job holding the test never starts. The defect
+deletes its own detector - which is how 66f61ea produced seven green gates and three green check runs
+in the first place. CI catches a broken codeql.yml or scorecard.yml, whose failure does not stop the
+gates workflow; scripts/push.sh is the only place the 66f61ea case can be refused before it reaches
+main. Said here rather than left to be inferred from a transcript that happens to have been taken
+locally.
+
+====================================================================================================
+PART ONE - the document 66f61ea actually shipped, put back into this tree and read twice
+====================================================================================================
+
+The file is `git show 66f61ea:.github/workflows/gates.yml`, not a reconstruction. Three
+`run:` lines carry `--only-binary=:all: ` in a plain scalar - lines 128, 167 and 192,
+written from one pattern.
+
+--- `python scripts/verify_pip_pins.py` ---   exit=0
+
+T-S1-PIP-PINS: clean (every pip install names a hash-checked set inside this tree)
+
+--- `python -m pytest tests/test_pip_pinned.py -q` ---   exit=0
+
+.................................                                        [100%]
+33 passed in 0.05s
+
+THAT IS THE FINDING. The gate that judges these very lines reads all three, reports
+them hash-pinned, and its whole suite is green - over a file GitHub answered with a run
+created and concluded in the same second, holding ZERO jobs.
+
+--- `python scripts/verify_workflow_yaml.py` ---   exit=1
+
+
+X T-S7:
+  - gates.yml: DOES NOT PARSE - mapping values are not allowed here
+  in "<unicode string>", line 128, column 69:
+     ... equire-hashes --only-binary=:all: -r requirements/ci-tests.txt
+                                         ^
+
+--- `python -m pytest tests/test_workflows_parse.py -q -rf` ---   exit=1
+
+F..................F                                                     [100%]
+=================================== FAILURES ===================================
+___________________ test_every_workflow_in_this_tree_parses ____________________
+
+    def test_every_workflow_in_this_tree_parses():
+        """The property, on the real files, on every push and at the door."""
+>       assert check() == []
+E       assert ['gates.yml: ...           ^'] == []
+E         
+E         Left contains one more item: 'gates.yml: DOES NOT PARSE - mapping values are not allowed here\n  in "<unicode string>", line 128, column 69:\n     ... equire-hashes --only-binary=:all: -r requirements/ci-tests.txt\n                                         ^'
+E         Use -v to get more diff
+
+tests/test_workflows_parse.py:123: AssertionError
+_________ test_the_module_runs_as_a_command_and_says_what_it_measured __________
+
+capsys = <_pytest.capture.CaptureFixture object at 0x7f5906f59990>
+
+    def test_the_module_runs_as_a_command_and_says_what_it_measured(capsys):
+        """The gate is executable, and its clean line names the files it read rather than asserting a
+        tidy word over an unknown subject."""
+        from scripts.verify_workflow_yaml import main
+>       assert main() == 0
+E       assert 1 == 0
+E        +  where 1 = <function main at 0x7f5906f35f30>()
+
+tests/test_workflows_parse.py:328: AssertionError
+----------------------------- Captured stderr call -----------------------------
+
+X T-S7:
+  - gates.yml: DOES NOT PARSE - mapping values are not allowed here
+  in "<unicode string>", line 128, column 69:
+     ... equire-hashes --only-binary=:all: -r requirements/ci-tests.txt
+                                         ^
+=========================== short test summary info ============================
+FAILED tests/test_workflows_parse.py::test_every_workflow_in_this_tree_parses
+FAILED tests/test_workflows_parse.py::test_the_module_runs_as_a_command_and_says_what_it_measured
+2 failed, 18 passed in 0.14s
+
+
+====================================================================================================
+PART TWO - the gate is watched to fire, twelve ways
+====================================================================================================
+
+Every mutation below makes `verify_workflow_yaml.py` ACCEPT something it should refuse, because
+that is the direction this whole law is about: a stricter approximation announces itself as a false
+red on a working file, while a looser one is silent until GitHub refuses a document the gates have
+already blessed. `test_the_repaired_form_is_accepted` is the instrument control - the one assertion that
+observes an accepted document - and a mutation killing it would mean the apparatus broke rather
+than a property being shown, so the generator refuses that outcome.
+
+====================================================================================================
+MUTATION 1 - the parse failure is swallowed and the file is reported clean - the gate reduced to the permissiveness it was written to end
+====================================================================================================
+
+Applied to scripts/verify_workflow_yaml.py:
+
+  -         return [f"{name}: {UNPARSEABLE} - {str(exc).strip()}"]
+  +         return []   # MUTATION-1
+
+Marker 'MUTATION-1' grepped back out of the file after the edit: yes.
+Tests killed (6): test_a_tab_indented_document_is_caught, test_a_workflow_saved_as_yaml_is_parsed_too, test_an_unclosed_quote_is_caught, test_the_form_that_reddened_main_is_caught, test_the_refusal_carries_the_position_the_startup_failure_withheld, test_the_scanner_that_passed_the_broken_file_still_passes_it
+
+--- verbatim output of `python -m pytest tests/test_workflows_parse.py -q -rf` ---
+
+....FF.FFF.F........                                                     [100%]
+=================================== FAILURES ===================================
+__________________ test_the_form_that_reddened_main_is_caught __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-876/test_the_form_that_reddened_ma0')
+
+    def test_the_form_that_reddened_main_is_caught(tmp_path):
+        """RED-031, reproduced: a plain scalar carrying `: `."""
+        problems = _unparseable(check(_workflows(tmp_path, "gates.yml", RED_031_FORM)))
+>       assert problems, "the line that killed 66f61ea was accepted"
+E       AssertionError: the line that killed 66f61ea was accepted
+E       assert []
+
+tests/test_workflows_parse.py:176: AssertionError
+______ test_the_refusal_carries_the_position_the_startup_failure_withheld ______
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-876/test_the_refusal_carries_the_p0')
+
+    def test_the_refusal_carries_the_position_the_startup_failure_withheld(tmp_path):
+        """A SEPARATE TEST, AND THE SPLIT IS WHAT MAKES THE PROPERTY MEASURABLE.
+    
+        The parser's mark travels with its message; GitHub's own answer was the word `startup_failure`
+        and a run with zero jobs, and finding the three lines took a hand. This assertion lived under
+        the one above until RED-034 was asked to show it load-bearing and could not: the mutation that
+        drops the LOCATION and keeps the SENTENCE killed exactly the same TEST as the one that drops
+        both, because the instrument reads node ids out of pytest's summary and a test dies at its
+        first failing assert. Two mutations with one failure set are refused by that generator, which
+        is how the shadow was found. Splitting the test is the repair - declaring the granularity
+        unreachable would have been the easier one. Found by Fable.
+        """
+        problems = _unparseable(check(_workflows(tmp_path, "gates.yml", RED_031_FORM)))
+>       assert problems, "the line that killed 66f61ea was accepted"
+E       AssertionError: the line that killed 66f61ea was accepted
+E       assert []
+
+tests/test_workflows_parse.py:193: AssertionError
+_________ test_the_scanner_that_passed_the_broken_file_still_passes_it _________
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-876/test_the_scanner_that_passed_t0')
+
+    def test_the_scanner_that_passed_the_broken_file_still_passes_it(tmp_path):
+        """THE FINDING, IN EXECUTABLE FORM.
+    
+        `scripts/verify_pip_pins.py` reads the RED-031 file and reports it clean - correctly, on its own
+        terms: the three flags are there and the requirements file exists. It is a hand-written reader,
+        and the document it accepted is one GitHub cannot open. Both readings are taken here on the same
+        bytes so the gap is a measurement rather than a paragraph.
+        """
+        d = _workflows(tmp_path, "gates.yml", RED_031_FORM)
+        reqs = tmp_path / "requirements"
+        reqs.mkdir()
+        (reqs / "ci-tests.txt").write_text(f"pytest==9.1.1 \\\n    --hash={FIXTURE_HASH}\n",
+                                           encoding="utf-8")
+    
+        assert verify_pip_pins.check(workflows=d, root=tmp_path) == [], "the premise of L-31 has changed"
+>       assert _unparseable(check(d)), "the parser accepted what GitHub refused"
+E       AssertionError: the parser accepted what GitHub refused
+E       assert []
+E        +  where [] = _unparseable([])
+E        +    where [] = check(PosixPath('/tmp/pytest-of-incubator/pytest-876/test_the_scanner_that_passed_t0/.github/workflows'))
+
+tests/test_workflows_parse.py:219: AssertionError
+____________________ test_a_tab_indented_document_is_caught ____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-876/test_a_tab_indented_document_i0')
+
+    def test_a_tab_indented_document_is_caught(tmp_path):
+        """YAML forbids the tab as indentation, and an editor supplies one without being asked."""
+        body = "jobs:\n\ttests:\n\t\truns-on: ubuntu-latest\n"
+>       assert _unparseable(check(_workflows(tmp_path, "gates.yml", body))), "a tab was accepted"
+E       AssertionError: a tab was accepted
+E       assert []
+E        +  where [] = _unparseable([])
+E        +    where [] = check(PosixPath('/tmp/pytest-of-incubator/pytest-876/test_a_tab_indented_document_i0/.github/workflows'))
+E        +      where PosixPath('/tmp/pytest-of-incubator/pytest-876/test_a_tab_indented_document_i0/.github/workflows') = _workflows(PosixPath('/tmp/pytest-of-incubator/pytest-876/test_a_tab_indented_document_i0'), 'gates.yml', 'jobs:\n\ttests:\n\t\truns-on: ubuntu-latest\n')
+
+tests/test_workflows_parse.py:227: AssertionError
+_______________________ test_an_unclosed_quote_is_caught _______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-876/test_an_unclosed_quote_is_caug0')
+
+    def test_an_unclosed_quote_is_caught(tmp_path):
+        body = 'jobs:\n  tests:\n    name: "unclosed\n    runs-on: ubuntu-latest\n'
+>       assert _unparseable(check(_workflows(tmp_path, "gates.yml", body)))
+E       assert []
+E        +  where [] = _unparseable([])
+E        +    where [] = check(PosixPath('/tmp/pytest-of-incubator/pytest-876/test_an_unclosed_quote_is_caug0/.github/workflows'))
+E        +      where PosixPath('/tmp/pytest-of-incubator/pytest-876/test_an_unclosed_quote_is_caug0/.github/workflows') = _workflows(PosixPath('/tmp/pytest-of-incubator/pytest-876/test_an_unclosed_quote_is_caug0'), 'gates.yml', 'jobs:\n  tests:\n    name: "unclosed\n    runs-on: ubuntu-latest\n')
+
+tests/test_workflows_parse.py:232: AssertionError
+_________________ test_a_workflow_saved_as_yaml_is_parsed_too __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-876/test_a_workflow_saved_as_yaml_0')
+
+    def test_a_workflow_saved_as_yaml_is_parsed_too(tmp_path):
+        """GitHub reads both extensions; a checker that knew one would be silent about the other (L-6)."""
+>       assert _unparseable(check(_workflows(tmp_path, "gates.yaml", RED_031_FORM)))
+E       AssertionError: assert []
+E        +  where [] = _unparseable([])
+E        +    where [] = check(PosixPath('/tmp/pytest-of-incubator/pytest-876/test_a_workflow_saved_as_yaml_0/.github/workflows'))
+E        +      where PosixPath('/tmp/pytest-of-incubator/pytest-876/test_a_workflow_saved_as_yaml_0/.github/workflows') = _workflows(PosixPath('/tmp/pytest-of-incubator/pytest-876/test_a_workflow_saved_as_yaml_0'), 'gates.yaml', 'jobs:\n  tests:\n    steps:\n      - run: pip install --quiet --require-hashes --only-binary=:all: -r requirements/ci-tests.txt\n')
+
+tests/test_workflows_parse.py:249: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_workflows_parse.py::test_the_form_that_reddened_main_is_caught
+FAILED tests/test_workflows_parse.py::test_the_refusal_carries_the_position_the_startup_failure_withheld
+FAILED tests/test_workflows_parse.py::test_the_scanner_that_passed_the_broken_file_still_passes_it
+FAILED tests/test_workflows_parse.py::test_a_tab_indented_document_is_caught
+FAILED tests/test_workflows_parse.py::test_an_unclosed_quote_is_caught - asse...
+FAILED tests/test_workflows_parse.py::test_a_workflow_saved_as_yaml_is_parsed_too
+6 failed, 14 passed in 0.14s
+
+====================================================================================================
+MUTATION 2 - an ABSENT parser reports itself with the same marker a parse failure uses, so every fixture in the suite would pass on a host with no PyYAML at all
+====================================================================================================
+
+Applied to scripts/verify_workflow_yaml.py:
+
+  -         return [f"{name}: PyYAML is ABSENT, so this file was NOT PARSED - not_measured, not clean"]
+  +         return [f"{name}: {UNPARSEABLE} - PyYAML is absent"]   # MUTATION-2
+
+Marker 'MUTATION-2' grepped back out of the file after the edit: yes.
+Tests killed (2): test_a_missing_parser_is_not_measured_rather_than_clean, test_a_missing_parser_survives_the_path_the_door_actually_walks
+
+--- verbatim output of `python -m pytest tests/test_workflows_parse.py -q -rf` ---
+
+.................FF.                                                     [100%]
+=================================== FAILURES ===================================
+___________ test_a_missing_parser_is_not_measured_rather_than_clean ____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f9c9aea0730>
+
+    def test_a_missing_parser_is_not_measured_rather_than_clean(monkeypatch):
+        """The instrument's own absence, which is the failure this gate would be least able to see.
+    
+        With PyYAML gone the gate must say so. It must ALSO not say `DOES NOT PARSE`, or every fixture
+        above would pass on a host with no parser at all - green over a file nobody read, which is
+        precisely the shape of the defect they exist to catch.
+        """
+        monkeypatch.setattr("scripts.verify_workflow_yaml.yaml", None)
+        problems = parse_problems(RED_031_FORM, "gates.yml")
+>       assert problems and "PyYAML is ABSENT" in problems[0], problems
+E       AssertionError: ['gates.yml: DOES NOT PARSE - PyYAML is absent']
+E       assert (['gates.yml: DOES NOT PARSE - PyYAML is absent'] and 'PyYAML is ABSENT' in 'gates.yml: DOES NOT PARSE - PyYAML is absent')
+
+tests/test_workflows_parse.py:301: AssertionError
+_______ test_a_missing_parser_survives_the_path_the_door_actually_walks ________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f9c9b007610>
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-877/test_a_missing_parser_survives0')
+
+    def test_a_missing_parser_survives_the_path_the_door_actually_walks(monkeypatch, tmp_path):
+        """THE SAME STATE, THROUGH `check()` RATHER THAN THROUGH `parse_problems()`.
+    
+        The test above holds the property at the granularity of one function. Nothing held it at the
+        granularity the door and CI actually use, so a permissive edit ONE LEVEL UP - an early
+        `if yaml is None: return []` in `check()` - would have been killed by no test on any host that
+        has PyYAML installed, which is every host where the suite runs at all. The gate would print
+        `clean` on a machine with no parser and the whole suite would stay green over it. That is
+        invariant 1 defeated by the granularity of its own test rather than by its absence. Found by
+        Fable, by reading `check()` - the ranking sentence that stood here called it unseeable from the
+        assertions, which was flattery and also false.
+        """
+        monkeypatch.setattr("scripts.verify_workflow_yaml.yaml", None)
+        problems = check(_workflows(tmp_path, "gates.yml", RED_031_FORM))
+        assert problems, "check() reported a clean tree with no parser installed"
+>       assert any("PyYAML is ABSENT" in p for p in problems), problems
+E       AssertionError: ['gates.yml: DOES NOT PARSE - PyYAML is absent']
+E       assert False
+E        +  where False = any(<generator object test_a_missing_parser_survives_the_path_the_door_actually_walks.<locals>.<genexpr> at 0x7f9c9b07e5e0>)
+
+tests/test_workflows_parse.py:320: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_workflows_parse.py::test_a_missing_parser_is_not_measured_rather_than_clean
+FAILED tests/test_workflows_parse.py::test_a_missing_parser_survives_the_path_the_door_actually_walks
+2 failed, 18 passed in 0.14s
+
+====================================================================================================
+MUTATION 3 - a workflow directory holding no workflow file is reported clean - zero files and zero failures printing the same green
+====================================================================================================
+
+Applied to scripts/verify_workflow_yaml.py:
+
+  -         return [f"{workflows} holds NO workflow file, so this gate measured NOTHING - unknown, "
+  -                 "not clean"]
+  +         return []   # MUTATION-3
+
+Marker 'MUTATION-3' grepped back out of the file after the edit: yes.
+Tests killed (1): test_an_empty_workflow_directory_reports_unknown_not_clean
+
+--- verbatim output of `python -m pytest tests/test_workflows_parse.py -q -rf` ---
+
+...............F....                                                     [100%]
+=================================== FAILURES ===================================
+__________ test_an_empty_workflow_directory_reports_unknown_not_clean __________
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-878/test_an_empty_workflow_directo0')
+
+    def test_an_empty_workflow_directory_reports_unknown_not_clean(tmp_path):
+        """Zero files and zero failures print the same green. A gate that has quietly lost its subject
+        is how a control disappears in silence - invariant 1, pointed at the instrument."""
+        d = tmp_path / "workflows"
+        d.mkdir()
+>       assert any("measured NOTHING" in p for p in check(d)), check(d)
+E       AssertionError: []
+E       assert False
+E        +  where False = any(<generator object test_an_empty_workflow_directory_reports_unknown_not_clean.<locals>.<genexpr> at 0x7f8db22fbd80>)
+
+tests/test_workflows_parse.py:285: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_workflows_parse.py::test_an_empty_workflow_directory_reports_unknown_not_clean
+1 failed, 19 passed in 0.12s
+
+====================================================================================================
+MUTATION 4 - an absent workflow directory is clean, which is what a tree that deleted its CI would report
+====================================================================================================
+
+Applied to scripts/verify_workflow_yaml.py:
+
+  -         return [f"{workflows} is ABSENT: this gate measured NOTHING, which differs from a tree "
+  -                 "whose workflows are all well-formed"]
+  +         return []   # MUTATION-4
+
+Marker 'MUTATION-4' grepped back out of the file after the edit: yes.
+Tests killed (1): test_an_absent_workflow_directory_is_not_reported_as_clean
+
+--- verbatim output of `python -m pytest tests/test_workflows_parse.py -q -rf` ---
+
+................F...                                                     [100%]
+=================================== FAILURES ===================================
+__________ test_an_absent_workflow_directory_is_not_reported_as_clean __________
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-879/test_an_absent_workflow_direct0')
+
+    def test_an_absent_workflow_directory_is_not_reported_as_clean(tmp_path):
+>       assert any("ABSENT" in p for p in check(tmp_path / "nope")), check(tmp_path / "nope")
+E       AssertionError: []
+E       assert False
+E        +  where False = any(<generator object test_an_absent_workflow_directory_is_not_reported_as_clean.<locals>.<genexpr> at 0x7f5eaa90fd80>)
+
+tests/test_workflows_parse.py:289: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_workflows_parse.py::test_an_absent_workflow_directory_is_not_reported_as_clean
+1 failed, 19 passed in 0.12s
+
+====================================================================================================
+MUTATION 5 - a file that cannot be decoded is skipped in silence instead of named - the unreadable half of invariant 1, inside the instrument
+====================================================================================================
+
+Applied to scripts/verify_workflow_yaml.py:
+
+  -             problems.append(f"{path.name}: COULD NOT BE READ ({exc}) - unreadable, not clean")
+  -             continue
+  +             continue   # MUTATION-5
+
+Marker 'MUTATION-5' grepped back out of the file after the edit: yes.
+Tests killed (1): test_a_file_that_is_not_utf8_is_unreadable_rather_than_clean
+
+--- verbatim output of `python -m pytest tests/test_workflows_parse.py -q -rf` ---
+
+..............F.....                                                     [100%]
+=================================== FAILURES ===================================
+_________ test_a_file_that_is_not_utf8_is_unreadable_rather_than_clean _________
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-880/test_a_file_that_is_not_utf8_i0')
+
+    def test_a_file_that_is_not_utf8_is_unreadable_rather_than_clean(tmp_path):
+        """`grep` on this host exits 1 with empty output on invalid UTF-8, which is indistinguishable
+        from "no matches" - a trap already recorded against the shell. Here the decode failure is a
+        named state instead of an absence of findings (invariant 1)."""
+        d = tmp_path / ".github" / "workflows"
+        d.mkdir(parents=True)
+        (d / "gates.yml").write_bytes(b"jobs:\n  a: \xff\xfe not utf-8\n")
+        problems = check(d)
+>       assert any("COULD NOT BE READ" in p for p in problems), problems
+E       AssertionError: []
+E       assert False
+E        +  where False = any(<generator object test_a_file_that_is_not_utf8_is_unreadable_rather_than_clean.<locals>.<genexpr> at 0x7fb92b2bb220>)
+
+tests/test_workflows_parse.py:277: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_workflows_parse.py::test_a_file_that_is_not_utf8_is_unreadable_rather_than_clean
+1 failed, 19 passed in 0.12s
+
+====================================================================================================
+MUTATION 6 - only one of the two extensions GitHub reads is measured, so a workflow saved as .yaml is invisible to this gate (L-6)
+====================================================================================================
+
+Applied to scripts/verify_workflow_yaml.py:
+
+  - SUFFIXES = (".yml", ".yaml")
+  + SUFFIXES = (".yml",)   # MUTATION-6
+
+Marker 'MUTATION-6' grepped back out of the file after the edit: yes.
+Tests killed (2): test_a_workflow_saved_as_yaml_is_parsed_too, test_the_gate_reads_the_two_extensions_github_reads
+
+--- verbatim output of `python -m pytest tests/test_workflows_parse.py -q -rf` ---
+
+..F........F........                                                     [100%]
+=================================== FAILURES ===================================
+_____________ test_the_gate_reads_the_two_extensions_github_reads ______________
+
+    def test_the_gate_reads_the_two_extensions_github_reads():
+        """The other half of the test above, split off for the reason that one gives.
+    
+        One test asserting both properties can only ever demonstrate the first: it dies at the first
+        failing assert, so a mutation narrowing `SUFFIXES` and a mutation replacing the directory
+        listing produce the same node id in pytest's summary and RED-034 refuses the pair as
+        indistinguishable.
+        """
+>       assert set(SUFFIXES) == set(GITHUB_SUFFIXES), (
+            f"the gate reads {SUFFIXES}; GitHub reads {GITHUB_SUFFIXES}")
+E       AssertionError: the gate reads ('.yml',); GitHub reads ('.yml', '.yaml')
+E       assert {'.yml'} == {'.yaml', '.yml'}
+E         
+E         Extra items in the right set:
+E         '.yaml'
+E         Use -v to get more diff
+
+tests/test_workflows_parse.py:156: AssertionError
+_________________ test_a_workflow_saved_as_yaml_is_parsed_too __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-881/test_a_workflow_saved_as_yaml_0')
+
+    def test_a_workflow_saved_as_yaml_is_parsed_too(tmp_path):
+        """GitHub reads both extensions; a checker that knew one would be silent about the other (L-6)."""
+>       assert _unparseable(check(_workflows(tmp_path, "gates.yaml", RED_031_FORM)))
+E       AssertionError: assert []
+E        +  where [] = _unparseable(['/tmp/pytest-of-incubator/pytest-881/test_a_workflow_saved_as_yaml_0/.github/workflows holds NO workflow file, so this gate measured NOTHING - unknown, not clean'])
+E        +    where ['/tmp/pytest-of-incubator/pytest-881/test_a_workflow_saved_as_yaml_0/.github/workflows holds NO workflow file, so this gate measured NOTHING - unknown, not clean'] = check(PosixPath('/tmp/pytest-of-incubator/pytest-881/test_a_workflow_saved_as_yaml_0/.github/workflows'))
+E        +      where PosixPath('/tmp/pytest-of-incubator/pytest-881/test_a_workflow_saved_as_yaml_0/.github/workflows') = _workflows(PosixPath('/tmp/pytest-of-incubator/pytest-881/test_a_workflow_saved_as_yaml_0'), 'gates.yaml', 'jobs:\n  tests:\n    steps:\n      - run: pip install --quiet --require-hashes --only-binary=:all: -r requirements/ci-tests.txt\n')
+
+tests/test_workflows_parse.py:249: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_workflows_parse.py::test_the_gate_reads_the_two_extensions_github_reads
+FAILED tests/test_workflows_parse.py::test_a_workflow_saved_as_yaml_is_parsed_too
+2 failed, 18 passed in 0.12s
+
+====================================================================================================
+MUTATION 7 - a document that parses to something other than a mapping is accepted, so an empty file and a top-level sequence both read as a healthy workflow
+====================================================================================================
+
+Applied to scripts/verify_workflow_yaml.py:
+
+  -     if doc is None:
+  +     if False:   # MUTATION-7
+  -     if not isinstance(doc, dict):
+  +     if False:   # MUTATION-7 (second half)
+
+Marker 'MUTATION-7' grepped back out of the file after the edit: yes.
+Tests killed (2): test_a_top_level_sequence_is_refused, test_an_empty_document_is_not_a_workflow
+
+--- verbatim output of `python -m pytest tests/test_workflows_parse.py -q -rf` ---
+
+............FF......                                                     [100%]
+=================================== FAILURES ===================================
+___________________ test_an_empty_document_is_not_a_workflow ___________________
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-882/test_an_empty_document_is_not_0')
+
+    def test_an_empty_document_is_not_a_workflow(tmp_path):
+        """A truncated file parses to `None` without raising. Reported as its own state, because "the
+        document is empty" and "the workflow declares no jobs" are two facts and only one of them is
+        about YAML."""
+        problems = check(_workflows(tmp_path, "gates.yml", "\n# nothing but a comment\n"))
+>       assert any("EMPTY" in p for p in problems), problems
+E       AssertionError: []
+E       assert False
+E        +  where False = any(<generator object test_an_empty_document_is_not_a_workflow.<locals>.<genexpr> at 0x7f95e162f610>)
+
+tests/test_workflows_parse.py:259: AssertionError
+_____________________ test_a_top_level_sequence_is_refused _____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-882/test_a_top_level_sequence_is_r0')
+
+    def test_a_top_level_sequence_is_refused(tmp_path):
+        """Valid YAML, impossible workflow. Well-formed is not the same claim as well-shaped, and the
+        one place this file crosses that line is here, where GitHub's requirement is unambiguous."""
+        problems = check(_workflows(tmp_path, "gates.yml", "- jobs\n- steps\n"))
+>       assert any("mapping" in p for p in problems), problems
+E       AssertionError: []
+E       assert False
+E        +  where False = any(<generator object test_a_top_level_sequence_is_refused.<locals>.<genexpr> at 0x7f95e1866730>)
+
+tests/test_workflows_parse.py:266: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_workflows_parse.py::test_an_empty_document_is_not_a_workflow
+FAILED tests/test_workflows_parse.py::test_a_top_level_sequence_is_refused - ...
+2 failed, 18 passed in 0.12s
+
+====================================================================================================
+MUTATION 8 - the parser's own message is dropped and only the marker survives, so the gate says a file does not parse and cannot say WHERE - the difference between a diagnosis and a shrug
+====================================================================================================
+
+Applied to scripts/verify_workflow_yaml.py:
+
+  -         return [f"{name}: {UNPARSEABLE} - {str(exc).strip()}"]
+  +         return [f"{name}: {UNPARSEABLE}"]   # MUTATION-8
+
+Marker 'MUTATION-8' grepped back out of the file after the edit: yes.
+Tests killed (2): test_the_form_that_reddened_main_is_caught, test_the_refusal_carries_the_position_the_startup_failure_withheld
+
+--- verbatim output of `python -m pytest tests/test_workflows_parse.py -q -rf` ---
+
+....FF..............                                                     [100%]
+=================================== FAILURES ===================================
+__________________ test_the_form_that_reddened_main_is_caught __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-883/test_the_form_that_reddened_ma0')
+
+    def test_the_form_that_reddened_main_is_caught(tmp_path):
+        """RED-031, reproduced: a plain scalar carrying `: `."""
+        problems = _unparseable(check(_workflows(tmp_path, "gates.yml", RED_031_FORM)))
+        assert problems, "the line that killed 66f61ea was accepted"
+>       assert "mapping values are not allowed" in problems[0], problems
+E       AssertionError: ['gates.yml: DOES NOT PARSE']
+E       assert 'mapping values are not allowed' in 'gates.yml: DOES NOT PARSE'
+
+tests/test_workflows_parse.py:177: AssertionError
+______ test_the_refusal_carries_the_position_the_startup_failure_withheld ______
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-883/test_the_refusal_carries_the_p0')
+
+    def test_the_refusal_carries_the_position_the_startup_failure_withheld(tmp_path):
+        """A SEPARATE TEST, AND THE SPLIT IS WHAT MAKES THE PROPERTY MEASURABLE.
+    
+        The parser's mark travels with its message; GitHub's own answer was the word `startup_failure`
+        and a run with zero jobs, and finding the three lines took a hand. This assertion lived under
+        the one above until RED-034 was asked to show it load-bearing and could not: the mutation that
+        drops the LOCATION and keeps the SENTENCE killed exactly the same TEST as the one that drops
+        both, because the instrument reads node ids out of pytest's summary and a test dies at its
+        first failing assert. Two mutations with one failure set are refused by that generator, which
+        is how the shadow was found. Splitting the test is the repair - declaring the granularity
+        unreachable would have been the easier one. Found by Fable.
+        """
+        problems = _unparseable(check(_workflows(tmp_path, "gates.yml", RED_031_FORM)))
+        assert problems, "the line that killed 66f61ea was accepted"
+>       assert "line" in problems[0] and "column" in problems[0], problems[0]
+E       AssertionError: gates.yml: DOES NOT PARSE
+E       assert ('line' in 'gates.yml: DOES NOT PARSE')
+
+tests/test_workflows_parse.py:194: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_workflows_parse.py::test_the_form_that_reddened_main_is_caught
+FAILED tests/test_workflows_parse.py::test_the_refusal_carries_the_position_the_startup_failure_withheld
+2 failed, 18 passed in 0.12s
+
+====================================================================================================
+MUTATION 9 - the clean line stops naming what it read, which is how `clean` comes to be printed over an unknown subject
+====================================================================================================
+
+Applied to scripts/verify_workflow_yaml.py:
+
+  -     print(f"T-S7: clean ({len(names)} workflow files parsed by yaml.safe_load: {', '.join(names)})")
+  +     print("T-S7: clean")   # MUTATION-9
+
+Marker 'MUTATION-9' grepped back out of the file after the edit: yes.
+Tests killed (1): test_the_module_runs_as_a_command_and_says_what_it_measured
+
+--- verbatim output of `python -m pytest tests/test_workflows_parse.py -q -rf` ---
+
+...................F                                                     [100%]
+=================================== FAILURES ===================================
+_________ test_the_module_runs_as_a_command_and_says_what_it_measured __________
+
+capsys = <_pytest.capture.CaptureFixture object at 0x7f158416c280>
+
+    def test_the_module_runs_as_a_command_and_says_what_it_measured(capsys):
+        """The gate is executable, and its clean line names the files it read rather than asserting a
+        tidy word over an unknown subject."""
+        from scripts.verify_workflow_yaml import main
+        assert main() == 0
+        out = capsys.readouterr().out
+>       assert "gates.yml" in out and "yaml.safe_load" in out, out
+E       AssertionError: T-S7: clean
+E         
+E       assert ('gates.yml' in 'T-S7: clean\n')
+
+tests/test_workflows_parse.py:330: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_workflows_parse.py::test_the_module_runs_as_a_command_and_says_what_it_measured
+1 failed, 19 passed in 0.12s
+
+====================================================================================================
+MUTATION 10 - an absent parser is folded into a clean tree ONE LEVEL ABOVE the function that reports it - the permissive edit no test on a host WITH PyYAML could see until this round
+====================================================================================================
+
+Applied to scripts/verify_workflow_yaml.py:
+
+  -     if not workflows.is_dir():
+  +     if yaml is None:   # MUTATION-10
+  +         return []
+  +     if not workflows.is_dir():
+
+Marker 'MUTATION-10' grepped back out of the file after the edit: yes.
+Tests killed (1): test_a_missing_parser_survives_the_path_the_door_actually_walks
+
+--- verbatim output of `python -m pytest tests/test_workflows_parse.py -q -rf` ---
+
+..................F.                                                     [100%]
+=================================== FAILURES ===================================
+_______ test_a_missing_parser_survives_the_path_the_door_actually_walks ________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7faedb7d4760>
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-885/test_a_missing_parser_survives0')
+
+    def test_a_missing_parser_survives_the_path_the_door_actually_walks(monkeypatch, tmp_path):
+        """THE SAME STATE, THROUGH `check()` RATHER THAN THROUGH `parse_problems()`.
+    
+        The test above holds the property at the granularity of one function. Nothing held it at the
+        granularity the door and CI actually use, so a permissive edit ONE LEVEL UP - an early
+        `if yaml is None: return []` in `check()` - would have been killed by no test on any host that
+        has PyYAML installed, which is every host where the suite runs at all. The gate would print
+        `clean` on a machine with no parser and the whole suite would stay green over it. That is
+        invariant 1 defeated by the granularity of its own test rather than by its absence. Found by
+        Fable, by reading `check()` - the ranking sentence that stood here called it unseeable from the
+        assertions, which was flattery and also false.
+        """
+        monkeypatch.setattr("scripts.verify_workflow_yaml.yaml", None)
+        problems = check(_workflows(tmp_path, "gates.yml", RED_031_FORM))
+>       assert problems, "check() reported a clean tree with no parser installed"
+E       AssertionError: check() reported a clean tree with no parser installed
+E       assert []
+
+tests/test_workflows_parse.py:319: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_workflows_parse.py::test_a_missing_parser_survives_the_path_the_door_actually_walks
+1 failed, 19 passed in 0.12s
+
+====================================================================================================
+MUTATION 11 - the parser's LOCATION is dropped and its sentence kept, so the gate can say a file is malformed and not where - the one reading that turns a startup failure into a repair
+====================================================================================================
+
+Applied to scripts/verify_workflow_yaml.py:
+
+  -         return [f"{name}: {UNPARSEABLE} - {str(exc).strip()}"]
+  +         return [f"{name}: {UNPARSEABLE} - {str(exc).splitlines()[0]}"]   # MUTATION-11
+
+Marker 'MUTATION-11' grepped back out of the file after the edit: yes.
+Tests killed (1): test_the_refusal_carries_the_position_the_startup_failure_withheld
+
+--- verbatim output of `python -m pytest tests/test_workflows_parse.py -q -rf` ---
+
+.....F..............                                                     [100%]
+=================================== FAILURES ===================================
+______ test_the_refusal_carries_the_position_the_startup_failure_withheld ______
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-886/test_the_refusal_carries_the_p0')
+
+    def test_the_refusal_carries_the_position_the_startup_failure_withheld(tmp_path):
+        """A SEPARATE TEST, AND THE SPLIT IS WHAT MAKES THE PROPERTY MEASURABLE.
+    
+        The parser's mark travels with its message; GitHub's own answer was the word `startup_failure`
+        and a run with zero jobs, and finding the three lines took a hand. This assertion lived under
+        the one above until RED-034 was asked to show it load-bearing and could not: the mutation that
+        drops the LOCATION and keeps the SENTENCE killed exactly the same TEST as the one that drops
+        both, because the instrument reads node ids out of pytest's summary and a test dies at its
+        first failing assert. Two mutations with one failure set are refused by that generator, which
+        is how the shadow was found. Splitting the test is the repair - declaring the granularity
+        unreachable would have been the easier one. Found by Fable.
+        """
+        problems = _unparseable(check(_workflows(tmp_path, "gates.yml", RED_031_FORM)))
+        assert problems, "the line that killed 66f61ea was accepted"
+>       assert "line" in problems[0] and "column" in problems[0], problems[0]
+E       AssertionError: gates.yml: DOES NOT PARSE - mapping values are not allowed here
+E       assert ('line' in 'gates.yml: DOES NOT PARSE - mapping values are not allowed here')
+
+tests/test_workflows_parse.py:194: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_workflows_parse.py::test_the_refusal_carries_the_position_the_startup_failure_withheld
+1 failed, 19 passed in 0.12s
+
+====================================================================================================
+MUTATION 12 - the reader stops taking the DIRECTORY as its work list and remembers a name instead, which is how a fourth workflow arrives unmeasured
+====================================================================================================
+
+Applied to scripts/verify_workflow_yaml.py:
+
+  -     return sorted(p for p in workflows.iterdir() if p.is_file() and p.suffix in SUFFIXES)
+  +     return sorted(p for p in workflows.iterdir() if p.name == "gates.yml")   # MUTATION-12
+
+Marker 'MUTATION-12' grepped back out of the file after the edit: yes.
+Tests killed (2): test_a_workflow_saved_as_yaml_is_parsed_too, test_every_file_in_the_workflows_directory_is_put_in_front_of_the_parser
+
+--- verbatim output of `python -m pytest tests/test_workflows_parse.py -q -rf` ---
+
+.F.........F........                                                     [100%]
+=================================== FAILURES ===================================
+___ test_every_file_in_the_workflows_directory_is_put_in_front_of_the_parser ___
+
+    def test_every_file_in_the_workflows_directory_is_put_in_front_of_the_parser():
+        """The work list is the DIRECTORY, not a remembered set of names.
+    
+        The count is deliberately not asserted here: `tests/test_door_matches_ci.py` already holds the
+        number of workflow files, and a second copy of that number is a rule written in two places
+        (L-2). What is asserted is that nothing in the directory is skipped - which is the property a
+        hard-coded list would lose the day a fourth workflow arrives.
+    
+        THE EXPECTATION IS WRITTEN OUT IN `GITHUB_SUFFIXES` RATHER THAN IMPORTED FROM THE SUBJECT, and
+        the first draft of this test did import it. `on_disk` was built with the gate's own `SUFFIXES`,
+        so mutation 6 of RED-034 - narrowing it to `.yml` alone - moved BOTH sides of the comparison
+        and this test survived, blind to precisely the L-6 defect its neighbour is written to catch. An
+        expectation derived from the subject's own constant is a checker certifying itself. The
+        suffix comparison is now its OWN test below, so the two properties can be shown to fail
+        separately. Found by Fable.
+        """
+        d = ROOT / ".github" / "workflows"
+        on_disk = {p.name for p in d.iterdir() if p.is_file() and p.suffix in GITHUB_SUFFIXES}
+>       assert {p.name for p in workflow_files()} == on_disk
+E       AssertionError: assert {'gates.yml'} == {'codeql.yml'...corecard.yml'}
+E         
+E         Extra items in the right set:
+E         'scorecard.yml'
+E         'codeql.yml'
+E         Use -v to get more diff
+
+tests/test_workflows_parse.py:144: AssertionError
+_________________ test_a_workflow_saved_as_yaml_is_parsed_too __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-887/test_a_workflow_saved_as_yaml_0')
+
+    def test_a_workflow_saved_as_yaml_is_parsed_too(tmp_path):
+        """GitHub reads both extensions; a checker that knew one would be silent about the other (L-6)."""
+>       assert _unparseable(check(_workflows(tmp_path, "gates.yaml", RED_031_FORM)))
+E       AssertionError: assert []
+E        +  where [] = _unparseable(['/tmp/pytest-of-incubator/pytest-887/test_a_workflow_saved_as_yaml_0/.github/workflows holds NO workflow file, so this gate measured NOTHING - unknown, not clean'])
+E        +    where ['/tmp/pytest-of-incubator/pytest-887/test_a_workflow_saved_as_yaml_0/.github/workflows holds NO workflow file, so this gate measured NOTHING - unknown, not clean'] = check(PosixPath('/tmp/pytest-of-incubator/pytest-887/test_a_workflow_saved_as_yaml_0/.github/workflows'))
+E        +      where PosixPath('/tmp/pytest-of-incubator/pytest-887/test_a_workflow_saved_as_yaml_0/.github/workflows') = _workflows(PosixPath('/tmp/pytest-of-incubator/pytest-887/test_a_workflow_saved_as_yaml_0'), 'gates.yaml', 'jobs:\n  tests:\n    steps:\n      - run: pip install --quiet --require-hashes --only-binary=:all: -r requirements/ci-tests.txt\n')
+
+tests/test_workflows_parse.py:249: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_workflows_parse.py::test_every_file_in_the_workflows_directory_is_put_in_front_of_the_parser
+FAILED tests/test_workflows_parse.py::test_a_workflow_saved_as_yaml_is_parsed_too
+2 failed, 18 passed in 0.11s
+
+====================================================================================================
+WHAT NOTHING HERE KILLED - 17 of 20 tests were seen to fail, and these were not
+====================================================================================================
+
+  - test_a_duplicated_key_is_reported_rather_than_silently_resolved
+  - test_the_parser_this_gate_needs_is_in_the_set_the_job_installs
+  - test_the_repaired_form_is_accepted
+
+This list is a SUBTRACTION over pytest's own collection, not a remembered figure. The generator
+refuses to rewrite this file while the measured set differs from the one it expects, and its refusal
+NAMES the four places these three tests are written down - its own `EXPECTED_UNCOVERED`, the
+paragraph you are reading, the docstring of the suite, and D-32 - so that a new list cannot appear
+under an old explanation, which would be the "six ways" defect a third time. That check compares a
+frozenset: updating the frozenset alone satisfies it, and moving the prose is an INSTRUCTION the
+refusal prints rather than a property it verifies. Said plainly because the first draft of this
+sentence claimed the explanation "cannot outlive the measurement", which one edit to one field
+falsifies - the anti-drift repair making the exact claim it was written to end. Found by Fable.
+
+  * `test_the_repaired_form_is_accepted` is the acceptance control, and its absence here is
+    STRUCTURAL rather than an omission: this generator runs permissive mutations only and refuses
+    any outcome that kills a control, so no red run for it can come out of this file - a red there
+    would mean the apparatus broke, not that a property was shown.
+  * `test_a_duplicated_key_is_reported_rather_than_silently_resolved` asserts a stated BOUNDARY: a
+    duplicated key parses and PyYAML keeps the last one silently. It IS reachable by editing the
+    subject - a duplicate-key check would fail it - just not by a PERMISSIVE edit, which is a limit
+    of this generator rather than a property of the gate. The first draft of this paragraph said
+    "neither is reachable by editing the subject", which was true of the other one only.
+  * `test_the_parser_this_gate_needs_is_in_the_set_the_job_installs` asserts a fact about
+    `requirements/ci-tests.txt` rather than about the gate, and no edit to the subject can reach it.
+
+WHAT THIS COUNT IS IN, WHICH IS NOT WHAT A READER WILL ASSUME. The unit is TESTS. `failed_tests()`
+reads node ids out of pytest's `-rf` summary, so a sub-assertion shadowed by an earlier `assert` in
+the same test is invisible to it: the test dies at the first failure and the ones below it are
+never reached. Mutations 8, 9, 11 and 12 exist because Fable counted exactly those, and even so the
+instrument cannot demonstrate the property at assertion granularity - it can only be said that no
+mutation here leaves a whole test standing except the three above. Named rather than implied by the
+word "assertion", which is what the previous draft used.
+
+====================================================================================================
+BASELINE - the suite before any mutation
+====================================================================================================
+
+....................                                                     [100%]
+20 passed in 0.12s
+
+====================================================================================================
+RESTORED - the subject back to its committed bytes, the suite green again
+====================================================================================================
+
+....................                                                     [100%]
+20 passed in 0.10s

@@ -27,9 +27,21 @@ document describing this project's gates. It is armed here instead: the advisory
 expiry, this suite goes red on its own once that date passes, and when the step stops being
 advisory the correspondence check above forces mypy through the door in the same commit.
 
-PyYAML is deliberately not imported. The CI `tests` job installs only pytest and pytest-cov, so
-importing it would break this check in one of the two places it most needs to run;
-`scripts/ratchet_scope.py` and `tests/test_reissue_obligation.py` hand-parse for the same reason.
+PyYAML is not imported here, and THE REASON PRINTED HERE UNTIL 2026-08-24 HAS LAPSED. It read: the
+CI `tests` job installs only pytest and pytest-cov, so importing it would break this check in one
+of the two places it most needs to run. That job installs PyYAML as of D-32, which put it in
+`requirements/ci-tests.in` so `tests/test_workflows_parse.py` could ask the real parser whether
+GitHub can open these files at all - the gap `evidence/RED-031-*` measured. The sentence is
+corrected rather than left standing: a stale reason is what makes an arrangement look decided when
+it is merely inherited (L-2), and this file is the one that exists to catch two lists claiming to
+be one.
+
+What is NOT claimed is that hand-parsing here is now wrong. This file matches STEPS between two
+documents and its reader is exercised by fixtures below; rewriting it onto a parser is a change
+with its own failure modes and belongs to whoever takes it deliberately, not to the commit that
+made it possible. It is recorded as a named deferral rather than done in passing.
+`scripts/ratchet_scope.py` keeps the ORIGINAL reason intact and unaffected: the `ratchets` job
+installs nothing at all, so a ratchet that imported PyYAML would not run there.
 """
 from __future__ import annotations
 

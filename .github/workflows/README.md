@@ -91,6 +91,43 @@ where the reason this does not repeal D-26's deliberately unpinned `wrangler@4` 
 watched to fire, because a one-time edit drifts back and no other gate here can see this one go:
 the door-versus-CI comparison reads any line beginning `pip install` as runner preparation.
 
+## The files in this directory are parsed at the door
+
+`66f61ea` went out with seven green gates behind it and turned `main` red in the same second it
+landed. `--only-binary=:all: ` sat in a **plain scalar**, `: ` is how YAML spells "the key ended
+here", and GitHub refused the document: the run was created and concluded in the same second
+holding **zero jobs**. Nothing in the workflow failed, because nothing in it started — and a
+startup failure publishes no check run at all, so `/commits/{sha}/check-runs` answered with three
+successes for a commit whose gates were red.
+
+Every gate that passed it was correct about what it measures. `scripts/verify_pip_pins.py` read all
+three broken lines and reported them hash-pinned — it still does, byte for byte, after the repair.
+It reads these files with a hand-written scanner, and that scanner was **more permissive than the
+machine it stands in for** (L-31), which is the direction that stays silent: a stricter
+approximation announces itself as a false red on a working file, a looser one waits until the real
+parser refuses something the gates have blessed.
+
+`tests/test_workflows_parse.py` now loads every `*.yml` and `*.yaml` here with `yaml.safe_load`, at
+the door and in the `tests` job, through `scripts/verify_workflow_yaml.py` and
+`LAW-WORKFLOWS-PARSE`. `pyyaml` entered `requirements/ci-tests.txt` to make that possible, which is
+a hash set moving — so it moved by a decision (**D-32**) rather than by a convenient edit, as D-30
+requires.
+
+**The door is the load-bearing half here, which is the reverse of every other gate in this file.**
+In CI this test cannot catch a broken `gates.yml` — a workflow that does not parse runs no job, so
+the job holding the test never starts, and the defect deletes its own detector. What CI catches is a
+broken `codeql.yml` or `scorecard.yml`, whose failure does not stop this workflow. `scripts/push.sh`
+runs the suite while the push does not yet exist, which is the only place the `66f61ea` case can be
+refused before it reaches `main`.
+
+**What this does not claim.** PyYAML is not GitHub's parser, and implements YAML 1.1 where most
+modern parsers implement 1.2, so a file accepted here is not thereby proven acceptable there. No
+schema is checked by anything in this tree: a misspelt key, an unknown `runs-on` or a job that
+cannot start all parse perfectly. What is bought is the defect that was actually paid for — a
+document that is not well-formed YAML — refused before the push instead of after it. The red run,
+including the original file read by both gates side by side, is
+`evidence/RED-034-the-file-every-gate-read-and-no-parser-had-opened.txt`.
+
 ## Standing caveats
 
 **The badges state that a check RAN, not that the code is clean.** A green `codeql` badge means the

@@ -132,6 +132,19 @@ jobs:
       # job starts. Measured on `66f61ea`: zero jobs, red in the same second it was created. `|`
       # makes the body literal text, so the colons are the installer's business and not the
       # parser's.
+      #
+      # THIS PARAGRAPH IS A READER'S CONVENIENCE AND IS NOT WHAT ENFORCES ANYTHING. Since D-32,
+      # `tests/test_workflows_parse.py` loads every file in this directory with `yaml.safe_load`,
+      # so a plain scalar that swallows a colon is refused before the push rather than on `main`
+      # (LAW-WORKFLOWS-PARSE). The seven gates that passed `66f61ea` were each correct about what
+      # they measure; none of them had ever opened this file with a parser.
+      #
+      # AND FOR **THIS** FILE THAT GATE LIVES ONLY AT THE DOOR, which is the sentence a reader of
+      # this file most needs. The job below cannot judge the document it is written in: a workflow
+      # that does not parse starts no job, so the copy of the test that would catch it never runs.
+      # In CI it judges `codeql.yml` and `scorecard.yml`, whose failure does not stop this
+      # workflow. `scripts/push.sh` is the only place `gates.yml` itself is refused before it
+      # reaches `main`.
       - run: |
           pip install --quiet --require-hashes --only-binary=:all: -r requirements/ci-tests.txt
 

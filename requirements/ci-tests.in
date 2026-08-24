@@ -7,8 +7,18 @@
 #   pip-compile --generate-hashes --strip-extras --output-file=requirements/ci-tests.txt \
 #       requirements/ci-tests.in
 #
-# NOTHING ELSE BELONGS HERE. `tests/test_door_matches_ci.py` deliberately imports no PyYAML on the
-# ground that this job installs pytest and pytest-cov and nothing more; adding a line here quietly
-# widens what that file is allowed to assume.
+# A LINE IS ADDED HERE BY A DECISION, NEVER BY CONVENIENCE (D-30). This file used to end "NOTHING
+# ELSE BELONGS HERE", on the ground that `tests/test_door_matches_ci.py` and
+# `tests/test_reissue_obligation.py` hand-parse YAML because this job installs pytest and
+# pytest-cov and nothing more. That ground is gone as of D-32 and the two docstrings resting on it
+# are corrected in the same commit - a rule written in more than one place survives its own repeal
+# (L-2), and the repealed copy here would have been the one that kept the other two sounding
+# reasoned. What has NOT changed is the bar: the third line below is here because RED-031 proved
+# that nothing in this repository loads a workflow the way GitHub does, and a fourth needs its own
+# entry in DECISIONS.md, not a hurried edit.
 pytest
 pytest-cov
+# D-32: `tests/test_workflows_parse.py` asks the real parser whether GitHub can read the files that
+# run every gate. A hand-written scanner cannot answer that question - being more permissive than
+# the machine it stands in for is the whole defect it would be written to catch.
+pyyaml
