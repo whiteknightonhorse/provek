@@ -62,10 +62,27 @@ def emitted() -> dict[str, str]:
 
 
 def strip_tags(html: str) -> str:
-    """The reading text of an emitted page: no script, no style, no markup."""
-    html = re.sub(r"<script.*?</script>", " ", html, flags=re.S)
-    html = re.sub(r"<style.*?</style>", " ", html, flags=re.S)
-    html = re.sub(r"<svg.*?</svg>", " ", html, flags=re.S)
+    """The reading text of an emitted page: no script, no style, no markup.
+
+    THIS FILTER IS A MEASURING INSTRUMENT, NOT A SANITISER, AND THAT IS WHY IT IS TIGHTENED HERE.
+
+    `test_notes.py` proves "the FAQ answer reaches the reader" by asserting the answer appears in
+    `strip_tags(html)`. The same answer text also sits in the JSON-LD block, inside a `<script>`.
+    So a script this filter fails to remove does not produce a visible defect - it produces a
+    PASS, taken from the schema copy of a sentence that may be nowhere on the page. A gate that
+    goes green off the artefact it was supposed to be checking against is invariant 1 wearing
+    somebody else's clothes: the instrument failed and reported success.
+
+    Nothing here measures the shape of the tags the generator emits, so the assertions rested on
+    it emitting lowercase `<script>` and an exact `</script>` - true when measured 2026-08-24, and
+    one formatting change away from being false. `re.I` and the `\\s*` before `>` cost nothing and
+    remove that dependency. Raised as CodeQL #40 (`py/bad-tag-filter`), which was very nearly
+    dismissed as noise on the grounds that a test helper has no untrusted input to defend against.
+    It has no attacker; it does have a claim resting on it.
+    """
+    html = re.sub(r"<script.*?</script\s*>", " ", html, flags=re.S | re.I)
+    html = re.sub(r"<style.*?</style\s*>", " ", html, flags=re.S | re.I)
+    html = re.sub(r"<svg.*?</svg\s*>", " ", html, flags=re.S | re.I)
     html = re.sub(r"<[^>]+>", " ", html)
     return re.sub(r"\s+", " ", html).strip()
 
