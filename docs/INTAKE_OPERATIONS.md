@@ -319,7 +319,7 @@ Four things follow, and the last two are the ones to hold on to:
 
   **Enforcement has not been observed, and the first draft of this paragraph said the only way to
   observe it would be to POST a fabricated submission into the operator's live intake. That was
-  false, and the instrument sits eighty lines above.** The sweep IS the measurement, retrospectively
+  false, and the instrument is the sweep under *The habit* above.** It IS the measurement, retrospectively
   and for free: if the second write always fails, every record in the namespace is stuck at
   `delivered: null`; if it lands, records carry `true` or `false`. One `list`, no notice, nothing
   fabricated, and the operator runs it anyway. **Do that before publishing the link, and read the

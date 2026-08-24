@@ -1213,11 +1213,85 @@ constant `true` that used to be passed on every deploy. What that produces on sc
 operator's to confirm, and the sentence "the short sha never stands alone" above is a claim about
 those fields, not about a dashboard anybody here has looked at.
 
+## D-27. The intake's POST half is deferred rather than assumed, and the probe is the operator's to run
+
+**Decision.** No probe of `POST /api/apply` is taken from this repository or from the audit host.
+The path stays `not_measured` with the reason `check_did_not_run` — the state
+`docs/INTAKE_OPERATIONS.md` already records for it — and one move lifts it while fabricating
+nothing: the retrospective sweep under *The habit*, which reads the namespace and is the operator's
+to run. The only other thing that would answer the same questions is a real submission, which is
+the operator's to decide and is not a probe taken here. This record is the deferral itself. It is
+not a finding about the endpoint, and nothing in it says the POST path works.
+
+**What IS measured, so the deferral covers a named half rather than the whole endpoint.**
+`GET https://provek.dev/api/apply` answered **405** with the handler's own sentence — a string that
+lives at `web/functions/api/apply.js:196` and that no edge default carries — read on 2026-08-24
+under two different deployment labels, with `/api/nonexistent-xyz` → 404 and `/` → 200 as controls
+so the code describes that path rather than the origin's mood (L-11). The dated table is in
+`docs/INTAKE_OPERATIONS.md`. That places the handler in the published tree and says nothing about
+the branch the intake depends on: a GET enters `onRequestGet` and returns without touching `env`,
+so that `env.INTAKE` resolves at runtime (`apply.js:91` answers 503 if it does not), that the two
+Telegram variables are readable by the Function, that the two writes to one key land rather than
+meeting the documented one-write-per-second refusal, and that the `writeback-refused:` sentinel is
+written when they do not — all four are untouched by every reading taken so far. Invariant 1 says
+what that is: `check_did_not_run`, not a zero, and not a pass inherited from the 405.
+
+**Why the only probe that would answer it is one this project will not run.** A VALID submission is
+the only thing that reaches any of those four items; an invalid one is refused at validation
+(`apply.js:38`–`80`) before the first `put` and settles none of them, and the endpoint has no dry
+run. So the probe puts a durable record into the operator's production `INTAKE` namespace and wakes
+them on their ops channel — an active operation with an effect on a live system, which is the class
+D-23 refuses to perform without a mandate naming that action. Nothing here submits to a live intake
+in order to turn a `not_measured` into a green line in a document: that is L-13 exactly, the
+measurement fitted to the acceptance criterion, and it would be fitted on the endpoint the launch
+depends on.
+
+**The cheap way in is not ours to take, and the second candidate is itself unmeasured.** The sweep
+under *The habit* answers both questions — whether anyone has ever submitted, and what the
+`delivered` values are — in one `list`, with no notice sent and nothing fabricated. It runs on the
+operator's laptop: `wrangler` is not installed on the audit host and the account is not reachable
+from it, so it is the habit of a person and not a job this repository can schedule. The other
+candidate is a preview deployment, and what a preview deployment BINDS has never been read —
+`evidence/PROBE-001.txt` asked the Pages project for names and got `production kv_namespaces` and
+`production env_vars`, a reading about production and about nothing else. If preview binds the
+production namespace, a POST there IS the fabricated submission this decision refuses; if it binds
+its own, it cannot answer the first item on the list. Which of those two holds is the reading that
+has to come first, and it has not been taken.
+
+**What the deferral costs, named rather than left for the reader to find.** If any of the four items
+is broken, the first party to learn it is a real applicant whose submission fails — the person the
+endpoint exists for. That cost is why `docs/INTAKE_OPERATIONS.md` puts the sweep BEFORE the link is
+published rather than on a schedule after it: the deferral is bounded by an event already written
+down, and its empty case is a reading in its own right, since zero records means the endpoint has
+never once been exercised end to end.
+
+**What this decision does not license.** No page, document or commit message here may describe the
+intake's POST path as working, verified, or tested in production; the GET reading may be quoted for
+what it is. And nothing reddens when the readings go stale. `scripts/verify_live.sh` does read the
+live origin — it requires `GET /api/apply` to answer 405, calls a 404 there the failure it exists
+to catch, and reports a transport refusal as UNREADABLE rather than as a code — but it is run by
+`~/orchestra/deploy.sh`, not by the door and not by CI, so it judges a deployment at the moment one
+is made and never the dated table in `docs/INTAKE_OPERATIONS.md` afterwards. Between deployments
+the date beside the reading is the whole mechanism, which is prose — L-25's boundary, named in that
+document in the same section. Rejected alternative: a gate that curls the origin. The argument
+against it was that somebody else's network failure would paint the build red, and that argument
+does not hold — a refusal is `check_did_not_run` and a measured 404 is the finding. It is a task
+with its own red run and it is not taken here, which is why this paragraph names the gap instead of
+implying a check exists.
+
+**Numbering.** This number was held open for this record by the ruling of 2026-08-24, and the
+paragraph below in D-28 is what kept the gap from reading as a deleted decision.
+
 ## D-28. A line in `evidence/` that goes stale is corrected BESIDE the artefact, never inside it
 
-**Numbering.** D-27 is reserved by the ruling of 2026-08-24 for the deferral of the POST path, and
-is written by the task that measures it. Taking it here would have made two decisions answer to one
-number; the gap is named rather than left to read as a deleted record.
+**Numbering.** D-27 was reserved by the ruling of 2026-08-24 for the deferral of the POST path and
+stood empty when this record was written; taking the number here would have made two decisions
+answer to one. It was written later the same day and is above. This paragraph also predicted that
+the number would be taken "by the task that measures it" — what took it defers the measurement
+instead, and that difference is D-23 rather than drift. The prediction is corrected here rather
+than deleted, because a draft this file's own subject-matter proved wrong is evidence and not a
+typo. The paragraph stays because it is the reason the numbering ran D-26, D-28, D-29 for the
+hours in between.
 
 **Decision.** `evidence/RED-020-*` keeps a sentence that was true when it was written and stopped
 being true the next morning — "`~/orchestra` is not a git repository and held no backup", in three
