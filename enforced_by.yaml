@@ -304,3 +304,18 @@ laws:
     # in the instrument this document keeps for finding them.
     gate: docs/INTAKE_OPERATIONS.md
     test: tests/test_intake_sweep_distinguishes_its_states.py
+
+  # T-C5. The scheduler could not publish at all until this task - `step_deploy` looked for a
+  # `wrangler` binary that is not on this host and reached `blocked_no_tool` every time - so the
+  # question "what does an unattended deploy ship?" had never had to be answered. Turning the step
+  # on answers it: `wrangler pages deploy` uploads the working tree, and this tree routinely holds
+  # work parked between tasks. On the morning this law was written, a T-A2-5 change to `/apply/`
+  # sat in it unpushed, two hours before the day's slot, with nobody at the keyboard.
+  #
+  # The gate is NOT "refuse a dirty tree". The cycle dirties the tree itself - it writes a note and
+  # rewrites the manifest - so that rule would stop every cycle forever and be deleted by the first
+  # agent it stopped. It is "refuse a tree dirty OUTSIDE the paths the cycle writes".
+  - id: LAW-PUBLISH-JUDGED-TREE
+    text: "the unattended publisher ships only a tree the gates judged; unreadable is not clean"
+    gate: scripts/publishable_tree.py
+    test: tests/test_publishable_tree.py

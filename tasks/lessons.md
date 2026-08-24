@@ -286,6 +286,21 @@ Anchor: no code gate. `notes_cron.py` is outside this repository (D-19) and reor
 a change that cannot be exercised while the capture is red, so what was corrected is the sentence
 in D-19, not the code. Recorded in L-8's form rather than dressed as an enforced rule.
 
+**Closed in T-C5, by the condition this entry itself named.** "Cannot be exercised while the capture
+is red" was a real reason and it expired: T-C4 turned the capture green, so on 2026-08-24 both
+adjacent defects above were fixed rather than recorded a second time. `bing_submit` is now
+downstream of the deploy and submits only URLs that answered `200` when read back from
+`https://provek.dev`; the novelty baseline is the live sitemap rather than a `sitemap_urls` field
+that was saved even on cycles which published nothing. D-25 carries both. What is worth keeping is
+not the defect but the shape of the parking: a finding held behind "cannot be exercised yet" needs
+the event that lifts it written down beside it, or the parking cannot be told from dropping it.
+
+Half of it is now a gate, and it is the half that could move into the repository.
+`LAW-PUBLISH-JUDGED-TREE` (`scripts/publishable_tree.py`) holds the rule that the unattended cycle
+publishes only a tree the gates judged — a hazard that arrived in the same commit as the fix,
+because until it the deploy step had never once run. The step ordering still has no gate and still
+cannot have one from here: the file it lives in does not reach a clone.
+
 ## L-18 A test that builds its own subject can never find the subject missing
 
 `src/liveness/obligations.py` is the module that defines silence as a finding, names

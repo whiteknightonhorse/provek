@@ -1,0 +1,45 @@
+RED-021  LAW-PUBLISH-JUDGED-TREE  the guard that lets the scheduler publish must be able to refuse
+taken 2026-08-24 during T-C5, on this host, python 3.10.12
+
+TWO RED RUNS ARE KEPT HERE. The first is the gate refusing THIS repository in situ; the
+second is the suite refusing the gate's own test, which had measured the wrong directory.
+
+=== 1. the gate refuses this working tree, with T-A2-5's parked work in it ===
+$ python3 scripts/publishable_tree.py
+FOREIGN WORK IN THE TREE (12 path(s)): an unattended publisher would ship changes no gate has judged.
+  - SPEC.md
+  - docs/INTAKE_OPERATIONS.md
+  - docs/WHY_GET_VERIFIED.md
+  - enforced_by.yaml
+  - evidence/RED-019-an-offer-narrower-than-what-arrives.txt
+  - evidence/RED-019-generator.py
+  - tests/test_apply_names_the_probe_cost.py
+  - web/src/components/Chrome.tsx
+  - web/src/pages/Apply.tsx
+  - evidence/RED-021-the-publisher-would-have-shipped-parked-work.txt
+  - scripts/publishable_tree.py
+  - tests/test_publishable_tree.py
+exit=3
+
+=== 2. the suite refuses the gate's own test: the unreadable case measured a repository ===
+$ python3 -m pytest tests/test_publishable_tree.py -q   (before the fix in this commit)
+>       assert done.returncode == expected, done.stderr
+E       AssertionError:
+E       assert 0 == 4
+E        +  where 0 = CompletedProcess(args=[... 'publishable_tree.py', '--root', '/tmp/py...
+E            returncode=0,
+E            stdout='PUBLISHABLE: nothing dirty outside the 4 cycle-owned paths (0 cycle-owned path(s) dirty).\n',
+E            stderr='').returncode
+
+tests/test_publishable_tree.py:119: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_publishable_tree.py::test_the_exit_code_reaches_the_caller[unreadable-4]
+1 failed, 7 passed in 0.26s
+The parametrised case built its repository AT tmp_path and then created 'elsewhere' inside
+it, so git answered for the parent repository and reported it clean. The gate was right and
+the instrument was wrong - which is the only reason the miss was visible at all.
+
+=== 3. green after the fix ===
+$ python3 -m pytest tests/test_publishable_tree.py -q
+........                                                                 [100%]
+8 passed in 0.21s

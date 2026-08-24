@@ -1044,3 +1044,81 @@ from an optimistic flag that reverts on Bing's next independent fetch. The known
 guarded — the file is in `web/public/` and reaches `web/dist/`, so a deploy cannot silently drop it
 — but the distinguishing measurement is a re-read after Bing's own re-crawl, and it has not happened
 yet.
+
+
+## D-25. The scheduler publishes through the same door a human uses, and only what the gates judged
+
+**Context: the two blockages this schedule was built around have both lifted.** D-19 designed the
+daily cycle when its last two steps could not succeed — no Cloudflare credential on the host, and
+`provek.dev` unverified at Bing — and its whole selling point was that the shut channel would be
+struck and NAMED daily. Ownership was verified on 2026-08-21 (D-24) and the credential is now in
+`~/.env`. T-C5 asked what the cycle did with that, and the measured answer is nothing: `step_deploy`
+looked for a `wrangler` binary in `web/node_modules/.bin`, in `/usr/local/bin` and on `PATH`, there
+is none in any of the three on this host, and so every cycle would have stopped at
+`blocked_no_tool` with the credential check below it as dead code. The channel did not open when
+its preconditions did.
+
+**Decision: `step_deploy` no longer contains a deploy command.** It calls `~/orchestra/deploy.sh`,
+which is to the site what `scripts/push.sh` is to the repository. The copy that was there had never
+executed once, and had rotted in three separate ways while nobody could see it: the token is pinned
+to one IPv4 address and this host prefers IPv6, so the call needs `--dns-result-order=ipv4first` or
+it fails as `10000 Authentication error` and reads like missing permissions; `wrangler pages deploy`
+resolves `functions/` against the current working directory, so the wrong one publishes static
+assets and a dead `/api/apply`; and the tool's own report is not evidence, which is why `deploy.sh`
+ends by reading the live site through `scripts/verify_live.sh`. Three divergences in one unexecuted
+copy is L-2 with the lid off — a rule written in two places, where the second copy was never run and
+therefore never contradicted.
+
+**Decision: the unattended publisher ships only a tree the gates judged — LAW-PUBLISH-JUDGED-TREE.**
+`wrangler pages deploy` uploads the working tree, and this tree routinely carries work parked
+between tasks; a stash restored "byte-identical" is the established habit here. On the morning this
+was written, an unpushed T-A2-5 rewrite of the `/apply/` offer sat in the tree two hours before the
+day's slot, with nobody at the keyboard. `push.sh` has refused a dirty tree since it was written and
+states the reason — the gates judged the tree, so what leaves must be what they judged — and the
+site had no equivalent because until this task the scheduler could not publish at all. **The hazard
+is one this change creates rather than one it inherits, which is why the guard ships in the same
+commit as the fix.**
+
+The rule is deliberately not "refuse a dirty tree". The cycle dirties the tree itself — it writes a
+note into `web/notes/src/` and rewrites the manifest — so that rule would refuse every cycle forever
+and be deleted by the first agent it stopped. It is "refuse a tree dirty OUTSIDE the paths the cycle
+writes", and those paths are listed once, in `scripts/publishable_tree.py`. The gate lives in the
+REPOSITORY rather than beside the scheduler for the reason `deploy.sh` gives for moving its own live
+check there: a check outside the repository is read by no reviewer and executed by no test.
+
+**It has three outcomes, and the third is the load-bearing one.** `publishable`, `foreign work is
+present`, and `git could not be asked`. Collapsing the third into the first publishes on the
+strength of a check that did not run; collapsing it into the second manufactures a daily false red,
+which teaches walking past a gate exactly as a false green does (L-5). `--commit-dirty=true` in
+`deploy.sh` is not the same permission and is not evidence against this: there a human has just run
+the gates and is choosing a known state, and the flag suppresses a warning about it. Under a cron
+entry the same flag means "publish whatever is lying on disk", and the difference between those two
+readings is the whole of this law.
+
+**Decision: the Bing submission is downstream of a page that was read from the outside.** L-17
+recorded, and left alone, that the cycle caught `Blocked` from the deploy inline and ran
+`bing_submit` regardless — so a day with a working Bing channel and a failed deploy would submit the
+URL of a page that does not exist. It was left alone because "the change cannot be exercised while
+the capture is red", and the capture went green in T-C4, which is what makes this the moment to
+close it rather than record it again. A blocked deploy now withholds the submission under its own
+journal line, and what is submitted is not what the build produced but what a `GET` answered `200`
+for on `https://provek.dev` after the deploy — the same law as `verify_live.sh`, applied to the
+claim we make to a search engine.
+
+**Decision: novelty is measured against the live sitemap, and a failed reading is not zero.** The
+diff was against `sitemap_urls` in the state file, which L-17 names twice over: it was saved even on
+cycles that published nothing, so a page built while the channel was shut spent its novelty on the
+day it was BUILT and became `nothing_to_submit` forever after; and on the first cycle to reach that
+step there was no previous value to diff against, so that cycle's own new page fell into the gap
+between "no baseline" and "already seen" and would never have been submitted by anybody. The
+baseline is now `https://provek.dev/sitemap.xml`, read before the deploy. What is published is a
+measurable fact and the state field was a copy of it that could go stale (L-2); the field is gone
+rather than kept in sync. When the read fails, novelty is `not_measured` — which is neither "no new
+URLs" nor "all of them" — the deploy still happens, and the submission is withheld under
+`withheld_novelty_not_measured`.
+
+**What is NOT claimed.** The scheduler is still outside this repository (D-19) and still cannot be
+exercised by a clone; only the tree gate it calls has moved inside, and that is one of its six steps.
+The corpus ceiling is untouched at three (D-18), so this channel has two more captures of work in it
+before `nothing_pending` becomes the permanent steady state — a schedule striking a channel that has
+nothing to send is the state D-19 already calls correct, not a defect to be fixed later.
