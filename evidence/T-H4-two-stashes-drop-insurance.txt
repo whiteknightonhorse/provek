@@ -1,0 +1,223 @@
+T-H4 — TWO STASHES: WHAT THEY HOLD, WHERE THE WORK LANDS, AND WHAT PROVES THE DROPS ARE SAFE
+============================================================================================
+Recorded 2026-08-24. This file is the insurance behind two `git stash drop` calls, and the index of
+the patch beside it. It follows the precedent set by `evidence/T-G2-*`: a saved patch that cannot be
+replayed is not insurance, and "I saved it" is exactly the class of claim this project exists to
+catch.
+
+READ THE TENSE BEFORE READING THE FILE
+--------------------------------------
+This file is committed BEFORE the push and BEFORE either drop, in the same commit as the work it
+describes, because that is the only moment it can be written truthfully: history is not rewritten in
+this repository (passports pin `head_sha`), so a sentence committed here cannot be corrected
+afterwards, only contradicted.
+
+An earlier draft of this file — the one carried inside the stash it describes — did not respect that.
+It said the stash's file "was applied to a clean HEAD, corrected, and committed to `main` in the same
+task that dropped it", in the past tense, while sitting untracked in a working tree where none of
+those three things had happened. Had it been committed unchanged it would have become a false claim
+in stone, in `evidence/`, which is this project's founding defect (a claim stronger than its
+artefact) committed inside the corpus kept to detect it.
+
+That draft was also NAMED for the claim: `T-H4-stash-e64678f-landed-then-dropped.txt`. A name travels
+without its content — through `git log --stat`, through directory listings, through links from other
+files — so a reader of the stat line would have received "landed-then-dropped" without ever reaching
+the paragraph qualifying it, and "dropped" is the half that is unverifiable from a clone FOREVER (see
+below). The name also pinned the one stash that did not, in the end, carry the work. It is renamed
+here for the same reason its sentences are rewritten, and this is the only moment either was legal.
+
+The draft survives outside this repository, so the quotation above is checkable rather than asserted:
+
+  ~/orchestra/parked/T-H6-neighbour-tree-20260824/evidence/T-H4-stash-e64678f-landed-then-dropped.txt
+  sha256 6df5befde3153fd34ce21014d296a616d0a65a7b3430d3f7584a1a863df366d7
+  git blob af4b9b726faebb7e8fbaedc23e0812a22018aad4 — byte-identical to the copy inside stash
+  f6b949e's third parent, measured rather than assumed.
+
+That path is on the operator's host and not in any clone. After the drops, a reader of this
+repository has the quotation on this file's word alone; the sha256 is what lets the operator confirm
+it while the parked copy exists.
+
+THE FIRST STASH — e64678f, PINNED BY SHA RATHER THAN BY INDEX
+-------------------------------------------------------------
+  stash commit e64678f337de972a2963e58eb036452b04770f58
+    label   "On main: T-H4 parked by T-C6: docs/INTAKE_OPERATIONS.md rewritten by a run that died
+             on API 529 and never committed; verbatim patch also at
+             ~/orchestra/parked/T-H4-intake-operations.patch"
+    stashed 2026-08-24T05:09:56+00:00
+    base    a369de37e35b44883a86232a7ec9bd24a28bfdb5
+            ("The deploy built the working tree and signed it with the commit's name")
+    index   84f1afb918ae159a9dea7f42138d6eed74d59443
+            tree 966a7c33ff3026e4af900984f7955b81da9e5832 — IDENTICAL to the base tree, so nothing
+            was staged and one patch is the whole of it. T-G2 needed a second `staged-only` patch
+            for each of its two stashes because both carried a split; this one does not, and that
+            is measured (`git rev-parse e64678f^2^{tree}` vs `e64678f^1^{tree}`) rather than
+            assumed from `git stash show` output, which shows the combined diff either way.
+    untrk   NONE. `git rev-parse e64678f^3` does not resolve, so the stash has no third parent and
+            carried no untracked files. This is why there is no companion `-untracked-inventory.txt`
+            here as there is for T-G2's `wip-0b7b3d9`, and the absence is a reading rather than an
+            omission.
+    tree    03bfeccf5ab9af38766e030d6166fd6ea0e37b4e
+    patch   T-H4-stash-e64678f-intake-operations.patch   (base -> worktree; == `git stash apply`)
+            sha256 aa31260c7f679cf2d78be94a622389aa60112dfb58e3241e7077ce5adf952df0
+            96 lines, one file: docs/INTAKE_OPERATIONS.md
+
+    A verbatim copy lives outside this repository at
+    `~/orchestra/parked/T-H4-intake-operations.patch`, written by T-C6 when it parked the work, and
+    a third inside stash f6b949e's third parent (see the next section). All three carry the same
+    sha256, measured, which is what let the plan describe them as interchangeable. The copy in
+    `evidence/` is the one that leaves this host.
+
+THE SECOND STASH — f6b949e, WHICH IS THE ONE THAT ACTUALLY CARRIED THE WORK
+---------------------------------------------------------------------------
+The earlier draft named one stash because one existed when it was written. A later task, T-H6, needed
+a clean tree for one gate run and parked this work a second time, so the content moved into a new
+stash and e64678f became the older of two. A file that names one stash while the task drops two would
+leave the second drop unrecorded, which is the gap this section closes.
+
+  stash commit f6b949ea57c15cb7c3f1e1fd8c4e87b7a04768f0
+    label   "On main: T-H6: neighbour T-H4 work parked for one gate run; verbatim copy at
+             ~/orchestra/parked/T-H6-neighbour-tree-20260824"
+    stashed 2026-08-24T08:45:34+00:00
+    base    fea0d3f5654c9b19aae651d6fe057276c0d1a134
+            ("The insurance behind two irreversible drops lived only on the host that dropped them")
+    index   6707d718192e8abe21ec805da50d6bbde21550e6
+            tree 1358c0a47d17cc4fc9771bb6737630b42dd623a6 — again IDENTICAL to the base tree, so
+            nothing was staged in this one either, and again measured rather than assumed.
+    untrk   0ec12a1a1c94e1cb4dba86304c0f54ee1cb289f9 — a THIRD parent, where e64678f had none. It
+            carries exactly two files: the patch above, and the EARLIER DRAFT of this file (not this
+            file — that is the whole point of the section above). So the untracked half of the
+            second stash is the insurance for the first.
+    tree    249d669939dcbe5d035b5050d97372fda3657281
+
+f6b949e is a superset of e64678f: the same `docs/INTAKE_OPERATIONS.md` rewrite, plus the L-25 dating
+bracket in `tasks/lessons.md`, plus those two untracked files. The two stashes' versions of the
+document differ by exactly one line — the origin-readings timestamp, and nothing else. Both operands
+below are the stashes' own blobs, named so the transcript cannot be mistaken for a comparison against
+the working tree:
+
+  $ git diff --stat 5af7389 fc3170a
+      5af7389 = git rev-parse e64678f:docs/INTAKE_OPERATIONS.md
+      fc3170a = git rev-parse f6b949e:docs/INTAKE_OPERATIONS.md
+   ...8f91bf7ee4dd569d9e341b32 => fc3170ad5442692e36b7b550cde31c0332749907 | 2 +-
+   1 file changed, 1 insertion(+), 1 deletion(-)
+
+so replaying e64678f's patch recovers the document from either stash up to that one stamp line, and
+the lessons.md bracket is an eight-line addition — a seven-line bracket plus its blank separator,
+`git diff --numstat` — visible in this commit's own diff.
+
+THE PATCH IS PROVEN, NOT ASSERTED
+---------------------------------
+Applied to its recorded base in a scratch index, and the resulting tree hash compared to the stash's
+own tree. This was re-run on 2026-08-24 by the task that is committing the file, rather than copied
+forward from the draft — L-26 asks that a transcript be the output of the command printed above it,
+and the only way to know that is to run it again:
+
+  $ SI=$(mktemp -p . .scratch-index.XXXXXX)
+  $ GIT_INDEX_FILE=$SI git read-tree a369de37e35b44883a86232a7ec9bd24a28bfdb5
+  $ GIT_INDEX_FILE=$SI git apply --cached evidence/T-H4-stash-e64678f-intake-operations.patch
+  $ GIT_INDEX_FILE=$SI git write-tree
+  03bfeccf5ab9af38766e030d6166fd6ea0e37b4e
+
+  stash tree (git rev-parse e64678f^{tree})
+  03bfeccf5ab9af38766e030d6166fd6ea0e37b4e                                              MATCH
+
+The recovery command is therefore exact, and does not depend on this file being believed. The
+`GIT_INDEX_FILE` prefix is part of it and not decoration: without it these commands overwrite the
+index of whoever runs them with a tree from 2026-08-24, which is a destructive act dressed as a
+read.
+
+WHY THE DROPS ARE SAFE, AND WHICH HALF OF THAT A READER CAN CHECK
+------------------------------------------------------------------
+Two different things are offered here and they are not equally strong, so they are labelled.
+
+  INSURANCE (reproducible forever, by anyone with a clone). The patch replays onto a369de3 — a commit
+  in this repository's history — and yields tree 03bfeccf5ab9af38766e030d6166fd6ea0e37b4e. That is
+  the transcript above, it needs nothing but this repository, and it survives both drops. The
+  document text it reconstructs is therefore recoverable whatever happens to the stashes.
+
+  TESTIMONY (a reading, not a check). Everything that identifies those bytes with the STASHES is a
+  measurement this task took and no one can retake, because stash objects never leave this host:
+  that 03bfecc was e64678f's tree; the tree, index and third-parent hashes of both stashes; and the
+  `git diff --stat` above, whose right-hand operand `fc3170a` exists only inside f6b949e. (Its
+  left-hand operand `5af7389` is not testimony — the patch header `index c1431a0..5af7389` puts that
+  blob id in the clone.) After the drops nothing can confirm that the stashes held nothing beyond
+  what is written here. This file says so rather than letting the hash list imply otherwise.
+
+What makes the drops correct is that the work stops being parked HERE: the commit carrying this file
+also carries the stashed content — `docs/INTAKE_OPERATIONS.md` and the `tasks/lessons.md` bracket —
+applied from f6b949e onto a clean HEAD and then corrected as recorded below. A reader checks the
+presence of that work with `git show --stat` on the commit this file arrived in, without trusting any
+sentence here.
+
+Neither dropped stash is a byte-for-byte duplicate of what is committed, and calling them duplicates
+would be exactly the overstatement this file was rewritten to remove. e64678f carries the document
+stamped 04:37 where the commit carries a later reading; f6b949e carries the superseded draft of this
+file under its old name. Both are RECOVERABLE FROM this commit up to those named differences, which
+is the honest form of the claim and the reason the drops lose nothing.
+
+What a reader can never verify from the repository is that the drops happened at all, because a
+dropped stash leaves no trace in a clone — stash refs are local to the host. The drops are performed
+by this task after `./scripts/push.sh` returns, each one preceded by resolving the index to a SHA and
+comparing it against the SHA recorded above, because a stash reference is a POSITION IN A STACK and
+not a name for a piece of work (the lesson T-G2 paid for: `stash@{0}` means a different commit after
+every drop). The evidence for the drops is `git stash list` being empty on this host, and this file
+is not that evidence.
+
+WHAT WAS CORRECTED BETWEEN THE STASHES AND THIS COMMIT, AND WHY THE PATCH IS NOT THE COMMIT
+--------------------------------------------------------------------------------------------
+The patch's table of origin readings is stamped **2026-08-24 04:37 UTC** — the minute the parked run
+measured. A document that carries a minute it did not take is the same defect the paragraph inside it
+was written to fix, one level out. So the readings were re-taken twice, and each time the stamp moved
+with them:
+
+  04:37 UTC  the parked run's reading; label a369de3      -> superseded as the document's stamp, but
+                                                             it is the reading with a SURVIVING
+                                                             artefact: the patch in `evidence/`
+                                                             carries its table and its label line
+  07:04 UTC  re-taken by a later run; label a369de3       -> lived only in f6b949e's blob fc3170a,
+                                                             which the drop discards; no artefact
+  12:11:57   re-taken by THIS run; label 57a267c          -> the stamp the document is committed with
+
+Neither of the first two corrections ever reached a commit; they were made in a working tree and
+parked again. The third is the one landing, and it is landing because the rule that produced the
+first two applies to the run that commits: the document goes in stamped with a minute this task
+measured itself.
+
+  GET https://provek.dev/api/apply             405  {"ok":false,"error":"This endpoint accepts a
+                                                     submission, not a reading."}
+  GET https://provek.dev/functions/api/apply.js 404
+  GET https://provek.dev/api/nonexistent-xyz    404  control
+  GET https://provek.dev/                       200  control
+  GET https://provek.dev/deploy-label.txt       200  57a267c     <-- at 07:04 this read a369de3
+
+Taken with `curl -4` at 2026-08-24 12:11:57 UTC.
+
+THE LABEL MOVED AND THE CODES DID NOT, WHICH IS WORTH MORE THAN EITHER READING ALONE
+-------------------------------------------------------------------------------------
+The four codes are identical across all three readings while the deployment label changed from
+`a369de3` to `57a267c`. Measured, that means the 405 is a fact about two deployment labels rather
+than one, so it is not an artefact of a single upload.
+
+The comparison is deliberately footed on **04:37** rather than on 07:04, even though 07:04 is the
+more recent of the two earlier readings. 04:37's table and its `a369de3` label line are inside the
+patch this commit carries, so that half of the comparison stays checkable after both drops; 07:04
+lived only in a stash blob this task destroys, and resting the argument on it would have made a
+published inference depend on a reading no reader can reach.
+
+It does NOT by itself establish that the handler belongs to the published tree. That step needs a
+premise this task did not measure: that a Pages deployment serves only what it carries, rather than
+inheriting a working Function from its predecessor. The premise is ordinary platform behaviour and it
+is stated rather than assumed silently, because "survives a redeploy therefore belongs to the tree"
+is one inference longer than the reading. Who deployed `57a267c`, and from which tree, is also not
+measured here.
+
+The four line references the document makes into `web/functions/api/apply.js` were checked against
+the tree being committed, because a line number is a claim: `:196` is the 405 return inside
+`onRequestGet`, `:91` is the `if (!env.INTAKE)` 503 guard, and `:38`–`:80` bound the validation that
+refuses an invalid submission before the first `put`. All four resolve as written in a 197-line file.
+
+WHAT THIS FILE DOES NOT ESTABLISH
+----------------------------------
+That the POST path works. It is `not_measured` in the document for a named reason — the only probe
+that would answer it is a real submission into the operator's live intake — and nothing here changes
+that. Every reading above is a GET, and a GET returns from `onRequestGet` without touching `env`.

@@ -1,0 +1,96 @@
+diff --git a/docs/INTAKE_OPERATIONS.md b/docs/INTAKE_OPERATIONS.md
+index c1431a0..5af7389 100644
+--- a/docs/INTAKE_OPERATIONS.md
++++ b/docs/INTAKE_OPERATIONS.md
+@@ -324,7 +324,9 @@ Four things follow, and the last two are the ones to hold on to:
+   `delivered: null`; if it lands, records carry `true` or `false`. One `list`, no notice, nothing
+   fabricated, and the operator runs it anyway. **Do that before publishing the link, and read the
+   `delivered` values rather than only the count.** Two more paths exist if it is inconclusive: a
+-  preview deployment exercises the real binding with no Telegram credentials configured, and two
++  preview deployment would exercise a real binding with no Telegram credentials configured — WHICH
++  namespace it binds is `not_measured`, and the answer decides whether that path measures production
++  or writes into it, which the last section of this document sets out — and two
+   `wrangler kv key put` calls inside one second on a scratch key test the limit directly — the
+   latter over the REST path rather than the Worker binding, which is an L-10 caveat on the reading
+   and not a reason to skip it. And the empty case is a case: **zero records means no submission has
+@@ -535,17 +537,66 @@ form first. `tests/test_apply_names_the_probe_cost.py` holds the page's copy aga
+ is the whole of the mechanism and it is prose. The Telegram notice carries both values for this reason: an
+ `active` request is the one submission that needs a composed reply rather than a queue position.
+ 
+-⚠️ **None of this reaches an applicant today, and it is measured rather than assumed.** On
+-2026-08-20 `GET https://provek.dev/api/apply` answered **404** — the intake Pages Function is not
+-deployed at all, so every submission the form makes fails with an error message. Until that is
+-fixed, this whole section describes the repository and not the running site.
+-
+-**What it takes, measured and not guessed.** Nothing infrastructural is missing: the production
+-Pages project already carries the `INTAKE` KV namespace and both Telegram variables. The one wrong
+-thing is the working directory — `wrangler pages deploy` finds a `functions/` directory relative to
+-where it runs, and `~/orchestra/deploy.sh` runs it in the repository root while the functions live
+-in `web/`. That file is the operator's publication channel and sits outside this repository, so the
+-change belongs to the operator; it is one line. Verify afterwards by measuring the origin rather
+-than the tool's own report: `GET /api/apply` must answer **405**, and `GET /functions/api/apply.js`
+-must stay **404**, because a deploy that serves the function's source instead of executing it is a
+-worse outcome than the 404 it replaced. See D-23 and `evidence/PROBE-001.txt`.
++⚠️ **The Function is published and executing; what it does with a POST is `not_measured`.** Both
++halves are read from the origin rather than from a tool's report of itself, and both readings carry
++the minute they were taken. The paragraph this replaces carried a date too and that was not what
++went wrong with it: it spoke in the present tense around the dated reading — *is not deployed at
++all*, *today*, *until that is fixed* — so the reading stayed pinned to 2026-08-20 while the sentences
++built on it went on asserting themselves after they had stopped being true. Read **2026-08-24 04:37
++UTC**:
++
++| request | read | what it settles |
++| --- | --- | --- |
++| `GET https://provek.dev/api/apply` | **405**, body `{"ok":false,"error":"This endpoint accepts a submission, not a reading."}` | the handler is deployed AND running: that sentence is `web/functions/api/apply.js:196` and no edge default carries it |
++| `GET https://provek.dev/functions/api/apply.js` | **404** | the source is not served in place of the handler — the outcome D-23 named as worse than the 404 it replaced |
++| `GET https://provek.dev/api/nonexistent-xyz` | **404** | control: the 405 is a fact about this path, not the site's answer to everything unknown |
++| `GET https://provek.dev/` | **200** | control: the origin answers this client at all, so the codes above describe resources and not us (L-11) |
++
++The **404** this paragraph carried until today was a true reading of 2026-08-20
++(`evidence/PROBE-001.txt`) with one cause: `wrangler pages deploy` finds `functions/` relative to
++its working directory, `~/orchestra/deploy.sh` ran it from the repository root, and the handler
++lives in `web/functions/`. That file now runs the deploy from `web/`; it sits outside this
++repository, so this document records that the change happened and not who made it. The deployment
++that answered the four readings is labelled `a369de3` (`GET /deploy-label.txt`, same minute), so the
++405 belongs to a named deployment rather than to whatever was serving.
++
++**The POST path is `not_measured`, and the named reason is that the only probe that would answer it
++is a real submission.** This is `check_did_not_run` — not a zero, not a pass inherited from the 405.
++A `GET` enters `onRequestGet` and returns without touching `env`, so every line the intake actually
++depends on sits in `onRequestPost`, and no reading taken here exercises any of it: that `env.INTAKE`
++resolves at runtime (`apply.js:91` answers 503 if it does not), that `TELEGRAM_BOT_TOKEN` and
++`TELEGRAM_CHAT_ID` are readable by the Function, that the two writes to one key land rather than
++hitting the 1/s refusal the bullet above predicts, and that the `writeback-refused:` sentinel is
++written when they do. Whether some stranger has exercised it since the deploy is a separate
++`not_measured`: it is answered by reading the namespace, and the namespace has not been read here. A
++VALID submission is the only probe that reaches any item on that list — an invalid one is refused
++at validation before the first `put` (`apply.js:38`–`80`) and settles none of them — and a valid one
++puts a durable record into the production `INTAKE` namespace and wakes the operator on Telegram.
++The endpoint has no dry run, and nothing here submits to a live intake in order to produce a green
++line in a document. The Pages project was recorded as carrying
++the `INTAKE` namespace and both Telegram variables on 2026-08-20 (`evidence/PROBE-001.txt`) — that
++is a fact about the project's configuration, and the list above is about the Function resolving them
++at runtime, which is a different reading.
++
++**One thing lifts it, and the second candidate is itself unmeasured.** The sweep eighty lines above
++reads the namespace retrospectively: it fabricates nothing, sends no notice, and answers both
++questions — whether anyone has submitted, and what the `delivered` values are — in one `list`. The
++preview deployment named in the bullet above is the other candidate, and what a preview deployment
++BINDS has never been read: `evidence/PROBE-001.txt` asked the Pages project for names and got
++`production kv_namespaces` and `production env_vars`, which is a reading about production and about
++nothing else. The two possibilities fall on opposite sides of the point — if preview binds the
++production namespace, a POST there puts a durable record into the operator's live intake, which is
++the fabricated submission this section refuses; if it binds its own, the probe cannot settle the
++first item on the list, which is about production resolving at runtime. So read the preview
++configuration before treating it as a way in. Until one of these runs, this section describes an
++endpoint whose GET half is measured and whose POST half is not. See D-23.
++
++**Nothing goes red when the readings above expire, and that is named rather than left implicit.**
++No gate in this repository reads the origin for this paragraph — the one that runs
++(`tests/test_intake_sweep_distinguishes_its_states.py`) extracts the sweep's fenced block and knows
++nothing about `/api/apply`. The date beside the readings is the whole of the staleness mechanism and
++it is prose, which is L-25's boundary exactly: a suite is about what it can read. The argument that
++a check against a live origin would go red over somebody else's network does not hold — a refusal is
++`check_did_not_run` and a measured 404 is the finding, and telling those apart is invariant 1 rather
++than a reason not to build it. It is a task with its own red run, it is not taken here, and it is
++recorded so the next reader inherits a named gap instead of a confident date.

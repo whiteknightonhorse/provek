@@ -511,6 +511,14 @@ an enforced rule, because a law with a fake anchor is worse than an honest note.
 
 ## L-25 Every gate read a file, and the one part of the site that is code was in none of them
 
+*(Every reading in this lesson was taken on 2026-08-20 and is kept in the tense it was written in,
+because the miss is what the lesson is for. The state it describes has since changed: read
+2026-08-24 12:11:57 UTC, `GET https://provek.dev/api/apply` answered **405** and the Function was
+published and executing — the dated table of readings is in `docs/INTAKE_OPERATIONS.md`, where as of
+2026-08-24 the POST half was `not_measured`. What has NOT changed is the lesson: no gate in this
+repository reads the origin, so the paragraph below would still be the last thing to notice if the
+404 came back.)*
+
 `GET https://provek.dev/api/apply` answers 404. `web/functions/api/apply.js` answers 405 and says
 so in a string a reader can grep. The intake Pages Function has never been deployed: the same
 request to `/api/nonexistent-xyz` returns the same static 404 page, `~/orchestra/deploy.sh`
