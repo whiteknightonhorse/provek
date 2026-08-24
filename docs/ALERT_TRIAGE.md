@@ -282,3 +282,51 @@ that should close one is not the instrument that does. Until
 
 **Still open after this act (5), all of them the operator's:** `#30`, `#31`, `#32`, `#33`, `#34` —
 the same five, untouched for the third time running.
+
+## Fourth triage act, 2026-08-24 (T-S9) — one closure the task named already done, one new dismissal
+
+Measured before this act: **5 open, 12 dismissed**. `#30`–`#34`, the operator's five, unchanged.
+
+**The task named `web/src/App.tsx:281` as still raw, and it was not.** The closure condition it
+quoted — fetch only for `known`, or validate the slug against `^[A-Za-z0-9_-]+$` — is the second
+act's own text, describing the finding that act raised and then closed the same day with
+`web/src/slug.js` and `LAW-SLUG-JUDGED-BEFORE-FETCH` (commit `e706938`). Re-reading the source
+before re-fixing it: `isSafeSlug` is imported and called on line 307, and `e706938` is an ancestor
+of both `HEAD` and the commit `provek.dev/deploy-label.txt` named live before this act (`829a6bf`),
+so the guard was already shipped, not merely committed. Confirmed a second way rather than trusted
+from history — a stale task description is exactly the gap invariant 1 exists to catch — by pulling
+the live bundle and finding the pattern in it:
+
+```
+$ curl -s https://provek.dev/assets/index-DyfCrMjR.js | grep -o '\[A-Za-z0-9_-\]'
+[A-Za-z0-9_-]
+```
+
+No source change follows from this. The deploy this task still owes is not a repair; it carries
+`HEAD` forward from `829a6bf` so `deploy-label.txt` reads the commit this act produced, per the
+task's own done-condition.
+
+**`#54` `py/implicit-string-concatenation-in-list`, `evidence/RED-036-generator.py:183`** — raised
+at `2026-08-24T21:51:54Z`, on a four-line Python string that is the `-e` script argument to `node`
+inside `run([...])`. Read before disposing of it, because a missing comma there is a live category
+(`#42`'s file had one) and D-28 forbids repairing `evidence/` either way: the four literals were
+executed as `node` would execute them, unedited —
+
+```
+$ node --input-type=module -e "import {loadNotes, NOTE_CEILING, NOTE_STEP} from './web/notes/emit.mjs';console.log(...);try { loadNotes(); ... } catch (e) { ...; process.exit(3); }"
+ceiling=3 step={"ceiling":7,"open":false,"state":"nothing_qualified",...}
+BUILD RETURNED - the ceiling did not refuse
+exit=0
+```
+
+— one coherent program: import, then log, then try/catch, in the order the source lines run. A
+comma inserted at any of the three joins would split `run()`'s fourth list element into more argv
+entries; `node -e <script> <extra>` does not concatenate trailing arguments back into the script,
+it exposes them on `process.argv` instead, so the probe would stop running the try/catch it needs
+and CodeQL's own recommendation (`+` for deliberate joins) would have to reach across a subprocess
+boundary it cannot see past. Same class as `#42`, verified by running rather than by resemblance to
+its table row. Dismissed `false positive`, comment on the alert points here rather than repeating
+the run above past the 280-character cap.
+
+**Still open after this act (5), all the operator's:** `#30`, `#31`, `#32`, `#33`, `#34` — unchanged
+for the fourth act running.
