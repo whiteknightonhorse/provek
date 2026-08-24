@@ -1,0 +1,740 @@
+RED-033 - a lock that was never taken, reported as a busy neighbour
+
+DATE (UTC): 2026-08-24
+SUBJECT   : scripts/run_budgeted.sh, judged by tests/test_run_budgeted_names_its_refusals.py
+LAW       : LAW-BUDGET-LOCK-UNDER-THE-PROJECT
+PRODUCED  : evidence/RED-033-generator.py, checked in beside this file so the runs below can be
+            repeated rather than believed.
+
+WHY THIS FILE EXISTS
+
+Invariant 5: a test must be ABLE to fail. `scripts/run_budgeted.sh` carries the only enforcement of
+"concurrency = 1 process" in CLAUDE.md's resource budget, and until T-S6 nothing in the suite ran
+it at all - the module was bound to ABI-33-1 in the requirement map and judged by no assertion.
+
+TWO DEFECTS, AND THE SECOND IS THE ONE THAT COULD NOT BE SEEN
+
+  1. THE PATH. `LOCK=/tmp/incubator.slot.lock` is a fixed name in a mode-1777 directory shared with
+     nine other projects on this host. Whoever creates the path owns it: the sticky bit stops
+     others deleting it, not others getting there first, and a neighbour who arrived first could
+     leave a file with the wrong mode or a symlink pointing anywhere. Measured before the move and
+     recorded in evidence/MEASURED-002-the-shared-lock-this-project-was-relying-on.txt - the path
+     was in fact still ours, which is a fact about luck and not about design.
+
+  2. THE REPORT. `if ! flock -n 9` folded every non-success into one branch, so a lock that could
+     not be OPENED, and a `flock` that is not installed, both printed "the slot is held by another
+     run (concurrency=1). This is a finding, not silence." That sentence announces a healthy
+     concurrency limit with a neighbour inside it, at the moment the limit has stopped existing.
+     It is invariant 1 pointed at the guarantee rather than at a counter, and it returns
+     EX_TEMPFAIL, telling the caller to retry something that will never succeed.
+
+     Measured on the shipped script: `flock` exits 65 on a bad descriptor and 127 when it is not
+     installed, and the original read both as contention.
+
+AND THE SILENT ONE, WHICH NO EXIT STATUS REPORTS
+
+`exec 9>"$LOCK"` failing does not stop the script - bash prints to stderr, returns 1 and carries
+on - and it does not close a descriptor 9 that arrived ALREADY OPEN from a calling script. Measured
+on the shipped form: with fd 9 inherited and the lock path unopenable, `flock -n 9` locks the
+caller's unrelated file, the work runs to completion, and the script exits 0 with no error printed
+anywhere. That is mutation 5 below. Nothing about the exit status or the wording can catch it; the
+only question that can is whether the work RAN, which is what every assertion in the suite asks.
+
+THE SUBJECT IS RESTORED BYTE FOR BYTE BETWEEN MUTATIONS, verified by sha256, and the suite is run
+green afterwards. Each mutation's output is captured into its own buffer.
+
+====================================================================================================
+MUTATION 1 - the script exactly as it shipped - a fixed name in the host's shared /tmp, and two outcomes where there are three
+====================================================================================================
+
+Applied to scripts/run_budgeted.sh:
+
+  (the entire file, replaced with the one commit e7df7b3 shipped)
+
+Marker 'LOCK=/tmp/incubator.slot.lock' grepped back out of the file after the edit: yes.
+Tests killed (8): test_a_lock_path_that_resolves_somewhere_else_is_refused, test_a_lock_that_cannot_be_opened_is_a_refusal_and_not_a_report_of_contention, test_a_slot_genuinely_held_by_another_run_defers_and_says_so, test_a_state_directory_that_cannot_be_created_is_a_refusal_and_runs_nothing, test_an_instrument_that_did_not_run_is_not_reported_as_a_busy_slot, test_an_unopenable_lock_does_not_sail_through_on_an_inherited_descriptor, test_neither_repaired_path_still_names_the_shared_tmp_directory, test_the_lock_is_taken_inside_the_project_and_not_on_a_shared_path
+
+--- verbatim output of `python -m pytest tests/test_run_budgeted_names_its_refusals.py -q -rf` ---
+
+.FFFFFFFF                                                                [100%]
+=================================== FAILURES ===================================
+______ test_the_lock_is_taken_inside_the_project_and_not_on_a_shared_path ______
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-741/test_the_lock_is_taken_inside_0')
+
+    def test_the_lock_is_taken_inside_the_project_and_not_on_a_shared_path(tmp_path):
+        """The move itself, read off behaviour rather than off the source.
+    
+        The script derives its lock from its own location, so the copy under `tmp_path` must lock
+        inside the copy. A script still naming `/tmp` passes the control above and fails here.
+        """
+        proj, script = _project(tmp_path)
+        marker = tmp_path / "ran"
+        r = _invoke(script, marker, path_prefix=_runnable(tmp_path))
+        assert r.returncode == 0, r.stderr
+>       assert (proj / ".state" / "slot.lock").exists(), \
+            "the run did not leave a lock inside the project it was launched from"
+E       AssertionError: the run did not leave a lock inside the project it was launched from
+E       assert False
+E        +  where False = exists()
+E        +    where exists = ((PosixPath('/tmp/pytest-of-incubator/pytest-741/test_the_lock_is_taken_inside_0/proj') / '.state') / 'slot.lock').exists
+
+tests/test_run_budgeted_names_its_refusals.py:129: AssertionError
+_ test_a_state_directory_that_cannot_be_created_is_a_refusal_and_runs_nothing __
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-741/test_a_state_directory_that_ca0')
+
+    def test_a_state_directory_that_cannot_be_created_is_a_refusal_and_runs_nothing(tmp_path):
+        proj, script = _project(tmp_path)
+        marker = tmp_path / "ran"
+        proj.chmod(0o500)                      # readable and traversable, not writable
+        try:
+            r = _invoke(script, marker, path_prefix=_runnable(tmp_path))
+        finally:
+            proj.chmod(0o700)                  # or the tmp_path teardown cannot remove it
+>       assert r.returncode == REFUSED, r.stderr
+E       AssertionError: 
+E       assert 0 == 70
+E        +  where 0 = CompletedProcess(args=['/tmp/pytest-of-incubator/pytest-741/test_a_state_directory_that_ca0/proj/scripts/run_budgeted....touch', '/tmp/pytest-of-incubator/pytest-741/test_a_state_directory_that_ca0/ran'], returncode=0, stdout='', stderr='').returncode
+
+tests/test_run_budgeted_names_its_refusals.py:141: AssertionError
+_ test_a_lock_that_cannot_be_opened_is_a_refusal_and_not_a_report_of_contention _
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-741/test_a_lock_that_cannot_be_ope0')
+
+    def test_a_lock_that_cannot_be_opened_is_a_refusal_and_not_a_report_of_contention(tmp_path):
+        proj, script = _project(tmp_path)
+        marker = tmp_path / "ran"
+        state = proj / ".state"
+        state.mkdir(mode=0o700)
+        (state / "slot.lock").touch()
+        (state / "slot.lock").chmod(0o000)
+        r = _invoke(script, marker, path_prefix=_runnable(tmp_path))
+>       assert r.returncode == REFUSED, r.stderr
+E       AssertionError: 
+E       assert 0 == 70
+E        +  where 0 = CompletedProcess(args=['/tmp/pytest-of-incubator/pytest-741/test_a_lock_that_cannot_be_ope0/proj/scripts/run_budgeted....touch', '/tmp/pytest-of-incubator/pytest-741/test_a_lock_that_cannot_be_ope0/ran'], returncode=0, stdout='', stderr='').returncode
+
+tests/test_run_budgeted_names_its_refusals.py:154: AssertionError
+___ test_an_unopenable_lock_does_not_sail_through_on_an_inherited_descriptor ___
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-741/test_an_unopenable_lock_does_n0')
+
+    def test_an_unopenable_lock_does_not_sail_through_on_an_inherited_descriptor(tmp_path):
+        """THE SILENT ONE. `exec 9>` failing does not close a descriptor 9 that arrived open.
+    
+        Measured on the previous form: with fd 9 inherited, the failed open left the CALLER's file in
+        place, `flock -n 9` locked that instead, and the work ran to completion with exit 0 and no
+        error printed anywhere. Neither exit codes nor stderr wording can catch this one - only asking
+        whether the work ran.
+        """
+        proj, script = _project(tmp_path)
+        marker = tmp_path / "ran"
+        state = proj / ".state"
+        state.mkdir(mode=0o700)
+        (state / "slot.lock").touch()
+        (state / "slot.lock").chmod(0o000)
+        unrelated = tmp_path / "someone-elses-file"
+        unrelated.touch()
+        r = _invoke(script, marker, fd9=unrelated, path_prefix=_runnable(tmp_path))
+>       assert not marker.exists(), \
+            "the work ran while the slot lock was never taken - concurrency=1 silently did not exist"
+E       AssertionError: the work ran while the slot lock was never taken - concurrency=1 silently did not exist
+E       assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-incubator/pytest-741/test_an_unopenable_lock_does_n0/ran').exists
+
+tests/test_run_budgeted_names_its_refusals.py:178: AssertionError
+___________ test_a_lock_path_that_resolves_somewhere_else_is_refused ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-741/test_a_lock_path_that_resolves0')
+
+    def test_a_lock_path_that_resolves_somewhere_else_is_refused(tmp_path):
+        """THE HIJACK IN ITS PRECISE FORM, and the one case an open-succeeded check cannot see.
+    
+        A neighbour who got to the path first leaves a SYMLINK. `exec 9>` follows it and succeeds,
+        `flock` locks the target's inode perfectly happily, and this project's runs then serialise
+        against a file of somebody else's choosing - or against nothing, if the target is shared with
+        a process that never locks it. Every status code involved says success, so the descriptor is
+        resolved back through `/proc/self/fd/9` and compared with the path the script named.
+        """
+        proj, script = _project(tmp_path)
+        marker = tmp_path / "ran"
+        state = proj / ".state"
+        state.mkdir(mode=0o700)
+        elsewhere = tmp_path / "a-neighbours-file"
+        elsewhere.touch()
+        (state / "slot.lock").symlink_to(elsewhere)
+        r = _invoke(script, marker, path_prefix=_runnable(tmp_path))
+>       assert not marker.exists(), \
+            "the work ran while the lock held was a file the project never named"
+E       AssertionError: the work ran while the lock held was a file the project never named
+E       assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-incubator/pytest-741/test_a_lock_path_that_resolves0/ran').exists
+
+tests/test_run_budgeted_names_its_refusals.py:200: AssertionError
+______ test_an_instrument_that_did_not_run_is_not_reported_as_a_busy_slot ______
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-741/test_an_instrument_that_did_no0')
+
+    def test_an_instrument_that_did_not_run_is_not_reported_as_a_busy_slot(tmp_path):
+        """`flock` exiting 127 is what a MISSING flock looks like. It is not_measured, not 'busy'."""
+        proj, script = _project(tmp_path)
+        marker = tmp_path / "ran"
+        r = _invoke(script, marker, path_prefix=_runnable(tmp_path, flock=FLOCK_NOT_INSTALLED))
+>       assert r.returncode == REFUSED, r.stderr
+E       AssertionError: DEFERRED: the slot is held by another run (concurrency=1). This is a finding, not silence.
+E         
+E       assert 75 == 70
+E        +  where 75 = CompletedProcess(args=['/tmp/pytest-of-incubator/pytest-741/test_an_instrument_that_did_no0/proj/scripts/run_budgeted....e=75, stdout='', stderr='DEFERRED: the slot is held by another run (concurrency=1). This is a finding, not silence.\n').returncode
+
+tests/test_run_budgeted_names_its_refusals.py:210: AssertionError
+_________ test_a_slot_genuinely_held_by_another_run_defers_and_says_so _________
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-741/test_a_slot_genuinely_held_by_0')
+
+    def test_a_slot_genuinely_held_by_another_run_defers_and_says_so(tmp_path):
+        proj, script = _project(tmp_path)
+        marker = tmp_path / "ran"
+        state = proj / ".state"
+        state.mkdir(mode=0o700)
+        with open(state / "slot.lock", "w") as holder:
+            fcntl.flock(holder.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            r = _invoke(script, marker, path_prefix=_runnable(tmp_path))
+>       assert r.returncode == DEFERRED, r.stderr
+E       AssertionError: 
+E       assert 0 == 75
+E        +  where 0 = CompletedProcess(args=['/tmp/pytest-of-incubator/pytest-741/test_a_slot_genuinely_held_by_0/proj/scripts/run_budgeted....touch', '/tmp/pytest-of-incubator/pytest-741/test_a_slot_genuinely_held_by_0/ran'], returncode=0, stdout='', stderr='').returncode
+
+tests/test_run_budgeted_names_its_refusals.py:224: AssertionError
+_______ test_neither_repaired_path_still_names_the_shared_tmp_directory ________
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-741/test_neither_repaired_path_sti0')
+
+    def test_neither_repaired_path_still_names_the_shared_tmp_directory(tmp_path):
+        """The two write paths T-S6 moved, asserted by source.
+    
+        NARROW ON PURPOSE. This covers exactly the two files the task repaired. A repository-wide ban
+        on `/tmp/` literals is imaginable and cheap, and it is deliberately NOT here: the finding that
+        raised these two paths left that question to the judge, and an executor arming a rule nobody
+        ratified is the same overreach in the opposite direction. `tests/test_amadeus_demo.py:345` and
+        `tests/test_pip_pinned.py:93` hold the only other `/tmp/` literals in the tree; both are string
+        arguments inside assertions, neither opens anything, and they are named here so the next reader
+        does not recount them.
+        """
+        for rel in ("scripts/run_budgeted.sh", "scripts/measure_qm2.py"):
+            src = (ROOT / rel).read_text(encoding="utf-8")
+            code = [ln for ln in src.splitlines()
+                    if ln.strip() and not ln.lstrip().startswith("#")]
+>           assert not any("/tmp/" in ln for ln in code), \
+                f"{rel} still names a fixed path under the host's shared /tmp"
+E           AssertionError: scripts/run_budgeted.sh still names a fixed path under the host's shared /tmp
+E           assert not True
+E            +  where True = any(<generator object test_neither_repaired_path_still_names_the_shared_tmp_directory.<locals>.<genexpr> at 0x7f0f35061d20>)
+
+tests/test_run_budgeted_names_its_refusals.py:246: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_run_budgeted_names_its_refusals.py::test_the_lock_is_taken_inside_the_project_and_not_on_a_shared_path
+FAILED tests/test_run_budgeted_names_its_refusals.py::test_a_state_directory_that_cannot_be_created_is_a_refusal_and_runs_nothing
+FAILED tests/test_run_budgeted_names_its_refusals.py::test_a_lock_that_cannot_be_opened_is_a_refusal_and_not_a_report_of_contention
+FAILED tests/test_run_budgeted_names_its_refusals.py::test_an_unopenable_lock_does_not_sail_through_on_an_inherited_descriptor
+FAILED tests/test_run_budgeted_names_its_refusals.py::test_a_lock_path_that_resolves_somewhere_else_is_refused
+FAILED tests/test_run_budgeted_names_its_refusals.py::test_an_instrument_that_did_not_run_is_not_reported_as_a_busy_slot
+FAILED tests/test_run_budgeted_names_its_refusals.py::test_a_slot_genuinely_held_by_another_run_defers_and_says_so
+FAILED tests/test_run_budgeted_names_its_refusals.py::test_neither_repaired_path_still_names_the_shared_tmp_directory
+8 failed, 1 passed in 0.11s
+
+====================================================================================================
+MUTATION 2 - the lock returns to the shared directory and nothing else changes, so the guarantee is derived from a path ten projects can reach
+====================================================================================================
+
+Applied to scripts/run_budgeted.sh:
+
+  - STATE="$ROOT/.state"
+  + STATE=/tmp   # MUTATION-2
+
+Marker 'MUTATION-2' grepped back out of the file after the edit: yes.
+Tests killed (6): test_a_lock_path_that_resolves_somewhere_else_is_refused, test_a_lock_that_cannot_be_opened_is_a_refusal_and_not_a_report_of_contention, test_a_slot_genuinely_held_by_another_run_defers_and_says_so, test_a_state_directory_that_cannot_be_created_is_a_refusal_and_runs_nothing, test_an_unopenable_lock_does_not_sail_through_on_an_inherited_descriptor, test_the_lock_is_taken_inside_the_project_and_not_on_a_shared_path
+
+--- verbatim output of `python -m pytest tests/test_run_budgeted_names_its_refusals.py -q -rf` ---
+
+.FFFFF.F.                                                                [100%]
+=================================== FAILURES ===================================
+______ test_the_lock_is_taken_inside_the_project_and_not_on_a_shared_path ______
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-742/test_the_lock_is_taken_inside_0')
+
+    def test_the_lock_is_taken_inside_the_project_and_not_on_a_shared_path(tmp_path):
+        """The move itself, read off behaviour rather than off the source.
+    
+        The script derives its lock from its own location, so the copy under `tmp_path` must lock
+        inside the copy. A script still naming `/tmp` passes the control above and fails here.
+        """
+        proj, script = _project(tmp_path)
+        marker = tmp_path / "ran"
+        r = _invoke(script, marker, path_prefix=_runnable(tmp_path))
+        assert r.returncode == 0, r.stderr
+>       assert (proj / ".state" / "slot.lock").exists(), \
+            "the run did not leave a lock inside the project it was launched from"
+E       AssertionError: the run did not leave a lock inside the project it was launched from
+E       assert False
+E        +  where False = exists()
+E        +    where exists = ((PosixPath('/tmp/pytest-of-incubator/pytest-742/test_the_lock_is_taken_inside_0/proj') / '.state') / 'slot.lock').exists
+
+tests/test_run_budgeted_names_its_refusals.py:129: AssertionError
+_ test_a_state_directory_that_cannot_be_created_is_a_refusal_and_runs_nothing __
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-742/test_a_state_directory_that_ca0')
+
+    def test_a_state_directory_that_cannot_be_created_is_a_refusal_and_runs_nothing(tmp_path):
+        proj, script = _project(tmp_path)
+        marker = tmp_path / "ran"
+        proj.chmod(0o500)                      # readable and traversable, not writable
+        try:
+            r = _invoke(script, marker, path_prefix=_runnable(tmp_path))
+        finally:
+            proj.chmod(0o700)                  # or the tmp_path teardown cannot remove it
+>       assert r.returncode == REFUSED, r.stderr
+E       AssertionError: 
+E       assert 0 == 70
+E        +  where 0 = CompletedProcess(args=['/tmp/pytest-of-incubator/pytest-742/test_a_state_directory_that_ca0/proj/scripts/run_budgeted....touch', '/tmp/pytest-of-incubator/pytest-742/test_a_state_directory_that_ca0/ran'], returncode=0, stdout='', stderr='').returncode
+
+tests/test_run_budgeted_names_its_refusals.py:141: AssertionError
+_ test_a_lock_that_cannot_be_opened_is_a_refusal_and_not_a_report_of_contention _
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-742/test_a_lock_that_cannot_be_ope0')
+
+    def test_a_lock_that_cannot_be_opened_is_a_refusal_and_not_a_report_of_contention(tmp_path):
+        proj, script = _project(tmp_path)
+        marker = tmp_path / "ran"
+        state = proj / ".state"
+        state.mkdir(mode=0o700)
+        (state / "slot.lock").touch()
+        (state / "slot.lock").chmod(0o000)
+        r = _invoke(script, marker, path_prefix=_runnable(tmp_path))
+>       assert r.returncode == REFUSED, r.stderr
+E       AssertionError: 
+E       assert 0 == 70
+E        +  where 0 = CompletedProcess(args=['/tmp/pytest-of-incubator/pytest-742/test_a_lock_that_cannot_be_ope0/proj/scripts/run_budgeted....touch', '/tmp/pytest-of-incubator/pytest-742/test_a_lock_that_cannot_be_ope0/ran'], returncode=0, stdout='', stderr='').returncode
+
+tests/test_run_budgeted_names_its_refusals.py:154: AssertionError
+___ test_an_unopenable_lock_does_not_sail_through_on_an_inherited_descriptor ___
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-742/test_an_unopenable_lock_does_n0')
+
+    def test_an_unopenable_lock_does_not_sail_through_on_an_inherited_descriptor(tmp_path):
+        """THE SILENT ONE. `exec 9>` failing does not close a descriptor 9 that arrived open.
+    
+        Measured on the previous form: with fd 9 inherited, the failed open left the CALLER's file in
+        place, `flock -n 9` locked that instead, and the work ran to completion with exit 0 and no
+        error printed anywhere. Neither exit codes nor stderr wording can catch this one - only asking
+        whether the work ran.
+        """
+        proj, script = _project(tmp_path)
+        marker = tmp_path / "ran"
+        state = proj / ".state"
+        state.mkdir(mode=0o700)
+        (state / "slot.lock").touch()
+        (state / "slot.lock").chmod(0o000)
+        unrelated = tmp_path / "someone-elses-file"
+        unrelated.touch()
+        r = _invoke(script, marker, fd9=unrelated, path_prefix=_runnable(tmp_path))
+>       assert not marker.exists(), \
+            "the work ran while the slot lock was never taken - concurrency=1 silently did not exist"
+E       AssertionError: the work ran while the slot lock was never taken - concurrency=1 silently did not exist
+E       assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-incubator/pytest-742/test_an_unopenable_lock_does_n0/ran').exists
+
+tests/test_run_budgeted_names_its_refusals.py:178: AssertionError
+___________ test_a_lock_path_that_resolves_somewhere_else_is_refused ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-742/test_a_lock_path_that_resolves0')
+
+    def test_a_lock_path_that_resolves_somewhere_else_is_refused(tmp_path):
+        """THE HIJACK IN ITS PRECISE FORM, and the one case an open-succeeded check cannot see.
+    
+        A neighbour who got to the path first leaves a SYMLINK. `exec 9>` follows it and succeeds,
+        `flock` locks the target's inode perfectly happily, and this project's runs then serialise
+        against a file of somebody else's choosing - or against nothing, if the target is shared with
+        a process that never locks it. Every status code involved says success, so the descriptor is
+        resolved back through `/proc/self/fd/9` and compared with the path the script named.
+        """
+        proj, script = _project(tmp_path)
+        marker = tmp_path / "ran"
+        state = proj / ".state"
+        state.mkdir(mode=0o700)
+        elsewhere = tmp_path / "a-neighbours-file"
+        elsewhere.touch()
+        (state / "slot.lock").symlink_to(elsewhere)
+        r = _invoke(script, marker, path_prefix=_runnable(tmp_path))
+>       assert not marker.exists(), \
+            "the work ran while the lock held was a file the project never named"
+E       AssertionError: the work ran while the lock held was a file the project never named
+E       assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-incubator/pytest-742/test_a_lock_path_that_resolves0/ran').exists
+
+tests/test_run_budgeted_names_its_refusals.py:200: AssertionError
+_________ test_a_slot_genuinely_held_by_another_run_defers_and_says_so _________
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-742/test_a_slot_genuinely_held_by_0')
+
+    def test_a_slot_genuinely_held_by_another_run_defers_and_says_so(tmp_path):
+        proj, script = _project(tmp_path)
+        marker = tmp_path / "ran"
+        state = proj / ".state"
+        state.mkdir(mode=0o700)
+        with open(state / "slot.lock", "w") as holder:
+            fcntl.flock(holder.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            r = _invoke(script, marker, path_prefix=_runnable(tmp_path))
+>       assert r.returncode == DEFERRED, r.stderr
+E       AssertionError: 
+E       assert 0 == 75
+E        +  where 0 = CompletedProcess(args=['/tmp/pytest-of-incubator/pytest-742/test_a_slot_genuinely_held_by_0/proj/scripts/run_budgeted....touch', '/tmp/pytest-of-incubator/pytest-742/test_a_slot_genuinely_held_by_0/ran'], returncode=0, stdout='', stderr='').returncode
+
+tests/test_run_budgeted_names_its_refusals.py:224: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_run_budgeted_names_its_refusals.py::test_the_lock_is_taken_inside_the_project_and_not_on_a_shared_path
+FAILED tests/test_run_budgeted_names_its_refusals.py::test_a_state_directory_that_cannot_be_created_is_a_refusal_and_runs_nothing
+FAILED tests/test_run_budgeted_names_its_refusals.py::test_a_lock_that_cannot_be_opened_is_a_refusal_and_not_a_report_of_contention
+FAILED tests/test_run_budgeted_names_its_refusals.py::test_an_unopenable_lock_does_not_sail_through_on_an_inherited_descriptor
+FAILED tests/test_run_budgeted_names_its_refusals.py::test_a_lock_path_that_resolves_somewhere_else_is_refused
+FAILED tests/test_run_budgeted_names_its_refusals.py::test_a_slot_genuinely_held_by_another_run_defers_and_says_so
+6 failed, 3 passed in 0.16s
+
+====================================================================================================
+MUTATION 3 - an instrument that did not run is folded back into the deferral branch - the refusal wearing the face of contention
+====================================================================================================
+
+Applied to scripts/run_budgeted.sh:
+
+  -   *) refuse "flock exited $rc, so the slot was never tested - this is not_measured, not 'free'" ;;
+  +   *) echo "DEFERRED: the slot is held by another run (concurrency=1). This is a finding, not silence." >&2   # MUTATION-3
+  +      exit 75 ;;
+
+Marker 'MUTATION-3' grepped back out of the file after the edit: yes.
+Tests killed (1): test_an_instrument_that_did_not_run_is_not_reported_as_a_busy_slot
+
+--- verbatim output of `python -m pytest tests/test_run_budgeted_names_its_refusals.py -q -rf` ---
+
+......F..                                                                [100%]
+=================================== FAILURES ===================================
+______ test_an_instrument_that_did_not_run_is_not_reported_as_a_busy_slot ______
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-743/test_an_instrument_that_did_no0')
+
+    def test_an_instrument_that_did_not_run_is_not_reported_as_a_busy_slot(tmp_path):
+        """`flock` exiting 127 is what a MISSING flock looks like. It is not_measured, not 'busy'."""
+        proj, script = _project(tmp_path)
+        marker = tmp_path / "ran"
+        r = _invoke(script, marker, path_prefix=_runnable(tmp_path, flock=FLOCK_NOT_INSTALLED))
+>       assert r.returncode == REFUSED, r.stderr
+E       AssertionError: DEFERRED: the slot is held by another run (concurrency=1). This is a finding, not silence.
+E         
+E       assert 75 == 70
+E        +  where 75 = CompletedProcess(args=['/tmp/pytest-of-incubator/pytest-743/test_an_instrument_that_did_no0/proj/scripts/run_budgeted....e=75, stdout='', stderr='DEFERRED: the slot is held by another run (concurrency=1). This is a finding, not silence.\n').returncode
+
+tests/test_run_budgeted_names_its_refusals.py:210: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_run_budgeted_names_its_refusals.py::test_an_instrument_that_did_not_run_is_not_reported_as_a_busy_slot
+1 failed, 8 passed in 0.10s
+
+====================================================================================================
+MUTATION 4 - the descriptor is no longer resolved back to the path the script named, so a lock that is a SYMLINK elsewhere is taken and reported as success
+====================================================================================================
+
+Applied to scripts/run_budgeted.sh:
+
+  - held=$(readlink -- /proc/self/fd/9 2>/dev/null) || held=""
+  - [ "$held" = "$LOCK" ] || \
+  -   refuse "descriptor 9 is open on '${held:-nothing}', not on the lock this script named ($LOCK)"
+  + held="$LOCK"   # MUTATION-4
+
+Marker 'MUTATION-4' grepped back out of the file after the edit: yes.
+Tests killed (1): test_a_lock_path_that_resolves_somewhere_else_is_refused
+
+--- verbatim output of `python -m pytest tests/test_run_budgeted_names_its_refusals.py -q -rf` ---
+
+.....F...                                                                [100%]
+=================================== FAILURES ===================================
+___________ test_a_lock_path_that_resolves_somewhere_else_is_refused ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-744/test_a_lock_path_that_resolves0')
+
+    def test_a_lock_path_that_resolves_somewhere_else_is_refused(tmp_path):
+        """THE HIJACK IN ITS PRECISE FORM, and the one case an open-succeeded check cannot see.
+    
+        A neighbour who got to the path first leaves a SYMLINK. `exec 9>` follows it and succeeds,
+        `flock` locks the target's inode perfectly happily, and this project's runs then serialise
+        against a file of somebody else's choosing - or against nothing, if the target is shared with
+        a process that never locks it. Every status code involved says success, so the descriptor is
+        resolved back through `/proc/self/fd/9` and compared with the path the script named.
+        """
+        proj, script = _project(tmp_path)
+        marker = tmp_path / "ran"
+        state = proj / ".state"
+        state.mkdir(mode=0o700)
+        elsewhere = tmp_path / "a-neighbours-file"
+        elsewhere.touch()
+        (state / "slot.lock").symlink_to(elsewhere)
+        r = _invoke(script, marker, path_prefix=_runnable(tmp_path))
+>       assert not marker.exists(), \
+            "the work ran while the lock held was a file the project never named"
+E       AssertionError: the work ran while the lock held was a file the project never named
+E       assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-incubator/pytest-744/test_a_lock_path_that_resolves0/ran').exists
+
+tests/test_run_budgeted_names_its_refusals.py:200: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_run_budgeted_names_its_refusals.py::test_a_lock_path_that_resolves_somewhere_else_is_refused
+1 failed, 8 passed in 0.09s
+
+====================================================================================================
+MUTATION 5 - BOTH guards on the open are removed, which is the silent one: with descriptor 9 arriving open, the work runs to completion, exit 0, no lock and no error
+====================================================================================================
+
+Applied to scripts/run_budgeted.sh:
+
+  - exec 9>"$LOCK"
+  - opened=$?
+  - [ "$opened" -eq 0 ] || refuse "the lock file $LOCK could not be opened for writing"
+  + exec 9>"$LOCK"   # MUTATION-5
+  - held=$(readlink -- /proc/self/fd/9 2>/dev/null) || held=""
+  - [ "$held" = "$LOCK" ] || \
+  -   refuse "descriptor 9 is open on '${held:-nothing}', not on the lock this script named ($LOCK)"
+  + # MUTATION-5: the identity check goes with it
+
+Marker 'MUTATION-5' grepped back out of the file after the edit: yes.
+Tests killed (2): test_a_lock_path_that_resolves_somewhere_else_is_refused, test_an_unopenable_lock_does_not_sail_through_on_an_inherited_descriptor
+
+--- verbatim output of `python -m pytest tests/test_run_budgeted_names_its_refusals.py -q -rf` ---
+
+....FF...                                                                [100%]
+=================================== FAILURES ===================================
+___ test_an_unopenable_lock_does_not_sail_through_on_an_inherited_descriptor ___
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-745/test_an_unopenable_lock_does_n0')
+
+    def test_an_unopenable_lock_does_not_sail_through_on_an_inherited_descriptor(tmp_path):
+        """THE SILENT ONE. `exec 9>` failing does not close a descriptor 9 that arrived open.
+    
+        Measured on the previous form: with fd 9 inherited, the failed open left the CALLER's file in
+        place, `flock -n 9` locked that instead, and the work ran to completion with exit 0 and no
+        error printed anywhere. Neither exit codes nor stderr wording can catch this one - only asking
+        whether the work ran.
+        """
+        proj, script = _project(tmp_path)
+        marker = tmp_path / "ran"
+        state = proj / ".state"
+        state.mkdir(mode=0o700)
+        (state / "slot.lock").touch()
+        (state / "slot.lock").chmod(0o000)
+        unrelated = tmp_path / "someone-elses-file"
+        unrelated.touch()
+        r = _invoke(script, marker, fd9=unrelated, path_prefix=_runnable(tmp_path))
+>       assert not marker.exists(), \
+            "the work ran while the slot lock was never taken - concurrency=1 silently did not exist"
+E       AssertionError: the work ran while the slot lock was never taken - concurrency=1 silently did not exist
+E       assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-incubator/pytest-745/test_an_unopenable_lock_does_n0/ran').exists
+
+tests/test_run_budgeted_names_its_refusals.py:178: AssertionError
+___________ test_a_lock_path_that_resolves_somewhere_else_is_refused ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-745/test_a_lock_path_that_resolves0')
+
+    def test_a_lock_path_that_resolves_somewhere_else_is_refused(tmp_path):
+        """THE HIJACK IN ITS PRECISE FORM, and the one case an open-succeeded check cannot see.
+    
+        A neighbour who got to the path first leaves a SYMLINK. `exec 9>` follows it and succeeds,
+        `flock` locks the target's inode perfectly happily, and this project's runs then serialise
+        against a file of somebody else's choosing - or against nothing, if the target is shared with
+        a process that never locks it. Every status code involved says success, so the descriptor is
+        resolved back through `/proc/self/fd/9` and compared with the path the script named.
+        """
+        proj, script = _project(tmp_path)
+        marker = tmp_path / "ran"
+        state = proj / ".state"
+        state.mkdir(mode=0o700)
+        elsewhere = tmp_path / "a-neighbours-file"
+        elsewhere.touch()
+        (state / "slot.lock").symlink_to(elsewhere)
+        r = _invoke(script, marker, path_prefix=_runnable(tmp_path))
+>       assert not marker.exists(), \
+            "the work ran while the lock held was a file the project never named"
+E       AssertionError: the work ran while the lock held was a file the project never named
+E       assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-incubator/pytest-745/test_a_lock_path_that_resolves0/ran').exists
+
+tests/test_run_budgeted_names_its_refusals.py:200: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_run_budgeted_names_its_refusals.py::test_an_unopenable_lock_does_not_sail_through_on_an_inherited_descriptor
+FAILED tests/test_run_budgeted_names_its_refusals.py::test_a_lock_path_that_resolves_somewhere_else_is_refused
+2 failed, 7 passed in 0.11s
+
+====================================================================================================
+MUTATION 6 - the refusal is printed and the exit status says success - the message is right and every caller that reads a status is told the budget held
+====================================================================================================
+
+Applied to scripts/run_budgeted.sh:
+
+  -   exit 70
+  - }
+  +   exit 0   # MUTATION-6
+  + }
+
+Marker 'MUTATION-6' grepped back out of the file after the edit: yes.
+Tests killed (5): test_a_lock_path_that_resolves_somewhere_else_is_refused, test_a_lock_that_cannot_be_opened_is_a_refusal_and_not_a_report_of_contention, test_a_state_directory_that_cannot_be_created_is_a_refusal_and_runs_nothing, test_an_instrument_that_did_not_run_is_not_reported_as_a_busy_slot, test_an_unopenable_lock_does_not_sail_through_on_an_inherited_descriptor
+
+--- verbatim output of `python -m pytest tests/test_run_budgeted_names_its_refusals.py -q -rf` ---
+
+..FFFFF..                                                                [100%]
+=================================== FAILURES ===================================
+_ test_a_state_directory_that_cannot_be_created_is_a_refusal_and_runs_nothing __
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-746/test_a_state_directory_that_ca0')
+
+    def test_a_state_directory_that_cannot_be_created_is_a_refusal_and_runs_nothing(tmp_path):
+        proj, script = _project(tmp_path)
+        marker = tmp_path / "ran"
+        proj.chmod(0o500)                      # readable and traversable, not writable
+        try:
+            r = _invoke(script, marker, path_prefix=_runnable(tmp_path))
+        finally:
+            proj.chmod(0o700)                  # or the tmp_path teardown cannot remove it
+>       assert r.returncode == REFUSED, r.stderr
+E       AssertionError: mkdir: cannot create directory ‘/tmp/pytest-of-incubator/pytest-746/test_a_state_directory_that_ca0/proj/.state’: Permission denied
+E         REFUSED: the state directory /tmp/pytest-of-incubator/pytest-746/test_a_state_directory_that_ca0/proj/.state could not be created - concurrency=1 could NOT be established, so nothing was run.
+E         This is not a deferral: retrying will not help until the cause is repaired.
+E         
+E       assert 0 == 70
+E        +  where 0 = CompletedProcess(args=['/tmp/pytest-of-incubator/pytest-746/test_a_state_directory_that_ca0/proj/scripts/run_budgeted....OT be established, so nothing was run.\nThis is not a deferral: retrying will not help until the cause is repaired.\n').returncode
+
+tests/test_run_budgeted_names_its_refusals.py:141: AssertionError
+_ test_a_lock_that_cannot_be_opened_is_a_refusal_and_not_a_report_of_contention _
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-746/test_a_lock_that_cannot_be_ope0')
+
+    def test_a_lock_that_cannot_be_opened_is_a_refusal_and_not_a_report_of_contention(tmp_path):
+        proj, script = _project(tmp_path)
+        marker = tmp_path / "ran"
+        state = proj / ".state"
+        state.mkdir(mode=0o700)
+        (state / "slot.lock").touch()
+        (state / "slot.lock").chmod(0o000)
+        r = _invoke(script, marker, path_prefix=_runnable(tmp_path))
+>       assert r.returncode == REFUSED, r.stderr
+E       AssertionError: /tmp/pytest-of-incubator/pytest-746/test_a_lock_that_cannot_be_ope0/proj/scripts/run_budgeted.sh: line 58: /tmp/pytest-of-incubator/pytest-746/test_a_lock_that_cannot_be_ope0/proj/.state/slot.lock: Permission denied
+E         REFUSED: the lock file /tmp/pytest-of-incubator/pytest-746/test_a_lock_that_cannot_be_ope0/proj/.state/slot.lock could not be opened for writing - concurrency=1 could NOT be established, so nothing was run.
+E         This is not a deferral: retrying will not help until the cause is repaired.
+E         
+E       assert 0 == 70
+E        +  where 0 = CompletedProcess(args=['/tmp/pytest-of-incubator/pytest-746/test_a_lock_that_cannot_be_ope0/proj/scripts/run_budgeted....OT be established, so nothing was run.\nThis is not a deferral: retrying will not help until the cause is repaired.\n').returncode
+
+tests/test_run_budgeted_names_its_refusals.py:154: AssertionError
+___ test_an_unopenable_lock_does_not_sail_through_on_an_inherited_descriptor ___
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-746/test_an_unopenable_lock_does_n0')
+
+    def test_an_unopenable_lock_does_not_sail_through_on_an_inherited_descriptor(tmp_path):
+        """THE SILENT ONE. `exec 9>` failing does not close a descriptor 9 that arrived open.
+    
+        Measured on the previous form: with fd 9 inherited, the failed open left the CALLER's file in
+        place, `flock -n 9` locked that instead, and the work ran to completion with exit 0 and no
+        error printed anywhere. Neither exit codes nor stderr wording can catch this one - only asking
+        whether the work ran.
+        """
+        proj, script = _project(tmp_path)
+        marker = tmp_path / "ran"
+        state = proj / ".state"
+        state.mkdir(mode=0o700)
+        (state / "slot.lock").touch()
+        (state / "slot.lock").chmod(0o000)
+        unrelated = tmp_path / "someone-elses-file"
+        unrelated.touch()
+        r = _invoke(script, marker, fd9=unrelated, path_prefix=_runnable(tmp_path))
+        assert not marker.exists(), \
+            "the work ran while the slot lock was never taken - concurrency=1 silently did not exist"
+>       assert r.returncode == REFUSED, r.stderr
+E       AssertionError: /tmp/pytest-of-incubator/pytest-746/test_an_unopenable_lock_does_n0/proj/scripts/run_budgeted.sh: line 58: /tmp/pytest-of-incubator/pytest-746/test_an_unopenable_lock_does_n0/proj/.state/slot.lock: Permission denied
+E         REFUSED: the lock file /tmp/pytest-of-incubator/pytest-746/test_an_unopenable_lock_does_n0/proj/.state/slot.lock could not be opened for writing - concurrency=1 could NOT be established, so nothing was run.
+E         This is not a deferral: retrying will not help until the cause is repaired.
+E         
+E       assert 0 == 70
+E        +  where 0 = CompletedProcess(args=['bash', '-c', 'exec 9>"$1"; shift; exec "$@"', 'fd9-probe', '/tmp/pytest-of-incubator/pytest-74...OT be established, so nothing was run.\nThis is not a deferral: retrying will not help until the cause is repaired.\n').returncode
+
+tests/test_run_budgeted_names_its_refusals.py:180: AssertionError
+___________ test_a_lock_path_that_resolves_somewhere_else_is_refused ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-746/test_a_lock_path_that_resolves0')
+
+    def test_a_lock_path_that_resolves_somewhere_else_is_refused(tmp_path):
+        """THE HIJACK IN ITS PRECISE FORM, and the one case an open-succeeded check cannot see.
+    
+        A neighbour who got to the path first leaves a SYMLINK. `exec 9>` follows it and succeeds,
+        `flock` locks the target's inode perfectly happily, and this project's runs then serialise
+        against a file of somebody else's choosing - or against nothing, if the target is shared with
+        a process that never locks it. Every status code involved says success, so the descriptor is
+        resolved back through `/proc/self/fd/9` and compared with the path the script named.
+        """
+        proj, script = _project(tmp_path)
+        marker = tmp_path / "ran"
+        state = proj / ".state"
+        state.mkdir(mode=0o700)
+        elsewhere = tmp_path / "a-neighbours-file"
+        elsewhere.touch()
+        (state / "slot.lock").symlink_to(elsewhere)
+        r = _invoke(script, marker, path_prefix=_runnable(tmp_path))
+        assert not marker.exists(), \
+            "the work ran while the lock held was a file the project never named"
+>       assert r.returncode == REFUSED, r.stderr
+E       AssertionError: REFUSED: descriptor 9 is open on '/tmp/pytest-of-incubator/pytest-746/test_a_lock_path_that_resolves0/a-neighbours-file', not on the lock this script named (/tmp/pytest-of-incubator/pytest-746/test_a_lock_path_that_resolves0/proj/.state/slot.lock) - concurrency=1 could NOT be established, so nothing was run.
+E         This is not a deferral: retrying will not help until the cause is repaired.
+E         
+E       assert 0 == 70
+E        +  where 0 = CompletedProcess(args=['/tmp/pytest-of-incubator/pytest-746/test_a_lock_path_that_resolves0/proj/scripts/run_budgeted....OT be established, so nothing was run.\nThis is not a deferral: retrying will not help until the cause is repaired.\n").returncode
+
+tests/test_run_budgeted_names_its_refusals.py:202: AssertionError
+______ test_an_instrument_that_did_not_run_is_not_reported_as_a_busy_slot ______
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-746/test_an_instrument_that_did_no0')
+
+    def test_an_instrument_that_did_not_run_is_not_reported_as_a_busy_slot(tmp_path):
+        """`flock` exiting 127 is what a MISSING flock looks like. It is not_measured, not 'busy'."""
+        proj, script = _project(tmp_path)
+        marker = tmp_path / "ran"
+        r = _invoke(script, marker, path_prefix=_runnable(tmp_path, flock=FLOCK_NOT_INSTALLED))
+>       assert r.returncode == REFUSED, r.stderr
+E       AssertionError: REFUSED: flock exited 127, so the slot was never tested - this is not_measured, not 'free' - concurrency=1 could NOT be established, so nothing was run.
+E         This is not a deferral: retrying will not help until the cause is repaired.
+E         
+E       assert 0 == 70
+E        +  where 0 = CompletedProcess(args=['/tmp/pytest-of-incubator/pytest-746/test_an_instrument_that_did_no0/proj/scripts/run_budgeted....OT be established, so nothing was run.\nThis is not a deferral: retrying will not help until the cause is repaired.\n").returncode
+
+tests/test_run_budgeted_names_its_refusals.py:210: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_run_budgeted_names_its_refusals.py::test_a_state_directory_that_cannot_be_created_is_a_refusal_and_runs_nothing
+FAILED tests/test_run_budgeted_names_its_refusals.py::test_a_lock_that_cannot_be_opened_is_a_refusal_and_not_a_report_of_contention
+FAILED tests/test_run_budgeted_names_its_refusals.py::test_an_unopenable_lock_does_not_sail_through_on_an_inherited_descriptor
+FAILED tests/test_run_budgeted_names_its_refusals.py::test_a_lock_path_that_resolves_somewhere_else_is_refused
+FAILED tests/test_run_budgeted_names_its_refusals.py::test_an_instrument_that_did_not_run_is_not_reported_as_a_busy_slot
+5 failed, 4 passed in 0.11s
+
+====================================================================================================
+BASELINE - the suite before any mutation
+====================================================================================================
+
+.........                                                                [100%]
+9 passed in 0.07s
+
+====================================================================================================
+RESTORED - the subject back to its committed bytes, the suite green again
+====================================================================================================
+
+.........                                                                [100%]
+9 passed in 0.08s

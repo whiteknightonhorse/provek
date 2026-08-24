@@ -13,3 +13,10 @@ web/.wrangler/
 # Written by the coverage floor the door enforces at step 7. Untracked, it dirties the tree
 # and push.sh refuses to push - the gate blocking its own door on the gate's own artefact.
 .coverage
+# T-S6. The project's own writable root: the concurrency lock `scripts/run_budgeted.sh` holds and
+# the Q-M2 output `scripts/measure_qm2.py` publishes. Both used to sit on fixed names in the
+# host's shared /tmp, where the ten projects on this box can reach them. Ignored for the same
+# reason `.coverage` is - it is generated, and an unignored generated file would make the door
+# refuse its own tree. NOT to be removed by `git clean`, which is forbidden here anyway: unlinking
+# the lock file while a run holds it releases the guarantee without any error.
+.state/

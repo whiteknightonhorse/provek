@@ -16,6 +16,10 @@ import sys
 import time
 from pathlib import Path
 
+# A BARE ASSIGNMENT DOES NOT BELONG ABOVE THESE IMPORTS. Hoisting the repository root into a
+# constant here is the obvious tidy-up and it turns the whole import block red: ruff exempts
+# `sys.path` manipulation from E402 and nothing else, so one extra statement makes every import
+# below it a violation. The root is therefore derived where it is used, further down.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.abs_profile.evidence import EvidenceClass
@@ -44,7 +48,18 @@ def counting_api(path, token):
 
 gh._api = counting_api
 
-out = Path("/tmp/_qm2out")
+# THE OUTPUT ROOT IS THE PROJECT'S, NOT THE HOST'S SHARED /tmp (T-S6).
+#
+# This read `Path("/tmp/_qm2out")`, and it is not a scratch path: `FileTransport` and
+# `PublicRegistry` write the passports and the registry of this measurement underneath it. `/tmp`
+# here is mode 1777 and shared with nine other projects, so whoever creates `_qm2out` first owns
+# it - and a neighbour who created it as a symlink would receive our output, or hand us theirs to
+# read back as a measurement. A permission refusal is visible; a successful read of somebody
+# else's artefact is not, and that is what makes a fixed name in a world-writable directory
+# different in kind from a temporary directory. `tempfile.mkdtemp()` stays fine and is used
+# elsewhere in this tree: it creates a 0700 directory under an UNPREDICTABLE name, which is the
+# property that was missing here.
+out = Path(__file__).resolve().parents[1] / ".state" / "qm2"
 transport, registry = FileTransport(out), PublicRegistry(out)
 
 def optional_token() -> str | None:

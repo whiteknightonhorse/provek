@@ -1,0 +1,88 @@
+MEASURED-002 - the shared lock this project's concurrency guarantee was resting on
+
+DATE (UTC): 2026-08-24
+SUBJECT   : /tmp/incubator.slot.lock and /tmp/_qm2out, as they stood immediately BEFORE T-S6
+            moved scripts/run_budgeted.sh and scripts/measure_qm2.py off them.
+
+WHY THIS FILE EXISTS
+
+T-S6 required the owner of the old lock to be read BEFORE the repair, because the two possible
+answers are different findings and only one of them is repairable by moving a path. If the file
+had belonged to another of the ten users on this host, then "concurrency = 1 process" had already
+stopped holding at some unknown earlier date, every run since had been unserialised, and the
+resource budget in CLAUDE.md would have been a claim stronger than its artefact - this project's
+founding defect, in its own machinery. Taking the reading after the move would have destroyed the
+only evidence either way, which is why it is the first step of the task and not the last.
+
+THE READING: THE PATH WAS STILL OURS. Nothing had been lost. That is a fact about luck and about
+this host being quiet, not about the design - the directory is mode 1777, and every statement in
+the paragraph above remains available to whoever creates the path first tomorrow.
+
+READING 1, TAKEN BEFORE ANYTHING IN THIS TASK TOUCHED THE PATH
+
+Quoted from the first two commands of the task, run before any probe, any edit and any write:
+
+    $ ls -la /tmp/incubator.slot.lock
+    -rw-rw-r-- 1 incubator incubator 0 Aug 20 03:02 /tmp/incubator.slot.lock
+
+    $ stat -c 'path=%n owner=%U:%G uid=%u gid=%g mode=%a mtime_utc=%y size=%s' /tmp/incubator.slot.lock
+    path=/tmp/incubator.slot.lock owner=incubator:incubator uid=1011 gid=1011 mode=664 mtime_utc=2026-08-20 03:02:30.472299499 +0000 size=0
+
+THAT mtime IS NO LONGER RE-DERIVABLE, AND THE INSTRUMENT IS WHAT DESTROYED IT.
+
+Reading 2 below re-takes the same measurement and returns a DIFFERENT mtime. The cause is not
+another process: it is this task. Checking whether a run was in progress means asking flock, and
+asking flock means `9>/tmp/incubator.slot.lock`, which opens the file FOR WRITING and stamps it.
+The liveness probe overwrote the creation time it was run beside.
+
+This is recorded rather than smoothed over, because a file whose narrative and whose verbatim
+output disagree is the exact shape L-30 was written about, and the first draft of this evidence
+file had it: prose asserting 2026-08-20 03:02:30 directly above a capture printing 2026-08-24.
+Reading 1 stands as the measurement - it was taken first, from a read-only command - and the
+ORDER is what makes it trustworthy, not the fact that it is written down. The lesson generalises
+past this file: a probe that opens for write is not a read, and running it before the reading you
+care about spends the evidence.
+
+READING 2, RE-TAKEN NOW. Verbatim, including the mtime the probe above rewrote.
+
+$ stat -c 'path=%n owner=%U:%G uid=%u gid=%g mode=%a mtime_utc=%y size=%s' /tmp/incubator.slot.lock
+path=/tmp/incubator.slot.lock owner=incubator:incubator uid=1011 gid=1011 mode=664 mtime_utc=2026-08-24 18:24:05.898707165 +0000 size=0
+
+$ id
+uid=1011(incubator) gid=1011(incubator) groups=1011(incubator),27(sudo)
+
+$ ls -ld /tmp        # the directory the guarantee was hosted in: mode 1777, root-owned, sticky
+drwxrwxrwt 7645 root root 393216 Aug 24 18:24 /tmp
+
+$ stat -c 'path=%n owner=%U:%G mode=%a mtime_utc=%y' /tmp/_qm2out /tmp/_qm2out/*
+path=/tmp/_qm2out owner=incubator:incubator mode=775 mtime_utc=2026-08-19 15:28:34.728368412 +0000
+path=/tmp/_qm2out/git_whiteknightonhorse_AIpush.json owner=incubator:incubator mode=664 mtime_utc=2026-08-19 15:29:26.928631187 +0000
+path=/tmp/_qm2out/git_whiteknightonhorse_gov-auction-report.json owner=incubator:incubator mode=664 mtime_utc=2026-08-19 15:29:21.052601574 +0000
+path=/tmp/_qm2out/git_whiteknightonhorse_mcp-protocol-tester.json owner=incubator:incubator mode=664 mtime_utc=2026-08-19 15:29:24.076616812 +0000
+
+
+WHAT THE READINGS SAY
+
+  * The lock was owned by incubator:incubator - us - and by reading 1 it was created 2026-08-20
+    03:02:30 UTC, four days before the repair. So the guarantee held for its whole life. The mode
+    is 664: group- and world-readable inside a world-writable directory, which is harmless for a
+    zero-byte advisory lock and is NOT the hazard. The hazard is ARRIVAL ORDER, and the sticky bit
+    does not address it - it stops a neighbour deleting our file, not a neighbour creating the
+    path before we do, as a wrong-mode file or as a symlink pointing anywhere they choose.
+
+  * No run held the lock when the probe asked, so the changeover from the old path to the new one
+    could not have straddled a live holder and let two runs proceed. That was the one transition
+    hazard worth checking and it did not apply. Nothing outside this repository invokes
+    run_budgeted.sh either - searched across the working tree and ~/orchestra; the only mentions
+    are the requirement map, one ADR, and the finding that raised this task.
+
+  * /tmp/_qm2out held three passports from the Q-M2 run of 2026-08-19, also ours. They are LEFT
+    WHERE THEY ARE and named here rather than removed: they are the published output of a
+    measurement, deleting artefacts is forbidden in this project without exception, and they are
+    not this task's to park. They are now orphaned - measure_qm2.py writes to .state/qm2/ and will
+    not read or overwrite them again.
+
+WHAT IS NOT MEASURED HERE. Whether any neighbour ever ATTEMPTED either path. Nothing on this host
+audits creation in /tmp, so "no one interfered" is not a reading anyone can take - only "the file
+we found is ours today" is. The repair does not depend on the stronger claim, and this file does
+not make it.

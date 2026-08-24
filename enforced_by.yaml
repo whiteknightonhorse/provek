@@ -483,3 +483,27 @@ laws:
     text: "a passport slug is judged against the emitter's own character class before it reaches a URL, and a refusal is its own state and never a missing passport"
     gate: web/src/slug.js
     test: tests/test_passport_slug_is_judged_before_it_is_fetched.py
+
+  # T-S6. `scripts/run_budgeted.sh` carries the only enforcement of "concurrency = 1 process" in
+  # CLAUDE.md's resource budget, and until this law nothing in the suite RAN it - the module was
+  # bound to ABI-33-1 in the requirement map and judged by no assertion. Being bound to a
+  # requirement and being tested against it are different facts, and the ratchet that checks the
+  # first cannot see the second.
+  #
+  # The law is stated in two halves because the defect had two, and the second is the one no exit
+  # status reports. THE PATH: a fixed name in the host's mode-1777 /tmp, where arrival order
+  # decides ownership and a neighbour's symlink is indistinguishable from our own file. THE
+  # REPORT: `if ! flock -n 9` folded every non-success into "the slot is held by another run", so
+  # a lock that could not be opened and a `flock` that is not installed both announced a healthy
+  # concurrency limit at the moment the limit had stopped existing - and returned EX_TEMPFAIL,
+  # telling the caller to retry something that will never succeed.
+  #
+  # The gate is the script itself and the test RUNS it, with a real command, asking whether that
+  # command executed. That is not a stylistic preference: the worst form of this defect exits 0
+  # and prints nothing at all, so "it refused" and "it did not do the work" are two claims and
+  # only the second one is the guarantee. Red run, six mutations, in
+  # evidence/RED-033-a-lock-that-was-never-taken-reported-as-contention.txt.
+  - id: LAW-BUDGET-LOCK-UNDER-THE-PROJECT
+    text: "the concurrency lock is opened on a path the project owns and verified to BE that path, and a lock that could not be taken is a named refusal that runs nothing, never a report of contention"
+    gate: scripts/run_budgeted.sh
+    test: tests/test_run_budgeted_names_its_refusals.py
