@@ -1022,6 +1022,15 @@ them as `instrument_blind` rather than as zero impressions, and three notes stil
 `is_verified: true` as the release condition would have raised a publishing rate on the strength of
 a gate we had merely walked halfway through.
 
+**Corrected 2026-08-24 by D-34; the paragraph above stands as written, because a decision is not
+rewritten after the fact.** The sentence "but so does `defycard.com`, an old and verified property,
+which means the zero is a statement about what those calls can see here" is false. It draws a
+conclusion about the instrument from a control that returned zero, and a control that returns zero
+has established nothing at all — the same call, on the same key, answers 64 rows at that control
+three days later. What this decision CONCLUDES survives the correction: ownership still lifts
+nothing but itself, and the notes ceiling still stands. Its reason does not survive, and the
+difference matters, because the reason is what the next reader would have reused.
+
 **The instrument was wrong in our own signature way, and the red run is kept.** `SubmitUrlBatch`
 answers success with an empty body; the first version of `submit_urls` therefore wrote
 `state: "accepted"` whenever the call did not raise, and funnelled every failure — including a
@@ -1948,3 +1957,263 @@ are kept, because they fail for different reasons, and the mutation proving each
 git NOTICES; the digest opens every path git LISTS. Neither sees a filesystem that answers without
 error and without the truth, and neither claims to. `evidence/RED-023-*` is not edited — D-28 — and
 the four sentences in it that this decision falsified are answered in a dated erratum beside it.
+
+## D-34. A control that answers zero has proven nothing, and the word for that is not `instrument_blind`
+
+**Measured 2026-08-24 20:33 UTC.** `~/orchestra/bing_probe.py` had published, since 2026-08-21,
+`query_stats: {"count": 0, "state": "instrument_blind", "subject_call": "ok"}` for `provek.dev`, and
+a ruling was built on that snapshot which called the `LAW-NOTES-CEILING` release condition
+unreachable. The instrument was never blind. One key, one code path, the account's two sites side by
+side: `GetQueryStats` answers **64 rows / 402 impressions / 18 clicks** at `defycard.com` and 0 rows
+here; `GetRankAndTrafficStats` answers **985 impressions / 29 clicks** there and 0 rows here;
+`GetCrawlStats` answers 6 rows there and 0 here. Every one of those rows is in
+`~/orchestra/evidence/MEASURED-B10-the-control-pair.txt`, taken by a script that can be re-run,
+because until Fable refuted this decision the numbers existed only in a terminal. `provek.dev`'s
+zeros are real at the grain each call reports on: no row qualified for any of those reports.
+
+**What those zeros do NOT say, and the first draft of this decision said it six times.** They do not
+say "Bing has not crawled the site". That is a mechanism invented to sit on top of a zero (L-30),
+and it is contradicted by a field in the same snapshot: `sitemap_accepted` carries
+`crawl_status: Success` and `url_count: 13` — and D-24 above says of that very number, in its own
+words, that it is "a number Bing could not hold without having fetched and parsed the file". Bing
+demonstrably reaches this origin. What is measured is that no crawl, query or traffic row qualified
+for a report, which is what `nothing_qualified` says and all it says. The same restraint applies to
+the word "real": a proven-capable call still reports at its own grain, and the control proves it —
+`GetQueryStats` totals 402 impressions where `GetRankAndTrafficStats` totals 985 in the same minute,
+so two of the three `BLINDNESS_MECHANISMS` (a reporting threshold, differing windows) are measurably
+active on a call whose capability is not in doubt. Fable found all of this by reading the artefact
+the claim cited.
+
+**One corroboration in this decision is not ours, and the first draft published it as though it
+were.** The T-B10 brief REPORTS that the 985 and the 29 agree to the unit with the operator's
+snapshot of the Bing web cabinet — and that snapshot has never been on this host, in `evidence/` or
+anywhere else. The agreement is what would turn a reading *through* the instrument into a reading
+*of* it, so it is the load-bearing sentence of the diagnosis, and it was restated in five places as
+a measurement taken here. It is now attributed to the brief in all five. What this host measured is
+the control pair; what it is told is that the pair matches the cabinet. Fable found it, and the
+distinction is the whole subject of this repository.
+
+**The defect is not the one the shape suggests, and naming it correctly is most of the decision.**
+The call was right, the parameters were right, and the control pair was already being run — this
+probe honoured L-10 from the hour it was written, and its docstring says so. What was wrong is that
+a control which answered ZERO was treated as having settled the question. Two zeros are the single
+outcome that establishes nothing: they are equally what a blind call and an empty control site
+produce. The state published for them, `instrument_blind`, is a positive claim that the call cannot
+see the quantity — asserted from an absence of evidence, which is this project's founding defect
+committed by the instrument built to catch it.
+
+**It was refuted in its own output, one line down.** `counted()` computed
+`control_proven_capable: false` and wrote it into the record directly beneath the word `blind`. The
+distinction existed, was measured, was serialised, and was destroyed by the name chosen for the
+state — L-29 exactly, where the store learned to tell two states apart and the instrument printed
+one word. Everything needed to refuse the false ruling was in the file the ruling cited.
+
+**Decision: a state that names the instrument must carry evidence about the instrument.** The
+classification is now taken from the control pair in three branches rather than two:
+
+* the control returned rows → the call is **proven** able to see this quantity, and the subject's
+  zero is `nothing_qualified`, a statement about the subject;
+* both empty, **and an independent witness reading shows the control site holds the quantity
+  anyway** → `instrument_blind`. Blindness demonstrated, not inferred. The witness for the query
+  stats is `GetRankAndTrafficStats` at the control, a different call reading the same underlying
+  quantity at a coarser grain;
+* both empty, no witness → `capability_unproven`. A not-measured state that says which silence it
+  was: no witness declared for this counter, or one declared that could not be read. `link_counts`
+  is the standing instance — both inbound-link calls read empty at the control, so nothing on this
+  account can show those calls able to see a link, and that counter is undecidable at zero. Saying
+  so is the finding; inventing a witness for it would not be.
+
+**WHY THE CONTROL WAS EMPTY ON 2026-08-21 IS `not_measured`, and it is left that way.** Nothing on
+this host recorded Bing's side that morning. What CAN be established is that the call did not
+change, and the first draft of this paragraph reached for the wrong evidence: it said the file was
+"byte-identical" to the one that read 64 rows three days later, which is a comparison nobody
+performed and could not have — `~/orchestra` had no version history until 2026-08-24 04:32, so no
+copy of the file as it stood on the 21st exists. What was actually observed is an mtime six minutes
+older than the snapshot, dressed in the language of a byte comparison. The real evidence is better
+and was sitting one command away: commit `20b24cf` holds the pre-repair `counted()`, its branch is
+literally `else: state = "instrument_blind"`, and the field structure it emits matches the
+2026-08-21 snapshot exactly. Fable found the overstatement — inside the decision that is about
+overstatements, which is where they are hardest to see. A mechanism assembled now from
+what would plausibly be true is a claim like any other (L-30), and this decision is about a claim
+assembled exactly that way. What the pair DOES establish is the load-bearing thing: a control's zero
+is not durable, so a single zero from it may never be promoted into a statement about the instrument.
+
+**The gate is armed outside this repository, and that is a limit rather than an arrangement to be
+proud of.** A Bing Webmaster client answers to no `ABI-*` requirement (D-17, L-11, L-12), so the
+subject, its falsification harness (`~/orchestra/bing_counted_check.py`, eleven worlds, seven
+distinct states) and the red runs (`~/orchestra/evidence/RED-B10-*`) all live beside the log they
+write. Three mutations are recorded, each applied as a textual edit to a copy of the real artefact
+rather than to a paraphrase of its branch chain: deleting the branch that decides a real zero, so a
+control carrying 64 rows still reports the instrument blind; restoring the pre-T-B10 rule, so two
+zeros report blindness again; and asserting `control_proven_capable` instead of measuring it. The
+generator refuses to write the evidence unless each anchor matched exactly once, the instrument
+control stayed green, and no two mutations killed the same set of checks — L-21, L-28 and L-26 as
+three executable preconditions. A fourth mutation strips `compatible_mechanisms` from the one state
+that names the instrument, and it exists because Fable refuted the first draft's treatment of that
+caveat. The preconditions are themselves broken one at a time, on copies of the generator, in
+`~/orchestra/evidence/RED-B10-meta-*` — which exists because the first draft of this decision
+claimed they had been "shown to bite" on the strength of a terminal session that left no artefact
+(L-26, in the paragraph asserting L-26 compliance).
+
+**This repository holds no gate on the rule, and the honest form of that sentence is the one in
+L-11.** Nothing in a clone can read `~/orchestra`, so naming a `LAW-*` here would be an anchor
+pointing at nothing. What this repository carries instead is the correction, and the count of places
+needing it was wrong three times — four, then five, and it is six. Four documents stated the
+blindness itself and all four are amended (L-2). Two more carry the same STEP under different words,
+and both were found by looking for the step rather than for the phrase, after the first two searches
+had looked for the phrase. `seo/KEYWORD_BASE.md` is the fifth and is amended here: it argues that
+the `bing_serp_related` capture's empty result "is a statement about the client, not about Bing" on
+the strength of three control queries that all returned zero, whose capability was argued from
+plausibility. **The sixth is on the live site and is NOT repaired by this task**, and it is the
+fifth's child rather than its sibling.
+`web/notes/src/not-measured-is-not-zero.md` — the published note whose subject is absence — carries
+that sentence verbatim, because the note was written FROM the paragraph above:
+`~/orchestra/notes_topics.json` pins `seo/KEYWORD_BASE.md` lines 100–135 as this note's source
+material, and the defective bullet sits inside that range. That is this decision's own rule broken
+in public: zero controls establish nothing, and the honest state is a statement about nobody. The
+conservative half of that section is sound — the source contributes no keys and no zeros — and the
+sentence over it is not.
+
+**The parenthood is the operational part, and it turns a deferred repair into a precondition.** A
+re-capture that reads the pinned material unchanged reproduces the defect word for word — the
+precedent is T-C6 — so the erratum went into `KEYWORD_BASE.md` NOW rather than being left to the
+task that re-captures. `FINDINGS.md` recorded this as a check to perform "at re-capture time"; Fable
+pointed out the check costs one `grep` and its answer was already yes, which is the difference
+between deferring a repair and deferring the question of whether one is needed.
+
+Repairing it is a separate task and the reason is not that it is hard. A note's prose is captured
+once from a model and its provenance is published on the page, so a hand-edited correction would
+falsify the disclosure; the repair is a re-capture with a dated correction block (SPEC §"a note that
+turns out to be wrong is corrected in public"), a moved body hash, a manifest re-pin and a deploy.
+This task did none of that, the false sentence is serving readers right now, and it is named in
+`~/orchestra/FINDINGS.md` for the judge. Naming it is not fixing it, and L-25 is the lesson about
+exactly that distinction — a named blind spot is still a blind spot.
+
+**Not decided here, and referred rather than dropped.** `LAW-NOTES-CEILING` releases on "an
+indexation reading from a verified Bing Webmaster property". A reading now exists and it says zero,
+so read literally the condition is met — and meeting it would raise a publishing rate at the moment
+the measurement says the published pages have reached nobody, which inverts what the ceiling is for.
+The ceiling stands at three and two notes exist, so nothing presses either way today. The wording is
+a named finding in `~/orchestra/FINDINGS.md` for the judge and the operator; an agent that rewrote a
+release condition it had just made satisfiable would be fitting the measurement to the verdict.
+
+## D-35. The referral D-34 left open is answered: an existence test becomes a ladder, one step per link
+
+**The problem D-34 referred rather than fixed.** `LAW-NOTES-CEILING` released on "an indexation
+reading exists from a verified Bing Webmaster property". T-B10 made a reading exist, and it read
+zero. Read literally the condition was met the instant the probe answered — releasing a publishing
+rate at the exact moment the measurement said the pages already published had reached nobody. T-B10
+refused to rewrite the condition it had just made satisfiable, because an agent repairing a release
+gate right after making it pass is fitting the measurement to the verdict, and referred the question
+to Fable (`~/FABLE_A_d18.md`, 2026-08-24).
+
+**The ruling's diagnosis, which changes the operator-facing sentence.** D-18's condition is not
+*unreachable* — it is *unreachable by anything this project does*. No count of pages, submissions or
+days moves `GetQueryStats`; only Bing's own pipeline does, on its own schedule. A gate that nothing
+the subject does can move is not a gate, it is a wall, and D-18 promised "liftable by a reading", not
+"liftable by Bing's internal pipeline, someday".
+
+**Every candidate weighed and rejected, on the live tree rather than in the abstract.** nginx access
+logs — there is no origin server; `provek.dev` is Cloudflare Pages in Direct Upload mode, and even a
+Cloudflare log token would buy a probe for whether an edge-log instrument exists at all, not the
+instrument itself. `URLSubmission` quota — `bing_verify.py` already names its own outcome honestly as
+`received_quota_charged`, never `accepted`; that is a receipt for our own act of submitting, a
+reading of us, not of a reader. Page age past N days — the project already rejected dates as a
+condition once (D-18's own text); age is a date wearing a costume. Search Console — a real
+instrument, but an action only the operator can take, so gating on it measures the operator rather
+than the tree (the same figure as L-19, applied to a release condition instead of a rollback step).
+
+**The candidate that had never been tried: the crawl link of the same Bing API.** `bing_probe.py`
+polls `GetQueryStats`/`GetLinkCounts` — instruments of the impressions link, the last one in the
+chain. The same account, same key, same control discipline reaches a crawl link too
+(`GetCrawlStats`/`GetUrlInfo`/`GetCrawlIssues`), and nothing had ever asked it. There was already a
+reason to expect it could answer: `sitemap_accepted` carries `crawl_status: Success, url_count: 13`
+(D-24) — Bing cannot report a URL count for a sitemap it has not fetched and parsed, so bingbot
+demonstrably walks this domain already. Polling the crawl link, control-paired against the same
+`defycard.com` property, was the one measurement standing between "the referral is answered" and
+"the referral is answered `instrument_blind`, honestly."
+
+**The construction: a step per causal link, not per date or per count.** The chain is
+publication → crawl → index → impressions, and each rung is bought by observing the *next* link
+rather than by waiting or by re-reading the same one harder:
+
+* **3 → 7** opens on a control-paired `crawl_stats` reading: a nonzero row for `provek.dev` against a
+  control that itself returns nonzero, proving the call can see the quantity at all;
+* **7 → 15** is D-18's original condition, unmoved: a control-paired `query_stats` (impressions)
+  reading. The condition is not discarded, it moves up one rung, to the link that has no instrument
+  yet rather than the one that might;
+* **above 15** is a separate operator decision taken at live impressions, not an automatic
+  consequence of crossing 15 — D-19 already declined to build a printing press, and a ladder that
+  keeps climbing on its own past the point anyone chose would be exactly that.
+
+**The first rung reads site-wide, not per-page, and the ruling's own wording is looser than a first
+skim shows.** §1 of the ruling asks for "a nonzero crawl of *our note pages specifically*", but the
+only control-proven crawl instrument this account has is `GetCrawlStats`, which reports at the
+property grain — a crawl of the home page would open this rung exactly as a crawl of a note would.
+This is not an oversight the implementation introduced silently: the ruling's own §2 blesses the
+site-wide crawl pair as "the first rung's instrument" in the same paragraph that reserves per-URL
+reading (`GetUrlInfo`) for a possible *third* step, because `GetUrlInfo`'s capability is undemonstrated
+— the tension is in the ruling, not resolved by it, and this decision resolves it toward the weaker
+predicate because that is the only one with a proven instrument today. Recorded so a future reader
+does not mistake "a crawl row" for "a crawl row of a note page": it is not, until `GetUrlInfo` is
+shown control-capable and used to build a per-URL third rung.
+
+**The numbers 7 and 15 are ASSIGNED, and this is said as loudly as D-18 says its own bounds.** There
+is no reading behind either number, exactly as there was none behind 3 on 2026-08-20. What is
+measured is *which step is open*; *how far a step carries* is a choice, and a ladder that looked
+fully measured because it climbs on readings would be a stronger unearned claim than the flat
+ceiling it replaces, so the unmeasured half is written down next to the measured one, in
+`web/notes/emit.mjs` itself and not only here.
+
+**The cap does not lift; it becomes climbable in one place it previously wasn't.** The reason three
+was chosen — nothing has shown these pages reach a reader — has not disappeared, and does not
+disappear at 7 either: a crawl row proves Bing fetched something at this origin, not these note pages
+specifically and not that anyone found them through Bing. A date remains categorically excluded as a
+condition, per the operator's standing instruction
+that "~22 August" already once stood in for a true predicate rather than being one (D-18).
+
+**What the first reading under the new rule says.** `web/notes/reach.json`, copied from
+`~/orchestra/bing_probe.py`'s output by `~/orchestra/notes_reach.py` (no `ABI-*` binds it — the
+probe lives outside this repository, L-11 — so the copy is the artefact this repository can hold),
+captured 2026-08-24T20:49:44Z: `crawl_stats` is `nothing_qualified`, 0 rows here against 6 at the
+control, `control_proven_capable: true`; `query_stats` likewise 0 against 64, with
+`GetRankAndTrafficStats` at the control as an independent capability witness (985 impressions);
+`rank_and_traffic` 0 against 8. Every zero is a proven-capable call reporting nothing, not an unproven
+one — the distinction D-34 exists to keep. The first rung is shut for an honest reason: the corpus
+stays at the floor, 3, and two note sources stand under it.
+
+**The gate.** `NOTE_LADDER` in `web/notes/emit.mjs` is the single source — a ladder described in
+prose and enforced elsewhere is the promise D-18 refused to be. `readReach` files the reading's
+absence, parse failure, wrong-subject and success as four distinct states rather than collapsing any
+pair (invariant 1); `stepState` requires `control_proven_capable` in both directions, so a rung
+cannot open on rows nobody proved the call could see, and cannot stay shut on two zeros dressed as
+`instrument_blind` — the T-B10 defect, forbidden here on the other side of the same account.
+`ceilingFrom` climbs a ladder rather than checks a menu: a closed rung blocks every rung above it, so
+an impressions row cannot arrive without a crawl row and skip past it. `tests/test_notes_ceiling.py`
+carries its own copy of the four-number, two-counter-name ladder and diffs it against the literal in
+`emit.mjs` — a single integer invites an edit to a single integer, a ladder needs both files to agree
+on four numbers and two names — and separately re-derives the ceiling from the same `reach.json`
+through a subprocess call into the real gate, so the test can drift from the build and still be
+caught rather than trusted on its own arithmetic.
+
+**The red run.** `evidence/RED-036-a-ladder-that-climbed-on-a-control-that-had-said-nothing.txt`,
+produced by `evidence/RED-036-generator.py`, kept per invariant 5. Part one puts a fourth note source
+in the tree against today's shut first rung and shows both `loadNotes()` and the suite refuse it,
+then restores the directory and checks it byte for byte. Part two applies ten single-anchor mutations
+to `emit.mjs` — each the shape of one way a *measurement* can be over-read where a flat constant
+could only be mis-typed (a control silently dropped, a zero treated as a row, an absent file climbed
+as though read, the build's ladder and the test's ladder let drift apart, a reading about the wrong
+site accepted, an unread counter treated as passing, a shut rung failing to block the ones above it,
+a non-numeric count accepted, two distinct silences collapsed into one name, climbing disabled
+entirely so the ladder looks like a wall) — asserts each leaves the control test green and kills a
+distinct set of tests, and reverts `emit.mjs` byte for byte afterward. The generator's own prose
+undercounted its mutations as "eight" while the list held ten; caught while regenerating this
+evidence and corrected in the same pass, because a generator whose count of its own mutations
+disagrees with the mutations is this decision's defect committed by the tool built to catch it.
+
+**Not decided here.** The publishing rate (`NOTES_PER_DAY` in `~/orchestra/notes_cron.py`) is a
+separate question from the ceiling and stays where it is — raising it is untested territory the
+ruling declines to touch alongside the ceiling in one move. Whether the crawl link and the
+impressions link disagree the way `GetQueryStats` and `GetRankAndTrafficStats` already do (D-34) is
+unmeasured for `crawl_stats` specifically and is not required to be measured for this rung to hold:
+one control-proven instrument per rung is what the ladder asks for.

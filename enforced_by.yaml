@@ -204,7 +204,13 @@ laws:
     gate: web/notes/emit.mjs
     test: tests/test_notes_freshness.py
   - id: LAW-NOTES-CEILING
-    text: "at most three notes stand until an indexation reading exists from a verified Bing Webmaster property"
+    text: "the corpus is capped at the ladder step the last control-paired reading has opened - three until a crawl row is reported for this site against a control that proves the call can report one, seven until an impressions row is, and no step above fifteen without an operator's decision"
+    # The text was "at most three notes stand until an indexation reading EXISTS from a verified
+    # Bing Webmaster property", and T-B10 measured the reading into existence at zero: read
+    # literally the law released itself at the moment the instrument said the published pages had
+    # reached nobody. An existence test cannot tell a reading that succeeded from one that answered
+    # nothing, so it became a ladder whose every step is a THRESHOLD on a named counter, paired with
+    # a control (D-35). The numbers 7 and 15 carry no reading and the decision says so.
     gate: web/notes/emit.mjs
     test: tests/test_notes_ceiling.py
   - id: LAW-NOTES-ENTRANCE

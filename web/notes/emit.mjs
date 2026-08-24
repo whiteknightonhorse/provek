@@ -3,7 +3,8 @@
  *
  * WHY. A note's prose is captured once, by `~/orchestra/notes_gen.py`, and committed under `src/`.
  * `loadNotes()` returns whatever is in that directory, and an EMPTY one is a real state rather than
- * a failure: the corpus is capped at `NOTE_CEILING` (D-18) and is under no obligation to be full.
+ * a failure: the corpus is capped at `NOTE_CEILING` (D-18, laddered by D-35) and is under no
+ * obligation to be full.
  * No count is written here on purpose. This paragraph carried one - "that directory is EMPTY today
  * and `loadNotes()` therefore returns nothing" - which was true when it was written on 2026-08-20
  * and stopped being true at `0a874e4`, when the first capture landed a source. A build
@@ -41,15 +42,112 @@ const REPO = new URL("../../", import.meta.url).pathname;
 const SRC = join(REPO, "web/notes/src");
 const MANIFEST = join(REPO, "web/notes/manifest.json");
 const KEYWORDS = join(REPO, "seo/keywords.csv");
+const REACH = join(REPO, "web/notes/reach.json");
 
-/** ASSIGNED 2026-08-20, no reading behind it. Three notes stand until an indexation reading exists
- *  from a verified Bing Webmaster property. The property became verified on 2026-08-21 and the
- *  reading still does not exist: the query and link calls answer zero for this site and zero for an
- *  old verified control, which is a fact about those calls and not about our readers (D-24). The
- *  verification is half the release condition and reads like all of it, which is the mistake this
- *  comment exists to prevent. A ceiling that is a promise is not a ceiling, so it is also
- *  `tests/test_notes_ceiling.py`. */
-export const NOTE_CEILING = 3;
+// --- the ceiling, as a ladder -------------------------------------------------------------------
+
+/** THE LADDER (D-35). Each step is bought by observing the NEXT link of one causal chain -
+ *  publication -> crawl -> index -> impressions - and none of them is bought by a date.
+ *
+ *  THE NUMBERS 7 AND 15 ARE ASSIGNED, exactly as 3 was assigned on 2026-08-20, and there is no
+ *  reading behind either of them. What is measured is which STEP is open; how far a step carries is
+ *  a choice. This sentence is here for the same reason D-18 states its own bounds as assigned: a
+ *  number that arrives with a gate looks measured, and the ladder is a stronger claim than the flat
+ *  ceiling was, so its unmeasured half has to be louder.
+ *
+ *  WHY `opens_on` NAMES A COUNTER AND NOT A CONDITION. The step is decided by `ceilingFrom` below
+ *  from the reading in `reach.json`, so the whole rule is these four lines plus that function. A
+ *  ladder described in prose and enforced somewhere else is the promise D-18 refused to be.
+ *
+ *  THERE IS NO FOURTH STEP ON PURPOSE. Above fifteen is an operator's decision taken at live
+ *  impressions, not an automatic consequence of one; a ladder that keeps climbing on its own is the
+ *  printing press D-19 declined to build. */
+export const NOTE_LADDER = [
+  { ceiling: 3, opens_on: null, link: "publication, which is our own act and buys nothing" },
+  { ceiling: 7, opens_on: "crawl_stats", link: "a crawl of this site" },
+  { ceiling: 15, opens_on: "query_stats", link: "a search impression of this site" },
+];
+
+/** The subject the reading has to be ABOUT. A control-paired reading of somebody else's property
+ *  proves nothing about ours, and `reach.json` is a copied file - the one thing a copy can get
+ *  wrong without any of its numbers being wrong is which site it is a copy about. */
+const REACH_SUBJECT = "https://provek.dev/";
+
+/** WHY `query_stats` AND NOT `rank_and_traffic` FOR THE SECOND STEP. Both read the impressions link
+ *  of the chain, at different grains, and the control proves that they disagree while both work:
+ *  402 impressions through `GetQueryStats` against 985 through `GetRankAndTrafficStats` in the same
+ *  minute (D-34). A step that opened on whichever of two readings of one link answers first is a
+ *  step calibrated to the more generous instrument. `query_stats` is the counter D-24 named when it
+ *  stated the release condition, so it is the one the condition keeps. */
+
+/** Read the ladder's reading. THE FILE'S ABSENCE IS A STATE, not a zero and not a default: a clone
+ *  with no `reach.json` has not measured a closed step, it has not measured anything. Both answers
+ *  hold the ceiling at the floor, and they are still different facts - the second one means nobody
+ *  ran the probe, and a reader of a red build needs to be told which. */
+export function readReach(path = REACH) {
+  if (!existsSync(path)) return { state: "check_did_not_run", why: `no reading at ${path}`, chain: {} };
+  let doc;
+  try {
+    doc = JSON.parse(readFileSync(path, "utf8"));
+  } catch (e) {
+    return { state: "unreadable", why: `reading did not parse: ${e.message}`, chain: {} };
+  }
+  if (doc.subject !== REACH_SUBJECT)
+    return { state: "unreadable", why: `reading is about ${doc.subject}, not ${REACH_SUBJECT}`, chain: {} };
+  if (typeof doc.chain !== "object" || doc.chain === null)
+    return { state: "unreadable", why: "reading carries no chain object", chain: {} };
+  return { state: "measured", why: null, chain: doc.chain, captured_at: doc.captured_at ?? null };
+}
+
+/** Is one step open? Returns the STATE, never a bare boolean, because four different things hold a
+ *  step shut and only one of them is "we looked and there was nothing".
+ *
+ *  THE CONTROL PAIR IS REQUIRED IN BOTH DIRECTIONS, and one of those directions is deliberately
+ *  stricter than it has to be. A subject that returned rows has itself demonstrated the call can
+ *  see the quantity, so `control_proven_capable` is redundant in that case - and it is still
+ *  demanded, because the pair is what makes the reading auditable by somebody who was not here when
+ *  it was taken, and because being over-strict here errs toward a LOWER ceiling. The other
+ *  direction is not a preference at all: a zero whose control also read zero establishes nothing
+ *  (D-34), and letting it open a step would rebuild the defect T-B10 removed from the probe. */
+export function stepState(chain, counter) {
+  const c = chain[counter];
+  if (c === undefined) return { open: false, state: "check_did_not_run", detail: `${counter} is not in the reading` };
+  if (c.control_proven_capable !== true)
+    return { open: false, state: "capability_unproven", detail: `${counter}: the control did not prove this call can see the quantity` };
+  if (typeof c.count !== "number")
+    return { open: false, state: "unreadable", detail: `${counter}: count is ${JSON.stringify(c.count)}, not a number` };
+  if (c.count === 0)
+    return { open: false, state: "nothing_qualified", detail: `${counter}: the call sees, and no row qualified for this site` };
+  return { open: true, state: "measured", detail: `${counter}: ${c.count} rows for this site against ${c.control_count} at the control` };
+}
+
+/** The ceiling, and the reason it is that number. A step is climbed only when every step below it
+ *  is open - a ladder rather than a menu, so an impressions row cannot arrive without a crawl row
+ *  and skip a rung on the way. */
+export function ceilingFrom(reach) {
+  const steps = [];
+  let ceiling = NOTE_LADDER[0].ceiling;
+  let climbing = reach.state === "measured";
+  for (const rung of NOTE_LADDER.slice(1)) {
+    if (!climbing) {
+      steps.push({ ceiling: rung.ceiling, open: false, state: reach.state === "measured" ? "blocked_below" : reach.state,
+                   detail: reach.why ?? "the step below this one is closed" });
+      continue;
+    }
+    const s = stepState(reach.chain, rung.opens_on);
+    steps.push({ ceiling: rung.ceiling, ...s });
+    if (s.open) ceiling = rung.ceiling;
+    else climbing = false;
+  }
+  return { ceiling, reading: reach.state, steps };
+}
+
+export const NOTE_REACH = readReach();
+export const NOTE_STEP = ceilingFrom(NOTE_REACH);
+
+/** The number the build enforces. It is DERIVED - the ladder above and the reading beside it are
+ *  the source, and `tests/test_notes_ceiling.py` recomputes both rather than trusting this. */
+export const NOTE_CEILING = NOTE_STEP.ceiling;
 
 const esc = (s) =>
   String(s).replace(/[<>&"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" })[c]);
@@ -76,8 +174,16 @@ export function loadNotes() {
   const base = keywordRows();
   const files = readdirSync(SRC).filter((f) => f.endsWith(".md")).sort();
 
-  if (files.length > NOTE_CEILING)
-    throw new Error(`notes: ${files.length} sources, ceiling is ${NOTE_CEILING} (LAW-NOTES-CEILING)`);
+  if (files.length > NOTE_CEILING) {
+    // The refusal names the CLOSED STEP, not just the number. "ceiling is 3" invites an edit to a
+    // 3; "the crawl step is shut because no row qualified" names the reading that would open it,
+    // and says which of four silences that reading was.
+    const shut = NOTE_STEP.steps.find((s) => !s.open);
+    throw new Error(
+      `notes: ${files.length} sources, ceiling is ${NOTE_CEILING} (LAW-NOTES-CEILING). ` +
+      `The step to ${shut?.ceiling} is closed: ${shut?.state} - ${shut?.detail}. ` +
+      `It opens on a reading in web/notes/reach.json, not on an edit to this file (D-35).`);
+  }
 
   return files.map((f) => {
     const raw = readFileSync(join(SRC, f), "utf8");
@@ -372,6 +478,34 @@ export function noteArticle(note) {
 </article>`;
 }
 
+/** The sentence under the index that says why the number is the number. EVERY FIGURE IN IT IS READ
+ *  OUT OF THE LADDER AND THE READING, for the reason the figures above are computed: a hand-written
+ *  count beside a computed one is a claim with its own lifetime, and this one is on the page a
+ *  reader is most likely to quote. The sentence it replaced said the instrument "does not answer
+ *  yet"; the instrument answers, and it answers zero, and those are different facts (D-34). */
+function ladderSentence() {
+  const shut = NOTE_STEP.steps.find((s) => !s.open);
+  if (!shut)
+    return `Every step of the ladder that this site's own measurements can open is open; going `
+      + `further is a decision rather than a reading, and none has been taken.`;
+  if (NOTE_STEP.reading !== "measured")
+    return `No reading of how far these pages have travelled is present in this checkout, so the `
+      + `ceiling sits at its floor. That is <code>${NOTE_STEP.reading}</code> - nobody measured - `
+      + `and it is not the same state as having measured and found nothing.`;
+  const rung = NOTE_LADDER.find((r) => r.ceiling === shut.ceiling);
+  const c = NOTE_REACH.chain[rung.opens_on];
+  const read = NOTE_REACH.captured_at ? ` Read on ${NOTE_REACH.captured_at.slice(0, 10)}:` : " Read:";
+  const body = shut.state === "nothing_qualified"
+    ? `${read} the call answers for both sites, it returned ${c.control_count} rows for the control `
+      + `property and ${c.count} for this one.`
+    : `${read} the step is held shut by <code>${esc(shut.state)}</code>, which is a named absence `
+      + `rather than a measurement of nobody reading.`;
+  return `It rises to ${shut.ceiling} when Bing Webmaster reports ${esc(rung.link)} `
+    + `&mdash; <code>${esc(rung.opens_on)}</code> &mdash; alongside a control property that proves `
+    + `the same call is able to report it at all.${body} Nothing here is published at a rate: the `
+    + `number is the last reading of whether these pages reached anyone, not a schedule.`;
+}
+
 export function notesIndexArticle(notes) {
   const rows = notes.map((n) =>
     `<li class="border-t border-[var(--color-line)] py-4">
@@ -387,10 +521,8 @@ export function notesIndexArticle(notes) {
   this instrument: a term it uses, a state it distinguishes, or a thing the standard underneath it
   does not settle. They document what is measured and what cannot be, and none of them advises
   anybody on what to do about it.</p>
-  <p class="mt-4 text-sm text-[var(--color-ink-2)]">There are ${notes.length}. That is a ceiling
-  rather than a start: nothing here is published at a rate, because the instrument that would show
-  whether these pages are read at all - an indexation reading from a verified property - does not
-  answer yet, and a publishing schedule set without one measures nothing but our own output.</p>
+  <p class="mt-4 text-sm text-[var(--color-ink-2)]">There are ${notes.length}, and at most
+  ${NOTE_CEILING} may stand. ${ladderSentence()}</p>
   <ul class="mt-6">${rows}</ul>
 </article>`;
 }

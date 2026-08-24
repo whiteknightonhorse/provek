@@ -1,0 +1,587 @@
+RED-036 - a ladder that climbed on a control that had said nothing
+
+DATE (UTC): 2026-08-24
+SUBJECT   : web/notes/emit.mjs, judged by tests/test_notes_ceiling.py
+LAW       : LAW-NOTES-CEILING
+DECISION  : D-35
+PRODUCED  : evidence/RED-036-generator.py, checked in beside this file so the runs below can be
+            repeated rather than believed.
+
+WHY THIS FILE EXISTS
+
+Until D-35 the ceiling was `export const NOTE_CEILING = 3;` and there was exactly one way past it:
+edit a digit, which a watchdog test compared against. D-35 replaced the digit with a ladder read
+from a measurement, and that trade is not free. A number can only be edited; a measurement can be
+over-read - a zero taken for a row, a silence taken for a zero, an absent file taken for a silence,
+another property's traffic taken for ours. Every one of those is a way to publish more pages than
+anything has said may be published, and none of them is a digit anybody typed.
+
+T-B10 removed exactly this class of error from `~/orchestra/bing_probe.py`: a control that had
+returned zero was allowed to settle a question about the instrument, and the state published for it
+asserted blindness on no evidence. The ladder now consumes that probe's output. Mutations 1 and 6
+below are that defect rebuilt on this side of the copy - a step opened by a reading that never
+proved anything - and the suite is red under both.
+
+====================================================================================================
+PART ONE - the step is closed, and the fourth note does not reach a reader
+====================================================================================================
+
+Nothing is mutated here. The gate is the shipped one and the reading is the shipped one:
+`crawl_stats` answers for both sites, returns 6 rows for the control property and 0 for
+this one, so the first rung is `nothing_qualified` and the ceiling is the floor. Two
+fixture sources are added to web/notes/src/, taking the corpus from 2 to 4.
+
+--- `node -e "loadNotes()"` ---   exit=3
+
+ceiling=3 step={"ceiling":7,"open":false,"state":"nothing_qualified","detail":"crawl_stats: the call sees, and no row qualified for this site"}
+BUILD REFUSED: notes: 4 sources, ceiling is 3 (LAW-NOTES-CEILING). The step to 7 is closed: nothing_qualified - crawl_stats: the call sees, and no row qualified for this site. It opens on a reading in web/notes/reach.json, not on an edit to this file (D-35).
+
+--- `python -m pytest tests/test_notes_ceiling.py -q -rf` ---   exit=1
+
+................FF                                                       [100%]
+=================================== FAILURES ===================================
+_______________ test_no_more_notes_exist_than_the_ceiling_allows _______________
+
+    def test_no_more_notes_exist_than_the_ceiling_allows() -> None:
+        if not SRC.exists():
+            pytest.skip("no method notes in this checkout")
+        files = sorted(SRC.glob("*.md"))
+>       assert len(files) <= CEILING, (
+            f"{len(files)} note sources, ceiling is {CEILING}. Raising it requires a control-paired "
+            f"reading in web/notes/reach.json opening the next step, not an edit to this number.")
+E       AssertionError: 4 note sources, ceiling is 3. Raising it requires a control-paired reading in web/notes/reach.json opening the next step, not an edit to this number.
+E       assert 4 <= 3
+E        +  where 4 = len([PosixPath('/home/incubator/incubator/web/notes/src/not-measured-is-not-zero.md'), PosixPath('/home/incubator/incubato...or/web/notes/src/zz-red036-fixture-a.md'), PosixPath('/home/incubator/incubator/web/notes/src/zz-red036-fixture-b.md')])
+
+tests/test_notes_ceiling.py:293: AssertionError
+________ test_the_emitted_site_carries_no_more_notes_than_were_captured ________
+
+    def test_the_emitted_site_carries_no_more_notes_than_were_captured() -> None:
+        pages = emitted()
+        if not pages:
+            pytest.skip("site not built in this checkout")
+>       assert len(pages) == len(sources()) <= CEILING
+E       assert 2 == 4
+E        +  where 2 = len({'not-measured-is-not-zero': '<!doctype html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <meta nam..., this would be a brand rather than a standard.</p><p>provek.dev</p></div></footer></div></div>\n  </body>\n</html>\n'})
+E        +  and   4 = len([({'slug': 'not-measured-is-not-zero', 'title': 'The vocabulary of absence in a measurement - Provek', 'h1': 'Three ab...tor.py and removed by it. If this file is in the tree, that generator died between writing it and its own `finally`.')])
+E        +    where [({'slug': 'not-measured-is-not-zero', 'title': 'The vocabulary of absence in a measurement - Provek', 'h1': 'Three ab...tor.py and removed by it. If this file is in the tree, that generator died between writing it and its own `finally`.')] = sources()
+
+tests/test_notes_ceiling.py:302: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_notes_ceiling.py::test_no_more_notes_exist_than_the_ceiling_allows
+FAILED tests/test_notes_ceiling.py::test_the_emitted_site_carries_no_more_notes_than_were_captured
+2 failed, 16 passed in 0.30s
+
+Both fixtures removed; every remaining source compared against its sha256: unchanged.
+
+====================================================================================================
+PART TWO - 10 mutations of the gate
+====================================================================================================
+
+Each is a single anchored edit to web/notes/emit.mjs, applied to the real file and reverted. The
+generator refuses to write this evidence unless every anchor matched exactly once, every marker was
+read back out of the file after the edit, every mutation left the instrument control
+`test_the_reading_in_this_tree_is_control_paired_at_all` green, and no two mutations killed the same set of
+tests - a mutation with a duplicate failure set demonstrates nothing the earlier one did not.
+
+====================================================================================================
+MUTATION 1 - THE T-B10 DEFECT REBUILT: the control pair stops being consulted, so rows for this site open a step while nothing has shown the call able to report them
+====================================================================================================
+
+Applied to web/notes/emit.mjs:
+
+  -   if (c.control_proven_capable !== true)
+  -     return { open: false, state: "capability_unproven", detail: `${counter}: the control did not prove this call can see the quantity` };
+  +   // MUTATION-1
+
+Marker 'MUTATION-1' grepped back out of the file after the edit: yes.
+Tests killed (1): test_the_ladder_climbs_only_on_a_control_paired_row[THE DEFECT T-B10 REMOVED FROM THE PROBE: rows fo]
+
+--- verbatim output of `python -m pytest tests/test_notes_ceiling.py -q -rf` ---
+
+.....F............                                                       [100%]
+=================================== FAILURES ===================================
+_ test_the_ladder_climbs_only_on_a_control_paired_row[THE DEFECT T-B10 REMOVED FROM THE PROBE: rows fo] _
+
+i = 3, gate_answers = [7, 7, 15, 7, 3, 3, ...]
+
+    @pytest.mark.parametrize("i", range(len(READINGS)), ids=[w[:48] for w in WHY])
+    def test_the_ladder_climbs_only_on_a_control_paired_row(i: int, gate_answers: list[int]) -> None:
+        assert ceiling_from(READINGS[i]) == EXPECTED[i], f"this file's copy: {WHY[i]}"
+>       assert gate_answers[i] == EXPECTED[i], f"web/notes/emit.mjs: {WHY[i]}"
+E       AssertionError: web/notes/emit.mjs: THE DEFECT T-B10 REMOVED FROM THE PROBE: rows for us, silence at the control
+E       assert 7 == 3
+
+tests/test_notes_ceiling.py:239: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_notes_ceiling.py::test_the_ladder_climbs_only_on_a_control_paired_row[THE DEFECT T-B10 REMOVED FROM THE PROBE: rows fo]
+1 failed, 17 passed in 0.46s
+
+====================================================================================================
+MUTATION 2 - a zero row count opens the step - the whole ladder climbed by an instrument answering that nothing qualified, which is the literal reading of the condition D-35 replaced
+====================================================================================================
+
+Applied to web/notes/emit.mjs:
+
+  -   if (c.count === 0)
+  -     return { open: false, state: "nothing_qualified", detail: `${counter}: the call sees, and no row qualified for this site` };
+  +   // MUTATION-2
+
+Marker 'MUTATION-2' grepped back out of the file after the edit: yes.
+Tests killed (3): test_the_build_computes_the_same_ceiling_from_the_same_reading, test_the_ladder_climbs_only_on_a_control_paired_row[and no further, because the step above it has no], test_the_ladder_climbs_only_on_a_control_paired_row[the call sees and nothing qualified: shut, and f]
+
+--- verbatim output of `python -m pytest tests/test_notes_ceiling.py -q -rf` ---
+
+.F.F...F..........                                                       [100%]
+=================================== FAILURES ===================================
+________ test_the_build_computes_the_same_ceiling_from_the_same_reading ________
+
+    def test_the_build_computes_the_same_ceiling_from_the_same_reading() -> None:
+        """The stronger half of the watchdog: not that the two files carry the same numbers, but that
+        two independent implementations of the rule return the same answer over the reading in this
+        tree."""
+        built = _node(
+            "import {NOTE_CEILING, NOTE_STEP} from './web/notes/emit.mjs';"
+            "console.log(JSON.stringify({c: NOTE_CEILING, r: NOTE_STEP.reading}));")
+>       assert built["c"] == CEILING, (
+            f"the build enforces {built['c']} and this test enforces {CEILING} over the same reading")
+E       AssertionError: the build enforces 15 and this test enforces 3 over the same reading
+E       assert 15 == 3
+
+tests/test_notes_ceiling.py:174: AssertionError
+_ test_the_ladder_climbs_only_on_a_control_paired_row[and no further, because the step above it has no] _
+
+i = 1, gate_answers = [7, 15, 15, 3, 3, 7, ...]
+
+    @pytest.mark.parametrize("i", range(len(READINGS)), ids=[w[:48] for w in WHY])
+    def test_the_ladder_climbs_only_on_a_control_paired_row(i: int, gate_answers: list[int]) -> None:
+        assert ceiling_from(READINGS[i]) == EXPECTED[i], f"this file's copy: {WHY[i]}"
+>       assert gate_answers[i] == EXPECTED[i], f"web/notes/emit.mjs: {WHY[i]}"
+E       AssertionError: web/notes/emit.mjs: and no further, because the step above it has nothing
+E       assert 15 == 7
+
+tests/test_notes_ceiling.py:239: AssertionError
+_ test_the_ladder_climbs_only_on_a_control_paired_row[the call sees and nothing qualified: shut, and f] _
+
+i = 5, gate_answers = [7, 15, 15, 3, 3, 7, ...]
+
+    @pytest.mark.parametrize("i", range(len(READINGS)), ids=[w[:48] for w in WHY])
+    def test_the_ladder_climbs_only_on_a_control_paired_row(i: int, gate_answers: list[int]) -> None:
+        assert ceiling_from(READINGS[i]) == EXPECTED[i], f"this file's copy: {WHY[i]}"
+>       assert gate_answers[i] == EXPECTED[i], f"web/notes/emit.mjs: {WHY[i]}"
+E       AssertionError: web/notes/emit.mjs: the call sees and nothing qualified: shut, and for the honest reason
+E       assert 7 == 3
+
+tests/test_notes_ceiling.py:239: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_notes_ceiling.py::test_the_build_computes_the_same_ceiling_from_the_same_reading
+FAILED tests/test_notes_ceiling.py::test_the_ladder_climbs_only_on_a_control_paired_row[and no further, because the step above it has no]
+FAILED tests/test_notes_ceiling.py::test_the_ladder_climbs_only_on_a_control_paired_row[the call sees and nothing qualified: shut, and f]
+3 failed, 15 passed in 0.31s
+
+====================================================================================================
+MUTATION 3 - a reading nobody took is climbed as though it had been taken - a missing file defaulting to the top of the ladder instead of the floor (invariant 1)
+====================================================================================================
+
+Applied to web/notes/emit.mjs:
+
+  -   let climbing = reach.state === "measured";
+  +   let climbing = true;   // MUTATION-3
+
+Marker 'MUTATION-3' grepped back out of the file after the edit: yes.
+Tests killed (2): test_the_ladder_climbs_only_on_a_control_paired_row[a reading nobody took is not a closed step and n], test_the_ladder_climbs_only_on_a_control_paired_row[a reading that did not parse may not be climbed ]
+
+--- verbatim output of `python -m pytest tests/test_notes_ceiling.py -q -rf` ---
+
+...........FF.....                                                       [100%]
+=================================== FAILURES ===================================
+_ test_the_ladder_climbs_only_on_a_control_paired_row[a reading nobody took is not a closed step and n] _
+
+i = 9, gate_answers = [7, 7, 15, 3, 3, 3, ...]
+
+    @pytest.mark.parametrize("i", range(len(READINGS)), ids=[w[:48] for w in WHY])
+    def test_the_ladder_climbs_only_on_a_control_paired_row(i: int, gate_answers: list[int]) -> None:
+        assert ceiling_from(READINGS[i]) == EXPECTED[i], f"this file's copy: {WHY[i]}"
+>       assert gate_answers[i] == EXPECTED[i], f"web/notes/emit.mjs: {WHY[i]}"
+E       AssertionError: web/notes/emit.mjs: a reading nobody took is not a closed step and not an open one
+E       assert 7 == 3
+
+tests/test_notes_ceiling.py:239: AssertionError
+_ test_the_ladder_climbs_only_on_a_control_paired_row[a reading that did not parse may not be climbed ] _
+
+i = 10, gate_answers = [7, 7, 15, 3, 3, 3, ...]
+
+    @pytest.mark.parametrize("i", range(len(READINGS)), ids=[w[:48] for w in WHY])
+    def test_the_ladder_climbs_only_on_a_control_paired_row(i: int, gate_answers: list[int]) -> None:
+        assert ceiling_from(READINGS[i]) == EXPECTED[i], f"this file's copy: {WHY[i]}"
+>       assert gate_answers[i] == EXPECTED[i], f"web/notes/emit.mjs: {WHY[i]}"
+E       AssertionError: web/notes/emit.mjs: a reading that did not parse may not be climbed either
+E       assert 7 == 3
+
+tests/test_notes_ceiling.py:239: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_notes_ceiling.py::test_the_ladder_climbs_only_on_a_control_paired_row[a reading nobody took is not a closed step and n]
+FAILED tests/test_notes_ceiling.py::test_the_ladder_climbs_only_on_a_control_paired_row[a reading that did not parse may not be climbed ]
+2 failed, 16 passed in 0.31s
+
+====================================================================================================
+MUTATION 4 - the ladder in the build moves and the ladder in the test does not - the drift the watchdog exists to catch, and the one an editor wanting a fourth note would actually perform
+====================================================================================================
+
+Applied to web/notes/emit.mjs:
+
+  -   { ceiling: 7, opens_on: "crawl_stats", link: "a crawl of this site" },
+  +   { ceiling: 8, opens_on: "crawl_stats", link: "a crawl of this site" },   // MUTATION-4
+
+Marker 'MUTATION-4' grepped back out of the file after the edit: yes.
+Tests killed (3): test_the_ladder_climbs_only_on_a_control_paired_row[a crawl row against a proven control opens the f], test_the_ladder_climbs_only_on_a_control_paired_row[and no further, because the step above it has no], test_the_ladder_in_this_file_is_the_ladder_in_the_build
+
+--- verbatim output of `python -m pytest tests/test_notes_ceiling.py -q -rf` ---
+
+F.FF..............                                                       [100%]
+=================================== FAILURES ===================================
+___________ test_the_ladder_in_this_file_is_the_ladder_in_the_build ____________
+
+    def test_the_ladder_in_this_file_is_the_ladder_in_the_build() -> None:
+        """The watchdog. It reads the literal out of `emit.mjs` rather than a number, because the thing
+        an editor reaches for when a fourth note is wanted is the ladder, and a ladder is four numbers
+        and two counter names rather than one integer."""
+        text = EMIT.read_text(encoding="utf-8")
+        m = re.search(r"export const NOTE_LADDER = \[(.*?)\];", text, re.S)
+        assert m, "web/notes/emit.mjs no longer declares NOTE_LADDER"
+        rungs = re.findall(r"\{\s*ceiling:\s*(\d+),\s*opens_on:\s*(null|\"[a-z_]+\")", m.group(1))
+        built = [(int(c), None if o == "null" else o.strip('"')) for c, o in rungs]
+>       assert built == LADDER, (
+            f"web/notes/emit.mjs and this test no longer agree on the ladder: {built} vs {LADDER}")
+E       AssertionError: web/notes/emit.mjs and this test no longer agree on the ladder: [(3, None), (8, 'crawl_stats'), (15, 'query_stats')] vs [(3, None), (7, 'crawl_stats'), (15, 'query_stats')]
+E       assert [(3, None), (...query_stats')] == [(3, None), (...query_stats')]
+E         
+E         At index 1 diff: (8, 'crawl_stats') != (7, 'crawl_stats')
+E         Use -v to get more diff
+
+tests/test_notes_ceiling.py:152: AssertionError
+_ test_the_ladder_climbs_only_on_a_control_paired_row[a crawl row against a proven control opens the f] _
+
+i = 0, gate_answers = [8, 8, 15, 3, 3, 3, ...]
+
+    @pytest.mark.parametrize("i", range(len(READINGS)), ids=[w[:48] for w in WHY])
+    def test_the_ladder_climbs_only_on_a_control_paired_row(i: int, gate_answers: list[int]) -> None:
+        assert ceiling_from(READINGS[i]) == EXPECTED[i], f"this file's copy: {WHY[i]}"
+>       assert gate_answers[i] == EXPECTED[i], f"web/notes/emit.mjs: {WHY[i]}"
+E       AssertionError: web/notes/emit.mjs: a crawl row against a proven control opens the first step
+E       assert 8 == 7
+
+tests/test_notes_ceiling.py:239: AssertionError
+_ test_the_ladder_climbs_only_on_a_control_paired_row[and no further, because the step above it has no] _
+
+i = 1, gate_answers = [8, 8, 15, 3, 3, 3, ...]
+
+    @pytest.mark.parametrize("i", range(len(READINGS)), ids=[w[:48] for w in WHY])
+    def test_the_ladder_climbs_only_on_a_control_paired_row(i: int, gate_answers: list[int]) -> None:
+        assert ceiling_from(READINGS[i]) == EXPECTED[i], f"this file's copy: {WHY[i]}"
+>       assert gate_answers[i] == EXPECTED[i], f"web/notes/emit.mjs: {WHY[i]}"
+E       AssertionError: web/notes/emit.mjs: and no further, because the step above it has nothing
+E       assert 8 == 7
+
+tests/test_notes_ceiling.py:239: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_notes_ceiling.py::test_the_ladder_in_this_file_is_the_ladder_in_the_build
+FAILED tests/test_notes_ceiling.py::test_the_ladder_climbs_only_on_a_control_paired_row[a crawl row against a proven control opens the f]
+FAILED tests/test_notes_ceiling.py::test_the_ladder_climbs_only_on_a_control_paired_row[and no further, because the step above it has no]
+3 failed, 15 passed in 0.31s
+
+====================================================================================================
+MUTATION 5 - the reading stops having to be ABOUT this site, so the control property's 6 crawl rows and 64 query rows decide our ceiling
+====================================================================================================
+
+Applied to web/notes/emit.mjs:
+
+  -   if (doc.subject !== REACH_SUBJECT)
+  -     return { state: "unreadable", why: `reading is about ${doc.subject}, not ${REACH_SUBJECT}`, chain: {} };
+  +   // MUTATION-5
+
+Marker 'MUTATION-5' grepped back out of the file after the edit: yes.
+Tests killed (1): test_a_reading_about_another_property_decides_nothing_here
+
+--- verbatim output of `python -m pytest tests/test_notes_ceiling.py -q -rf` ---
+
+.............F....                                                       [100%]
+=================================== FAILURES ===================================
+__________ test_a_reading_about_another_property_decides_nothing_here __________
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-998/test_a_reading_about_another_p0')
+
+    def test_a_reading_about_another_property_decides_nothing_here(tmp_path: Path) -> None:
+        """`reach.json` is a COPIED file, and the one thing a copy can get wrong while every number in
+        it is right is which site it is a copy of. The control property has 64 query rows and 6 crawl
+        rows; a build that read those as ours would climb the whole ladder on somebody else's traffic."""
+        doc = json.loads(REACH.read_text(encoding="utf-8"))
+        doc["subject"] = doc["control"]
+        for name in doc["chain"]:
+            doc["chain"][name]["count"] = 9   # rows, so only the subject check can hold the step shut
+        p = tmp_path / "reach.json"
+        p.write_text(json.dumps(doc), encoding="utf-8")
+        got = _node(
+            "import {readReach, ceilingFrom} from './web/notes/emit.mjs';"
+            f"const r = readReach({json.dumps(str(p))});"
+            "console.log(JSON.stringify({s: r.state, c: ceilingFrom(r).ceiling}));")
+>       assert got["s"] == "unreadable", f"a reading of another property was filed as {got['s']}"
+E       AssertionError: a reading of another property was filed as measured
+E       assert 'measured' == 'unreadable'
+E         
+E         - unreadable
+E         + measured
+
+tests/test_notes_ceiling.py:256: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_notes_ceiling.py::test_a_reading_about_another_property_decides_nothing_here
+1 failed, 17 passed in 0.29s
+
+====================================================================================================
+MUTATION 6 - a counter that is not in the reading at all opens the step it was supposed to gate - `check_did_not_run` promoted to a measurement, one branch away from mutation 1
+====================================================================================================
+
+Applied to web/notes/emit.mjs:
+
+  -   if (c === undefined) return { open: false, state: "check_did_not_run", detail: `${counter} is not in the reading` };
+  +   if (c === undefined) return { open: true, state: "check_did_not_run", detail: `${counter} is not in the reading` };   // MUTATION-6
+
+Marker 'MUTATION-6' grepped back out of the file after the edit: yes.
+Tests killed (3): test_the_ladder_climbs_only_on_a_control_paired_row[a counter absent from the reading cannot open an], test_the_ladder_climbs_only_on_a_control_paired_row[a crawl row against a proven control opens the f], test_the_ladder_climbs_only_on_a_control_paired_row[an impressions row may not skip the crawl rung i]
+
+--- verbatim output of `python -m pytest tests/test_notes_ceiling.py -q -rf` ---
+
+..F.....FF........                                                       [100%]
+=================================== FAILURES ===================================
+_ test_the_ladder_climbs_only_on_a_control_paired_row[a crawl row against a proven control opens the f] _
+
+i = 0, gate_answers = [15, 7, 15, 3, 3, 3, ...]
+
+    @pytest.mark.parametrize("i", range(len(READINGS)), ids=[w[:48] for w in WHY])
+    def test_the_ladder_climbs_only_on_a_control_paired_row(i: int, gate_answers: list[int]) -> None:
+        assert ceiling_from(READINGS[i]) == EXPECTED[i], f"this file's copy: {WHY[i]}"
+>       assert gate_answers[i] == EXPECTED[i], f"web/notes/emit.mjs: {WHY[i]}"
+E       AssertionError: web/notes/emit.mjs: a crawl row against a proven control opens the first step
+E       assert 15 == 7
+
+tests/test_notes_ceiling.py:239: AssertionError
+_ test_the_ladder_climbs_only_on_a_control_paired_row[a counter absent from the reading cannot open an] _
+
+i = 6, gate_answers = [15, 7, 15, 3, 3, 3, ...]
+
+    @pytest.mark.parametrize("i", range(len(READINGS)), ids=[w[:48] for w in WHY])
+    def test_the_ladder_climbs_only_on_a_control_paired_row(i: int, gate_answers: list[int]) -> None:
+        assert ceiling_from(READINGS[i]) == EXPECTED[i], f"this file's copy: {WHY[i]}"
+>       assert gate_answers[i] == EXPECTED[i], f"web/notes/emit.mjs: {WHY[i]}"
+E       AssertionError: web/notes/emit.mjs: a counter absent from the reading cannot open anything
+E       assert 15 == 3
+
+tests/test_notes_ceiling.py:239: AssertionError
+_ test_the_ladder_climbs_only_on_a_control_paired_row[an impressions row may not skip the crawl rung i] _
+
+i = 7, gate_answers = [15, 7, 15, 3, 3, 3, ...]
+
+    @pytest.mark.parametrize("i", range(len(READINGS)), ids=[w[:48] for w in WHY])
+    def test_the_ladder_climbs_only_on_a_control_paired_row(i: int, gate_answers: list[int]) -> None:
+        assert ceiling_from(READINGS[i]) == EXPECTED[i], f"this file's copy: {WHY[i]}"
+>       assert gate_answers[i] == EXPECTED[i], f"web/notes/emit.mjs: {WHY[i]}"
+E       AssertionError: web/notes/emit.mjs: an impressions row may not skip the crawl rung it arrived without
+E       assert 15 == 3
+
+tests/test_notes_ceiling.py:239: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_notes_ceiling.py::test_the_ladder_climbs_only_on_a_control_paired_row[a crawl row against a proven control opens the f]
+FAILED tests/test_notes_ceiling.py::test_the_ladder_climbs_only_on_a_control_paired_row[a counter absent from the reading cannot open an]
+FAILED tests/test_notes_ceiling.py::test_the_ladder_climbs_only_on_a_control_paired_row[an impressions row may not skip the crawl rung i]
+3 failed, 15 passed in 0.27s
+
+====================================================================================================
+MUTATION 7 - the ladder becomes a menu: a closed rung no longer blocks the ones above it, so an impressions row would carry the corpus to fifteen without a crawl row ever being read
+====================================================================================================
+
+Applied to web/notes/emit.mjs:
+
+  -     else climbing = false;
+  +     // MUTATION-7
+
+Marker 'MUTATION-7' grepped back out of the file after the edit: yes.
+Tests killed (1): test_the_ladder_climbs_only_on_a_control_paired_row[an impressions row may not skip the crawl rung i]
+
+--- verbatim output of `python -m pytest tests/test_notes_ceiling.py -q -rf` ---
+
+.........F........                                                       [100%]
+=================================== FAILURES ===================================
+_ test_the_ladder_climbs_only_on_a_control_paired_row[an impressions row may not skip the crawl rung i] _
+
+i = 7, gate_answers = [7, 7, 15, 3, 3, 3, ...]
+
+    @pytest.mark.parametrize("i", range(len(READINGS)), ids=[w[:48] for w in WHY])
+    def test_the_ladder_climbs_only_on_a_control_paired_row(i: int, gate_answers: list[int]) -> None:
+        assert ceiling_from(READINGS[i]) == EXPECTED[i], f"this file's copy: {WHY[i]}"
+>       assert gate_answers[i] == EXPECTED[i], f"web/notes/emit.mjs: {WHY[i]}"
+E       AssertionError: web/notes/emit.mjs: an impressions row may not skip the crawl rung it arrived without
+E       assert 15 == 3
+
+tests/test_notes_ceiling.py:239: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_notes_ceiling.py::test_the_ladder_climbs_only_on_a_control_paired_row[an impressions row may not skip the crawl rung i]
+1 failed, 17 passed in 0.28s
+
+====================================================================================================
+MUTATION 8 - a count that is not a number stops being unreadable, and `null` - which is what the probe writes when a payload carries no countable rows - opens the step
+====================================================================================================
+
+Applied to web/notes/emit.mjs:
+
+  -   if (typeof c.count !== "number")
+  -     return { open: false, state: "unreadable", detail: `${counter}: count is ${JSON.stringify(c.count)}, not a number` };
+  +   // MUTATION-8
+
+Marker 'MUTATION-8' grepped back out of the file after the edit: yes.
+Tests killed (1): test_the_ladder_climbs_only_on_a_control_paired_row[a count that is not a number is unreadable, neve]
+
+--- verbatim output of `python -m pytest tests/test_notes_ceiling.py -q -rf` ---
+
+..........F.......                                                       [100%]
+=================================== FAILURES ===================================
+_ test_the_ladder_climbs_only_on_a_control_paired_row[a count that is not a number is unreadable, neve] _
+
+i = 8, gate_answers = [7, 7, 15, 3, 3, 3, ...]
+
+    @pytest.mark.parametrize("i", range(len(READINGS)), ids=[w[:48] for w in WHY])
+    def test_the_ladder_climbs_only_on_a_control_paired_row(i: int, gate_answers: list[int]) -> None:
+        assert ceiling_from(READINGS[i]) == EXPECTED[i], f"this file's copy: {WHY[i]}"
+>       assert gate_answers[i] == EXPECTED[i], f"web/notes/emit.mjs: {WHY[i]}"
+E       AssertionError: web/notes/emit.mjs: a count that is not a number is unreadable, never zero
+E       assert 7 == 3
+
+tests/test_notes_ceiling.py:239: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_notes_ceiling.py::test_the_ladder_climbs_only_on_a_control_paired_row[a count that is not a number is unreadable, neve]
+1 failed, 17 passed in 0.33s
+
+====================================================================================================
+MUTATION 9 - the two silences are collapsed into one: a reading nobody took is filed under the name for a reading that did not parse, and the red build can no longer say which happened
+====================================================================================================
+
+Applied to web/notes/emit.mjs:
+
+  -   if (!existsSync(path)) return { state: "check_did_not_run", why: `no reading at ${path}`, chain: {} };
+  +   if (!existsSync(path)) return { state: "unreadable", why: `no reading at ${path}`, chain: {} };   // MUTATION-9
+
+Marker 'MUTATION-9' grepped back out of the file after the edit: yes.
+Tests killed (1): test_an_absent_reading_is_not_an_empty_one
+
+--- verbatim output of `python -m pytest tests/test_notes_ceiling.py -q -rf` ---
+
+..............F...                                                       [100%]
+=================================== FAILURES ===================================
+__________________ test_an_absent_reading_is_not_an_empty_one __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-1002/test_an_absent_reading_is_not_0')
+
+    def test_an_absent_reading_is_not_an_empty_one(tmp_path: Path) -> None:
+        """The two ways to have no reading, asked of the gate rather than of this file's copy."""
+        absent = tmp_path / "nothing.json"
+        broken = tmp_path / "broken.json"
+        broken.write_text("{not json", encoding="utf-8")
+        got = _node(
+            "import {readReach, ceilingFrom} from './web/notes/emit.mjs';"
+            f"const a = readReach({json.dumps(str(absent))});"
+            f"const b = readReach({json.dumps(str(broken))});"
+            "console.log(JSON.stringify({a: a.state, b: b.state, ca: ceilingFrom(a).ceiling, "
+            "cb: ceilingFrom(b).ceiling}));")
+>       assert got["a"] == "check_did_not_run", "a reading nobody took was filed as something else"
+E       AssertionError: a reading nobody took was filed as something else
+E       assert 'unreadable' == 'check_did_not_run'
+E         
+E         - check_did_not_run
+E         + unreadable
+
+tests/test_notes_ceiling.py:271: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_notes_ceiling.py::test_an_absent_reading_is_not_an_empty_one
+1 failed, 17 passed in 0.25s
+
+====================================================================================================
+MUTATION 10 - the ladder stops climbing at all - the wall in a ladder's clothes. Every step reports open and the ceiling never leaves the floor, which is the failure mode that flatters us: a gate nothing can pass looks identical to a gate nothing has passed yet
+====================================================================================================
+
+Applied to web/notes/emit.mjs:
+
+  -     if (s.open) ceiling = rung.ceiling;
+  +     if (s.open) ceiling = ceiling;   // MUTATION-10
+
+Marker 'MUTATION-10' grepped back out of the file after the edit: yes.
+Tests killed (3): test_the_ladder_climbs_only_on_a_control_paired_row[a crawl row against a proven control opens the f], test_the_ladder_climbs_only_on_a_control_paired_row[and no further, because the step above it has no], test_the_ladder_climbs_only_on_a_control_paired_row[both links read, both open]
+
+--- verbatim output of `python -m pytest tests/test_notes_ceiling.py -q -rf` ---
+
+..FFF.............                                                       [100%]
+=================================== FAILURES ===================================
+_ test_the_ladder_climbs_only_on_a_control_paired_row[a crawl row against a proven control opens the f] _
+
+i = 0, gate_answers = [3, 3, 3, 3, 3, 3, ...]
+
+    @pytest.mark.parametrize("i", range(len(READINGS)), ids=[w[:48] for w in WHY])
+    def test_the_ladder_climbs_only_on_a_control_paired_row(i: int, gate_answers: list[int]) -> None:
+        assert ceiling_from(READINGS[i]) == EXPECTED[i], f"this file's copy: {WHY[i]}"
+>       assert gate_answers[i] == EXPECTED[i], f"web/notes/emit.mjs: {WHY[i]}"
+E       AssertionError: web/notes/emit.mjs: a crawl row against a proven control opens the first step
+E       assert 3 == 7
+
+tests/test_notes_ceiling.py:239: AssertionError
+_ test_the_ladder_climbs_only_on_a_control_paired_row[and no further, because the step above it has no] _
+
+i = 1, gate_answers = [3, 3, 3, 3, 3, 3, ...]
+
+    @pytest.mark.parametrize("i", range(len(READINGS)), ids=[w[:48] for w in WHY])
+    def test_the_ladder_climbs_only_on_a_control_paired_row(i: int, gate_answers: list[int]) -> None:
+        assert ceiling_from(READINGS[i]) == EXPECTED[i], f"this file's copy: {WHY[i]}"
+>       assert gate_answers[i] == EXPECTED[i], f"web/notes/emit.mjs: {WHY[i]}"
+E       AssertionError: web/notes/emit.mjs: and no further, because the step above it has nothing
+E       assert 3 == 7
+
+tests/test_notes_ceiling.py:239: AssertionError
+_ test_the_ladder_climbs_only_on_a_control_paired_row[both links read, both open] _
+
+i = 2, gate_answers = [3, 3, 3, 3, 3, 3, ...]
+
+    @pytest.mark.parametrize("i", range(len(READINGS)), ids=[w[:48] for w in WHY])
+    def test_the_ladder_climbs_only_on_a_control_paired_row(i: int, gate_answers: list[int]) -> None:
+        assert ceiling_from(READINGS[i]) == EXPECTED[i], f"this file's copy: {WHY[i]}"
+>       assert gate_answers[i] == EXPECTED[i], f"web/notes/emit.mjs: {WHY[i]}"
+E       AssertionError: web/notes/emit.mjs: both links read, both open
+E       assert 3 == 15
+
+tests/test_notes_ceiling.py:239: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_notes_ceiling.py::test_the_ladder_climbs_only_on_a_control_paired_row[a crawl row against a proven control opens the f]
+FAILED tests/test_notes_ceiling.py::test_the_ladder_climbs_only_on_a_control_paired_row[and no further, because the step above it has no]
+FAILED tests/test_notes_ceiling.py::test_the_ladder_climbs_only_on_a_control_paired_row[both links read, both open]
+3 failed, 15 passed in 0.29s
+
+====================================================================================================
+WHAT NOTHING ABOVE KILLED
+====================================================================================================
+
+16 of 18 collected tests were killed by part one or by a mutation.
+The rest are named rather than counted, because a survivor is either a test that cannot
+fail or a hole in this list, and both are findings:
+
+  - test_the_ladder_climbs_only_on_a_control_paired_row[a zero on both sides is not a closed step, it is]
+  - test_the_reading_in_this_tree_is_control_paired_at_all
+
+====================================================================================================
+GREEN BEFORE AND AFTER
+====================================================================================================
+
+Before anything was touched:
+
+..................                                                       [100%]
+18 passed in 0.26s
+
+After the last mutation was reverted and web/notes/emit.mjs compared against its sha256:
+
+..................                                                       [100%]
+18 passed in 0.26s

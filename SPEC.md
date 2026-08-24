@@ -197,9 +197,13 @@ than an intention:
 5. **a figure is computed from an artefact at build time** — never drawn and then checked. Zero to
    three, and a note with none says why. No photograph and no generated image: neither carries a
    fact, and an ornament on a page about evidence is the failure this product exists to find;
-6. **at most three notes** stand until an indexation reading exists from a verified Bing Webmaster
-   property. The precedent for this work gates its publishing rate on Search Console; we have none,
-   and a rate gated on an absent instrument is not a gate (L-4);
+6. **the corpus is capped at a ladder step, and every step is bought by a control-paired reading**
+   (D-35). Three notes stand until Bing Webmaster reports a crawl row for this site beside a control
+   property proving the same call able to report one; seven until it reports an impressions row the
+   same way; above fifteen is an operator's decision rather than an automatic consequence. The
+   precedent for this work gates its publishing rate on Search Console; we have none, and a rate
+   gated on an absent instrument is not a gate (L-4). **The numbers 7 and 15 are assigned and carry
+   no reading**, exactly as 3 did: what is measured is which step is open, not how far it carries;
 7. **what drafted the prose is disclosed on the face of the page.** A note is planned by
    `claude-sonnet-5` and written by `claude-haiku-4-5`, then captured once and committed — the build
    calls no model. Measuring how much of somebody else's business runs without a human, while

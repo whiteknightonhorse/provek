@@ -907,3 +907,87 @@ defect that was actually paid for, refused at the door instead of on `main` - an
 written down in D-32 rather than covered by the word "parses".
 
 Anchor: LAW-WORKFLOWS-PARSE.
+
+## L-32 The control was run, and its silence was read as an answer
+
+`bing_probe.py` was written to honour L-10 and its docstring says so: every zero-capable call is run
+a SECOND time against an old verified control site, because a `200` with an empty body is what a
+true zero and a broken call both look like. The discipline was real, the code was there from the
+first hour, and on 2026-08-21 it produced `query_stats: {"count": 0, "state": "instrument_blind"}`
+for `provek.dev` — on which a ruling was built that called a release condition unreachable.
+
+The instrument was fine. Measured 2026-08-24, one key, one code path, the two sites side by side:
+`GetQueryStats` reads 64 rows and 402 impressions at the control, `GetRankAndTrafficStats` reads 985
+impressions and 29 clicks. `provek.dev`'s zero is a real zero — no row qualified for those reports
+— though not the story the first draft of this lesson told six times over, that "Bing has not
+crawled it": the same snapshot carries `sitemap_accepted.url_count: 13`, a number Bing could not
+hold without having fetched the file. A mechanism fitted on top of a zero is L-30, and writing it
+into the lesson about instruments overstating what they measured is where it is least visible.
+(The task brief
+reports that the second pair also matches the operator's snapshot of the Bing web cabinet. That
+snapshot is not on this host and the agreement is the brief's, not a reading taken here — a
+distinction the first draft of this lesson lost in five places at once, which is the lesson's own
+subject arriving from behind.)
+
+**The control had returned zero, and a control that returns zero has established nothing.** It is
+equally what a blind call and an empty control site produce. `instrument_blind` is a positive claim
+— this call cannot see this quantity — and it was reached along the one path where no evidence for
+it exists. Everything the design got right made the failure less visible, not more: the control was
+run, its result was recorded, the shapes were counted correctly, and the state was named with
+confidence for the one case that had earned none.
+
+**And the refutation was already in the output, one line down.** `counted()` computed
+`control_proven_capable: false` and serialised it directly beneath the word `blind`. The distinction
+existed, was measured, was written to disk, and was destroyed by the name chosen for the state. That
+is L-29 arriving from the other side: there a repaired store was flattened by the tool that read it,
+here a correct field was flattened by the label printed beside it. **A record that carries its own
+refutation is not self-correcting; the field a human acts on is the one that has to be right.**
+
+The general form, and it is not about controls: **a control answers in two directions and only one
+of them is an answer.** A positive control that fires proves the instrument can see. The same
+control silent proves nothing whatever — not that the instrument is broken, not that the world is
+empty — and the temptation is to spend that silence, because a run that ends in "we still do not
+know" feels like the instrument failing rather than working. So: before a control's result is
+allowed to decide anything, ask which of its two outcomes you are holding, and if it is the silent
+one, the state you may publish is a not-measured state and nothing stronger. Blindness, like any
+other claim, needs evidence FOR it — here, a second call reading the same quantity at a coarser
+grain, which would have settled it on the day and cost one request.
+
+There is a tail worth more than the fix. The task that found this arrived saying the probe had
+declared blindness about a working instrument, which was true of the OUTPUT and false of the
+mechanism — the obvious story is a wrong API call, and reproducing it first is what refused that
+story. **Before repairing the defect a task describes, run the thing and watch it produce the
+symptom**; here it produced the opposite, and the real defect was one branch away from the one that
+would have been "fixed". Why the control was empty on 2026-08-21 remains `not_measured`, and it is
+left that way rather than filled in with the likeliest mechanism (L-30).
+
+**The same step was already published on our own site, and the count of copies was wrong three
+times.** Four documents in this repository stated the blindness itself, and all four were corrected
+here. Then `seo/KEYWORD_BASE.md` turned out to carry the same STEP in different words — an empty
+result from the `bing_serp_related` capture called "a statement about the client, not about Bing",
+from three control queries that all returned zero and whose capability was argued from plausibility.
+Then the live note whose subject is absence turned out to carry that sentence verbatim, because
+`notes_topics.json` pins those very lines as the note's source material. Zero controls, an asserted
+capability, a conclusion about the instrument: this lesson's own defect, in prose, on the page a
+reader is most likely to cite it from.
+
+The searches that missed them were not careless in the ordinary way. The note WAS opened, and the
+two sections checked were the two that had been named in advance; the second search then found the
+note and stopped at it, without asking where the note's words had come from. **A search for copies
+that only visits the places you already suspect is a search for confirmation** — and the one that
+found these looked for the STEP, a zero control promoted into a verdict, rather than for the words.
+The last turn is the useful one: two of the six copies were parent and child, so correcting the
+child alone would have been undone by the next re-capture, and the question "where did this sentence
+come from?" is what separated a list of instances from a mechanism. The live one is not repaired
+here, for reasons named in D-34 and `~/orchestra/FINDINGS.md`, which means this lesson ships with its
+own instance live on the site it is about. All found by Fable.
+
+Anchor: no code gate in this repository, and this is the honest kind of gateless. The probe answers
+to no `ABI-*` requirement and lives outside the tree (D-17, L-11, L-12), so nothing in a clone can
+read it and naming a `LAW-*` here would be the fake anchor L-8 refuses. The INSTANCE is armed where
+the subject is: `~/orchestra/bing_counted_check.py` holds eleven worlds in seven distinct states and
+asserts over all of them that no reading whose control returned data may be published as
+`instrument_blind`. The red runs are `~/orchestra/evidence/RED-B10-*` — four mutations, each a
+textual edit to a copy of the real artefact, each shown to leave the instrument control green and to
+kill a set of checks no other mutation killed — beside `RED-B10-meta-*`, which breaks each of the
+generator's own four preconditions in turn. D-34 carries the decision.

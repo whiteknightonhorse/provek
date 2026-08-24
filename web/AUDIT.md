@@ -280,6 +280,24 @@ row in a table whose whole purpose is to prove the instrument can see. Once the 
 readable, a zero on both sides now correctly reports `instrument_blind` instead of a false
 `measured`.
 
+> **Erratum, 2026-08-24 (T-B10, D-34).** The last sentence above is wrong, and it is wrong in the
+> direction this whole section is about. A zero on both sides reports *nothing*: it is equally what
+> a blind call and an empty control site produce, and publishing `instrument_blind` for it asserts
+> that the call is broken on the strength of having no evidence either way. That state now needs
+> positive evidence — an independent reading showing the control site holds the quantity while the
+> call reads zero for it — and two bare zeros are `capability_unproven`, which is a not-measured
+> state. Measured the same day, `GetQueryStats` answers **64 rows / 402 impressions** at
+> `defycard.com` and `GetRankAndTrafficStats` answers **985 impressions / 29 clicks**, so the
+> control's zero recorded on 2026-08-20 and 2026-08-21 was not durable and never licensed a
+> statement about the instrument. The rows in the table above are left as they were read, per D-28.
+>
+> **The same erratum covers the paragraph two above it**, which says a zero from `GetQueryStats` at
+> the control "is a state of the source, not a defect". That is the identical illegitimate step with
+> the sign reversed: a zero control was read as a durable property of `defycard.com`, on no evidence,
+> and the reading of 64 rows three days later is what it cost. Neither direction may be taken from a
+> control that answered zero — one of the four mutations in `~/orchestra/evidence/RED-B10-*` is
+> exactly this sign, and the gate is red under it.
+
 ### Why ownership cannot be proven from here
 
 Bing accepts three proofs: an XML file at the site root, a `msvalidate.01` meta tag, or a CNAME.

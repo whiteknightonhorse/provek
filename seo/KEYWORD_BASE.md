@@ -110,7 +110,18 @@ until the instrument has been shown able to see a non-zero. That is L-10 in this
   The organic results were counted for the first control only; for the other two the reading is that
   a full-sized page carried no related searches, and the claim goes no further. An empty result from
   an instrument that cannot be shown able to see the quantity is a statement about the client, not
-  about Bing. The source is recorded `unreadable` and contributes no keys **and no zeros**; a test
+  about Bing. **[Erratum, 2026-08-24 — T-B10, D-34: that last sentence is wrong, and it is the
+  defect this bullet is about. All three controls RETURNED ZERO, and their ability to see the
+  quantity was argued from plausibility rather than measured. Zero controls establish nothing in
+  either direction: the honest state is a statement about NOBODY — `capability_unproven` in the
+  vocabulary D-34 settles — not a statement about the client. Everything else in this bullet stands,
+  and the conservative half is the part that matters: the source contributes no keys and no zeros.
+  The same sentence is live on `/method/notes/not-measured-is-not-zero/`, and repairing it there is
+  a separate task, because a note's prose is captured once from a model and its provenance is
+  published on the page. This paragraph is inside the range `notes_topics.json` pins as that note's
+  source material (lines 100–135), so a re-capture that does not read this erratum will reproduce
+  the defect verbatim.]** The source is recorded `unreadable` and contributes no keys **and no
+  zeros**; a test
   refuses to let a blind source do either — and refuses, separately, to let any source with a
   zero-returning control be `ok`. Question-shaped keys in this base come from the two suggest
   endpoints and from Bing's related queries instead — 269 of them.
