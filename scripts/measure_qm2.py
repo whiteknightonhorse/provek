@@ -47,8 +47,6 @@ gh._api = counting_api
 out = Path("/tmp/_qm2out")
 transport, registry = FileTransport(out), PublicRegistry(out)
 
-TOKEN_HOLDER: dict[str, str] = {}
-
 def optional_token() -> str | None:
     """A credential is NOT required, and that is the point.
 

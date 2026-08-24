@@ -458,3 +458,28 @@ laws:
     text: "every pip install in a workflow names a committed, fully hash-checked set inside this tree"
     gate: scripts/verify_pip_pins.py
     test: tests/test_pip_pinned.py
+
+  # T-S4. `web/src/App.tsx` interpolated a substring of `location.pathname` straight into
+  # `/data/passports/<slug>.json`; `route.slice(3).replace(/\/$/, "")` strips a trailing slash and
+  # nothing else, so an inner `/` walked out of the directory. The finding is not a scanner's - it
+  # was raised by the 2026-08-24 triage against itself, in the act of dismissing CodeQL #6 and #7
+  # on the FROZEN `web-1.0/` copy, whose fetch went through a `.replace(/[:/]/g, "_")` that removes
+  # the separator. The live tree was a superset of the code CodeQL objected to in the frozen one and
+  # carried no alert of its own, which is `not_measured` rather than `clean` - so this law exists
+  # instead of a note recording that the scanner is content.
+  #
+  # The gate is a module the test RUNS, not a pattern it matches. `web/src/slug.js` is plain
+  # JavaScript so that `tests/slug_probe.mjs` loads the same bytes the bundle ships: Node here is
+  # v20 and cannot strip types, and a compiled `.ts` would make the gate an assertion about the
+  # compiler's output. The rule is one re-implementation away from being wrong in a way no source
+  # scan could see - `^[A-Za-z0-9_-]+$` accepts a trailing newline in Python's `re` and refuses it
+  # in JavaScript - which is the whole argument for executing it.
+  #
+  # What stays prose: that the DEPLOYED bundle enforces this. The suite reads the repository and
+  # runs one module out of it, and `verify_live.sh` reads status codes rather than behaviour. That
+  # boundary is named in the test's own WHAT IS NOT ASSERTED paragraph, in L-25's form, rather than
+  # left to be inferred from what the file happens to open.
+  - id: LAW-SLUG-JUDGED-BEFORE-FETCH
+    text: "a passport slug is judged against the emitter's own character class before it reaches a URL, and a refusal is its own state and never a missing passport"
+    gate: web/src/slug.js
+    test: tests/test_passport_slug_is_judged_before_it_is_fetched.py

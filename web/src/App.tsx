@@ -21,13 +21,22 @@ import Apply from "./pages/Apply";
 import Method from "./pages/Method";
 import Phase2 from "./pages/Phase2";
 import type { Passport, Registry as R } from "./types";
+import { isSafeSlug } from "./slug";
 
-/** Four states, never three. "missing" and "broke" are different facts about the world and a
+/** Five states, never four. "missing" and "broke" are different facts about the world and a
  * loader that folds them together is the exact defect this product exists to expose: one
- * message standing in for several states, so the reader cannot tell which one they are in. */
+ * message standing in for several states, so the reader cannot tell which one they are in.
+ *
+ * `invalid` is the fifth and it arrived with the slug guard. It is NOT a variety of `missing`:
+ * `missing` is what the registry answered when we asked it, and `invalid` is a request we never
+ * made because the address could not name a subject. Folding the two would put "nothing has been
+ * issued under this identifier" - a claim about our registry - underneath a string that is not an
+ * identifier and about which the registry was never consulted, which is the founding defect with
+ * the sign flipped: an unmeasured absence published as a measured one. */
 type Load<T> =
   | { state: "loading" }
   | { state: "missing" }
+  | { state: "invalid" }
   | { state: "error"; why: string }
   | { state: "ready"; data: T };
 
@@ -177,6 +186,18 @@ export function Body({
           about the subject: an unmeasured business is not a failing one.
         </DeadEnd>
       );
+    if (p.state === "invalid")
+      return (
+        <DeadEnd title="Not a subject identifier">
+          {/* Deliberately says nothing about the registry. Every other dead end on this route
+              reports what we asked and what came back; here nothing was asked, because the address
+              cannot be any subject's identifier, and reporting an absence we never measured is the
+              defect this site exists to find. */}
+          This address is not a subject identifier, so no passport was looked for. Identifiers are
+          made of letters, digits, <code className="font-mono text-xs">-</code> and{" "}
+          <code className="font-mono text-xs">_</code>.
+        </DeadEnd>
+      );
     if (p.state === "error")
       return (
         <DeadEnd title="Passport unavailable">
@@ -277,6 +298,16 @@ export default function App() {
     if (!slugInRoute) return;
     const key = passportId ?? slugInRoute;
     if (passports[key]) return;
+    // THE SLUG IS JUDGED BEFORE IT REACHES THE PATH, not after the response comes back. It is a
+    // substring of `location.pathname` and it is interpolated raw one line below; `route.slice(3)`
+    // strips a trailing slash and nothing else, so an inner `/` walks straight out of
+    // /data/passports/ and a `%2F` arrives at an origin that may or may not decode it before the
+    // path is resolved. Refusing here rather than trusting the fetch to 404 is the difference
+    // between a rule and a hope about somebody else's normaliser.
+    if (!isSafeSlug(slugInRoute)) {
+      setPassports((p) => ({ ...p, [key]: { state: "invalid" } }));
+      return;
+    }
     setPassports((p) => ({ ...p, [key]: { state: "loading" } }));
     fetch(`/data/passports/${slugInRoute}.json`)
       .then((r) => {

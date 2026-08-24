@@ -190,7 +190,12 @@ for full in COHORT:
               mandate_ref="self-mandate-0001", verifier_affiliation="same_owner",
               access_channel=access_channel(tok))
     m = p.to_machine()
-    ref = transport.publish(binding.as_subject_id(), m, m["verified"]["projection"])
+    # The return value is deliberately dropped, and the call is not: publishing is the side effect
+    # that puts the machine record where the row below points. The handle it returns was the
+    # server-side path, and nothing has read it since `passport_ref` stopped being that path (see
+    # the note under this line) - so binding it to a name was a reader that no longer exists.
+    # CodeQL #9, `py/unused-global-variable`.
+    transport.publish(binding.as_subject_id(), m, m["verified"]["projection"])
     # protocol_version, not SCHEMA_VERSION (Fable, R2). Those are different quantities that happen
     # to be version strings, and a fix of mine swapped one for the other because the names sit next
     # to each other: the registry then published protocol 2.0.0 for verdicts whose passports say

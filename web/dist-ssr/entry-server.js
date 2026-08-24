@@ -1898,6 +1898,23 @@ function Body({ route, reg, passport }) {
 			title: "No passport for this subject",
 			children: "Nothing has been issued under this identifier. That is a statement about our registry, not about the subject: an unmeasured business is not a failing one."
 		});
+		if (p.state === "invalid") return /* @__PURE__ */ jsxs(DeadEnd, {
+			title: "Not a subject identifier",
+			children: [
+				"This address is not a subject identifier, so no passport was looked for. Identifiers are made of letters, digits, ",
+				/* @__PURE__ */ jsx("code", {
+					className: "font-mono text-xs",
+					children: "-"
+				}),
+				" and",
+				" ",
+				/* @__PURE__ */ jsx("code", {
+					className: "font-mono text-xs",
+					children: "_"
+				}),
+				"."
+			]
+		});
 		if (p.state === "error") return /* @__PURE__ */ jsxs(DeadEnd, {
 			title: "Passport unavailable",
 			children: [

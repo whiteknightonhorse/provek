@@ -100,6 +100,105 @@ writing a date against somebody else's decision would be recording a commitment 
 enforce - the same defect as a dismissal without a basis, pointed at the calendar. The dates belong
 with the decisions, in `DECISIONS.md`, when the operator takes them.
 
+## Second triage act, 2026-08-24 (T-S4)
+
+The section above is the first act and is left exactly as it was written. This is the second, and
+it is separated rather than merged because a triage record that is edited in place stops being a
+record of when anything was known.
+
+Measured before this act: **10 open, 10 dismissed** — down from the 13 the first act left, because
+`#28`, `#38` and `#50` (`PinnedDependenciesID`) closed on their own. The first act predicted that
+and refused to record it: *"what closes a code-scanning alert is the SCAN, which runs after the
+push"*, so they were carried as `not_measured` rather than as clean. The scan has since run and
+they are `fixed`. The prediction was right and it was correctly not treated as a measurement.
+
+**Addressed by work, not by disposition (4).** `#8` `existsSync` in `web/prerender.mjs`, `#9` `ref`
+in `scripts/cohort.py`, `#10` `TOKEN_HOLDER` in `scripts/measure_qm2.py` — all three removed. In
+`cohort.py` the CALL is kept and only the binding dropped: `transport.publish(...)` is a side
+effect that puts the machine record where the registry row points, and deleting the statement
+along with its unread name would have unpublished eight passports to satisfy a linter. `#29`
+`SecurityPolicyID` is answered by `SECURITY.md`, below.
+
+Each of these four closes on the next scan, and the same rule the first act applied to the pip
+alerts applies here: until `GET /code-scanning/alerts?state=open` no longer lists them, they are
+`not_measured`, not `clean`. The edit that should close an alert is not the instrument that does.
+
+**`#51` `py/bad-tag-filter` — dismissed `used in tests`, and it is NOT `#40` coming back.**
+
+That reading was the obvious one and it is wrong. The scan that ran after `b44db01` reported `#40`
+`fixed` at `2026-08-24T11:59:23Z` and opened `#51` two seconds earlier on the line that replaced
+it, so the pair looks exactly like one alert re-raised over an edit. The messages settle it:
+
+| | message |
+|---|---|
+| `#40` | `This regular expression does not match upper case <SCRIPT> tags.` |
+| `#51` | `This regular expression does not match script end tags like </script\t\n bar>.` |
+
+Different defects. `re.I` closed the first; the second is the NEXT corner case in the same query's
+list, and `\s*` never covered it. A browser ends a script element at `</script foo="bar">` and the
+filter did not — so the escape `#40` was tightened against was still open in a second spelling,
+and `strip_tags` is the instrument `tests/test_notes.py` uses to prove FAQ text reaches the reader.
+A script it fails to remove produces a PASS read off the JSON-LD copy of a sentence that need not
+be on the page at all. That is the whole reason `#40` was not closed as noise, and it applies here
+unchanged.
+
+The filter now matches `</script(?=[\s/>])[^>]*>`, and `style` and `svg` get the same edit — they
+carry the identical hole and no alert, and absence of an alert is `not_measured`, not `clean`. The
+lookahead is load-bearing: `</script[^>]*>` alone would also eat `</scriptfoo>`, which is not an
+end tag in any parser, and a filter that removes MORE than its name says would delete page text
+and then report the page as not containing it — the same instrument defect pointed the other way.
+
+**What is not claimed: that this edit satisfies the query.** Whether CodeQL accepts a lookahead
+cannot be measured from this host. So `#51` is closed by DISMISSAL on the basis that it is
+test-only instrument code with no untrusted input and no product import — `#40`'s basis, for
+`#40`'s reasons — and the tightening is recorded beside it as a repair, not as the closure. A
+future scan is the only thing that can settle whether the query is content.
+
+**`SECURITY.md`, and the channel in it was measured before it was published.**
+
+`#29` is answered by a file, but a security policy naming a channel that accepts nothing is a
+claim stronger than its artefact — this project's founding defect, in the one document whose whole
+job is to be relied on in an emergency. Private vulnerability reporting was **off** for this
+repository. It was enabled with the token `scripts/push.sh` uses and then read back:
+
+```
+PUT  /repos/whiteknightonhorse/provek/private-vulnerability-reporting  -> HTTP 204
+GET  /repos/whiteknightonhorse/provek/private-vulnerability-reporting  -> HTTP 200 {"enabled": true}
+```
+
+The `GET` is the reading that settles it; the `204` alone would have been a report by the
+instrument about itself. An anonymous `GET` of the advisory form answers `302` to a login page,
+and that is recorded in `SECURITY.md` as the non-measurement it is rather than offered as
+confirmation — it says the same thing whether the feature is on or off, which is L-11 exactly: a
+status code encoding the asker's identity rather than the resource's state.
+
+The second channel is a **named gap**. No email address, key or form belonging to the operator
+appears in this repository or on `provek.dev`, so a reporter without a GitHub account has nowhere
+measured to go. `SECURITY.md` says so and gives the least-bad interim route rather than inventing
+an address, and that section stays `not_measured` until the operator supplies a channel and it is
+confirmed to receive mail.
+
+**The finding this file raised against itself is closed.** The first act ended by noting that
+`web/src/App.tsx:281` interpolated an unvalidated route substring into a fetch path, unflagged by
+any scanner, and that *"a finding this triage produced itself is the one most likely to go
+unaddressed"*. It is now guarded by `web/src/slug.js`, held by `LAW-SLUG-JUDGED-BEFORE-FETCH`, and
+the gate RUNS the rule under Node over an adversarial corpus rather than matching patterns against
+its source. Six mutations, each with a distinct failure set, are in
+`evidence/RED-032-a-slug-that-walked-out-of-the-passport-directory.txt`.
+
+The disposition chosen was the slug pattern, not the guard on `known` that this file offered as the
+first option. Guarding on a matched registry subject fails invariant 1 in the state that matters:
+an unmatched slug would never be fetched, never resolve, and sit under a skeleton for ever, so
+"the registry has not loaded yet" and "no such subject" would render identically. A refused slug
+therefore gets a state of its own — `invalid`, the fifth — and a dead end that says nothing about
+the registry, because nothing was asked of it.
+
+**Still open after this act (5), all of them the operator's:** `#30` `FuzzingID`, `#31`
+`DependencyUpdateToolID`, `#32` `CodeReviewID`, `#33` `MaintainedID`, `#34` `CIIBestPracticesID`.
+Unchanged from the first act and left for the same reason: they are process-maturity metrics
+answered by changing how the project is run, and `#32` in particular would close the only door
+outward this project has.
+
 ## Two corrections to the record
 
 `TokenPermissionsID` was carried into this task as one of five open highs. It was already **fixed**

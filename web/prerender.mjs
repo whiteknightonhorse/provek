@@ -14,7 +14,7 @@
  * unmeasured operation is emitted as a named PropertyValue with the string `not_measured` and its
  * reason: no schema has a slot for absence, and inventing a zero would be the founding defect.
  */
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { loadNotes, noteArticle, notesIndexArticle, noteLd } from "./notes/emit.mjs";
 

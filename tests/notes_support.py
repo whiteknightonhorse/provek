@@ -79,10 +79,31 @@ def strip_tags(html: str) -> str:
     remove that dependency. Raised as CodeQL #40 (`py/bad-tag-filter`), which was very nearly
     dismissed as noise on the grounds that a test helper has no untrusted input to defend against.
     It has no attacker; it does have a claim resting on it.
+
+    TIGHTENED A SECOND TIME, AND #51 IS NOT #40 COMING BACK. The scan that ran after the first
+    tightening reported #40 `fixed` at 2026-08-24T11:59:23Z and opened #51 two seconds earlier on
+    the replacement line. It is easy to read that pair as one alert re-raised over an edit, and the
+    messages say otherwise: #40 was "does not match upper case <SCRIPT> tags", which `re.I` closed,
+    and #51 is "does not match script end tags like `</script\\t\\n bar>`" - the NEXT corner case in
+    the same query's list, on a hole `\\s*` never covered. A browser ends a script at
+    `</script foo="bar">`; this filter did not, so the escape #40 was tightened against was still
+    open in a second spelling.
+
+    The lookahead is the part worth reading. `</script[^>]*>` alone would also eat `</scriptfoo>`,
+    which is not an end tag in any parser, and a filter that removes MORE than the thing it is
+    named for is the same instrument defect pointed the other way - it would delete page text and
+    report the page as not containing it. `(?=[\\s/>])` is the HTML end-tag-name rule written out:
+    after the name comes whitespace, `/` or `>`, or it is not that tag. The same edit is applied to
+    `style` and `svg`, which carry the identical hole and no alert - and absence of an alert is
+    `not_measured`, not `clean`.
+
+    What is NOT claimed: that the query is now satisfied. Whether CodeQL accepts a lookahead cannot
+    be measured from this host, so #51 is closed by DISMISSAL with the basis below, not by this
+    edit, and a future scan is the only thing that can settle it. See `docs/ALERT_TRIAGE.md`.
     """
-    html = re.sub(r"<script.*?</script\s*>", " ", html, flags=re.S | re.I)
-    html = re.sub(r"<style.*?</style\s*>", " ", html, flags=re.S | re.I)
-    html = re.sub(r"<svg.*?</svg\s*>", " ", html, flags=re.S | re.I)
+    html = re.sub(r"<script(?=[\s/>]).*?</script(?=[\s/>])[^>]*>", " ", html, flags=re.S | re.I)
+    html = re.sub(r"<style(?=[\s/>]).*?</style(?=[\s/>])[^>]*>", " ", html, flags=re.S | re.I)
+    html = re.sub(r"<svg(?=[\s/>]).*?</svg(?=[\s/>])[^>]*>", " ", html, flags=re.S | re.I)
     html = re.sub(r"<[^>]+>", " ", html)
     return re.sub(r"\s+", " ", html).strip()
 
