@@ -86,6 +86,10 @@ scripts/push.sh:                  [ABI-32-1, ABI-4-4]
 # addresses: it is that "the address answered wrongly" and "we could not read the address" stay
 # apart, which is where `curl -w '%{http_code}'` hands you a 000 to mistake for a verdict.
 scripts/verify_live.sh:           [ABI-16-5, ABI-16-11]
+# T-H2: the same live reading, asked one question earlier - not "does the site answer" but "is the
+# thing answering the upload this run made". Same two requirements as the check above because it is
+# the same kind of evidence, taken from the origin rather than from the tool's report on itself.
+scripts/deploy_stamp.sh:          [ABI-16-5, ABI-16-11]
 # T-C5: the same door, one moment earlier. `verify_live.sh` asks whether what WAS published answers
 # correctly; this asks whether what is ABOUT to be published was ever judged. ABI-32-1 because it is
 # the site's half of "the gates judge the artefact that leaves", which push.sh has held for the
@@ -93,6 +97,10 @@ scripts/verify_live.sh:           [ABI-16-5, ABI-16-11]
 # code - a tree git could not report on is neither clean nor dirty, and publishing on the strength
 # of that reading is the defect it exists to prevent.
 scripts/publishable_tree.py:      [ABI-32-1, ABI-16-5]
+# T-H2: the same door, one question later - not "may this tree go out" but "what is what went out
+# CALLED". Same two requirements because it is the same door and the same kind of refusal; the
+# module is separate because the two callers have opposite exemptions, not because the subject is.
+scripts/deploy_label.py:          [ABI-32-1, ABI-16-5]
 src/collector/github.py:          [ABI-5-1, ABI-5-2, ABI-4-4, ABI-30-7]
 scripts/ratchet_language.py:      [ABI-32-1, ABI-32-3]
 scripts/cohort.py:                [ABI-18-3, ABI-31-3, ABI-31-4]

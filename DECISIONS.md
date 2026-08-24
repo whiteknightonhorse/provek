@@ -1122,3 +1122,93 @@ exercised by a clone; only the tree gate it calls has moved inside, and that is 
 The corpus ceiling is untouched at three (D-18), so this channel has two more captures of work in it
 before `nothing_pending` becomes the permanent steady state — a schedule striking a channel that has
 nothing to send is the state D-19 already calls correct, not a defect to be fixed later.
+
+
+## D-26. A deployment is named by what was published, and `wrangler@4` stays unpinned
+
+**The defect, and the reason its near-miss is not a defence.** `~/orchestra/deploy.sh` built
+`web/` from the WORKING TREE and then labelled the result `git rev-parse --short HEAD`. Those are
+two different artefacts the moment the tree is dirty, and the script said so about neither: it also
+passed `--commit-dirty=true` unconditionally, so Cloudflare's own record could not separate a
+deliberate dirty publication from a clean one either — the one field built to carry that fact was a
+constant. `DEPLOY CONFIRMED on <sha>` was therefore true of a commit and false of the site, in the
+operator's deploy log, which is the only record of what is live. The deploy of 2026-08-24 01:41
+passed through the hole without falling in, because the work in progress happened to be parked in a
+stash at that minute; D-25 records the opposite arrangement at 02:59 the same morning, an unstashed
+`/apply/` rewrite in the tree two hours before the scheduler's slot. A hole closed by where the
+work happened to be lying is not closed.
+
+**Decision: a dirty tree is refused by default, and the refusal names the paths.** `push.sh` has
+refused one since it was written, for the reason it states — the gates judged the tree, so what
+leaves must be what they judged — and the site had no equivalent for the artefact a human deploys.
+The check runs BEFORE `npm run build`, because the build reads the tree: the question is about the
+input, asked before our own step touches anything.
+
+**Decision: `--allow-dirty` grants publication and never the commit's name.** The operator can
+publish an unjudged tree; the deployment is then labelled `dirty-<digest>` over a hash of the bytes
+on disk, `commit_dirty` is measured rather than asserted, and the commit message states that the
+base commit does not describe what was published. In the three fields the deployment record
+carries, the short sha therefore never stands alone.
+Without this half the flag would be the original defect with a nicer spelling, which is the whole
+reason the permission and the label are two decisions and not one.
+
+**Three outcomes, not two, and the third is load-bearing.** `labelled`, `refused — the tree is
+dirty`, and `the tree could not be read`. Collapsing the third into the first publishes under a
+name earned by a check that did not run; collapsing it into the second sends the operator hunting
+for uncommitted work that may not exist. The policy lives in `scripts/deploy_label.py` rather than
+beside the deploy script, for the reason `verify_live.sh` moved there: a check outside the
+repository is read by no reviewer and executed by no test.
+
+**What is NOT claimed, measured while writing this.** `git status` does not fail on a directory it
+cannot read — it warns on stderr and exits 0 with that subtree missing from its output. So a tree
+carrying an unreadable directory is reported clean by the shared reader and would be signed with a
+commit's sha. The hole is in `publishable_tree._porcelain`, which the scheduler's gate depends on
+too, so it is recorded as a finding rather than repaired by a neighbouring task. This gate refuses
+every dirty path git REPORTS and does not claim git reported all of them.
+
+**Decision: `wrangler@4` is NOT pinned to an exact version.** The deploy runs `npx --yes
+wrangler@4`, which floats across minor and patch releases. Pinning would freeze a tool that talks to
+somebody else's API and holds our credential, and security updates to it are worth more than the
+breakage a float can cause here — provided the breakage is caught by measurement rather than
+prevented by a version number. That proviso is the whole decision, and the first draft of this
+paragraph asserted it where it was not yet true.
+
+**What the deploy actually measures, and the second class it did not.** The failure T-H1 found is
+covered: the `functions/` directory resolved differently, the upload carries static assets and no
+Pages Function, `scripts/verify_live.sh` reads `GET /api/apply` and requires 405, and a regression
+answers 404 and exits nonzero. But `verify_live.sh` measures LIVENESS, not FRESHNESS — eight
+addresses and the codes they must answer, every one of which is answered just as well by last
+week's deployment. So the class "wrangler exited 0 and published nothing, or published somewhere
+else" read GREEN end to end: the old upload keeps answering 405 and 200, and a confirmation went
+into the operator's deploy log for an upload that never landed. A green light over an unmeasured
+fact is this project's founding defect, and claiming that measurement covered a class it could not
+see was that defect in a decision record. Found by Fable, before this was pushed.
+
+**Consequence: the label is written into the upload and read back off the live site.**
+`scripts/deploy_stamp.sh` puts it in the built directory and, after publication, requires
+`https://provek.dev/deploy-label.txt` to equal what this run published — the only fact that
+separates a fresh deployment from a working stale one. It distinguishes five answers, not two: the
+name matches; a different name is live; a 404, meaning no label was published there at all; any
+other code, meaning the address is served but which deployment is live went unmeasured; and the
+address could not be read. The body and the status code come from ONE request, because two would
+mean a verdict assembled from two different moments — the first draft took two and never read the
+second one's exit status, so a transport that died in between would have announced `000` as a fact
+about the site. It is read BEFORE `verify_live.sh`, so a green liveness reading can never be the
+first thing the operator sees about somebody else's deployment. That is what makes the float above
+a measured trade rather than a hopeful one.
+
+**Consequence: the tree is measured again after the build.** Between the gate and the upload sits
+`npm run build`, and in that window the tree can move: the build rewrites the tracked
+`web/dist-ssr/` (byte-identical today — measured — but that is a property of the build, not a
+guarantee), and `notes_cron` writes `web/notes/` on a schedule. "Concurrency = 1" is a budget rule,
+not a machine guarantee. The label taken before the build must still describe the tree after it, or
+the upload goes out under a name measured against different content; a mismatch is red and prints
+both labels.
+
+**What is still NOT measured, named rather than implied.** How Cloudflare's dashboard RENDERS a
+deployment record is not something this repository has read. The three fields it accepts —
+`--commit-hash`, `--commit-dirty`, `--commit-message` — are measured (`wrangler pages deploy
+--help`, wrangler 4) and all three are now filled from a reading of the tree instead of the
+constant `true` that used to be passed on every deploy. What that produces on screen is the
+operator's to confirm, and the sentence "the short sha never stands alone" above is a claim about
+those fields, not about a dashboard anybody here has looked at.

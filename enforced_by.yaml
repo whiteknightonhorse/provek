@@ -415,3 +415,30 @@ laws:
     text: "the unattended publisher ships only a tree the gates judged; unreadable is not clean"
     gate: scripts/publishable_tree.py
     test: tests/test_publishable_tree.py
+
+  # T-H2 - THE SAME DOOR, ASKED WHAT THE THING GOING THROUGH IT IS CALLED. The gate above decides
+  # whether the SCHEDULER may publish. This one decides what ANY publication is named, and the two
+  # differ in both directions: a human deploy has no cycle-owned exemption, and a human may
+  # deliberately publish a dirty tree, which the unattended cycle may never do.
+  #
+  # The permission and the label are separate and the second is the point. `--allow-dirty` lets the
+  # operator publish an unjudged tree; it does not let that deployment keep calling itself by a
+  # commit's name. Without the second half the flag would reopen the hole with a nicer spelling.
+  - id: LAW-DEPLOY-LABEL-TRUE
+    text: "a deployment is never named by a commit it differs from"
+    gate: scripts/deploy_label.py
+    test: tests/test_deploy_label.py
+
+  # T-H2, second half, and the reason the law above needed one. `verify_live.sh` measures LIVENESS -
+  # eight addresses and their codes - and every one of those codes is answered just as well by last
+  # week's deployment. So "wrangler exited 0 and landed nowhere" read GREEN through the whole deploy
+  # script, and D-26's claim that a wrangler regression would be caught was true of exactly one
+  # class of breakage. The label is now written into the upload and read back off the live site,
+  # which is the only thing that separates a fresh deployment from a working stale one.
+  #
+  # The name of the file is a constant in ONE place, and the round trip in the test drives both
+  # halves of the script against each other rather than naming it a second time (L-2).
+  - id: LAW-DEPLOY-LANDED
+    text: "the deployment answering on the live site is the one this run published; liveness is not freshness"
+    gate: scripts/deploy_stamp.sh
+    test: tests/test_deploy_stamp.py

@@ -1,0 +1,270 @@
+RED-023 - a deploy that signed someone else's work with a commit's name
+==================================================================================================
+
+SUBJECT: ~/orchestra/deploy.sh          (outside the repository, by design)
+         scripts/deploy_label.py
+         scripts/deploy_stamp.sh
+         tests/test_deploy_label.py
+         tests/test_deploy_stamp.py
+
+taken 2026-08-24 during T-H2, on this host, python 3.10.12, git exiting 0 where noted
+
+WHY THIS FILE IS A HAND-CAPTURED TRANSCRIPT AND NOT A GENERATOR, unlike RED-017/018/020/021.
+Its first and load-bearing run is of `~/orchestra/deploy.sh`, which is not in this repository and
+cannot be: it holds the operator's Cloudflare credential and the IPv4 pinning that credential
+needs. A generator in `evidence/` could not run it, and the one thing it must NOT do is run it to
+completion - a green pass on that script PUBLISHES provek.dev. So runs 1 and 2 below are transcripts
+of commands a reader can repeat, and only runs 3 to 6, whose subjects are inside the repository, are
+mutations. RED-022 was captured the same way and for a weaker reason.
+
+EIGHT RUNS ARE KEPT HERE. Two are the gate refusing, one is the measurement that made a fourth
+necessary, one is the suite refusing a hole in its own coverage, and the last two belong to a
+second gate that only exists because Fable refused the first version of this work: the label was
+decided but never read back, so "wrangler exited 0 and landed nowhere" stayed green through the
+whole deploy script. Runs 7 and 8 came out of Fable's SECOND refusal, of the fix itself.
+
+WHICH RUNS WERE RE-TAKEN, because a transcript that silently moved is worse than one that is
+merely old. Runs 1 and 2 were re-taken against the final code and name eight paths rather than the
+two the tree held when they were first captured. Run 3 is kept AS TAKEN, against the 14-test suite
+that existed before run 4's repair; against the shipped 17-test suite the same mutation fails 6 of
+17, and that number is stated with it. Fable caught both drifts by arithmetic.
+
+
+=== 1. the deploy refuses this working tree, and names what is in it ===
+
+$ ~/orchestra/deploy.sh
+REFUSED: the working tree is not clean, so a build from it would be published under a commit's name while differing from that commit in 8 path(s).
+  - DECISIONS.md
+  - enforced_by.yaml
+  - evidence/RED-023-a-deploy-that-signed-someone-elses-work-with-a-commits-name.txt
+  - requirements/ABI_MAP.yaml
+  - scripts/deploy_label.py
+  - scripts/deploy_stamp.sh
+  - tests/test_deploy_label.py
+  - tests/test_deploy_stamp.py
+Commit the work and deploy again, or pass --allow-dirty to publish it deliberately - the deployment is then labelled by its content and not by the commit.
+ДЕПЛОЙ ОТКАЗАН: дерево не судили ворота. Причины названы выше.
+exit=1
+
+Nothing was built and nothing was published: the gate runs BEFORE `npm run build`, because the
+build reads the tree and the question is about the input. Before this commit the same command
+would have built all eight of these into `web/dist`, uploaded them, and printed
+"ДЕПЛОЙ ПОДТВЕРЖДЁН на 0538a90" - the name of a commit that contains none of them.
+
+
+=== 2. the operator's flag publishes, and the label stops being a sha ===
+
+$ python3 scripts/deploy_label.py --allow-dirty
+LABEL=dirty-7722f973e63e
+COMMIT_HASH=0538a900aba90c000a9881c2d0223d9e828ef0b1
+COMMIT_DIRTY=true
+COMMIT_MESSAGE=DIRTY TREE published on the operator's explicit flag: content dirty-7722f973e63e, 8 path(s) differ from base commit 0538a90, which does NOT describe what was published
+exit=0
+
+$ git rev-parse --short=7 HEAD
+0538a90
+
+This is the half of the ruling a permission alone would have thrown away. `--allow-dirty` grants
+publication, never the commit's name: `0538a90` does not appear in the label, the dirty boolean is
+now MEASURED rather than the constant `true` that used to be passed on every deploy, and the
+message states what the base commit fails to describe. The gate is invoked directly here rather
+than through `deploy.sh`, because `deploy.sh --allow-dirty` would have published a dirty copy of
+provek.dev to make the point.
+
+THIS DIGEST IS NOT REPRODUCIBLE AND CANNOT BE. It is taken over a tree that CONTAINS THIS FILE, and
+this file was edited after the reading in order to record the number - so recomputing it will never
+yield `dirty-7722f973e63e` again. That is a property of a content digest over a tree holding its own
+evidence, not a fault in either; it is named because the header above promises commands a reader can
+repeat, and this is the one that cannot be. What IS reproducible, and is the actual claim, is the
+SHAPE: the label carries the `dirty-` prefix and the short sha does not appear in it.
+
+
+=== 3. the pre-fix behaviour, restored as a mutation, and the suite going red over it ===
+
+The behaviour this task removed - the label is HEAD's short sha whatever the tree holds:
+
+    -    if not dirty:
+    +    if True:
+             return LABELLED, {
+
+$ python3 -m pytest tests/test_deploy_label.py -q
+>           assert printed["LABEL"].startswith(dl.DIRTY_PREFIX)
+E           AssertionError: assert False
+E            +    and   'dirty-' = dl.DIRTY_PREFIX
+FAILED tests/test_deploy_label.py::test_a_dirty_tree_is_refused_by_default_and_the_paths_are_named
+FAILED tests/test_deploy_label.py::test_an_untracked_file_is_dirty_too
+FAILED tests/test_deploy_label.py::test_the_operators_flag_publishes_but_the_label_stops_being_a_sha
+FAILED tests/test_deploy_label.py::test_the_exit_code_and_the_fields_reach_the_caller[dirty-flag1-3]
+FAILED tests/test_deploy_label.py::test_the_exit_code_and_the_fields_reach_the_caller[dirty-flag2-0]
+5 failed, 9 passed in 0.44s
+
+Five failures across three shapes - the returned tuple, the process exit code, and the process
+stdout - so the gate is armed at every level `deploy.sh` actually reads.
+
+CAPTURED AGAINST THE 14-TEST SUITE, BEFORE RUN 4'S REPAIR, and left as taken. The shipped suite has
+17 cases, and the same mutation against it reads `6 failed, 11 passed` - the sixth being
+`test_an_unreadable_file_is_refused_as_dirty_which_is_honest_and_misleading`, added in run 7. A
+reader repeating run 3 today gets the larger number; saying so here is cheaper than a transcript
+that has quietly stopped matching the code beside it.
+
+
+=== 4. THE SUITE'S OWN HOLE: invariant 1 collapsed, and NOTHING went red ===
+
+This is the run worth keeping. The second mutation folds "we could not read the tree" into "the
+tree is clean" - the exact defect this project exists to catch, applied to the module written to
+catch it:
+
+    -    if dirty is None or head is None or len(head) != FULL_SHA_CHARS:
+    -        return UNREADABLE, {}, []
+    +    dirty = dirty or []
+    +    if head is None or len(head) != FULL_SHA_CHARS:
+    +        return UNREADABLE, {}, []
+
+$ python3 -m pytest tests/test_deploy_label.py -q       (14 tests, before the repair)
+..............                                                           [100%]
+14 passed in 0.45s
+
+GREEN. The test named `test_a_tree_that_cannot_be_read_is_not_labelled_at_all` passed a mutation
+that reports an unreadable tree as clean, because its fixture was a directory OUTSIDE any
+repository - where `git rev-parse HEAD` fails too, so the surviving half of the condition caught it
+and the half under test was never exercised. A test that passes for a reason other than the one its
+name gives is a test that cannot fail, and its docstring claimed the coverage it did not have.
+
+WHAT WAS DONE ABOUT IT, and why not simply by building a better fixture. The candidate real state -
+a repository git can read but cannot `status` - was probed and does not exist on this host:
+
+$ mkdir sub && echo x > sub/b.txt && chmod 000 sub
+$ git status --porcelain -z --untracked-files=all
+warning: could not open directory 'sub/': Permission denied
+status rc=0
+
+git WARNS and EXITS 0, with the unreadable subtree missing from its output. That is a finding of
+its own and it is recorded as one (below); it is not a fixture. So the repair is a second case that
+stubs `_porcelain` to None and asserts the branch, under both values of `--allow-dirty`. The first
+case keeps its fixture and loses its claim: it is now called
+`test_a_directory_that_is_not_a_repository_is_not_labelled_at_all`, which is what it measures, and
+its docstring says so. Fifteen tests now:
+
+$ python3 -m pytest tests/test_deploy_label.py -q       (after the repair, mutation still applied)
+E           AssertionError: allow_dirty=False
+E           assert 0 == 4
+E            +  where 4 = dl.UNREADABLE
+FAILED tests/test_deploy_label.py::test_a_status_that_could_not_be_read_is_not_a_clean_tree
+1 failed, 14 passed in 0.44s
+
+$ python3 -m pytest tests/test_deploy_label.py -q       (mutation reverted, file restored byte for byte)
+...............                                                          [100%]
+15 passed in 0.45s
+
+
+=== 5. LIVENESS READ AS FRESHNESS: the stale deployment the first version could not see ===
+
+Fable refused the first version of this work on the ground that the label was DECIDED and never
+READ BACK. `verify_live.sh` measures eight addresses and the codes they must answer, and every one
+of those codes is answered just as well by last week's upload - so `wrangler` exiting 0 over a
+publish that landed nowhere produced 405 on `/api/apply`, 200 everywhere else, and a confirmation
+in the operator's deploy log for a deployment that never happened. `scripts/deploy_stamp.sh` writes
+the label into the upload and requires the live site to say it back. The mutation removes the
+comparison while keeping the fetch - which is precisely the state the deploy script was in before:
+
+    -    if [ "$live" != "$label" ]; then
+    +    if false; then
+
+$ python3 -m pytest tests/test_deploy_stamp.py -q
+FAILED tests/test_deploy_stamp.py::test_a_stale_deployment_is_red_and_names_both_labels
+1 failed, 8 passed in 2.28s
+
+The stub origin in that case serves a WORKING site whose only fault is its name.
+
+
+=== 6. AN OPTIONAL CHECK IS A CHECK THAT CAN BE ABSENT ===
+
+The label is a required argument, not a defaulted one. If a missing label exited 0, then
+`deploy.sh` dropping the argument - by an edit, a typo, or a variable that came back empty - would
+be indistinguishable from a confirmed deployment, silently and forever:
+
+    -if [ -z "$cmd" ] || [ -z "$label" ]; then
+    +if [ -z "$cmd" ]; then
+
+$ python3 -m pytest tests/test_deploy_stamp.py -q
+E       AssertionError: assert 'REFUSED' in ''
+FAILED tests/test_deploy_stamp.py::test_a_check_that_cannot_run_refuses_instead_of_passing[args1]
+1 failed, 8 passed in 2.49s
+
+Note what the mutant did instead of refusing: it went and asked the live site for a label to
+compare against nothing, and reported LABEL NOT PUBLISHED. A check with no subject, returning a
+verdict about the site. Both files restored byte for byte afterwards; 24 tests green across the two
+suites.
+
+
+=== 7. THE PERMISSION STATES, MEASURED - AND THE PREDICTION CAME OUT BACKWARDS ===
+
+Fable's second refusal said the clean path's re-reading of every tracked file was defended by no
+test that could fail, and that the state it CLAIMED to cover ("a tracked file under a directory
+this process cannot enter") probably never reached that path at all - git would report the file as
+deleted and the tree would be refused as dirty instead. Both halves were built as fixtures. The
+prediction was inverted, and the module's comment had to be rewritten around the measurement:
+
+  (a) tracked file that cannot be READ, in a directory that CAN be entered
+      $ chmod 000 plain.txt
+      porcelain      -> ['plain.txt']        git cannot compare it to the index, so: MODIFIED
+      content_digest -> None
+      decide         -> 3                    DIRTY_REFUSED, before the digest is ever consulted
+
+      Honest - the tree cannot be shown equal to HEAD - and misleading, because it names the path
+      as uncommitted work and sends the operator to `git status`, which will say the same thing,
+      rather than to the permission bit. Pinned by a test so the next person to improve it knows
+      the behaviour was measured and not accidental.
+
+  (b) tracked file under a directory that cannot be ENTERED
+      $ chmod 000 d/
+      porcelain      -> []                   git warns, exits 0, and omits the subtree: CLEAN
+      content_digest -> None
+      decide         -> 4                    UNREADABLE
+
+      This is the case the clean path's reading exists for, and it is the one Fable expected not to
+      reach it. Without that reading the tree above is labelled with a commit's short sha, clean,
+      confidently, over content nothing opened.
+
+Both cases are now tests, skipped only under euid 0 - where `chmod 000` means nothing and the
+fixture could not express its own subject. Neither this host nor the CI runner is root.
+
+
+=== 8. THE READING THAT LOOKED LIKE DEAD CODE, PROVED TO BE LOAD-BEARING ===
+
+`content_digest(root)` is called on the CLEAN path and its return value is thrown away, which is
+exactly the shape a later reader deletes as dead. The mutation is that deletion:
+
+    -        if content_digest(root) is None:
+    -            return UNREADABLE, {}, []
+
+$ python3 -m pytest tests/test_deploy_label.py -q
+E           assert 0 == 4
+E            +  where 4 = dl.UNREADABLE
+FAILED tests/test_deploy_label.py::test_a_tracked_file_under_an_unenterable_directory_is_unreadable_not_clean
+1 failed, 16 passed in 0.71s
+
+Before run 7 that deletion was green. A guard whose removal nothing notices is a guard that is
+already gone.
+
+
+=== THE FINDING RUN 4 TURNED UP, WHICH IS NOT FIXED IN THIS COMMIT ===
+
+A directory git cannot read is reported by `publishable_tree._porcelain` as no dirty paths at all,
+so BOTH gates built on it call such a tree clean. Measured end to end, with an uncommitted file
+inside a `chmod 000` directory:
+
+    porcelain -> []
+    classify  -> 0        (PUBLISHABLE=0 FOREIGN=3 UNREADABLE=4)
+    decide    -> 0  202ae11  commit_dirty=false
+
+The scheduler would publish it and this module would sign it with a commit's short sha. The hole is
+in a module belonging to T-C5 and shared with the scheduler's gate, so it is written into
+`~/orchestra/FINDINGS.md` for the judge rather than repaired in passing by a neighbouring task.
+
+HALF OF IT IS CLOSED HERE ANYWAY, and only half - see run 7. This module's clean path re-reads every
+file `git ls-files` names, which catches the TRACKED case (b) without touching T-C5's module. The
+UNTRACKED file in the reading above stays invisible, because `ls-files` omits it exactly as `status`
+does, and the scheduler's gate has no equivalent second reading at all. So the claim this module
+makes is: it refuses every dirty path git REPORTS, it refuses a tree holding a tracked file it
+cannot read, and it does not claim git reported everything.
