@@ -72,6 +72,17 @@ that plainly is cheaper than pretending otherwise.
   no third party has been probed yet; you would be the first, and that is stated here rather than
   discovered by you afterwards.
 
+  **One operation is three requests to your origin**, and that is the number to judge us by, since
+  it is the one your logs will show. We ask a path you publish as public, to establish that your
+  server answers us at all; a path that cannot exist, to learn what your server says about a path
+  that is simply not there; and then the closed path itself. Without those two controls a refusal
+  is not a measurement — a 403 aimed at our client, or a 404 from a host that serves 404 to
+  everything, would otherwise be published as your control working. All three count against the
+  ceiling in the mandate, and a probe that cannot afford all three does not run at all rather than
+  running half of itself. `CALLS_PER_PROBE` in `src/prober/prober.py` is where that number lives
+  and `tests/test_apply_names_the_probe_cost.py` fails the build if the intake form and the code
+  stop agreeing on it.
+
   It requires an explicit mandate naming the action, the paths, a ceiling on how often, what must
   not be affected, who answers for damage, what aborts the run and how you revoke it — **without a
   mandate we do not touch your production, and probing someone's live system without one is an

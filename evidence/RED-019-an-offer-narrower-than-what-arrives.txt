@@ -1,0 +1,1603 @@
+# RED-019 - an offer narrower than what arrives at the applicant's server
+#
+# Produced by evidence/RED-019-generator.py, checked in beside this file so the runs below can be
+# repeated rather than believed (L-26). It establishes that the gate landing with T-A2-5 -
+# tests/test_apply_names_the_probe_cost.py - CAN fail in each of the 24 directions it holds,
+# and that it does NOT fail on 7 true rewrites of the same copy.
+#
+# 19 OF THE 24 WERE GREEN against an earlier draft of that gate. Fable produced them in
+# successive rounds of refutation, each round against the repairs made for the one before it. The
+# ROUND headings below are the only count of those rounds: a number for them stood in this sentence
+# saying TWO over an artefact whose own headings reach SEVEN, and it was wrong because it was typed
+# while there were fewer - the same drift, in the same pair, that the two counts above are computed
+# to avoid. They are computed from the mutation table below, not typed here: this file carried three
+# different numbers for that quantity while it was being written, which is the drift RED-013 exists
+# over. Nor is every green one a softening sentence, which is what that sentence also claimed. Some
+# are: a real editor writes them while making a promise smaller. The rest are holes in what the gate
+# could READ - a constant moved with a surface left standing, and extractor after extractor dropping
+# copy silently - where the suite went green over a promise nobody could see.
+#
+# WHAT THE GATE IS FOR. `/apply/` told a stranger that "one operation exists today: we attempt to
+# use a path you tell us is closed". True in the prober's unit of account, and the wrong unit for
+# the page: src/prober/prober.py spends CALLS_PER_PROBE = 3 requests per probe - a positive
+# control, a negative control and the attempt - all three on the subject's origin, all three
+# counted against the ceiling their mandate sets. The offer was therefore MODEST beyond the
+# artefact, which is the direction nobody checks: a claim that understates reads as care, and the
+# person it misleads is the one deciding whether we may touch their production system.
+#
+# WHY THE GATE COUNTS NUMERALS AND NOT NOUNS, which is the whole story of its three drafts. Draft
+# one matched `<number> request(s)`; mutation 6 walked past it saying `call`. Draft two answered
+# with a longer noun list - calls, hits, connections, round-trips - and mutation 8 walked past THAT
+# saying `lookup`, mutation 9 hedged the number instead with `a couple of`, and mutation 10 wrote
+# the count as an adverb with no noun at all: `your server hears from us once`. The nouns a
+# softening sentence might use cannot be enumerated. The numbers a page may state can, and they are
+# now written down: every quantity in this copy is either the prober's number or one the gate has
+# been told about, so a number nobody looked at is a red on the page where a stranger decides.
+#
+# THE NUMBER LIVES IN THREE FILES, so the gate is a comparison and the mutations move one copy at a
+# time: one empties the page and leaves the constant, one moves the constant and leaves the page,
+# one empties the document and leaves the page. No file is wrong on its own in any of those cases.
+# What was missing was never the value - it was the comparison.
+#
+# THE MUTATIONS, IN ORDER. 1, the pre-T-A2-5 copy restored. 2, CALLS_PER_PROBE moved to 4 with the
+# page untouched - the drift that will actually happen, since this constant was 2 until Fable found
+# the negative control. 3, a second and contradicting count in the option. 4, the option withdrawn
+# as D-21 once withdrew it, where the only honest outcome is a red saying the gate now guards
+# nothing. 5, the form corrected and the document left behind - the copy whose own last sentence
+# records that it is always the last thing corrected. 6, 8, 9 and 10, four softening sentences that
+# each walked past a draft of this gate: `a single call`, `a single lookup`, `a couple of requests`
+# and the adverbial `once`. 7, the whole drift performed carefully - constant, option and document
+# moved to four - with the confirmation screen still saying three. 11, that same confirmation
+# paragraph split in two so the count lands past the `</p>` a previous draft scoped to, telling the
+# applicant we will send ninety requests at their production system. 12, a declared phrase reused
+# verbatim to promise less, back when the allowlist granted `only one` everywhere it appeared. 13,
+# a count hidden between two apostrophes, deleted by the string stripper before any rule ran. 14,
+# the adverbial `once` in the document, which the weaker rule it then had could not see. 15, `three
+# hundred requests` read as the prober's own `three`, because a multiplier sat where the noun was
+# expected. 16, copy declared as a string constant and rendered through an expression, invisible to
+# an extractor that treated every string as configuration. 17, an `aria-describedby` satisfying
+# "the offer states the cost" while the visible sentence read `costs your origin very little` - two
+# extractors over one file, disagreeing. 18, the same sentence with the count moved into a `title`
+# tooltip, which the repair for 17 permitted because it drew the line by role and a tooltip looked
+# like copy - read by a mouse, by nobody on touch or a keyboard. 19, the opposite half: a tooltip
+# that CONTRADICTS a correct visible count, which excluding attributes outright would have opened.
+#
+# THE RULES READ JSX TEXT NODES NOW, plus copy declared as a module constant, plus the readable
+# attributes for contradiction only. An attribute is not a text node, so 18 cannot recur; neither
+# is a status code, which is what mutations 15 to 17's repair had made the build red over.
+#
+# AND THE RUNS THAT MUST STAY GREEN. `three HTTP requests`, `three separate requests`,
+# `3 requests` and `three round-trips` are all true, and the second draft went RED on the first of
+# them - telling an editor the offer stated no count while it stated the right one. A gate that
+# reds over truthful copy is walked past exactly as fast as one that greens over lies (L-5), so
+# those four runs are part of this evidence and not a footnote to it.
+#
+# WHAT THE GENERATOR REFUSES TO WRITE THIS FILE OVER:
+#
+#   * a mutation that does not go red, or whose marker does not appear in EVERY file it touched;
+#   * a true rewrite that does go red - the false-red direction, which is why that section exists;
+#   * a pytest that did not RUN - only exit 1 is a suite that ran and failed;
+#   * a mutation that kills either INSTRUMENT CONTROL: the comment stripper, and the check that
+#     conditionally-rendered copy survives extraction. The second control exists because the
+#     extractor DID fail that way for an hour - `{...}` stripping deleted the confirmation screen
+#     wholesale, so the page scan ran over a page with no confirmation on it, which is the surface
+#     the scan had just been widened to cover;
+#   * two mutations the reader could not tell apart - the signature is the failing tests AND the
+#     assertion text printed under them, which is what forced the gate to quote the offending
+#     phrase rather than just its number;
+#   * a file not restored byte for byte, or a suite not green afterwards.
+#
+# The diff blocks are printed from the same strings that perform the edits, so the prose and the
+# edit cannot disagree.
+#
+# Everything below each `$` line is the output of the command shown, with TWO substitutions, named
+# here because an unnamed one would make this file's own claim false: object addresses are written
+# as `0xADDR` and the run duration as `in Ns`. Both change between identical runs, and L-26 asks a
+# reader to re-run this and compare - which they cannot do if a faithful reproduction always
+# differs. Nothing else is altered.
+#
+# ============================================================================================
+# RED 1. In web/src/pages/Apply.tsx.
+# THE STATE T-A2-5 FOUND, restored word for word. Every sentence here is true: there is one operation, it is an attempt on a path the subject says is closed, and the mandate that follows names paths in the plural and a rate ceiling. What the person deciding is not told is that the one operation puts THREE requests into their logs. The offer is narrower than the artefact, which is the direction nobody audits - a claim too modest reads as care.
+#
+# IT ALSO PROVES THE PRESENCE RULE IS SCOPED TO THE OPTION. After it lands, `three requests` still appears twice in `Apply.tsx` - in the confirmation screen and in the file's own docstring - so a whole-file search for the number is GREEN over exactly the defect this task exists to close.
+#
+# -                   One operation exists today: we attempt to use a path you tell us is closed, and
+# -                   report whether your running system actually refuses it &mdash; which your
+# -                   repository cannot show. That one operation costs your origin three requests. We
+# -                   ask a path you publish as public, to establish that your server answers us at
+# -                   all; a path that cannot exist, to learn what your server says about a path that
+# -                   is simply not there; and then the closed path itself. Without those two controls
+# -                   a refusal is not a measurement, so they are part of the operation and not extras.
+# -                   Ticking this records the question. It is answered with a document naming the
+# -                   action, the paths, a ceiling on how often &mdash; which all three requests count
+# -                   against &mdash; what must not be affected, who answers for damage, what stops the
+# -                   run and how you revoke it, and nothing is sent at your systems before you sign
+# -                   it.
+# +                   {/* MUTATION: the copy as it stood before T-A2-5 */}
+# +                   One operation exists today: we attempt to use a path you tell us is closed, and
+# +                   report whether your running system actually refuses it &mdash; which your
+# +                   repository cannot show. Ticking this records the question. It is answered with a
+# +                   document naming the action, the paths, a ceiling on how often, what must not be
+# +                   affected, who answers for damage, what stops the run and how you revoke it, and
+# +                   nothing is sent at your systems before you sign it.
+#
+# $ grep -Hn 'MUTATION' web/src/pages/Apply.tsx
+# web/src/pages/Apply.tsx:255:                  {/* MUTATION: the copy as it stood before T-A2-5 */}
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+........FFFF.F                                                           [100%]
+=================================== FAILURES ===================================
+_ test_the_offer_states_how_many_requests_reach_the_applicant[docs/WHY_GET_VERIFIED.md (the cost paragraph)] _
+
+surface = 'docs/WHY_GET_VERIFIED.md (the cost paragraph)'
+
+    @pytest.mark.parametrize("surface", sorted(PRESENCE))
+    def test_the_offer_states_how_many_requests_reach_the_applicant(surface: str) -> None:
+        """The state this task found: an offer stated only in operations."""
+>       assert _states_the_count(PRESENCE[surface]()), (
+            f"the active-probing offer in {surface} does not say how many requests one probe sends to "
+            f"the applicant's origin. src/prober/prober.py spends {CALLS_PER_PROBE} of them - a "
+            "positive control, a negative control and the attempt - and 'one operation' is our unit of "
+            "account, not the unit that arrives at their server. The person reading this offer is "
+            "deciding what may touch their live system; an offer narrower than the artefact behind it "
+            "is the defect this project exists to find, and worse when the artefact is ours."
+        )
+E       AssertionError: the active-probing offer in docs/WHY_GET_VERIFIED.md (the cost paragraph) does not say how many requests one probe sends to the applicant's origin. src/prober/prober.py spends 4 of them - a positive control, a negative control and the attempt - and 'one operation' is our unit of account, not the unit that arrives at their server. The person reading this offer is deciding what may touch their live system; an offer narrower than the artefact behind it is the defect this project exists to find, and worse when the artefact is ours.
+E       assert False
+E        +  where False = _states_the_count('**One operation is three requests to your origin**, and that is the number to judge us by, since it is the one your l...es and `tests/test_apply_names_the_probe_cost.py` fails the build if the intake form and the code stop agreeing on it.')
+E        +    where '**One operation is three requests to your origin**, and that is the number to judge us by, since it is the one your l...es and `tests/test_apply_names_the_probe_cost.py` fails the build if the intake form and the code stop agreeing on it.' = <function _cost_paragraph at 0xADDR>()
+
+tests/test_apply_names_the_probe_cost.py:787: AssertionError
+_ test_the_offer_states_how_many_requests_reach_the_applicant[web/src/pages/Apply.tsx (the option)] _
+
+surface = 'web/src/pages/Apply.tsx (the option)'
+
+    @pytest.mark.parametrize("surface", sorted(PRESENCE))
+    def test_the_offer_states_how_many_requests_reach_the_applicant(surface: str) -> None:
+        """The state this task found: an offer stated only in operations."""
+>       assert _states_the_count(PRESENCE[surface]()), (
+            f"the active-probing offer in {surface} does not say how many requests one probe sends to "
+            f"the applicant's origin. src/prober/prober.py spends {CALLS_PER_PROBE} of them - a "
+            "positive control, a negative control and the attempt - and 'one operation' is our unit of "
+            "account, not the unit that arrives at their server. The person reading this offer is "
+            "deciding what may touch their live system; an offer narrower than the artefact behind it "
+            "is the defect this project exists to find, and worse when the artefact is ours."
+        )
+E       AssertionError: the active-probing offer in web/src/pages/Apply.tsx (the option) does not say how many requests one probe sends to the applicant's origin. src/prober/prober.py spends 4 of them - a positive control, a negative control and the attempt - and 'one operation' is our unit of account, not the unit that arrives at their server. The person reading this offer is deciding what may touch their live system; an offer narrower than the artefact behind it is the defect this project exists to find, and worse when the artefact is ours.
+E       assert False
+E        +  where False = _states_the_count('Ask about an active-probing mandate as well. One operation exists today: we attempt to use a path you tell us is clos... answers for damage, what stops the run and how you revoke it, and nothing is sent at your systems before you sign it.')
+E        +    where 'Ask about an active-probing mandate as well. One operation exists today: we attempt to use a path you tell us is clos... answers for damage, what stops the run and how you revoke it, and nothing is sent at your systems before you sign it.' = <function _option at 0xADDR>()
+
+tests/test_apply_names_the_probe_cost.py:787: AssertionError
+_ test_every_quantity_stated_is_the_probers_or_a_declared_one[docs/WHY_GET_VERIFIED.md (the offer section)] _
+
+surface = 'docs/WHY_GET_VERIFIED.md (the offer section)'
+
+    @pytest.mark.parametrize("surface", sorted(STRICT))
+    def test_every_quantity_stated_is_the_probers_or_a_declared_one(surface: str) -> None:
+        """The rule that does not depend on guessing which nouns a softening sentence will use.
+    
+        A second count - "in practice it is usually a single call", "your server hears from us once",
+        "the ninety HTTP requests it spends" - is caught here whatever noun it hangs on, because what
+        is checked is the number. Five sentences of exactly that shape passed earlier drafts of this
+        file, and each of them was a promise about somebody's production system.
+        """
+        scope, permitted = STRICT[surface]
+        stray = _undeclared(scope(), permitted)
+>       assert not stray, (
+            f"{surface} states {stray}, which is neither the {CALLS_PER_PROBE} requests "
+            "src/prober/prober.py spends nor a quantity this gate has been told about. If it is a "
+            "second count of what reaches the applicant's server, it is a promise we do not keep - "
+            "and if it counts something else entirely, add the phrase to this gate so that the next "
+            "number appearing here is still a red. A number nobody looked at, on the page where a "
+            "stranger decides what may touch their production system, is the defect this project "
+            "exists to find."
+        )
+E       AssertionError: docs/WHY_GET_VERIFIED.md (the offer section) states ['...overed by you afterwards. **One operation is three requests to your origin**, and that is...', '...se be published as your control working. All three count against the ceiling in the ma...', '...mandate, and a probe that cannot afford all three does not run at all rather than ru...'], which is neither the 4 requests src/prober/prober.py spends nor a quantity this gate has been told about. If it is a second count of what reaches the applicant's server, it is a promise we do not keep - and if it counts something else entirely, add the phrase to this gate so that the next number appearing here is still a red. A number nobody looked at, on the page where a stranger decides what may touch their production system, is the defect this project exists to find.
+E       assert not ['...overed by you afterwards. **One operation is three requests to your origin**, and that is...', '...se be publishe...he ceiling in the ma...', '...mandate, and a probe that cannot afford all three does not run at all rather than ru...']
+
+tests/test_apply_names_the_probe_cost.py:808: AssertionError
+_ test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)] _
+
+surface = 'web/src/pages/Apply.tsx (the whole page)'
+
+    @pytest.mark.parametrize("surface", sorted(STRICT))
+    def test_every_quantity_stated_is_the_probers_or_a_declared_one(surface: str) -> None:
+        """The rule that does not depend on guessing which nouns a softening sentence will use.
+    
+        A second count - "in practice it is usually a single call", "your server hears from us once",
+        "the ninety HTTP requests it spends" - is caught here whatever noun it hangs on, because what
+        is checked is the number. Five sentences of exactly that shape passed earlier drafts of this
+        file, and each of them was a promise about somebody's production system.
+        """
+        scope, permitted = STRICT[surface]
+        stray = _undeclared(scope(), permitted)
+>       assert not stray, (
+            f"{surface} states {stray}, which is neither the {CALLS_PER_PROBE} requests "
+            "src/prober/prober.py spends nor a quantity this gate has been told about. If it is a "
+            "second count of what reaches the applicant's server, it is a promise we do not keep - "
+            "and if it counts something else entirely, add the phrase to this gate so that the next "
+            "number appearing here is still a red. A number nobody looked at, on the page where a "
+            "stranger decides what may touch their production system, is the defect this project "
+            "exists to find."
+        )
+E       AssertionError: web/src/pages/Apply.tsx (the whole page) states ['...nt to agree: it names the one action and the three requests it spends on your origin, the...'], which is neither the 4 requests src/prober/prober.py spends nor a quantity this gate has been told about. If it is a second count of what reaches the applicant's server, it is a promise we do not keep - and if it counts something else entirely, add the phrase to this gate so that the next number appearing here is still a red. A number nobody looked at, on the page where a stranger decides what may touch their production system, is the defect this project exists to find.
+E       assert not ['...nt to agree: it names the one action and the three requests it spends on your origin, the...']
+
+tests/test_apply_names_the_probe_cost.py:808: AssertionError
+_ test_every_declared_quantity_is_still_on_the_page[web/src/pages/Apply.tsx (the whole page)] _
+
+surface = 'web/src/pages/Apply.tsx (the whole page)'
+
+    @pytest.mark.parametrize("surface", sorted(STRICT))
+    def test_every_declared_quantity_is_still_on_the_page(surface: str) -> None:
+        """A declaration whose sentence has gone is a permission nobody revoked.
+    
+        The list above is the only place this gate can be widened, so it is the only place it can rot.
+        A phrase left behind after its copy was rewritten grants a number that no longer has a reason,
+        and the next editor to write that number would find the gate already agreeing with them -
+        L-16's shape, inside the allowlist rather than in a path.
+        """
+        scope, permitted = STRICT[surface]
+        text = scope()
+        missing = sorted(p for p in permitted if p not in text)
+>       assert not missing, (
+            f"{surface} no longer contains {missing}, which this gate still permits a quantity for. "
+            "Either the copy was rewritten and the declaration should go with it, or the declaration "
+            "was mistyped and has been permitting nothing since it was added - and a permission for a "
+            "sentence that is not there is one an editor will meet as agreement."
+        )
+E       AssertionError: web/src/pages/Apply.tsx (the whole page) no longer contains ['That one operation costs your origin', 'Without those two controls'], which this gate still permits a quantity for. Either the copy was rewritten and the declaration should go with it, or the declaration was mistyped and has been permitting nothing since it was added - and a permission for a sentence that is not there is one an editor will meet as agreement.
+E       assert not ['That one operation costs your origin', 'Without those two controls']
+
+tests/test_apply_names_the_probe_cost.py:831: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apply_names_the_probe_cost.py::test_the_offer_states_how_many_requests_reach_the_applicant[docs/WHY_GET_VERIFIED.md (the cost paragraph)]
+FAILED tests/test_apply_names_the_probe_cost.py::test_the_offer_states_how_many_requests_reach_the_applicant[web/src/pages/Apply.tsx (the option)]
+FAILED tests/test_apply_names_the_probe_cost.py::test_every_quantity_stated_is_the_probers_or_a_declared_one[docs/WHY_GET_VERIFIED.md (the offer section)]
+FAILED tests/test_apply_names_the_probe_cost.py::test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)]
+FAILED tests/test_apply_names_the_probe_cost.py::test_every_declared_quantity_is_still_on_the_page[web/src/pages/Apply.tsx (the whole page)]
+5 failed, 9 passed in Ns
+
+# ============================================================================================
+# RED 2. In src/prober/prober.py.
+# THE DRIFT, AND IT IS NOT HYPOTHETICAL: this constant was 2 until Fable found that a probe without a negative control cannot tell a withheld path from one that was never there. The next such finding adds a fourth request, the page is not open in the editor at the time, and `/apply/` goes on promising three - a number that was measured once and is now a guess. Nothing on either side of this pair is wrong in isolation, which is why the missing thing was the comparison and not a value (D-20).
+#
+# - CALLS_PER_PROBE = 3
+# + CALLS_PER_PROBE = 4  # MUTATION: a fourth request, page untouched
+#
+# $ grep -Hn 'MUTATION' src/prober/prober.py
+# src/prober/prober.py:60:CALLS_PER_PROBE = 4  # MUTATION: a fourth request, page untouched
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+........FFFF..                                                           [100%]
+=================================== FAILURES ===================================
+_ test_the_offer_states_how_many_requests_reach_the_applicant[docs/WHY_GET_VERIFIED.md (the cost paragraph)] _
+
+surface = 'docs/WHY_GET_VERIFIED.md (the cost paragraph)'
+
+    @pytest.mark.parametrize("surface", sorted(PRESENCE))
+    def test_the_offer_states_how_many_requests_reach_the_applicant(surface: str) -> None:
+        """The state this task found: an offer stated only in operations."""
+>       assert _states_the_count(PRESENCE[surface]()), (
+            f"the active-probing offer in {surface} does not say how many requests one probe sends to "
+            f"the applicant's origin. src/prober/prober.py spends {CALLS_PER_PROBE} of them - a "
+            "positive control, a negative control and the attempt - and 'one operation' is our unit of "
+            "account, not the unit that arrives at their server. The person reading this offer is "
+            "deciding what may touch their live system; an offer narrower than the artefact behind it "
+            "is the defect this project exists to find, and worse when the artefact is ours."
+        )
+E       AssertionError: the active-probing offer in docs/WHY_GET_VERIFIED.md (the cost paragraph) does not say how many requests one probe sends to the applicant's origin. src/prober/prober.py spends 4 of them - a positive control, a negative control and the attempt - and 'one operation' is our unit of account, not the unit that arrives at their server. The person reading this offer is deciding what may touch their live system; an offer narrower than the artefact behind it is the defect this project exists to find, and worse when the artefact is ours.
+E       assert False
+E        +  where False = _states_the_count('**One operation is three requests to your origin**, and that is the number to judge us by, since it is the one your l...es and `tests/test_apply_names_the_probe_cost.py` fails the build if the intake form and the code stop agreeing on it.')
+E        +    where '**One operation is three requests to your origin**, and that is the number to judge us by, since it is the one your l...es and `tests/test_apply_names_the_probe_cost.py` fails the build if the intake form and the code stop agreeing on it.' = <function _cost_paragraph at 0xADDR>()
+
+tests/test_apply_names_the_probe_cost.py:787: AssertionError
+_ test_the_offer_states_how_many_requests_reach_the_applicant[web/src/pages/Apply.tsx (the option)] _
+
+surface = 'web/src/pages/Apply.tsx (the option)'
+
+    @pytest.mark.parametrize("surface", sorted(PRESENCE))
+    def test_the_offer_states_how_many_requests_reach_the_applicant(surface: str) -> None:
+        """The state this task found: an offer stated only in operations."""
+>       assert _states_the_count(PRESENCE[surface]()), (
+            f"the active-probing offer in {surface} does not say how many requests one probe sends to "
+            f"the applicant's origin. src/prober/prober.py spends {CALLS_PER_PROBE} of them - a "
+            "positive control, a negative control and the attempt - and 'one operation' is our unit of "
+            "account, not the unit that arrives at their server. The person reading this offer is "
+            "deciding what may touch their live system; an offer narrower than the artefact behind it "
+            "is the defect this project exists to find, and worse when the artefact is ours."
+        )
+E       AssertionError: the active-probing offer in web/src/pages/Apply.tsx (the option) does not say how many requests one probe sends to the applicant's origin. src/prober/prober.py spends 4 of them - a positive control, a negative control and the attempt - and 'one operation' is our unit of account, not the unit that arrives at their server. The person reading this offer is deciding what may touch their live system; an offer narrower than the artefact behind it is the defect this project exists to find, and worse when the artefact is ours.
+E       assert False
+E        +  where False = _states_the_count('Ask about an active-probing mandate as well. One operation exists today: we attempt to use a path you tell us is clos... answers for damage, what stops the run and how you revoke it, and nothing is sent at your systems before you sign it.')
+E        +    where 'Ask about an active-probing mandate as well. One operation exists today: we attempt to use a path you tell us is clos... answers for damage, what stops the run and how you revoke it, and nothing is sent at your systems before you sign it.' = <function _option at 0xADDR>()
+
+tests/test_apply_names_the_probe_cost.py:787: AssertionError
+_ test_every_quantity_stated_is_the_probers_or_a_declared_one[docs/WHY_GET_VERIFIED.md (the offer section)] _
+
+surface = 'docs/WHY_GET_VERIFIED.md (the offer section)'
+
+    @pytest.mark.parametrize("surface", sorted(STRICT))
+    def test_every_quantity_stated_is_the_probers_or_a_declared_one(surface: str) -> None:
+        """The rule that does not depend on guessing which nouns a softening sentence will use.
+    
+        A second count - "in practice it is usually a single call", "your server hears from us once",
+        "the ninety HTTP requests it spends" - is caught here whatever noun it hangs on, because what
+        is checked is the number. Five sentences of exactly that shape passed earlier drafts of this
+        file, and each of them was a promise about somebody's production system.
+        """
+        scope, permitted = STRICT[surface]
+        stray = _undeclared(scope(), permitted)
+>       assert not stray, (
+            f"{surface} states {stray}, which is neither the {CALLS_PER_PROBE} requests "
+            "src/prober/prober.py spends nor a quantity this gate has been told about. If it is a "
+            "second count of what reaches the applicant's server, it is a promise we do not keep - "
+            "and if it counts something else entirely, add the phrase to this gate so that the next "
+            "number appearing here is still a red. A number nobody looked at, on the page where a "
+            "stranger decides what may touch their production system, is the defect this project "
+            "exists to find."
+        )
+E       AssertionError: docs/WHY_GET_VERIFIED.md (the offer section) states ['...overed by you afterwards. **One operation is three requests to your origin**, and that is...', '...se be published as your control working. All three count against the ceiling in the ma...', '...mandate, and a probe that cannot afford all three does not run at all rather than ru...'], which is neither the 4 requests src/prober/prober.py spends nor a quantity this gate has been told about. If it is a second count of what reaches the applicant's server, it is a promise we do not keep - and if it counts something else entirely, add the phrase to this gate so that the next number appearing here is still a red. A number nobody looked at, on the page where a stranger decides what may touch their production system, is the defect this project exists to find.
+E       assert not ['...overed by you afterwards. **One operation is three requests to your origin**, and that is...', '...se be publishe...he ceiling in the ma...', '...mandate, and a probe that cannot afford all three does not run at all rather than ru...']
+
+tests/test_apply_names_the_probe_cost.py:808: AssertionError
+_ test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)] _
+
+surface = 'web/src/pages/Apply.tsx (the whole page)'
+
+    @pytest.mark.parametrize("surface", sorted(STRICT))
+    def test_every_quantity_stated_is_the_probers_or_a_declared_one(surface: str) -> None:
+        """The rule that does not depend on guessing which nouns a softening sentence will use.
+    
+        A second count - "in practice it is usually a single call", "your server hears from us once",
+        "the ninety HTTP requests it spends" - is caught here whatever noun it hangs on, because what
+        is checked is the number. Five sentences of exactly that shape passed earlier drafts of this
+        file, and each of them was a promise about somebody's production system.
+        """
+        scope, permitted = STRICT[surface]
+        stray = _undeclared(scope(), permitted)
+>       assert not stray, (
+            f"{surface} states {stray}, which is neither the {CALLS_PER_PROBE} requests "
+            "src/prober/prober.py spends nor a quantity this gate has been told about. If it is a "
+            "second count of what reaches the applicant's server, it is a promise we do not keep - "
+            "and if it counts something else entirely, add the phrase to this gate so that the next "
+            "number appearing here is still a red. A number nobody looked at, on the page where a "
+            "stranger decides what may touch their production system, is the defect this project "
+            "exists to find."
+        )
+E       AssertionError: web/src/pages/Apply.tsx (the whole page) states ['...nt to agree: it names the one action and the three requests it spends on your origin, the...', '...t show. That one operation costs your origin three requests. We ask a path you publish as...', '...the paths, a ceiling on how often which all three requests count against what must not b...'], which is neither the 4 requests src/prober/prober.py spends nor a quantity this gate has been told about. If it is a second count of what reaches the applicant's server, it is a promise we do not keep - and if it counts something else entirely, add the phrase to this gate so that the next number appearing here is still a red. A number nobody looked at, on the page where a stranger decides what may touch their production system, is the defect this project exists to find.
+E       assert not ['...nt to agree: it names the one action and the three requests it spends on your origin, the...', '...t show. That o...h you publish as...', '...the paths, a ceiling on how often which all three requests count against what must not b...']
+
+tests/test_apply_names_the_probe_cost.py:808: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apply_names_the_probe_cost.py::test_the_offer_states_how_many_requests_reach_the_applicant[docs/WHY_GET_VERIFIED.md (the cost paragraph)]
+FAILED tests/test_apply_names_the_probe_cost.py::test_the_offer_states_how_many_requests_reach_the_applicant[web/src/pages/Apply.tsx (the option)]
+FAILED tests/test_apply_names_the_probe_cost.py::test_every_quantity_stated_is_the_probers_or_a_declared_one[docs/WHY_GET_VERIFIED.md (the offer section)]
+FAILED tests/test_apply_names_the_probe_cost.py::test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)]
+4 failed, 10 passed in Ns
+
+# ============================================================================================
+# RED 3. In web/src/pages/Apply.tsx.
+# THE HALF-DONE EDIT, in the promise's own noun. A later hand adds a reassuring sentence and the option states three requests in one place and one in another. The count is present, so an assertion that only asked whether a number was there is green; the applicant reads two promises and cannot tell which of them we will keep.
+#
+# -                   Ticking this records the question.
+# +                   {/* MUTATION */}
+# +                   In practice one request is usually all it takes.
+# +                   Ticking this records the question.
+#
+# $ grep -Hn 'MUTATION' web/src/pages/Apply.tsx
+# web/src/pages/Apply.tsx:262:                  {/* MUTATION */}
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+...........F..                                                           [100%]
+=================================== FAILURES ===================================
+_ test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)] _
+
+surface = 'web/src/pages/Apply.tsx (the whole page)'
+
+    @pytest.mark.parametrize("surface", sorted(STRICT))
+    def test_every_quantity_stated_is_the_probers_or_a_declared_one(surface: str) -> None:
+        """The rule that does not depend on guessing which nouns a softening sentence will use.
+    
+        A second count - "in practice it is usually a single call", "your server hears from us once",
+        "the ninety HTTP requests it spends" - is caught here whatever noun it hangs on, because what
+        is checked is the number. Five sentences of exactly that shape passed earlier drafts of this
+        file, and each of them was a promise about somebody's production system.
+        """
+        scope, permitted = STRICT[surface]
+        stray = _undeclared(scope(), permitted)
+>       assert not stray, (
+            f"{surface} states {stray}, which is neither the {CALLS_PER_PROBE} requests "
+            "src/prober/prober.py spends nor a quantity this gate has been told about. If it is a "
+            "second count of what reaches the applicant's server, it is a promise we do not keep - "
+            "and if it counts something else entirely, add the phrase to this gate so that the next "
+            "number appearing here is still a red. A number nobody looked at, on the page where a "
+            "stranger decides what may touch their production system, is the defect this project "
+            "exists to find."
+        )
+E       AssertionError: web/src/pages/Apply.tsx (the whole page) states ['...of the operation and not extras. In practice one request is usually all it takes. Tick...'], which is neither the 3 requests src/prober/prober.py spends nor a quantity this gate has been told about. If it is a second count of what reaches the applicant's server, it is a promise we do not keep - and if it counts something else entirely, add the phrase to this gate so that the next number appearing here is still a red. A number nobody looked at, on the page where a stranger decides what may touch their production system, is the defect this project exists to find.
+E       assert not ['...of the operation and not extras. In practice one request is usually all it takes. Tick...']
+
+tests/test_apply_names_the_probe_cost.py:808: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apply_names_the_probe_cost.py::test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)]
+1 failed, 13 passed in Ns
+
+# ============================================================================================
+# RED 4. In web/src/pages/Apply.tsx.
+# D-21 IN MINIATURE, AND IT IS THE FAILURE MODE OF EVERY GATE THAT READS A PAGE. The active option is withdrawn - a legitimate decision, taken once already - and this file stays behind. Scoped to a block that no longer exists, the honest outcome is a red saying the gate is now guarding nothing, not a green earned by having nothing to check. L-16: a gate pointed at something that moved reports clean forever.
+#
+# - <input type="radio" name="mandate" value="active" className="mt-1" />
+# + {/* MUTATION: the option withdrawn */}
+# +               <input type="radio" name="mandate" value="passive-only" className="mt-1" />
+#
+# $ grep -Hn 'MUTATION' web/src/pages/Apply.tsx
+# web/src/pages/Apply.tsx:251:              {/* MUTATION: the option withdrawn */}
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+.........F....                                                           [100%]
+=================================== FAILURES ===================================
+_ test_the_offer_states_how_many_requests_reach_the_applicant[web/src/pages/Apply.tsx (the option)] _
+
+surface = 'web/src/pages/Apply.tsx (the option)'
+
+    @pytest.mark.parametrize("surface", sorted(PRESENCE))
+    def test_the_offer_states_how_many_requests_reach_the_applicant(surface: str) -> None:
+        """The state this task found: an offer stated only in operations."""
+>       assert _states_the_count(PRESENCE[surface]()), (
+            f"the active-probing offer in {surface} does not say how many requests one probe sends to "
+            f"the applicant's origin. src/prober/prober.py spends {CALLS_PER_PROBE} of them - a "
+            "positive control, a negative control and the attempt - and 'one operation' is our unit of "
+            "account, not the unit that arrives at their server. The person reading this offer is "
+            "deciding what may touch their live system; an offer narrower than the artefact behind it "
+            "is the defect this project exists to find, and worse when the artefact is ours."
+        )
+
+tests/test_apply_names_the_probe_cost.py:787: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _option() -> str:
+        """The active option's own description - the sentences somebody reads before ticking the box."""
+        code = _code(FORM)
+        start = code.find('value="active"')
+>       assert start != -1, (
+            'web/src/pages/Apply.tsx no longer offers a radio with value="active". If the active-'
+            "mandate option was withdrawn again, withdraw or repoint this gate in the same commit "
+            "rather than leaving it green over nothing - D-21 removed the option and left the rule "
+            "behind it standing in three documents, which is how a repealed rule keeps enforcing."
+        )
+E       AssertionError: web/src/pages/Apply.tsx no longer offers a radio with value="active". If the active-mandate option was withdrawn again, withdraw or repoint this gate in the same commit rather than leaving it green over nothing - D-21 removed the option and left the rule behind it standing in three documents, which is how a repealed rule keeps enforcing.
+E       assert -1 != -1
+
+tests/test_apply_names_the_probe_cost.py:475: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apply_names_the_probe_cost.py::test_the_offer_states_how_many_requests_reach_the_applicant[web/src/pages/Apply.tsx (the option)]
+1 failed, 13 passed in Ns
+
+# ============================================================================================
+# RED 5. In docs/WHY_GET_VERIFIED.md.
+# THE SAME OFFER, IN THE COPY THAT SAYS OF ITSELF THAT NOBODY RE-READS IT. `docs/WHY_GET_VERIFIED.md` carries this offer to the same stranger and its own closing sentence records that it was the last thing corrected twice already - once while there was no prober, once the day after. Correcting the form and leaving the document is not a smaller version of this defect; it is the version that survives, because the fixed copy is the one everybody looks at afterwards.
+#
+# -   **One operation is three requests to your origin**, and that is the number to judge us by, since
+# -   it is the one your logs will show. We ask a path you publish as public, to establish that your
+# -   server answers us at all; a path that cannot exist, to learn what your server says about a path
+# -   that is simply not there; and then the closed path itself. Without those two controls a refusal
+# -   is not a measurement — a 403 aimed at our client, or a 404 from a host that serves 404 to
+# -   everything, would otherwise be published as your control working. All three count against the
+# -   ceiling in the mandate, and a probe that cannot afford all three does not run at all rather than
+# -   running half of itself. `CALLS_PER_PROBE` in `src/prober/prober.py` is where that number lives
+# -   and `tests/test_apply_names_the_probe_cost.py` fails the build if the intake form and the code
+# -   stop agreeing on it.
+# +   <!-- MUTATION: the count removed from the document -->
+#
+# $ grep -Hn 'MUTATION' docs/WHY_GET_VERIFIED.md
+# docs/WHY_GET_VERIFIED.md:75:  <!-- MUTATION: the count removed from the document -->
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+........F...F.                                                           [100%]
+=================================== FAILURES ===================================
+_ test_the_offer_states_how_many_requests_reach_the_applicant[docs/WHY_GET_VERIFIED.md (the cost paragraph)] _
+
+surface = 'docs/WHY_GET_VERIFIED.md (the cost paragraph)'
+
+    @pytest.mark.parametrize("surface", sorted(PRESENCE))
+    def test_the_offer_states_how_many_requests_reach_the_applicant(surface: str) -> None:
+        """The state this task found: an offer stated only in operations."""
+>       assert _states_the_count(PRESENCE[surface]()), (
+            f"the active-probing offer in {surface} does not say how many requests one probe sends to "
+            f"the applicant's origin. src/prober/prober.py spends {CALLS_PER_PROBE} of them - a "
+            "positive control, a negative control and the attempt - and 'one operation' is our unit of "
+            "account, not the unit that arrives at their server. The person reading this offer is "
+            "deciding what may touch their live system; an offer narrower than the artefact behind it "
+            "is the defect this project exists to find, and worse when the artefact is ours."
+        )
+
+tests/test_apply_names_the_probe_cost.py:787: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _cost_paragraph() -> str:
+        """The paragraph of that section which states the cost, where the strict rule is affordable."""
+        text = DOC.read_text(encoding="utf-8")
+        start = text.find("**One operation is")
+>       assert start != -1, (
+            "docs/WHY_GET_VERIFIED.md no longer opens its cost paragraph with `**One operation is`. "
+            "That sentence is the offer's statement of what reaches the applicant's server; if it was "
+            "reworded, repoint this scope in the same commit."
+        )
+E       AssertionError: docs/WHY_GET_VERIFIED.md no longer opens its cost paragraph with `**One operation is`. That sentence is the offer's statement of what reaches the applicant's server; if it was reworded, repoint this scope in the same commit.
+E       assert -1 != -1
+
+tests/test_apply_names_the_probe_cost.py:515: AssertionError
+_ test_every_declared_quantity_is_still_on_the_page[docs/WHY_GET_VERIFIED.md (the offer section)] _
+
+surface = 'docs/WHY_GET_VERIFIED.md (the offer section)'
+
+    @pytest.mark.parametrize("surface", sorted(STRICT))
+    def test_every_declared_quantity_is_still_on_the_page(surface: str) -> None:
+        """A declaration whose sentence has gone is a permission nobody revoked.
+    
+        The list above is the only place this gate can be widened, so it is the only place it can rot.
+        A phrase left behind after its copy was rewritten grants a number that no longer has a reason,
+        and the next editor to write that number would find the gate already agreeing with them -
+        L-16's shape, inside the allowlist rather than in a path.
+        """
+        scope, permitted = STRICT[surface]
+        text = scope()
+        missing = sorted(p for p in permitted if p not in text)
+>       assert not missing, (
+            f"{surface} no longer contains {missing}, which this gate still permits a quantity for. "
+            "Either the copy was rewritten and the declaration should go with it, or the declaration "
+            "was mistyped and has been permitting nothing since it was added - and a permission for a "
+            "sentence that is not there is one an editor will meet as agreement."
+        )
+E       AssertionError: docs/WHY_GET_VERIFIED.md (the offer section) no longer contains ['**One operation is', 'Without those two controls', 'it is the one your logs will show'], which this gate still permits a quantity for. Either the copy was rewritten and the declaration should go with it, or the declaration was mistyped and has been permitting nothing since it was added - and a permission for a sentence that is not there is one an editor will meet as agreement.
+E       assert not ['**One operation is', 'Without those two controls', 'it is the one your logs will show']
+
+tests/test_apply_names_the_probe_cost.py:831: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apply_names_the_probe_cost.py::test_the_offer_states_how_many_requests_reach_the_applicant[docs/WHY_GET_VERIFIED.md (the cost paragraph)]
+FAILED tests/test_apply_names_the_probe_cost.py::test_every_declared_quantity_is_still_on_the_page[docs/WHY_GET_VERIFIED.md (the offer section)]
+2 failed, 12 passed in Ns
+
+# ============================================================================================
+# RED 6. In web/src/pages/Apply.tsx.
+# ROUND ONE. The first draft counted `<number> request(s)` and nothing else, so the contradicting sentence walked past it by saying `call` - and nobody softening a promise reaches for the noun the promise was made in. GREEN against a gate whose docstring claimed to catch exactly this case.
+#
+# -                   Ticking this records the question.
+# +                   {/* MUTATION */}
+# +                   In practice it is usually a single call and no more.
+# +                   Ticking this records the question.
+#
+# $ grep -Hn 'MUTATION' web/src/pages/Apply.tsx
+# web/src/pages/Apply.tsx:262:                  {/* MUTATION */}
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+...........F..                                                           [100%]
+=================================== FAILURES ===================================
+_ test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)] _
+
+surface = 'web/src/pages/Apply.tsx (the whole page)'
+
+    @pytest.mark.parametrize("surface", sorted(STRICT))
+    def test_every_quantity_stated_is_the_probers_or_a_declared_one(surface: str) -> None:
+        """The rule that does not depend on guessing which nouns a softening sentence will use.
+    
+        A second count - "in practice it is usually a single call", "your server hears from us once",
+        "the ninety HTTP requests it spends" - is caught here whatever noun it hangs on, because what
+        is checked is the number. Five sentences of exactly that shape passed earlier drafts of this
+        file, and each of them was a promise about somebody's production system.
+        """
+        scope, permitted = STRICT[surface]
+        stray = _undeclared(scope(), permitted)
+>       assert not stray, (
+            f"{surface} states {stray}, which is neither the {CALLS_PER_PROBE} requests "
+            "src/prober/prober.py spends nor a quantity this gate has been told about. If it is a "
+            "second count of what reaches the applicant's server, it is a promise we do not keep - "
+            "and if it counts something else entirely, add the phrase to this gate so that the next "
+            "number appearing here is still a red. A number nobody looked at, on the page where a "
+            "stranger decides what may touch their production system, is the defect this project "
+            "exists to find."
+        )
+E       AssertionError: web/src/pages/Apply.tsx (the whole page) states ['...on and not extras. In practice it is usually a single call and no more. Ticking this rec...'], which is neither the 3 requests src/prober/prober.py spends nor a quantity this gate has been told about. If it is a second count of what reaches the applicant's server, it is a promise we do not keep - and if it counts something else entirely, add the phrase to this gate so that the next number appearing here is still a red. A number nobody looked at, on the page where a stranger decides what may touch their production system, is the defect this project exists to find.
+E       assert not ['...on and not extras. In practice it is usually a single call and no more. Ticking this rec...']
+
+tests/test_apply_names_the_probe_cost.py:808: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apply_names_the_probe_cost.py::test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)]
+1 failed, 13 passed in Ns
+
+# ============================================================================================
+# RED 7. In src/prober/prober.py web/src/pages/Apply.tsx docs/WHY_GET_VERIFIED.md.
+# ROUND ONE. Three copies corrected and a fourth surface left standing: `CALLS_PER_PROBE` becomes 4, the option and the document are updated, and the confirmation shown to the applicant who ASKED FOR THE ACTIVE MANDATE still says three requests. That screen is the last thing they read before the operator writes to them with a document to sign. GREEN against a gate scoped to the fieldset and the document - and whose scoping comment NAMED this screen as a place a count could hide, one screen before permitting it.
+#
+# - CALLS_PER_PROBE = 3
+# + CALLS_PER_PROBE = 4  # MUTATION: a fourth request
+#
+# - costs your origin three requests
+# + costs your origin four requests {/* MUTATION */}
+#
+# - which all three requests count
+# + which all four requests count
+#
+# - **One operation is three requests to your origin**
+# + **One operation is four requests to your origin**<!-- MUTATION -->
+#
+# - All three count against the
+# + All four count against the
+#
+# $ grep -Hn 'MUTATION' src/prober/prober.py web/src/pages/Apply.tsx docs/WHY_GET_VERIFIED.md
+# src/prober/prober.py:60:CALLS_PER_PROBE = 4  # MUTATION: a fourth request
+# web/src/pages/Apply.tsx:257:                  repository cannot show. That one operation costs your origin four requests {/* MUTATION */}. We
+# docs/WHY_GET_VERIFIED.md:75:  **One operation is four requests to your origin**<!-- MUTATION -->, and that is the number to judge us by, since
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+..........FF..                                                           [100%]
+=================================== FAILURES ===================================
+_ test_every_quantity_stated_is_the_probers_or_a_declared_one[docs/WHY_GET_VERIFIED.md (the offer section)] _
+
+surface = 'docs/WHY_GET_VERIFIED.md (the offer section)'
+
+    @pytest.mark.parametrize("surface", sorted(STRICT))
+    def test_every_quantity_stated_is_the_probers_or_a_declared_one(surface: str) -> None:
+        """The rule that does not depend on guessing which nouns a softening sentence will use.
+    
+        A second count - "in practice it is usually a single call", "your server hears from us once",
+        "the ninety HTTP requests it spends" - is caught here whatever noun it hangs on, because what
+        is checked is the number. Five sentences of exactly that shape passed earlier drafts of this
+        file, and each of them was a promise about somebody's production system.
+        """
+        scope, permitted = STRICT[surface]
+        stray = _undeclared(scope(), permitted)
+>       assert not stray, (
+            f"{surface} states {stray}, which is neither the {CALLS_PER_PROBE} requests "
+            "src/prober/prober.py spends nor a quantity this gate has been told about. If it is a "
+            "second count of what reaches the applicant's server, it is a promise we do not keep - "
+            "and if it counts something else entirely, add the phrase to this gate so that the next "
+            "number appearing here is still a red. A number nobody looked at, on the page where a "
+            "stranger decides what may touch their production system, is the defect this project "
+            "exists to find."
+        )
+E       AssertionError: docs/WHY_GET_VERIFIED.md (the offer section) states ['...mandate, and a probe that cannot afford all three does not run at all rather than ru...'], which is neither the 4 requests src/prober/prober.py spends nor a quantity this gate has been told about. If it is a second count of what reaches the applicant's server, it is a promise we do not keep - and if it counts something else entirely, add the phrase to this gate so that the next number appearing here is still a red. A number nobody looked at, on the page where a stranger decides what may touch their production system, is the defect this project exists to find.
+E       assert not ['...mandate, and a probe that cannot afford all three does not run at all rather than ru...']
+
+tests/test_apply_names_the_probe_cost.py:808: AssertionError
+_ test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)] _
+
+surface = 'web/src/pages/Apply.tsx (the whole page)'
+
+    @pytest.mark.parametrize("surface", sorted(STRICT))
+    def test_every_quantity_stated_is_the_probers_or_a_declared_one(surface: str) -> None:
+        """The rule that does not depend on guessing which nouns a softening sentence will use.
+    
+        A second count - "in practice it is usually a single call", "your server hears from us once",
+        "the ninety HTTP requests it spends" - is caught here whatever noun it hangs on, because what
+        is checked is the number. Five sentences of exactly that shape passed earlier drafts of this
+        file, and each of them was a promise about somebody's production system.
+        """
+        scope, permitted = STRICT[surface]
+        stray = _undeclared(scope(), permitted)
+>       assert not stray, (
+            f"{surface} states {stray}, which is neither the {CALLS_PER_PROBE} requests "
+            "src/prober/prober.py spends nor a quantity this gate has been told about. If it is a "
+            "second count of what reaches the applicant's server, it is a promise we do not keep - "
+            "and if it counts something else entirely, add the phrase to this gate so that the next "
+            "number appearing here is still a red. A number nobody looked at, on the page where a "
+            "stranger decides what may touch their production system, is the defect this project "
+            "exists to find."
+        )
+E       AssertionError: web/src/pages/Apply.tsx (the whole page) states ['...nt to agree: it names the one action and the three requests it spends on your origin, the...'], which is neither the 4 requests src/prober/prober.py spends nor a quantity this gate has been told about. If it is a second count of what reaches the applicant's server, it is a promise we do not keep - and if it counts something else entirely, add the phrase to this gate so that the next number appearing here is still a red. A number nobody looked at, on the page where a stranger decides what may touch their production system, is the defect this project exists to find.
+E       assert not ['...nt to agree: it names the one action and the three requests it spends on your origin, the...']
+
+tests/test_apply_names_the_probe_cost.py:808: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apply_names_the_probe_cost.py::test_every_quantity_stated_is_the_probers_or_a_declared_one[docs/WHY_GET_VERIFIED.md (the offer section)]
+FAILED tests/test_apply_names_the_probe_cost.py::test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)]
+2 failed, 12 passed in Ns
+
+# ============================================================================================
+# RED 8. In web/src/pages/Apply.tsx.
+# ROUND TWO, and the reason this gate stopped counting nouns. The second draft answered round one by LENGTHENING the noun list - calls, hits, connections, round-trips - and Fable walked past the longer list with `lookup`. A list of synonyms is never finished, and the draft after this one counts numerals instead: `a single` is caught here whatever noun follows it.
+#
+# -                   Ticking this records the question.
+# +                   {/* MUTATION */}
+# +                   In practice it is a single lookup and no more.
+# +                   Ticking this records the question.
+#
+# $ grep -Hn 'MUTATION' web/src/pages/Apply.tsx
+# web/src/pages/Apply.tsx:262:                  {/* MUTATION */}
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+...........F..                                                           [100%]
+=================================== FAILURES ===================================
+_ test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)] _
+
+surface = 'web/src/pages/Apply.tsx (the whole page)'
+
+    @pytest.mark.parametrize("surface", sorted(STRICT))
+    def test_every_quantity_stated_is_the_probers_or_a_declared_one(surface: str) -> None:
+        """The rule that does not depend on guessing which nouns a softening sentence will use.
+    
+        A second count - "in practice it is usually a single call", "your server hears from us once",
+        "the ninety HTTP requests it spends" - is caught here whatever noun it hangs on, because what
+        is checked is the number. Five sentences of exactly that shape passed earlier drafts of this
+        file, and each of them was a promise about somebody's production system.
+        """
+        scope, permitted = STRICT[surface]
+        stray = _undeclared(scope(), permitted)
+>       assert not stray, (
+            f"{surface} states {stray}, which is neither the {CALLS_PER_PROBE} requests "
+            "src/prober/prober.py spends nor a quantity this gate has been told about. If it is a "
+            "second count of what reaches the applicant's server, it is a promise we do not keep - "
+            "and if it counts something else entirely, add the phrase to this gate so that the next "
+            "number appearing here is still a red. A number nobody looked at, on the page where a "
+            "stranger decides what may touch their production system, is the defect this project "
+            "exists to find."
+        )
+E       AssertionError: web/src/pages/Apply.tsx (the whole page) states ['...operation and not extras. In practice it is a single lookup and no more. Ticking this rec...'], which is neither the 3 requests src/prober/prober.py spends nor a quantity this gate has been told about. If it is a second count of what reaches the applicant's server, it is a promise we do not keep - and if it counts something else entirely, add the phrase to this gate so that the next number appearing here is still a red. A number nobody looked at, on the page where a stranger decides what may touch their production system, is the defect this project exists to find.
+E       assert not ['...operation and not extras. In practice it is a single lookup and no more. Ticking this rec...']
+
+tests/test_apply_names_the_probe_cost.py:808: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apply_names_the_probe_cost.py::test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)]
+1 failed, 13 passed in Ns
+
+# ============================================================================================
+# RED 9. In web/src/pages/Apply.tsx.
+# ROUND TWO, AND THE ONE NO NOUN LIST COULD EVER HAVE CAUGHT. `a couple of requests` uses the promise's own noun and hedges the number instead - and the quantifier list of the draft that had just been widened for nouns did not have it. Vague where the task demands a number, and it reads as candour.
+#
+# -                   Ticking this records the question.
+# +                   {/* MUTATION */}
+# +                   In practice it is usually a couple of requests, no more.
+# +                   Ticking this records the question.
+#
+# $ grep -Hn 'MUTATION' web/src/pages/Apply.tsx
+# web/src/pages/Apply.tsx:262:                  {/* MUTATION */}
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+...........F..                                                           [100%]
+=================================== FAILURES ===================================
+_ test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)] _
+
+surface = 'web/src/pages/Apply.tsx (the whole page)'
+
+    @pytest.mark.parametrize("surface", sorted(STRICT))
+    def test_every_quantity_stated_is_the_probers_or_a_declared_one(surface: str) -> None:
+        """The rule that does not depend on guessing which nouns a softening sentence will use.
+    
+        A second count - "in practice it is usually a single call", "your server hears from us once",
+        "the ninety HTTP requests it spends" - is caught here whatever noun it hangs on, because what
+        is checked is the number. Five sentences of exactly that shape passed earlier drafts of this
+        file, and each of them was a promise about somebody's production system.
+        """
+        scope, permitted = STRICT[surface]
+        stray = _undeclared(scope(), permitted)
+>       assert not stray, (
+            f"{surface} states {stray}, which is neither the {CALLS_PER_PROBE} requests "
+            "src/prober/prober.py spends nor a quantity this gate has been told about. If it is a "
+            "second count of what reaches the applicant's server, it is a promise we do not keep - "
+            "and if it counts something else entirely, add the phrase to this gate so that the next "
+            "number appearing here is still a red. A number nobody looked at, on the page where a "
+            "stranger decides what may touch their production system, is the defect this project "
+            "exists to find."
+        )
+E       AssertionError: web/src/pages/Apply.tsx (the whole page) states ['...on and not extras. In practice it is usually a couple of requests, no more. Ticking this record...'], which is neither the 3 requests src/prober/prober.py spends nor a quantity this gate has been told about. If it is a second count of what reaches the applicant's server, it is a promise we do not keep - and if it counts something else entirely, add the phrase to this gate so that the next number appearing here is still a red. A number nobody looked at, on the page where a stranger decides what may touch their production system, is the defect this project exists to find.
+E       assert not ['...on and not extras. In practice it is usually a couple of requests, no more. Ticking this record...']
+
+tests/test_apply_names_the_probe_cost.py:808: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apply_names_the_probe_cost.py::test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)]
+1 failed, 13 passed in Ns
+
+# ============================================================================================
+# RED 10. In web/src/pages/Apply.tsx.
+# ROUND TWO, STRUCTURAL. `once` states a count and names no noun at all, so no lengthening of any noun list can reach it - the quantity is the whole phrase. This is the mutation that settles the design question: the gate must read numbers, because a number can be written without the thing it counts and a thing cannot be written without a name.
+#
+# -                   Ticking this records the question.
+# +                   {/* MUTATION */}
+# +                   In practice your server hears from us once.
+# +                   Ticking this records the question.
+#
+# $ grep -Hn 'MUTATION' web/src/pages/Apply.tsx
+# web/src/pages/Apply.tsx:262:                  {/* MUTATION */}
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+...........F..                                                           [100%]
+=================================== FAILURES ===================================
+_ test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)] _
+
+surface = 'web/src/pages/Apply.tsx (the whole page)'
+
+    @pytest.mark.parametrize("surface", sorted(STRICT))
+    def test_every_quantity_stated_is_the_probers_or_a_declared_one(surface: str) -> None:
+        """The rule that does not depend on guessing which nouns a softening sentence will use.
+    
+        A second count - "in practice it is usually a single call", "your server hears from us once",
+        "the ninety HTTP requests it spends" - is caught here whatever noun it hangs on, because what
+        is checked is the number. Five sentences of exactly that shape passed earlier drafts of this
+        file, and each of them was a promise about somebody's production system.
+        """
+        scope, permitted = STRICT[surface]
+        stray = _undeclared(scope(), permitted)
+>       assert not stray, (
+            f"{surface} states {stray}, which is neither the {CALLS_PER_PROBE} requests "
+            "src/prober/prober.py spends nor a quantity this gate has been told about. If it is a "
+            "second count of what reaches the applicant's server, it is a promise we do not keep - "
+            "and if it counts something else entirely, add the phrase to this gate so that the next "
+            "number appearing here is still a red. A number nobody looked at, on the page where a "
+            "stranger decides what may touch their production system, is the defect this project "
+            "exists to find."
+        )
+E       AssertionError: web/src/pages/Apply.tsx (the whole page) states ['...xtras. In practice your server hears from us once. Ticking this records the que...'], which is neither the 3 requests src/prober/prober.py spends nor a quantity this gate has been told about. If it is a second count of what reaches the applicant's server, it is a promise we do not keep - and if it counts something else entirely, add the phrase to this gate so that the next number appearing here is still a red. A number nobody looked at, on the page where a stranger decides what may touch their production system, is the defect this project exists to find.
+E       assert not ['...xtras. In practice your server hears from us once. Ticking this records the que...']
+
+tests/test_apply_names_the_probe_cost.py:808: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apply_names_the_probe_cost.py::test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)]
+1 failed, 13 passed in Ns
+
+# ============================================================================================
+# RED 11. In web/src/pages/Apply.tsx.
+# ROUND TWO, AND IT IS THE CLASS BEHIND ROUND ONE'S SECOND FINDING. The repair for that finding scoped a new assertion from `sent.asked === "active"` to the next `</p>`. Splitting one long paragraph into two is the most ordinary editorial change there is, and it moves the count out of the scope: the applicant is then told we will send NINETY requests at their production system and every assertion passes. The instance was fixed and the class - a count anywhere on that screen - was not, so the scan now reads the whole page and there is no terminator left to move past.
+#
+# -             <p className="mt-4 text-sm text-[var(--color-ink-2)]">
+# -               <strong>You asked about an active-probing mandate.</strong> Nothing is authorised by
+# -               this form and nothing will be sent at your systems. What happens next is that the
+# -               operator writes to you with a document to agree: it names the one action and the
+# -               three requests it spends on your origin, the paths, a ceiling on how often, what
+# -               must not be affected, who answers for damage, what stops the run, and how you revoke
+# -               it. No request runs before you have signed it.
+# -             </p>
+# +             <p className="mt-4 text-sm text-[var(--color-ink-2)]">
+# +               {/* MUTATION: one paragraph split into two, the count moved past the terminator */}
+# +               <strong>You asked about an active-probing mandate.</strong> Nothing is authorised by
+# +               this form and nothing will be sent at your systems.
+# +             </p>
+# +             <p className="mt-4 text-sm text-[var(--color-ink-2)]">
+# +               What happens next is that the operator writes to you with a document to agree: it
+# +               names the one action and the ninety HTTP requests it spends on your origin, the
+# +               paths, a ceiling on how often, what must not be affected, who answers for damage,
+# +               what stops the run, and how you revoke it. No request runs before you have signed it.
+# +             </p>
+#
+# $ grep -Hn 'MUTATION' web/src/pages/Apply.tsx
+# web/src/pages/Apply.tsx:144:              {/* MUTATION: one paragraph split into two, the count moved past the terminator */}
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+...........F..                                                           [100%]
+=================================== FAILURES ===================================
+_ test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)] _
+
+surface = 'web/src/pages/Apply.tsx (the whole page)'
+
+    @pytest.mark.parametrize("surface", sorted(STRICT))
+    def test_every_quantity_stated_is_the_probers_or_a_declared_one(surface: str) -> None:
+        """The rule that does not depend on guessing which nouns a softening sentence will use.
+    
+        A second count - "in practice it is usually a single call", "your server hears from us once",
+        "the ninety HTTP requests it spends" - is caught here whatever noun it hangs on, because what
+        is checked is the number. Five sentences of exactly that shape passed earlier drafts of this
+        file, and each of them was a promise about somebody's production system.
+        """
+        scope, permitted = STRICT[surface]
+        stray = _undeclared(scope(), permitted)
+>       assert not stray, (
+            f"{surface} states {stray}, which is neither the {CALLS_PER_PROBE} requests "
+            "src/prober/prober.py spends nor a quantity this gate has been told about. If it is a "
+            "second count of what reaches the applicant's server, it is a promise we do not keep - "
+            "and if it counts something else entirely, add the phrase to this gate so that the next "
+            "number appearing here is still a red. A number nobody looked at, on the page where a "
+            "stranger decides what may touch their production system, is the defect this project "
+            "exists to find."
+        )
+E       AssertionError: web/src/pages/Apply.tsx (the whole page) states ['...nt to agree: it names the one action and the ninety HTTP requests it spends on your or...'], which is neither the 3 requests src/prober/prober.py spends nor a quantity this gate has been told about. If it is a second count of what reaches the applicant's server, it is a promise we do not keep - and if it counts something else entirely, add the phrase to this gate so that the next number appearing here is still a red. A number nobody looked at, on the page where a stranger decides what may touch their production system, is the defect this project exists to find.
+E       assert not ['...nt to agree: it names the one action and the ninety HTTP requests it spends on your or...']
+
+tests/test_apply_names_the_probe_cost.py:808: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apply_names_the_probe_cost.py::test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)]
+1 failed, 13 passed in Ns
+
+# ============================================================================================
+# RED 12. In web/src/pages/Apply.tsx.
+# ROUND THREE, AND THE ALLOWLIST WAS THE DOOR. The draft that answered rounds one and two declared the quantities this page is allowed to state - as a number plus at most one following word, compared as a SET. `only one` was granted for "(always the read-only one)" in the privacy list, so this sentence inherits the permission with no line added anywhere: the applicant is told that what reaches their production system is ONE request and the prober sends three. Five more of the same shape were green, one of them the same phrase on the confirmation screen itself. A declaration must SPAN its number inside its own sentence, and enclosure rather than membership is what the gate compares now.
+#
+# -                   Ticking this records the question.
+# +                   {/* MUTATION */}
+# +                   What reaches your server is, in practice, only one.
+# +                   Ticking this records the question.
+#
+# $ grep -Hn 'MUTATION' web/src/pages/Apply.tsx
+# web/src/pages/Apply.tsx:262:                  {/* MUTATION */}
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+...........F..                                                           [100%]
+=================================== FAILURES ===================================
+_ test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)] _
+
+surface = 'web/src/pages/Apply.tsx (the whole page)'
+
+    @pytest.mark.parametrize("surface", sorted(STRICT))
+    def test_every_quantity_stated_is_the_probers_or_a_declared_one(surface: str) -> None:
+        """The rule that does not depend on guessing which nouns a softening sentence will use.
+    
+        A second count - "in practice it is usually a single call", "your server hears from us once",
+        "the ninety HTTP requests it spends" - is caught here whatever noun it hangs on, because what
+        is checked is the number. Five sentences of exactly that shape passed earlier drafts of this
+        file, and each of them was a promise about somebody's production system.
+        """
+        scope, permitted = STRICT[surface]
+        stray = _undeclared(scope(), permitted)
+>       assert not stray, (
+            f"{surface} states {stray}, which is neither the {CALLS_PER_PROBE} requests "
+            "src/prober/prober.py spends nor a quantity this gate has been told about. If it is a "
+            "second count of what reaches the applicant's server, it is a promise we do not keep - "
+            "and if it counts something else entirely, add the phrase to this gate so that the next "
+            "number appearing here is still a red. A number nobody looked at, on the page where a "
+            "stranger decides what may touch their production system, is the defect this project "
+            "exists to find."
+        )
+E       AssertionError: web/src/pages/Apply.tsx (the whole page) states ['...s. What reaches your server is, in practice, only one. Ticking this records the que...'], which is neither the 3 requests src/prober/prober.py spends nor a quantity this gate has been told about. If it is a second count of what reaches the applicant's server, it is a promise we do not keep - and if it counts something else entirely, add the phrase to this gate so that the next number appearing here is still a red. A number nobody looked at, on the page where a stranger decides what may touch their production system, is the defect this project exists to find.
+E       assert not ['...s. What reaches your server is, in practice, only one. Ticking this records the que...']
+
+tests/test_apply_names_the_probe_cost.py:808: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apply_names_the_probe_cost.py::test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)]
+1 failed, 13 passed in Ns
+
+# ============================================================================================
+# RED 13. In web/src/pages/Apply.tsx.
+# ROUND THREE, IN THE EXTRACTOR RATHER THAN IN THE RULE. `_STRING` stripped `'...'` as well as double quotes, and prose does not know it is inside a program: everything between "don't" and "won't" was deleted before any assertion ran, and the count went with it. The visitor reads a promise of one request; the gate reads a sentence with a hole in it. This is the `{...}` failure of an hour earlier surviving one line away in the sibling stripper - and the instrument control written for that one could not catch it, because none of the four sentences it names contains an apostrophe.
+#
+# -                   Ticking this records the question.
+# +                   {/* MUTATION */}
+# +                   We don't send more than one request, and we won't retry.
+# +                   Ticking this records the question.
+#
+# $ grep -Hn 'MUTATION' web/src/pages/Apply.tsx
+# web/src/pages/Apply.tsx:262:                  {/* MUTATION */}
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+...........F..                                                           [100%]
+=================================== FAILURES ===================================
+_ test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)] _
+
+surface = 'web/src/pages/Apply.tsx (the whole page)'
+
+    @pytest.mark.parametrize("surface", sorted(STRICT))
+    def test_every_quantity_stated_is_the_probers_or_a_declared_one(surface: str) -> None:
+        """The rule that does not depend on guessing which nouns a softening sentence will use.
+    
+        A second count - "in practice it is usually a single call", "your server hears from us once",
+        "the ninety HTTP requests it spends" - is caught here whatever noun it hangs on, because what
+        is checked is the number. Five sentences of exactly that shape passed earlier drafts of this
+        file, and each of them was a promise about somebody's production system.
+        """
+        scope, permitted = STRICT[surface]
+        stray = _undeclared(scope(), permitted)
+>       assert not stray, (
+            f"{surface} states {stray}, which is neither the {CALLS_PER_PROBE} requests "
+            "src/prober/prober.py spends nor a quantity this gate has been told about. If it is a "
+            "second count of what reaches the applicant's server, it is a promise we do not keep - "
+            "and if it counts something else entirely, add the phrase to this gate so that the next "
+            "number appearing here is still a red. A number nobody looked at, on the page where a "
+            "stranger decides what may touch their production system, is the defect this project "
+            "exists to find."
+        )
+E       AssertionError: web/src/pages/Apply.tsx (the whole page) states ["...tion and not extras. We don't send more than one request, and we won't retry. Ticking..."], which is neither the 3 requests src/prober/prober.py spends nor a quantity this gate has been told about. If it is a second count of what reaches the applicant's server, it is a promise we do not keep - and if it counts something else entirely, add the phrase to this gate so that the next number appearing here is still a red. A number nobody looked at, on the page where a stranger decides what may touch their production system, is the defect this project exists to find.
+E       assert not ["...tion and not extras. We don't send more than one request, and we won't retry. Ticking..."]
+
+tests/test_apply_names_the_probe_cost.py:808: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apply_names_the_probe_cost.py::test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)]
+1 failed, 13 passed in Ns
+
+# ============================================================================================
+# RED 14. In docs/WHY_GET_VERIFIED.md.
+# ROUND THREE, IN THE SURFACE THAT STILL HAD THE WEAKER RULE. The document was held by a noun-based check while the page was held strictly, and `once` names no noun - so this sentence was green in an offer a stranger reads, with the limitation honestly written down in a docstring two files away. A named blind spot is still a blind spot (L-25), and the reader receives the same false sentence either way. The strict rule covers the whole section now; it cost eleven declarations and nothing else.
+#
+# -   It requires an explicit mandate
+# +   In practice your server hears from us once.  <!-- MUTATION -->
+# + 
+# +   It requires an explicit mandate
+#
+# $ grep -Hn 'MUTATION' docs/WHY_GET_VERIFIED.md
+# docs/WHY_GET_VERIFIED.md:86:  In practice your server hears from us once.  <!-- MUTATION -->
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+..........F...                                                           [100%]
+=================================== FAILURES ===================================
+_ test_every_quantity_stated_is_the_probers_or_a_declared_one[docs/WHY_GET_VERIFIED.md (the offer section)] _
+
+surface = 'docs/WHY_GET_VERIFIED.md (the offer section)'
+
+    @pytest.mark.parametrize("surface", sorted(STRICT))
+    def test_every_quantity_stated_is_the_probers_or_a_declared_one(surface: str) -> None:
+        """The rule that does not depend on guessing which nouns a softening sentence will use.
+    
+        A second count - "in practice it is usually a single call", "your server hears from us once",
+        "the ninety HTTP requests it spends" - is caught here whatever noun it hangs on, because what
+        is checked is the number. Five sentences of exactly that shape passed earlier drafts of this
+        file, and each of them was a promise about somebody's production system.
+        """
+        scope, permitted = STRICT[surface]
+        stray = _undeclared(scope(), permitted)
+>       assert not stray, (
+            f"{surface} states {stray}, which is neither the {CALLS_PER_PROBE} requests "
+            "src/prober/prober.py spends nor a quantity this gate has been told about. If it is a "
+            "second count of what reaches the applicant's server, it is a promise we do not keep - "
+            "and if it counts something else entirely, add the phrase to this gate so that the next "
+            "number appearing here is still a red. A number nobody looked at, on the page where a "
+            "stranger decides what may touch their production system, is the defect this project "
+            "exists to find."
+        )
+E       AssertionError: docs/WHY_GET_VERIFIED.md (the offer section) states ['...on it. In practice your server hears from us once. <!-- MUTATION --> It require...'], which is neither the 3 requests src/prober/prober.py spends nor a quantity this gate has been told about. If it is a second count of what reaches the applicant's server, it is a promise we do not keep - and if it counts something else entirely, add the phrase to this gate so that the next number appearing here is still a red. A number nobody looked at, on the page where a stranger decides what may touch their production system, is the defect this project exists to find.
+E       assert not ['...on it. In practice your server hears from us once. <!-- MUTATION --> It require...']
+
+tests/test_apply_names_the_probe_cost.py:808: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apply_names_the_probe_cost.py::test_every_quantity_stated_is_the_probers_or_a_declared_one[docs/WHY_GET_VERIFIED.md (the offer section)]
+1 failed, 13 passed in Ns
+
+# ============================================================================================
+# RED 15. In web/src/pages/Apply.tsx.
+# ROUND FOUR, AND IT WAS WORTH A HUNDREDFOLD. `_QUANTITY` captures a numeral and ONE following word, and the number was read from the numeral alone - so `three hundred requests` parsed as the prober's own `three` with `hundred` sitting in the noun slot. Every rule agreed the page was correct while it told the applicant we would put three hundred requests into their logs. The multipliers had been added to `_NUMERALS` to catch `ninety`, and adding them created the one place they are invisible: behind an accepted number. `one hundred requests` reds, and only a multiplier after the right number was free - which is the flattering direction, again.
+#
+# - costs your origin three requests
+# + costs your origin three hundred requests {/* MUTATION */}
+#
+# $ grep -Hn 'MUTATION' web/src/pages/Apply.tsx
+# web/src/pages/Apply.tsx:257:                  repository cannot show. That one operation costs your origin three hundred requests {/* MUTATION */}. We
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+...........F..                                                           [100%]
+=================================== FAILURES ===================================
+_ test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)] _
+
+surface = 'web/src/pages/Apply.tsx (the whole page)'
+
+    @pytest.mark.parametrize("surface", sorted(STRICT))
+    def test_every_quantity_stated_is_the_probers_or_a_declared_one(surface: str) -> None:
+        """The rule that does not depend on guessing which nouns a softening sentence will use.
+    
+        A second count - "in practice it is usually a single call", "your server hears from us once",
+        "the ninety HTTP requests it spends" - is caught here whatever noun it hangs on, because what
+        is checked is the number. Five sentences of exactly that shape passed earlier drafts of this
+        file, and each of them was a promise about somebody's production system.
+        """
+        scope, permitted = STRICT[surface]
+        stray = _undeclared(scope(), permitted)
+>       assert not stray, (
+            f"{surface} states {stray}, which is neither the {CALLS_PER_PROBE} requests "
+            "src/prober/prober.py spends nor a quantity this gate has been told about. If it is a "
+            "second count of what reaches the applicant's server, it is a promise we do not keep - "
+            "and if it counts something else entirely, add the phrase to this gate so that the next "
+            "number appearing here is still a red. A number nobody looked at, on the page where a "
+            "stranger decides what may touch their production system, is the defect this project "
+            "exists to find."
+        )
+E       AssertionError: web/src/pages/Apply.tsx (the whole page) states ['...t show. That one operation costs your origin three hundred requests . We ask a path you...'], which is neither the 3 requests src/prober/prober.py spends nor a quantity this gate has been told about. If it is a second count of what reaches the applicant's server, it is a promise we do not keep - and if it counts something else entirely, add the phrase to this gate so that the next number appearing here is still a red. A number nobody looked at, on the page where a stranger decides what may touch their production system, is the defect this project exists to find.
+E       assert not ['...t show. That one operation costs your origin three hundred requests . We ask a path you...']
+
+tests/test_apply_names_the_probe_cost.py:808: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apply_names_the_probe_cost.py::test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)]
+1 failed, 13 passed in Ns
+
+# ============================================================================================
+# RED 16. In web/src/pages/Apply.tsx.
+# ROUND FOUR, AND THE THIRD TIME THIS EXTRACTOR DROPPED COPY SILENTLY. Strings were stripped as configuration - class names, URLs - but a sentence can be a string AND what a visitor reads. `ISSUES` and `DECISION_LOG` on this very page are written exactly this way, so it is the ordinary way to add a line and not a contrivance. Declared here and rendered through `{REASSURANCE}`, the promise was invisible to all ten assertions. The removals are by ROLE now - technical attributes and addresses - because "it is a string" was never the property that made something unreadable.
+#
+# - import { Page, Strip } from "../components/Chrome";
+# + import { Page, Strip } from "../components/Chrome";
+# + // MUTATION: copy that reaches the page through a constant
+# + const REASSURANCE = "In practice only one request ever reaches your server.";
+#
+# $ grep -Hn 'MUTATION' web/src/pages/Apply.tsx
+# web/src/pages/Apply.tsx:46:// MUTATION: copy that reaches the page through a constant
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+...........F..                                                           [100%]
+=================================== FAILURES ===================================
+_ test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)] _
+
+surface = 'web/src/pages/Apply.tsx (the whole page)'
+
+    @pytest.mark.parametrize("surface", sorted(STRICT))
+    def test_every_quantity_stated_is_the_probers_or_a_declared_one(surface: str) -> None:
+        """The rule that does not depend on guessing which nouns a softening sentence will use.
+    
+        A second count - "in practice it is usually a single call", "your server hears from us once",
+        "the ninety HTTP requests it spends" - is caught here whatever noun it hangs on, because what
+        is checked is the number. Five sentences of exactly that shape passed earlier drafts of this
+        file, and each of them was a promise about somebody's production system.
+        """
+        scope, permitted = STRICT[surface]
+        stray = _undeclared(scope(), permitted)
+>       assert not stray, (
+            f"{surface} states {stray}, which is neither the {CALLS_PER_PROBE} requests "
+            "src/prober/prober.py spends nor a quantity this gate has been told about. If it is a "
+            "second count of what reaches the applicant's server, it is a promise we do not keep - "
+            "and if it counts something else entirely, add the phrase to this gate so that the next "
+            "number appearing here is still a red. A number nobody looked at, on the page where a "
+            "stranger decides what may touch their production system, is the defect this project "
+            "exists to find."
+        )
+E       AssertionError: web/src/pages/Apply.tsx (the whole page) states ['...n be said for it. Submit request In practice only one request ever reaches your server. pas...'], which is neither the 3 requests src/prober/prober.py spends nor a quantity this gate has been told about. If it is a second count of what reaches the applicant's server, it is a promise we do not keep - and if it counts something else entirely, add the phrase to this gate so that the next number appearing here is still a red. A number nobody looked at, on the page where a stranger decides what may touch their production system, is the defect this project exists to find.
+E       assert not ['...n be said for it. Submit request In practice only one request ever reaches your server. pas...']
+
+tests/test_apply_names_the_probe_cost.py:808: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apply_names_the_probe_cost.py::test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)]
+1 failed, 13 passed in Ns
+
+# ============================================================================================
+# RED 17. In web/src/pages/Apply.tsx.
+# ROUND FOUR, AND TWO EXTRACTORS OVER ONE FILE WERE THE CAUSE. `_page()` cleaned its text and `_option()` did not, so the scope that answers "does the offer state the cost" still contained attribute strings. An `aria-describedby` naming three requests therefore satisfied presence while the visible sentence was softened to `costs your origin very little` - the offer stated in our unit and hedged, which is the exact sentence T-A2-5 was opened to remove, standing on a green suite. One `_clean` now serves both, so presence and the strict rule cannot read two different pages out of one file.
+#
+# - <input type="radio" name="mandate" value="active" className="mt-1" />
+# + {/* MUTATION */}
+# +               <input type="radio" name="mandate" value="active" className="mt-1"
+# +                      aria-describedby="costs three requests" />
+#
+# - That one operation costs your origin three requests.
+# + That one operation costs your origin very little.
+#
+# - which all three requests count
+# + which the ceiling counts
+#
+# $ grep -Hn 'MUTATION' web/src/pages/Apply.tsx
+# web/src/pages/Apply.tsx:251:              {/* MUTATION */}
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+.........F....                                                           [100%]
+=================================== FAILURES ===================================
+_ test_the_offer_states_how_many_requests_reach_the_applicant[web/src/pages/Apply.tsx (the option)] _
+
+surface = 'web/src/pages/Apply.tsx (the option)'
+
+    @pytest.mark.parametrize("surface", sorted(PRESENCE))
+    def test_the_offer_states_how_many_requests_reach_the_applicant(surface: str) -> None:
+        """The state this task found: an offer stated only in operations."""
+>       assert _states_the_count(PRESENCE[surface]()), (
+            f"the active-probing offer in {surface} does not say how many requests one probe sends to "
+            f"the applicant's origin. src/prober/prober.py spends {CALLS_PER_PROBE} of them - a "
+            "positive control, a negative control and the attempt - and 'one operation' is our unit of "
+            "account, not the unit that arrives at their server. The person reading this offer is "
+            "deciding what may touch their live system; an offer narrower than the artefact behind it "
+            "is the defect this project exists to find, and worse when the artefact is ours."
+        )
+E       AssertionError: the active-probing offer in web/src/pages/Apply.tsx (the option) does not say how many requests one probe sends to the applicant's origin. src/prober/prober.py spends 3 of them - a positive control, a negative control and the attempt - and 'one operation' is our unit of account, not the unit that arrives at their server. The person reading this offer is deciding what may touch their live system; an offer narrower than the artefact behind it is the defect this project exists to find, and worse when the artefact is ours.
+E       assert False
+E        +  where False = _states_the_count('Ask about an active-probing mandate as well. One operation exists today: we attempt to use a path you tell us is clos... answers for damage, what stops the run and how you revoke it, and nothing is sent at your systems before you sign it.')
+E        +    where 'Ask about an active-probing mandate as well. One operation exists today: we attempt to use a path you tell us is clos... answers for damage, what stops the run and how you revoke it, and nothing is sent at your systems before you sign it.' = <function _option at 0xADDR>()
+
+tests/test_apply_names_the_probe_cost.py:787: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apply_names_the_probe_cost.py::test_the_offer_states_how_many_requests_reach_the_applicant[web/src/pages/Apply.tsx (the option)]
+1 failed, 13 passed in Ns
+
+# ============================================================================================
+# RED 18. In web/src/pages/Apply.tsx.
+# ROUND FIVE, AND IT IS ROUND FOUR'S FINDING SURVIVING ITS OWN REPAIR. Unifying the extractor made presence and the strict rule read the same string - but the property that mattered was never "the same text", it was "the text a visitor reads", and the new line was drawn by ROLE with `title` on the copy side. A tooltip is read by somebody hovering a mouse: not on touch, not from a keyboard, not by anyone who simply reads the page. So the count moved into `title` and the visible sentence was softened to `costs your origin very little` - the offer stated in our unit and hedged, which is the sentence T-A2-5 was opened to remove, on a suite green in all eleven assertions. The rules read JSX text nodes now, and an attribute is not one.
+#
+# - <span className="block text-xs text-[var(--color-ink-3)]">
+# -                   One operation exists today
+# + <span className="block text-xs text-[var(--color-ink-3)]" title="three requests">
+# +                   One operation exists today {/* MUTATION */}
+#
+# - That one operation costs your origin three requests.
+# + That one operation costs your origin very little.
+#
+# - which all three requests count
+# + which the ceiling counts
+#
+# $ grep -Hn 'MUTATION' web/src/pages/Apply.tsx
+# web/src/pages/Apply.tsx:255:                  One operation exists today {/* MUTATION */}: we attempt to use a path you tell us is closed, and
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+.........F....                                                           [100%]
+=================================== FAILURES ===================================
+_ test_the_offer_states_how_many_requests_reach_the_applicant[web/src/pages/Apply.tsx (the option)] _
+
+surface = 'web/src/pages/Apply.tsx (the option)'
+
+    @pytest.mark.parametrize("surface", sorted(PRESENCE))
+    def test_the_offer_states_how_many_requests_reach_the_applicant(surface: str) -> None:
+        """The state this task found: an offer stated only in operations."""
+>       assert _states_the_count(PRESENCE[surface]()), (
+            f"the active-probing offer in {surface} does not say how many requests one probe sends to "
+            f"the applicant's origin. src/prober/prober.py spends {CALLS_PER_PROBE} of them - a "
+            "positive control, a negative control and the attempt - and 'one operation' is our unit of "
+            "account, not the unit that arrives at their server. The person reading this offer is "
+            "deciding what may touch their live system; an offer narrower than the artefact behind it "
+            "is the defect this project exists to find, and worse when the artefact is ours."
+        )
+E       AssertionError: the active-probing offer in web/src/pages/Apply.tsx (the option) does not say how many requests one probe sends to the applicant's origin. src/prober/prober.py spends 3 of them - a positive control, a negative control and the attempt - and 'one operation' is our unit of account, not the unit that arrives at their server. The person reading this offer is deciding what may touch their live system; an offer narrower than the artefact behind it is the defect this project exists to find, and worse when the artefact is ours.
+E       assert False
+E        +  where False = _states_the_count('Ask about an active-probing mandate as well. One operation exists today : we attempt to use a path you tell us is clo... answers for damage, what stops the run and how you revoke it, and nothing is sent at your systems before you sign it.')
+E        +    where 'Ask about an active-probing mandate as well. One operation exists today : we attempt to use a path you tell us is clo... answers for damage, what stops the run and how you revoke it, and nothing is sent at your systems before you sign it.' = <function _option at 0xADDR>()
+
+tests/test_apply_names_the_probe_cost.py:787: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apply_names_the_probe_cost.py::test_the_offer_states_how_many_requests_reach_the_applicant[web/src/pages/Apply.tsx (the option)]
+1 failed, 13 passed in Ns
+
+# ============================================================================================
+# RED 19. In web/src/pages/Apply.tsx.
+# THE OTHER HALF OF THE SAME DISTINCTION, and it pulls the opposite way. A readable attribute may not be how the page COMPLIES with stating the cost - mutation 18 - and it may not CONTRADICT the cost either, which is what this one does: the visible copy is correct and the tooltip says ninety. Excluding attributes outright would have closed 18 and opened this, so `_page` gathers them for the strict rule while `_option` does not see them at all. Two rules that would each look like the other's bug if only one were written.
+#
+# - <span className="block text-xs text-[var(--color-ink-3)]">
+# -                   One operation exists today
+# + <span className="block text-xs text-[var(--color-ink-3)]" title="ninety requests">
+# +                   One operation exists today {/* MUTATION */}
+#
+# $ grep -Hn 'MUTATION' web/src/pages/Apply.tsx
+# web/src/pages/Apply.tsx:255:                  One operation exists today {/* MUTATION */}: we attempt to use a path you tell us is closed, and
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+...........F..                                                           [100%]
+=================================== FAILURES ===================================
+_ test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)] _
+
+surface = 'web/src/pages/Apply.tsx (the whole page)'
+
+    @pytest.mark.parametrize("surface", sorted(STRICT))
+    def test_every_quantity_stated_is_the_probers_or_a_declared_one(surface: str) -> None:
+        """The rule that does not depend on guessing which nouns a softening sentence will use.
+    
+        A second count - "in practice it is usually a single call", "your server hears from us once",
+        "the ninety HTTP requests it spends" - is caught here whatever noun it hangs on, because what
+        is checked is the number. Five sentences of exactly that shape passed earlier drafts of this
+        file, and each of them was a promise about somebody's production system.
+        """
+        scope, permitted = STRICT[surface]
+        stray = _undeclared(scope(), permitted)
+>       assert not stray, (
+            f"{surface} states {stray}, which is neither the {CALLS_PER_PROBE} requests "
+            "src/prober/prober.py spends nor a quantity this gate has been told about. If it is a "
+            "second count of what reaches the applicant's server, it is a promise we do not keep - "
+            "and if it counts something else entirely, add the phrase to this gate so that the next "
+            "number appearing here is still a red. A number nobody looked at, on the page where a "
+            "stranger decides what may touch their production system, is the defect this project "
+            "exists to find."
+        )
+E       AssertionError: web/src/pages/Apply.tsx (the whole page) states ['...e said for it. Submit request passive active ninety requests...'], which is neither the 3 requests src/prober/prober.py spends nor a quantity this gate has been told about. If it is a second count of what reaches the applicant's server, it is a promise we do not keep - and if it counts something else entirely, add the phrase to this gate so that the next number appearing here is still a red. A number nobody looked at, on the page where a stranger decides what may touch their production system, is the defect this project exists to find.
+E       assert not ['...e said for it. Submit request passive active ninety requests...']
+
+tests/test_apply_names_the_probe_cost.py:808: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apply_names_the_probe_cost.py::test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)]
+1 failed, 13 passed in Ns
+
+# ============================================================================================
+# RED 20. In web/src/pages/Apply.tsx.
+# ROUND SIX. An expression whose branches are plain strings contains no angle bracket, so the text-node scan captured it as a text node and then deleted the whole `{...}` - both sentences with it. The page's existing branches survived only by an accident of style: they are written `{d ? (<>...</>) : (<>...</>)}`, which contains `<`, so the outer expression is not a text node and the inner text is captured separately. Rewrite them as strings - the smaller and more ordinary form - and the copy vanishes. Fourth silent drop by this extractor, third consecutive round.
+#
+# -             <p className="mt-4 text-sm text-[var(--color-ink-2)]">
+# -               <strong>You asked about an active-probing mandate.</strong>
+# +             <p className="mt-4 text-sm text-[var(--color-ink-2)]">
+# +               {/* MUTATION */}
+# +               {sent.delivered ? "In practice only one request ever reaches your server." : "In practice only one request ever reaches your server."}
+# +               <strong>You asked about an active-probing mandate.</strong>
+#
+# $ grep -Hn 'MUTATION' web/src/pages/Apply.tsx
+# web/src/pages/Apply.tsx:144:              {/* MUTATION */}
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+...........F..                                                           [100%]
+=================================== FAILURES ===================================
+_ test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)] _
+
+surface = 'web/src/pages/Apply.tsx (the whole page)'
+
+    @pytest.mark.parametrize("surface", sorted(STRICT))
+    def test_every_quantity_stated_is_the_probers_or_a_declared_one(surface: str) -> None:
+        """The rule that does not depend on guessing which nouns a softening sentence will use.
+    
+        A second count - "in practice it is usually a single call", "your server hears from us once",
+        "the ninety HTTP requests it spends" - is caught here whatever noun it hangs on, because what
+        is checked is the number. Five sentences of exactly that shape passed earlier drafts of this
+        file, and each of them was a promise about somebody's production system.
+        """
+        scope, permitted = STRICT[surface]
+        stray = _undeclared(scope(), permitted)
+>       assert not stray, (
+            f"{surface} states {stray}, which is neither the {CALLS_PER_PROBE} requests "
+            "src/prober/prober.py spends nor a quantity this gate has been told about. If it is a "
+            "second count of what reaches the applicant's server, it is a promise we do not keep - "
+            "and if it counts something else entirely, add the phrase to this gate so that the next "
+            "number appearing here is still a red. A number nobody looked at, on the page where a "
+            "stranger decides what may touch their production system, is the defect this project "
+            "exists to find."
+        )
+E       AssertionError: web/src/pages/Apply.tsx (the whole page) states ['...he most that can be said for it. In practice only one request ever reaches your server. In...', '...equest ever reaches your server. In practice only one request ever reaches your server. Sub...'], which is neither the 3 requests src/prober/prober.py spends nor a quantity this gate has been told about. If it is a second count of what reaches the applicant's server, it is a promise we do not keep - and if it counts something else entirely, add the phrase to this gate so that the next number appearing here is still a red. A number nobody looked at, on the page where a stranger decides what may touch their production system, is the defect this project exists to find.
+E       assert not ['...he most that can be said for it. In practice only one request ever reaches your server. In...', '...equest ever reaches your server. In practice only one request ever reaches your server. Sub...']
+
+tests/test_apply_names_the_probe_cost.py:808: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apply_names_the_probe_cost.py::test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)]
+1 failed, 13 passed in Ns
+
+# ============================================================================================
+# RED 21. In web/src/pages/Apply.tsx.
+# ROUND SIX, AND THE REASON THE RULE IS NOW ABOUT SHAPE RATHER THAN SYNTAX. The draft that answered round four read `^const NAME = "..."` because that is how `ISSUES` and `DECISION_LOG` are written on this page - so `export const`, `let`, an indented const, an object field, an array element and a template literal all went unread. `export const` is the ordinary React idiom for shared copy. The repair was fitted to two spellings instead of to the property, which is the shape of every extractor defect in this file.
+#
+# - import { Page, Strip } from "../components/Chrome";
+# + import { Page, Strip } from "../components/Chrome";
+# + // MUTATION
+# + export const NOTE = "We send only one request in practice.";
+#
+# $ grep -Hn 'MUTATION' web/src/pages/Apply.tsx
+# web/src/pages/Apply.tsx:46:// MUTATION
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+...........F..                                                           [100%]
+=================================== FAILURES ===================================
+_ test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)] _
+
+surface = 'web/src/pages/Apply.tsx (the whole page)'
+
+    @pytest.mark.parametrize("surface", sorted(STRICT))
+    def test_every_quantity_stated_is_the_probers_or_a_declared_one(surface: str) -> None:
+        """The rule that does not depend on guessing which nouns a softening sentence will use.
+    
+        A second count - "in practice it is usually a single call", "your server hears from us once",
+        "the ninety HTTP requests it spends" - is caught here whatever noun it hangs on, because what
+        is checked is the number. Five sentences of exactly that shape passed earlier drafts of this
+        file, and each of them was a promise about somebody's production system.
+        """
+        scope, permitted = STRICT[surface]
+        stray = _undeclared(scope(), permitted)
+>       assert not stray, (
+            f"{surface} states {stray}, which is neither the {CALLS_PER_PROBE} requests "
+            "src/prober/prober.py spends nor a quantity this gate has been told about. If it is a "
+            "second count of what reaches the applicant's server, it is a promise we do not keep - "
+            "and if it counts something else entirely, add the phrase to this gate so that the next "
+            "number appearing here is still a red. A number nobody looked at, on the page where a "
+            "stranger decides what may touch their production system, is the defect this project "
+            "exists to find."
+        )
+E       AssertionError: web/src/pages/Apply.tsx (the whole page) states ['...t can be said for it. Submit request We send only one request in practice. passive active...'], which is neither the 3 requests src/prober/prober.py spends nor a quantity this gate has been told about. If it is a second count of what reaches the applicant's server, it is a promise we do not keep - and if it counts something else entirely, add the phrase to this gate so that the next number appearing here is still a red. A number nobody looked at, on the page where a stranger decides what may touch their production system, is the defect this project exists to find.
+E       assert not ['...t can be said for it. Submit request We send only one request in practice. passive active...']
+
+tests/test_apply_names_the_probe_cost.py:808: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apply_names_the_probe_cost.py::test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)]
+1 failed, 13 passed in Ns
+
+# ============================================================================================
+# RED 22. In web/src/pages/Apply.tsx.
+# ROUND SEVEN, AND IT WALKED PAST THE CONTROL WRITTEN THAT ROUND TO PREVENT IT. An arrow component - the ordinary React idiom for a small presentational block - contains no `return` at all, so its copy sat outside every block the rules read. The control asserts the page yields at least two markup blocks and names a sentence from each; after this edit it still yields two and both sentences are still there, because a component that produces NO block does not change the count. It was written against a matcher that collapses blocks and is blind to copy that never makes one.
+#
+# - import { Page, Strip } from "../components/Chrome";
+# + import { Page, Strip } from "../components/Chrome";
+# + // MUTATION
+# + const Reassurance = () => (
+# +   <p className="mt-4 text-sm">In practice only one request ever reaches your server.</p>
+# + );
+#
+# $ grep -Hn 'MUTATION' web/src/pages/Apply.tsx
+# web/src/pages/Apply.tsx:46:// MUTATION
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+...........F..                                                           [100%]
+=================================== FAILURES ===================================
+_ test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)] _
+
+surface = 'web/src/pages/Apply.tsx (the whole page)'
+
+    @pytest.mark.parametrize("surface", sorted(STRICT))
+    def test_every_quantity_stated_is_the_probers_or_a_declared_one(surface: str) -> None:
+        """The rule that does not depend on guessing which nouns a softening sentence will use.
+    
+        A second count - "in practice it is usually a single call", "your server hears from us once",
+        "the ninety HTTP requests it spends" - is caught here whatever noun it hangs on, because what
+        is checked is the number. Five sentences of exactly that shape passed earlier drafts of this
+        file, and each of them was a promise about somebody's production system.
+        """
+        scope, permitted = STRICT[surface]
+        stray = _undeclared(scope(), permitted)
+>       assert not stray, (
+            f"{surface} states {stray}, which is neither the {CALLS_PER_PROBE} requests "
+            "src/prober/prober.py spends nor a quantity this gate has been told about. If it is a "
+            "second count of what reaches the applicant's server, it is a promise we do not keep - "
+            "and if it counts something else entirely, add the phrase to this gate so that the next "
+            "number appearing here is still a red. A number nobody looked at, on the page where a "
+            "stranger decides what may touch their production system, is the defect this project "
+            "exists to find."
+        )
+E       AssertionError: web/src/pages/Apply.tsx (the whole page) states ['...( In practice only one request ever reaches your server. ret...'], which is neither the 3 requests src/prober/prober.py spends nor a quantity this gate has been told about. If it is a second count of what reaches the applicant's server, it is a promise we do not keep - and if it counts something else entirely, add the phrase to this gate so that the next number appearing here is still a red. A number nobody looked at, on the page where a stranger decides what may touch their production system, is the defect this project exists to find.
+E       assert not ['...( In practice only one request ever reaches your server. ret...']
+
+tests/test_apply_names_the_probe_cost.py:808: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apply_names_the_probe_cost.py::test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)]
+1 failed, 13 passed in Ns
+
+# ============================================================================================
+# RED 23. In web/src/pages/Apply.tsx.
+# ROUND SEVEN. The prose-shape test required three tokens, and `Only once.` is two - a complete false promise, using a word that IS a count. Written as ordinary JSX text it reds; written as a string expression it was the literal collector's business, and the threshold excluded exactly the shortest softening sentences, which are the ones anybody actually writes.
+#
+# -                   Ticking this records the question.
+# +                   {/* MUTATION */}
+# +                   {"Only once."}
+# +                   Ticking this records the question.
+#
+# $ grep -Hn 'MUTATION' web/src/pages/Apply.tsx
+# web/src/pages/Apply.tsx:262:                  {/* MUTATION */}
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+...........F..                                                           [100%]
+=================================== FAILURES ===================================
+_ test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)] _
+
+surface = 'web/src/pages/Apply.tsx (the whole page)'
+
+    @pytest.mark.parametrize("surface", sorted(STRICT))
+    def test_every_quantity_stated_is_the_probers_or_a_declared_one(surface: str) -> None:
+        """The rule that does not depend on guessing which nouns a softening sentence will use.
+    
+        A second count - "in practice it is usually a single call", "your server hears from us once",
+        "the ninety HTTP requests it spends" - is caught here whatever noun it hangs on, because what
+        is checked is the number. Five sentences of exactly that shape passed earlier drafts of this
+        file, and each of them was a promise about somebody's production system.
+        """
+        scope, permitted = STRICT[surface]
+        stray = _undeclared(scope(), permitted)
+>       assert not stray, (
+            f"{surface} states {stray}, which is neither the {CALLS_PER_PROBE} requests "
+            "src/prober/prober.py spends nor a quantity this gate has been told about. If it is a "
+            "second count of what reaches the applicant's server, it is a promise we do not keep - "
+            "and if it counts something else entirely, add the phrase to this gate so that the next "
+            "number appearing here is still a red. A number nobody looked at, on the page where a "
+            "stranger decides what may touch their production system, is the defect this project "
+            "exists to find."
+        )
+E       AssertionError: web/src/pages/Apply.tsx (the whole page) states ['...ch is the most that can be said for it. Only once. Submit request passive activ...'], which is neither the 3 requests src/prober/prober.py spends nor a quantity this gate has been told about. If it is a second count of what reaches the applicant's server, it is a promise we do not keep - and if it counts something else entirely, add the phrase to this gate so that the next number appearing here is still a red. A number nobody looked at, on the page where a stranger decides what may touch their production system, is the defect this project exists to find.
+E       assert not ['...ch is the most that can be said for it. Only once. Submit request passive activ...']
+
+tests/test_apply_names_the_probe_cost.py:808: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apply_names_the_probe_cost.py::test_every_quantity_stated_is_the_probers_or_a_declared_one[web/src/pages/Apply.tsx (the whole page)]
+1 failed, 13 passed in Ns
+
+# ============================================================================================
+# RED 24. In web/src/pages/Apply.tsx.
+# ROUND SEVEN, AND THE TOOLTIP FINDING REOPENED BY THE REPAIR TWO ROUNDS LATER. The attribute filter required `name="value"` written tight, which is a house style rather than a rule of JSX. Spelled with spaces, the string was neither excluded from the literal collector nor gathered for contradiction: it became COPY, satisfied the presence rule, and let the visible sentence be softened to `costs your origin very little`. What separates an attribute from an assignment is not spacing - it is being inside a tag, and the scope of the option now starts at the tag's own `<` for the same reason.
+#
+# - <input type="radio" name="mandate" value="active" className="mt-1" />
+# + {/* MUTATION */}
+# +               <input type="radio" name="mandate" value="active" className="mt-1"
+# +                      title = "costs three requests in total" />
+#
+# - That one operation costs your origin three requests.
+# + That one operation costs your origin very little.
+#
+# - which all three requests count
+# + which the ceiling counts
+#
+# $ grep -Hn 'MUTATION' web/src/pages/Apply.tsx
+# web/src/pages/Apply.tsx:251:              {/* MUTATION */}
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+.........F....                                                           [100%]
+=================================== FAILURES ===================================
+_ test_the_offer_states_how_many_requests_reach_the_applicant[web/src/pages/Apply.tsx (the option)] _
+
+surface = 'web/src/pages/Apply.tsx (the option)'
+
+    @pytest.mark.parametrize("surface", sorted(PRESENCE))
+    def test_the_offer_states_how_many_requests_reach_the_applicant(surface: str) -> None:
+        """The state this task found: an offer stated only in operations."""
+>       assert _states_the_count(PRESENCE[surface]()), (
+            f"the active-probing offer in {surface} does not say how many requests one probe sends to "
+            f"the applicant's origin. src/prober/prober.py spends {CALLS_PER_PROBE} of them - a "
+            "positive control, a negative control and the attempt - and 'one operation' is our unit of "
+            "account, not the unit that arrives at their server. The person reading this offer is "
+            "deciding what may touch their live system; an offer narrower than the artefact behind it "
+            "is the defect this project exists to find, and worse when the artefact is ours."
+        )
+E       AssertionError: the active-probing offer in web/src/pages/Apply.tsx (the option) does not say how many requests one probe sends to the applicant's origin. src/prober/prober.py spends 3 of them - a positive control, a negative control and the attempt - and 'one operation' is our unit of account, not the unit that arrives at their server. The person reading this offer is deciding what may touch their live system; an offer narrower than the artefact behind it is the defect this project exists to find, and worse when the artefact is ours.
+E       assert False
+E        +  where False = _states_the_count('Ask about an active-probing mandate as well. One operation exists today: we attempt to use a path you tell us is clos... answers for damage, what stops the run and how you revoke it, and nothing is sent at your systems before you sign it.')
+E        +    where 'Ask about an active-probing mandate as well. One operation exists today: we attempt to use a path you tell us is clos... answers for damage, what stops the run and how you revoke it, and nothing is sent at your systems before you sign it.' = <function _option at 0xADDR>()
+
+tests/test_apply_names_the_probe_cost.py:787: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apply_names_the_probe_cost.py::test_the_offer_states_how_many_requests_reach_the_applicant[web/src/pages/Apply.tsx (the option)]
+1 failed, 13 passed in Ns
+
+# ============================================================================================
+# TRUE REWRITES, WHICH MUST NOT GO RED. The finding that put this section here was a FALSE RED:
+# a gate that reds over correct copy is walked past exactly as fast as one that greens over
+# lies, and the second draft of this gate did both in the same experiment.
+#
+# ============================================================================================
+# GREEN 1. an-adjective-between-the-number-and-the-noun. In web/src/pages/Apply.tsx.
+# `three HTTP requests` is the copy an editor would most likely write, and it made the second draft say the offer `does not say how many requests one probe sends` - over a page saying exactly that. The presence rule now allows up to three words between the number and the noun.
+#
+# - costs your origin three requests
+# + costs your origin three HTTP requests
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+..............                                                           [100%]
+14 passed in Ns
+
+# ============================================================================================
+# GREEN 2. another-adjective. In web/src/pages/Apply.tsx.
+# `three separate requests` - the same shape, and the word an editor reaches for when the point is that the controls are not the attempt.
+#
+# - costs your origin three requests
+# + costs your origin three separate requests
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+..............                                                           [100%]
+14 passed in Ns
+
+# ============================================================================================
+# GREEN 3. the-number-written-in-digits. In web/src/pages/Apply.tsx.
+# `3 requests` is as true as `three requests`, and a gate pinning the word form would be pinning a house style rather than a fact.
+#
+# - costs your origin three requests
+# + costs your origin 3 requests
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+..............                                                           [100%]
+14 passed in Ns
+
+# ============================================================================================
+# GREEN 4. a-different-true-noun. In web/src/pages/Apply.tsx.
+# `three round-trips` counts the same thing in a word the copy does not currently use. The gate accepts any noun once the number is right, which is the other half of counting numerals rather than nouns.
+#
+# - costs your origin three requests
+# + costs your origin three round-trips
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+..............                                                           [100%]
+14 passed in Ns
+
+# ============================================================================================
+# GREEN 5. an-ordinary-status-code-branch. In web/src/pages/Apply.tsx.
+# THE FALSE-RED DIRECTION, AND IT IS HOW A GATE GETS DELETED. A draft that read whole-file text nodes met this - an ordinary status guard, at this exact insertion point - with a red telling the author their status code was neither the prober's count nor a declared quantity, and inviting them to consider whether it was a promise we do not keep about somebody's production server. It is a status code. The same guard four lines earlier PASSED, because a `>` from `React.FormEvent<HTMLFormElement>` opened a pseudo-text-node that ran to the next `<`: an editor could not have formed a rule from it.
+#
+# -       const d = await r.json().catch(() => ({}));
+# +       const d = await r.json().catch(() => ({}));
+# +       if (r.status === 429) { return; }
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+..............                                                           [100%]
+14 passed in Ns
+
+# ============================================================================================
+# GREEN 6. an-ordinary-timeout-constant. In web/src/pages/Apply.tsx.
+# The same, in module scope rather than in a branch, and it is the sharper of the two because module constants are exactly where copy also lives - `ISSUES` and `DECISION_LOG` are written that way. A number here is code; a STRING here can be copy; the rules read text nodes and module strings, so this one is silent and mutation 16 is not.
+#
+# - import { Page, Strip } from "../components/Chrome";
+# + import { Page, Strip } from "../components/Chrome";
+# + const RETRY_AFTER_MS = 3000;
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+..............                                                           [100%]
+14 passed in Ns
+
+# ============================================================================================
+# GREEN 7. an-ordinary-loop. In web/src/pages/Apply.tsx.
+# The same defect with no status code in it at all. A `for` loop's bound was reported to its author as a count of requests we send to applicants, which is the sentence the strict rule prints - about a loop. The rules read the JSX return blocks now, and a function body is not one.
+#
+# -     const form = new FormData(e.currentTarget);
+# +     const form = new FormData(e.currentTarget);
+# +     for (let i = 0; i < 3; i++) { void i; }
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+..............                                                           [100%]
+14 passed in Ns
+
+# ============================================================================================
+# GREEN, on the restored files, so the reds above are known to be the mutations' doing
+# and not a suite that fails on everything.
+#
+# $ python3 -m pytest tests/test_apply_names_the_probe_cost.py -q
+..............                                                           [100%]
+14 passed in Ns

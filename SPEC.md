@@ -101,6 +101,33 @@ where a visitor commits to something. That removal was recorded in `web/src/page
 `docs/INTAKE_OPERATIONS.md` but not here and not in `DECISIONS.md`, so the rule survived its own
 repeal in the document that governs the form — L-2.
 
+**The offer states the probe's cost in requests to the applicant's origin, and that number is the
+one `src/prober/prober.py` spends** (`CALLS_PER_PROBE`, three today: a positive control, a negative
+control and the attempt). Written here because the rule belongs to the document that governs the
+form and not only to the form — which is the mistake the paragraph above records, made once already
+on this same section. The offer said "one operation exists today" and nothing more: true in the
+prober's unit of account, and the wrong unit for a page where a stranger decides what may touch
+their production system. A claim too MODEST for its artefact is still a claim that does not match
+it, and it is the direction nobody audits. `tests/test_apply_names_the_probe_cost.py` holds the
+constant, this form — every screen of it, including the confirmation — and the same offer in
+`docs/WHY_GET_VERIFIED.md` to one number: every quantity in that copy must be either the number the
+prober spends or one declared in the gate, with the declaration quoting enough of its own sentence
+to identify it, and the offer itself must state the count where the offer is made. What it compares
+is **numerals in the text a visitor reads** — which is why what counts as that text is itself
+guarded by instrument controls of its own: repeatedly, while this gate was being written, an
+extractor silently dropped copy it was meant to read or admitted code it was not, and each time the
+suite went green over a promise nobody could see or red over a status code. (No count is written
+here, of the controls or of the failures. Four hand-typed numbers in this pair have already gone
+stale against the artefact beside them, which is the defect the gate itself exists to catch; both
+counts are one `grep` away in `tests/test_apply_names_the_probe_cost.py` and
+`evidence/RED-019-an-offer-narrower-than-what-arrives.txt`.)
+
+What it does **not** catch is unquantified vagueness — "a minimal probe", "barely touches your
+server" — which states no number and so contradicts none. That is a deliberate boundary rather than
+an oversight: a rule against adjectives would have no measured quantity under it. What keeps the
+boundary honest is the presence rule, which requires the true count on the same screen, so vagueness
+can stand beside the number but never instead of it.
+
 T-2.12 built the prober, and the choice returned the same day under **D-23**, bounded twice over.
 It names the ONE action the prober implements rather than "active probing" in general, because the
 artefact is one action wide and the offer may not be wider. And it ASKS rather than grants: a

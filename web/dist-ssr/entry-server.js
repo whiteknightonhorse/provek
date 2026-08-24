@@ -1009,6 +1009,19 @@ function Passport({ p }) {
 * option names that one thing rather than "active probing" in general - the artefact is one action
 * wide and the offer may not be wider.
 *
+* AND THE OFFER IS THE SIZE OF WHAT ARRIVES AT THEIR SERVER, NOT THE SIZE OF OUR UNIT (T-A2-5).
+* "One operation" is true in the prober's own vocabulary and it was the whole of what this page
+* said, while `src/prober/prober.py` spends THREE requests on the subject's origin for one probe:
+* a positive control, a negative control and the attempt. Both counts are honest and they are not
+* interchangeable here, because the person reading this page is deciding what may touch their
+* system - and the number they are deciding about is the number of requests, not the number of
+* operations we have names for. The signed mandate names paths in the plural and a rate ceiling,
+* so the document was never the narrow claim; the offer that precedes it was, which is the worse
+* place for it. `tests/test_apply_names_the_probe_cost.py` holds this copy, the same offer in
+* `docs/WHY_GET_VERIFIED.md` and `CALLS_PER_PROBE` to one number, because a count stated in prose
+* beside a constant it must equal is a rule written in three places (L-2) - and what goes missing
+* is never the value, it is the comparison.
+*
 * AND THE OPTION ASKS RATHER THAN GRANTS. `src/mandate/mandate.py` opens "a mandate is a legal
 * object, not a checkbox": it has to state permitted actions, their limits, what must not be
 * affected, liability, an abort condition and how it is revoked. A radio button collects none of
@@ -1088,7 +1101,7 @@ function Apply() {
 			}),
 			sent.asked === "active" && /* @__PURE__ */ jsxs("p", {
 				className: "mt-4 text-sm text-[var(--color-ink-2)]",
-				children: [/* @__PURE__ */ jsx("strong", { children: "You asked about an active-probing mandate." }), " Nothing is authorised by this form and nothing will be sent at your systems. What happens next is that the operator writes to you with a document to agree: it names the one action, the paths, a ceiling on how often, what must not be affected, who answers for damage, what stops the run, and how you revoke it. No request runs before you have signed it."]
+				children: [/* @__PURE__ */ jsx("strong", { children: "You asked about an active-probing mandate." }), " Nothing is authorised by this form and nothing will be sent at your systems. What happens next is that the operator writes to you with a document to agree: it names the one action and the three requests it spends on your origin, the paths, a ceiling on how often, what must not be affected, who answers for damage, what stops the run, and how you revoke it. No request runs before you have signed it."]
 			}),
 			/* @__PURE__ */ jsxs("p", {
 				className: "mt-4 text-sm",
@@ -1231,7 +1244,7 @@ function Apply() {
 									className: "text-sm",
 									children: [/* @__PURE__ */ jsx("strong", { children: "Ask about an active-probing mandate as well." }), /* @__PURE__ */ jsx("span", {
 										className: "block text-xs text-[var(--color-ink-3)]",
-										children: "One operation exists today: we attempt to use a path you tell us is closed, and report whether your running system actually refuses it — which your repository cannot show. Ticking this records the question. It is answered with a document naming the action, the paths, a ceiling on how often, what must not be affected, who answers for damage, what stops the run and how you revoke it, and nothing is sent at your systems before you sign it."
+										children: "One operation exists today: we attempt to use a path you tell us is closed, and report whether your running system actually refuses it — which your repository cannot show. That one operation costs your origin three requests. We ask a path you publish as public, to establish that your server answers us at all; a path that cannot exist, to learn what your server says about a path that is simply not there; and then the closed path itself. Without those two controls a refusal is not a measurement, so they are part of the operation and not extras. Ticking this records the question. It is answered with a document naming the action, the paths, a ceiling on how often — which all three requests count against — what must not be affected, who answers for damage, what stops the run and how you revoke it, and nothing is sent at your systems before you sign it."
 									})]
 								})]
 							})

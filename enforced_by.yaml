@@ -251,6 +251,102 @@ laws:
     # flattered the subject and one that would have accused them.
     gate: src/prober/prober.py
     test: tests/test_probe_control.py
+  - id: LAW-OFFER-IS-THE-SIZE-OF-WHAT-ARRIVES
+    text: "the offer a stranger decides on states the probe's cost in requests to their origin, and that number is the one the prober spends"
+    # THE CLAIM THAT WAS TOO MODEST, WHICH IS THE DIRECTION NOBODY AUDITS. `/apply/` said "one
+    # operation exists today" and stopped there. Every word true - there is one action, and the
+    # mandate that follows names paths in the plural and a rate ceiling - and stated in OUR unit of
+    # account rather than the one that arrives at the applicant's server, where a probe puts three
+    # requests. A promise smaller than the artefact reads as care, so nothing looks at it.
+    #
+    # The gate is a COMPARISON, because after this task the number lives in three files: a constant
+    # in `prober.py`, a word in the form's copy, and a sentence in `docs/WHY_GET_VERIFIED.md`,
+    # which carries the same offer to the same stranger and whose own last line records that it is
+    # always the last copy corrected. `CALLS_PER_PROBE` was 2 until Fable found that a probe
+    # without a negative control cannot tell a withheld path from one that was never there; the
+    # next such finding moves it again, and neither piece of prose is open in the editor that day.
+    # What was missing was never the value - it was the comparison (D-20). Both surfaces are held
+    # by the same assertions: a rule armed on one copy and not the other is the defect itself.
+    #
+    # PRESENCE is checked in the OPTION and not across the file: `three requests` appears elsewhere
+    # in `Apply.tsx` - the confirmation screen, the file's own docstring - so a whole-file search
+    # for the number would be green over exactly the copy this law replaced. The rest is checked
+    # over the WHOLE page, because a scope with a terminator has one: an earlier draft ended the
+    # confirmation's scope at `</p>`, and splitting that paragraph in two carried the count out of
+    # it. Every red is kept in evidence/RED-019-an-offer-narrower-than-what-arrives.txt, one of
+    # them the option withdrawn as D-21 once withdrew it - where the honest outcome is a red saying
+    # the gate now guards nothing, not a green earned by having nothing left to check.
+    #
+    # MOST OF THEM WERE GREEN AGAINST EARLIER DRAFTS - the artefact counts which, in a line the
+    # generator computes from its own mutation table, and the number is deliberately not repeated
+    # here. It was repeated here, said SEVEN where the run said SIX, and it was retyped by hand in
+    # the same commit that fixed exactly this defect one file away. A count is a claim with a
+    # maintenance cost, and this one has already been wrong three times.
+    #
+    # They were found by Fable over several rounds - the count is the ROUND headings in the
+    # artefact and is deliberately not a number here, because it stood here as THREE against
+    # four mutations found in two, in the very paragraph above that calls a hand-typed count a
+    # claim with a maintenance cost. That makes it the fourth such drift in this pair, and the
+    # rule is now applied to itself rather than restated. They are what this law is really for.
+    # Softening sentences a later hand would add - "in
+    # practice it is usually a single CALL", then "a single LOOKUP", then "a couple of requests",
+    # then "your server hears from us ONCE" - each walked past a draft that counted NOUNS, because
+    # nobody softening a claim reaches for the noun the claim was made in and the last of them
+    # names no noun at all. The gate counts numerals now: a list of synonyms is never finished, and
+    # a list of the numbers a page may state can be. Beside those, the confirmation screen carried
+    # its own copy of the number with nothing comparing it - and when that was scoped from
+    # `sent.asked` to the next `</p>`, splitting the paragraph in two moved the count out of the
+    # scope and "ninety HTTP requests" went green.
+    #
+    # Obliged to state the cost is one rule and obliged to state it correctly is another. The two
+    # places the offer is MADE owe both; the whole intake page and the whole offer section of the
+    # document owe the second. The document had the weaker noun-based check for one round and it
+    # was the wrong trade - it could not see "your server hears from us once", and a blind spot
+    # written down is still a blind spot (L-25).
+    #
+    # THE DECLARATIONS ARE THE ONLY DOOR, so they are the only thing that can rot, and both ways
+    # are held. A declaration must SPAN its number inside its own sentence - a set of short keys
+    # granted `only one` everywhere it appeared, and six false promises walked through without a
+    # line being added to the list, one of them telling an applicant on the confirmation screen
+    # that what reaches their production system is one request. And a declaration whose sentence
+    # has been rewritten is itself a red, because a permission for copy that is gone is one the
+    # next editor meets as agreement.
+    #
+    # AND WHAT COUNTS AS "THE COPY" IS THE HARDEST PART OF THIS GATE, not the rules over it. Four
+    # drafts of the extractor each admitted or dropped the wrong thing, and every one was green
+    # over a promise: `{...}` stripping deleted the whole confirmation screen; `'...'` stripping
+    # ate the sentence between two apostrophes; stripping every string deleted copy declared as a
+    # constant and rendered through an expression, which is how `ISSUES` and `DECISION_LOG` are
+    # already written on that page; and drawing the line by ROLE put `title` on the copy side, so
+    # a tooltip could state the count while the visible sentence read "costs your origin very
+    # little" - read by a mouse, by nobody on a touchscreen or a keyboard. Twice more, presence and
+    # the strict rule were reading two different extractions of one file, and keeping the module
+    # made `if (r.status === 429)` a red about promises to applicants, which is the false red that
+    # gets a gate switched off.
+    #
+    # It reads THE JSX RETURN BLOCKS now - matched by parenthesis depth, so no function body is
+    # copy and a status code cannot be reported as a promise - plus any string SHAPED LIKE PROSE
+    # wherever it is declared, since naming the copy-carrying syntax was fitted to the two
+    # spellings this page happens to use and missed `export const`, `let`, an object field and a
+    # ternary of two sentences. Attribute strings are excluded from that, and the readable
+    # attributes are gathered for CONTRADICTION only - never for compliance. Instrument controls
+    # hold each of those properties, two of them feeding the extractor prose of their own so no rewrite of the page
+    # can disarm them; their number is not written here, because the one that was is the third
+    # hand-typed count in this pair to disagree with the artefact beside it.
+    #
+    # WHAT IT DOES NOT CATCH, stated because the alternative is discovering it: unquantified
+    # vagueness. "A minimal probe", "barely touches your server" - no numeral, so nothing to
+    # compare. Policing adjectives would be a rule with no measured quantity under it, which is the
+    # rubber stamp `scripts/ratchet_scope.py` warns about; if it is wanted it is a different law.
+    # What keeps that boundary honest is the presence rule holding on the SAME text the strict rule
+    # reads: vagueness may stand beside the count, never instead of it. That argument was made once
+    # while presence could be satisfied by an attribute no visitor sees, which made it false.
+    #
+    # The gate below is the FORM because that is where a stranger decides; the document is the
+    # second file this law holds and is named here rather than given an entry of its own, since one
+    # law enforced from two rows is the shape that survives its own repeal.
+    gate: web/src/pages/Apply.tsx
+    test: tests/test_apply_names_the_probe_cost.py
 
   - id: LAW-INTAKE-SAVED-MEANS-SAVED
     text: "the intake tells an applicant that nothing was saved only where nothing was saved, and a caught refusal leaves a mark wherever the store will take one"

@@ -520,9 +520,19 @@ being a constant, if it is ever computed from the request body, if the two field
 into one, or if the form starts offering a value the endpoint would refuse.
 
 **What the operator does with an `active` request.** Write back with a mandate document naming the
-one action the prober implements (`unauthenticated_access_attempt`), the paths, the hourly ceiling,
-the blast radius, the liability, the abort condition and the revocation route — the fields
-`src/mandate/mandate.py` requires. The Telegram notice carries both values for this reason: an
+one action the prober implements (`unauthenticated_access_attempt`), **the three requests one probe
+spends on their origin** (`CALLS_PER_PROBE`: a positive control, a negative control and the
+attempt, all three counted against the ceiling), the paths, the hourly ceiling, the blast radius,
+the liability, the abort condition and the revocation route — the fields `src/mandate/mandate.py`
+requires.
+
+⚠️ The count is in this list because `/apply/` now tells the applicant the document will contain
+it: the confirmation reads "it names the one action and the three requests it spends on your
+origin". An instruction that omits what the page promised is how the page becomes false without
+anybody editing it — the promise is kept by the operator, not by the form, and T-A2-5 corrected the
+form first. `tests/test_apply_names_the_probe_cost.py` holds the page's copy against
+`src/prober/prober.py`; nothing can hold a document the operator has not written yet, so this line
+is the whole of the mechanism and it is prose. The Telegram notice carries both values for this reason: an
 `active` request is the one submission that needs a composed reply rather than a queue position.
 
 ⚠️ **None of this reaches an applicant today, and it is measured rather than assumed.** On
