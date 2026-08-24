@@ -20,7 +20,49 @@ import { loadNotes, noteArticle, notesIndexArticle, noteLd } from "./notes/emit.
 
 const DIST = "dist";
 const SITE = "https://provek.dev";
-const shell = readFileSync(join(DIST, "index.html"), "utf8");
+const shellRaw = readFileSync(join(DIST, "index.html"), "utf8");
+
+/** THE FONTS ARE PRELOADED BECAUSE THE FIRST LONG PAGE ON THIS SITE MEASURED THE COST OF NOT
+ *  DOING IT. `@fontsource` ships `font-display: swap`, and the faces are referenced from inside the
+ *  stylesheet, so a browser cannot discover them until the CSS has been fetched and parsed. Text
+ *  therefore paints in the fallback and reflows when the real face arrives.
+ *
+ *  On the short pages that was invisible in use and nearly invisible in measurement - the landing
+ *  reads CLS 0.0608. The first method note is a 5404px column of prose, where the same swap moved
+ *  the whole of `<main>` and measured CLS 0.2524, which is what took Lighthouse Performance to 83
+ *  against the landing's 95 on the same host in the same minute. The defect scales with how much
+ *  text a page has, so it arrived with the first page that had a lot.
+ *
+ *  Preloading is chosen over `font-display: optional`, which also removes the shift: optional buys
+ *  it by dropping the typography for the whole of a first visit, and the reader is the one who pays.
+ *  A preload starts the fetch beside the stylesheet instead of after it, so the face is usually
+ *  there for the first paint and there is nothing to swap.
+ *
+ *  Only the three faces the measurement named are preloaded. Preloading all five would spend
+ *  bandwidth ahead of first paint on faces that no page uses above the fold, which is the same
+ *  mistake in the other direction. `crossorigin` is not optional: a font preload without it is
+ *  fetched in a different mode from the CSS request and the file is downloaded TWICE. */
+function fontPreloads(shellHtml) {
+  const hrefs = [];
+  for (const m of shellHtml.matchAll(/href="(\/assets\/[^"]+\.css)"/g)) {
+    const css = readFileSync(join(DIST, m[1]), "utf8");
+    for (const f of css.matchAll(/url\((\/assets\/[^)"']+\.woff2)\)/g)) hrefs.push(f[1]);
+  }
+  const wanted = hrefs.filter((h) =>
+    /ibm-plex-sans-latin-400/.test(h) || /ibm-plex-sans-latin-600/.test(h)
+    || /ibm-plex-mono-latin-400/.test(h));
+  // A BUILD THAT FINDS NO FONTS MUST NOT EMIT A PAGE THAT SILENTLY SHIFTS AGAIN. The filenames are
+  // content-hashed and the package could rename a face, so this is exactly the shape that would
+  // otherwise degrade to "no preloads, everything still builds, the score quietly returns to 83".
+  if (wanted.length !== 3)
+    throw new Error(
+      `prerender: expected 3 above-the-fold woff2 faces to preload, found ${wanted.length} `
+      + `(${wanted.join(", ") || "none"}). The stylesheet's font URLs changed shape.`);
+  return wanted.map((h) =>
+    `<link rel="preload" as="font" type="font/woff2" href="${h}" crossorigin>`).join("\n    ");
+}
+
+const shell = shellRaw.replace("</head>", `  ${fontPreloads(shellRaw)}\n  </head>`);
 const { renderRoute, renderStatic, TITLES, PRERENDER_ROUTE } = await import("./dist-ssr/entry-server.js");
 
 /** The same shell with the application's module script removed.
