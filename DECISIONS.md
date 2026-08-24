@@ -2217,3 +2217,48 @@ ruling declines to touch alongside the ceiling in one move. Whether the crawl li
 impressions link disagree the way `GetQueryStats` and `GetRankAndTrafficStats` already do (D-34) is
 unmeasured for `crawl_stats` specifically and is not required to be measured for this rung to hold:
 one control-proven instrument per rung is what the ladder asks for.
+
+## D-36. The retirement banner named a path this project never called
+
+**The task.** T-B12's brief read Bing Webmaster's cabinet banner — "Legacy SOAP and POX APIs will
+be retired on August 31, 2026. Migrate to our REST APIs to avoid service disruption." — as a
+statement about `bing_probe.py`'s `API` constant, `https://ssl.bing.com/webmaster/api.svc/json`,
+and asked for a migration to REST before the cutoff.
+
+**The premise did not survive contact with Microsoft's own documentation.** Fetched 2026-08-24,
+`learn.microsoft.com/en-us/bingwebmaster/api-protocols` carries that exact banner directly above a
+table titled "POX and JSON protocol URL Format" naming exactly two surviving formats:
+`/api.svc/pox/METHOD` and `/api.svc/json/METHOD`. The retirement notice itself (the primary page,
+`bing.com/webmasters/help/soap-pox-api-retirement-s0appox01`, answers this host's fetcher with an
+empty body — recorded rather than papered over; quoted via
+relevantaudience.com/seo/bing-webmaster-tools-soap-pox-apis-retire-august-2026/) states "All API
+methods remain fully available over JSON/HTTP with identical functionality." What retires 2026-08-31
+is `/api.svc/soap` and `/api.svc/pox`. `/api.svc/json` is the JSON/HTTP format the same banner calls
+"our REST APIs", and it is what `bing_probe.py`'s `API`, `keyword_probe.py`'s `WMT` and
+`notes_cron.py`'s `BING_API` have always pointed at. Nothing in this project ever called
+`/api.svc/soap` or `/api.svc/pox`. There was no legacy transport to migrate off, and "migrating to
+REST" would have been a change with nothing under it — nothing runs differently before it and after
+it, which is the flattering twin of the defect this project exists to catch: not a claim stronger
+than its artefact, but an artefact (a diff) manufactured to match a claim that turned out to be
+about a different system.
+
+**What was done instead of a no-op migration.** Each of the three constants now carries a guard —
+`assert not any(p in API for p in ("/api.svc/soap", "/api.svc/pox"))` — so a future edit that
+regresses toward either retiring path fails the import immediately rather than working until
+2026-08-31 and then silently not; the full citation trail lives beside `bing_probe.py`'s `API`, and
+the two siblings point to it rather than repeating it (L-2). `~/orchestra/bing_rest_transport_check.py`
+took a live reading of the JSON/HTTP path on both sites of the T-B10/D-34 control pair, 2026-08-24
+21:57:57 UTC: `GetRankAndTrafficStats` on the control answered 8 rows, 985 impressions, 29 clicks —
+matching D-34's `MEASURED-B10-the-control-pair.txt` reading to the unit, five days ahead of the
+cutoff. That script writes its own evidence file,
+`evidence/MEASURED-B12-json-http-is-not-legacy.txt`, rather than rerunning `bing_control_pair.py`
+over `MEASURED-B10-the-control-pair.txt`: this decision quotes that file's numbers verbatim, and a
+rerun landing different figures (a rolling-window call, read days later) would have broken the
+citation silently. `bing_states_check.py` and `bing_counted_check.py`, the two falsification
+harnesses guarding this instrument, stay green against the edited files.
+
+**What this does not show.** That the endpoint survives 2026-08-31 — no reading taken before that
+date can show that; what is measured is that the JSON/HTTP path answers correctly today, and that
+it is the path Microsoft's own notice describes as continuing rather than the one it retires. Also
+not shown: why the cabinet's banner reads as broadly as it does, or whether Bing intends to widen
+the retirement later — both are the operator's cabinet, unreadable from this host.
