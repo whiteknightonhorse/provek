@@ -1453,3 +1453,90 @@ sha beside a tag comment, it does not need to be. A wrong action pin looks exact
 and defeats review; a wrong hash is recomputed and REFUSED by pip on every install. Truth is
 enforced by the installer at run time, and what is left for a gate is the one thing the installer
 never sees: whether it was asked to enforce anything at all.
+
+## D-31. The `web-1.0/` freeze is confirmed, and the road out of it is a revocation, not a cleanup
+
+**Numbering.** This entry was commissioned as "D-30". By the time it was written that number was
+held by the CI toolchain decision above, which was authored by the task that measured it and lands
+in the same push. Renumbering another decision's record so that a brief's wording comes out right
+would make the brief the authority over the file. The next free number is taken instead, and the
+reason is written here rather than left to be reconstructed — the same device D-28 used for the
+D-27 gap.
+
+**Decision.** `web-1.0/` stays, and the freeze recorded in D-21 is confirmed as of 2026-08-24. A
+task of that date proposed deleting the directory as dead and, to its credit, set its own stop
+condition: if one tracked file still refers to `web-1.0`, the deletion is off and the reference is a
+finding. Three were found. The stop condition fired on the task's own terms.
+
+**The half of the proposal that held.** The build genuinely does not reach the directory.
+`~/orchestra/deploy.sh` runs the build in `web/` and publishes `web/dist`; the string `web-1.0`
+does not occur in it. `web/wrangler.toml` sets `pages_build_output_dir = "dist"` and names nothing
+else. `grep -rn 'web-1\.0' .github/` is empty — no workflow refers to it.
+
+**And the live site was distinguished by a FEATURE, not by a status code.**
+`web-1.0/src/pages/Registry.tsx:28` still carries the withdrawn sentence "Every business that has
+been measured", while `https://provek.dev/registry/` serves the corrected one computed by
+`web/prerender.mjs`: "Every business submitted to the method… 8 records, of which 4 could not be
+measured at all." A 200 would have proven only that the origin answers; the sentence proves which
+tree the served bytes were built from. Control: `/` → 200, so the source was talking to us.
+
+**The hole that no amount of grepping could close, and the measurement that did.** A build can be
+configured in the Cloudflare dashboard, outside every file in this repository — and a setting that
+does not live in the tree cannot be refuted by reading the tree. So it was measured rather than
+argued: `GET /accounts/<omitted>/pages/projects` → HTTP 200, and the `provek` project reads
+`source: null`, a `build_config` carrying `destination_dir` alone — no `build_command`, no
+`root_dir` — and a latest deployment whose trigger type is `ad_hoc`. The Pages project is not
+connected to a git repository at all: Cloudflare neither clones this repository nor builds it, so
+there is no path by which any dashboard setting could reach `web-1.0/`. The account id is omitted
+above on purpose, and so are the token's scopes; neither is needed to check the finding, and this
+file is written to be read by strangers.
+
+**The three anchors, by name, because "there are references" is not a measurement.**
+
+1. `web/prerender.mjs:113-116` — a deliberate L-2 anchor recording that a third copy of the
+   withdrawn sentence survives at `web-1.0/src/pages/Registry.tsx:28`. It is a comment and changes
+   no build, but it is not incidental: L-2 is about knowing where every copy is, and this is the
+   note that tells whoever rolls back to `web-1.0` what they restore along with the layout. The
+   deletion task named `prerender.mjs` in its own stop condition and made no exception for comments.
+2. `SPEC.md:436` — the repository layout: "`/web` working app, `/web-1.0` frozen clone, `/refs`
+   reference captures." A speaking document of the project, not a stray mention.
+3. `DECISIONS.md:667` (D-21) — where the freeze is called deliberate and the directory explicitly
+   "left alone", with the mandate UI still standing in `web-1.0/Apply.tsx` named as a property of
+   the rollback rather than a defect in it.
+
+**The directory is also not dead.** `web-1.0/FROZEN.md` gives it a function: the phase-2 rollback
+point of the design method, existing so that phases 3-5 — palette, type, states, motion — can be
+compared against something rather than against a memory. Those phases are not done. A baseline is
+useless the moment it is edited, which is why the same file says to edit `web/` instead; a baseline
+is equally useless once deleted.
+
+**Therefore the road out is a revocation, not a cleanup.** Removing the 28 files repeals three
+recorded places at once, and this project reverses decisions by Fable's verdict or the operator's
+ruling, never by the hand of the executor who finds them inconvenient. If the freeze is to end, it
+ends as: the operator revokes it; a DECISIONS entry records the revocation and its reason; the
+layout line at `SPEC.md` §11 is edited; and the L-2 anchor in `web/prerender.mjs` is removed in the
+same change, because an anchor pointing at a path that no longer exists is worse than no anchor —
+it is a rule surviving its own repeal, which is precisely what L-2 names. Only after those three is
+deleting the files bookkeeping. **No document in this repository calls `web-1.0/` a directory to be
+deleted, and none should.**
+
+**The argument against the freeze, raised here rather than left for a critic.** Deletion would
+*not* have been irreversible, and the first draft of this reasoning had that wrong. `FROZEN.md`
+pins commit `82d8a29`, which does not contain `web-1.0` at all — in it the clone sat at `web/` —
+and is held only by three stale remote-tracking refs that no longer exist on the remote. But
+`web-1.0` entered the CURRENT published history in the first commit `bacea9c` and has not changed
+since: `git diff --stat bacea9c HEAD -- web-1.0` is empty. The content is recoverable from public
+history at any commit. So the freeze does not rest on "we could never get it back". It rests on the
+recorded function and the three anchors, which is a weaker-sounding basis and the true one.
+
+**Alerts `#6` and `#7` stand dismissed on this same basis, and that is now measured.** Read with
+the token the door uses: both `state=dismissed`, `dismissed_reason: won't fix`, rules
+`js/remote-property-injection` and `js/client-side-request-forgery`, each dismissal comment naming
+`web-1.0/` as the frozen rollback point that the build excludes and the site never serves — and
+each careful to say only that the frozen copy is not shipped, not that the live tree is clean.
+`docs/ALERT_TRIAGE.md:26` carries the same basis in the same words. Worth recording that an earlier
+attempt to read alert `#6` returned HTTP 401 against a control of 200 on the repository endpoint,
+and was logged as `unreadable` rather than as "closed" or as zero. That 401 was a fact about the
+credential in hand, not about the alert. Invariant 1 held in both directions here: the refusal was
+not written down as a zero, and it was not left standing as one once an instrument existed that
+could read it.
