@@ -99,15 +99,23 @@ def _rate_limit_exhausted(token: str | None) -> bool:
 def _api(path: str, token: str | None = None) -> tuple[int, object]:
     """ANONYMOUS BY DEFAULT (2026-08-20).
 
-    The three calls this collector makes are public reads, and public reads need no credential at
-    all: measured, all three return 200 unauthenticated, and a full cohort costs 24 of the 60
-    anonymous requests GitHub allows per hour.
+    Public reads need no credential at all, and that much still holds. What does NOT still hold is
+    the count this docstring claimed: "all three return 200... a full cohort costs 24 of the 60
+    anonymous requests GitHub allows per hour." Re-measured 2026-08-24 against the live API (see
+    evidence/RED-037-*): `whiteknightonhorse/gov-auction-report` now answers 404, not 200, and a
+    404 short-circuits `collect_github` after the FIRST call - it never reaches the commits or runs
+    endpoints - so the three subjects `measure_qm2.py` exercises cost 3 + 3 + 1 = 7 calls, not the
+    flat 3-per-subject this docstring assumed. A collector that measures its own subjects can be
+    as stale as any other measurement; this one had gone four days without being re-run against
+    the sources it describes.
 
-    That is the strongest available form of ABI-5-3. A scoped read-only token would make the
-    pipeline reproducible by anyone the operator chooses to grant one; no token makes it
-    reproducible by anyone at all, which is what "a third party can recompute the verdict from the
-    same inputs" actually asks for. The token remains an option purely to widen the rate limit for
-    a cohort larger than the anonymous budget - never as the default, and never as a requirement.
+    The general claim survives the correction: reads are public, need no credential, and a scoped
+    token remains optional. That is the strongest available form of ABI-5-3. A scoped read-only
+    token would make the pipeline reproducible by anyone the operator chooses to grant one; no
+    token makes it reproducible by anyone at all, which is what "a third party can recompute the
+    verdict from the same inputs" actually asks for. The token remains an option purely to widen
+    the rate limit for a cohort larger than the anonymous budget - never as the default, and never
+    as a requirement.
     """
     headers = ["-H", "Accept: application/vnd.github+json"]
     if token:

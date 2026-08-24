@@ -25,12 +25,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from src.abs_profile.evidence import EvidenceClass
 from src.abs_profile.identity import Binding, BindingKind
 from src.abs_profile.ladder import L
+from src.abs_profile.measured import NotMeasured
 from src.collector import github as gh
 from src.passport.passport import Accountability, Provenance, build
 from src.registry.public_registry import PublicRegistry
 from src.transport.file_transport import FileTransport
 from src.verify.control_map import Capability, ControlMap, ControlPath, Coverage, Surface
-from src.verify.scorer import projection, score_operation
+from src.verify.scorer import Confidence, OperationScore, projection, score_operation
 
 SUBJECTS = ["whiteknightonhorse/gov-auction-report",
             "whiteknightonhorse/mcp-protocol-tester",
@@ -93,48 +94,72 @@ def optional_token() -> str | None:
 PROV = Provenance("1.0.0", "1.0.0", 30)
 COV = Coverage([Surface.GITHUB], {"server": "runtime not presented"}, "CI secret")
 
-rows = []
-for full in SUBJECTS:
-    _calls["n"] = 0
-    t0, c0 = time.time(), time.process_time()
-    r0 = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+def score_subject(ev: gh.GitHubEvidence, cmap: ControlMap) -> OperationScore:
+    """The `development_initiation` score for one subject's evidence.
 
-    ev = gh.collect_github(full, optional_token())
-    b = Binding(BindingKind.GIT, full)
-    cmap = ControlMap([ControlPath(Surface.GITHUB, Capability.IMPROVE_OR_FIX, True)], COV)
+    `ev.read` is the COLLECTOR's own finding - the subject answered us, or it did not - and it is
+    not optional input to this decision, it is the first thing this function must ask (T-S8,
+    Fable). The line this replaces asked a different question ("is `distinct_authors`
+    measured?") and got the same answer for two different reasons: a subject with two committers
+    and a subject that returned 404 both leave `distinct_authors` unmeasured, and the `else`
+    branch could not tell them apart. It fell back to `L.L3` for both, so
+    `whiteknightonhorse/gov-auction-report` - which answers 404 to an anonymous reader, reproduced
+    in evidence/RED-037-* - was scored `level: L2` (after the weak-signal cap), `measured: true`,
+    `projection: 40`. A subject the collector never read cannot ALSO be scored: that is the
+    scorer manufacturing a number invariant 1 says only a collector may withhold or grant.
+    """
+    if not ev.read:
+        return OperationScore("development_initiation", NotMeasured.UNREADABLE, (),
+                              Confidence.MEASURED)
     lvl = L.L4 if (ev.distinct_authors.is_measured and ev.distinct_authors.value == 1) else L.L3
-    scores = [score_operation("development_initiation", lvl,
-                              (EvidenceClass.PLATFORM_OBSERVED,), cmap.implied_level_cap(),
-                              weak_mixed_signal=True, runtime_trace=ev.has_runtime_trace),
-              score_operation("deployment", None, ()),
-              score_operation("treasury_control", None, ())]
-    p = build(b, scores, cmap, projection(scores), PROV, Accountability(),
-              verifier_affiliation="same_owner")
-    transport.publish(b.as_subject_id(), p.to_machine(), p.to_machine()["verified"]["projection"])
+    return score_operation("development_initiation", lvl,
+                           (EvidenceClass.PLATFORM_OBSERVED,), cmap.implied_level_cap(),
+                           weak_mixed_signal=True, runtime_trace=ev.has_runtime_trace)
 
-    rows.append({"subject": full.split("/")[1],
-                 "wall_s": round(time.time() - t0, 2),
-                 "cpu_s": round(time.process_time() - c0, 3),
-                 "api_calls": _calls["n"],
-                 "rss_delta_kb": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss - r0})
 
-print("=== Q-M2: cost of ONE verification pass ===")
-print("%-28s %8s %8s %6s %10s" % ("subject", "wall s", "cpu s", "calls", "rss dKB"))
-for r in rows:
-    print("%-28s %8s %8s %6s %10s" % (r["subject"], r["wall_s"], r["cpu_s"],
-                                      r["api_calls"], r["rss_delta_kb"]))
+if __name__ == "__main__":
+    rows = []
+    for full in SUBJECTS:
+        _calls["n"] = 0
+        t0, c0 = time.time(), time.process_time()
+        r0 = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
 
-avg_wall = sum(r["wall_s"] for r in rows) / len(rows)
-avg_cpu = sum(r["cpu_s"] for r in rows) / len(rows)
-avg_calls = sum(r["api_calls"] for r in rows) / len(rows)
-print()
-print("average per pass: wall %.2f s | cpu %.3f s | api calls %.1f" % (avg_wall, avg_cpu, avg_calls))
-print()
-for freq, label in ((1, "daily"), (1 / 7, "weekly"), (1 / 30, "monthly")):
-    per_month = 30 * freq
-    print("at %-8s re-verification: %.0f passes/month -> %.1f cpu-s, %.0f api calls per project"
-          % (label, per_month, per_month * avg_cpu, per_month * avg_calls))
-print()
-print("GitHub API budget: 5000 calls/hour for a token. At daily re-verification one project costs")
-print("%.0f calls/month, so the token supports roughly %.0f projects before rate limits bind."
-      % (30 * avg_calls, 5000 * 24 * 30 / max(1e-9, 30 * avg_calls)))
+        ev = gh.collect_github(full, optional_token())
+        b = Binding(BindingKind.GIT, full)
+        cmap = ControlMap([ControlPath(Surface.GITHUB, Capability.IMPROVE_OR_FIX, True)], COV)
+        scores = [score_subject(ev, cmap),
+                  score_operation("deployment", None, ()),
+                  score_operation("treasury_control", None, ())]
+        p = build(b, scores, cmap, projection(scores), PROV, Accountability(),
+                  verifier_affiliation="same_owner")
+        transport.publish(b.as_subject_id(), p.to_machine(),
+                          p.to_machine()["verified"]["projection"])
+
+        rows.append({"subject": full.split("/")[1],
+                     "read": ev.read,
+                     "wall_s": round(time.time() - t0, 2),
+                     "cpu_s": round(time.process_time() - c0, 3),
+                     "api_calls": _calls["n"],
+                     "rss_delta_kb": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss - r0})
+
+    print("=== Q-M2: cost of ONE verification pass ===")
+    print("%-28s %-5s %8s %8s %6s %10s" % ("subject", "read", "wall s", "cpu s", "calls", "rss dKB"))
+    for r in rows:
+        print("%-28s %-5s %8s %8s %6s %10s" % (r["subject"], r["read"], r["wall_s"], r["cpu_s"],
+                                              r["api_calls"], r["rss_delta_kb"]))
+
+    avg_wall = sum(r["wall_s"] for r in rows) / len(rows)
+    avg_cpu = sum(r["cpu_s"] for r in rows) / len(rows)
+    avg_calls = sum(r["api_calls"] for r in rows) / len(rows)
+    print()
+    print("average per pass: wall %.2f s | cpu %.3f s | api calls %.1f"
+          % (avg_wall, avg_cpu, avg_calls))
+    print()
+    for freq, label in ((1, "daily"), (1 / 7, "weekly"), (1 / 30, "monthly")):
+        per_month = 30 * freq
+        print("at %-8s re-verification: %.0f passes/month -> %.1f cpu-s, %.0f api calls per project"
+              % (label, per_month, per_month * avg_cpu, per_month * avg_calls))
+    print()
+    print("GitHub API budget: 5000 calls/hour for a token. At daily re-verification one project costs")
+    print("%.0f calls/month, so the token supports roughly %.0f projects before rate limits bind."
+          % (30 * avg_calls, 5000 * 24 * 30 / max(1e-9, 30 * avg_calls)))

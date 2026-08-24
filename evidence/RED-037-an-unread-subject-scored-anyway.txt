@@ -1,0 +1,113 @@
+RED-037 - an unread subject scored anyway
+
+DATE (UTC)     : 2026-08-24
+SUBJECT        : scripts/measure_qm2.py, development_initiation scoring for whiteknightonhorse/gov-auction-report
+TASK           : T-S8
+PRODUCED       : evidence/RED-037-generator.py, checked in beside this file so the runs below
+                 can be repeated rather than believed.
+LIVE CHECK     : GET https://api.github.com/repos/whiteknightonhorse/gov-auction-report -> HTTP 404 (measured just now,
+                 not assumed - this file refuses to write itself if the subject stops 404ing)
+
+====================================================================================================
+THE SILENT SHIFT NAMED
+====================================================================================================
+
+Before the anonymous channel (Fable, V1, 2026-08-20), this exact subject was read through a
+now-forbidden sudo channel and scored genuinely - sole author, verified commits, and a runtime
+trace justified L4:
+
+  evidence/TAINTED-SUDO-CORPUS/git_whiteknightonhorse_gov-auction-report.json (issued 2026-08-20T05:54:44.351091+00:00, pre-2026-08-20 sudo channel): level=L4 projection=80
+
+After 2026-08-20 the anonymous channel cannot see this repository at all: it answers 404, measured
+above. The honest consequence is `unreadable` - the repository the anonymous method used to read
+under privilege has become one it cannot reach at all through the reproducible channel. The
+pre-repair code did not say that. It silently produced a SMALLER but still-affirmative number:
+
+  before repair (this run)  : development_initiation = {"operation": "development_initiation", "level": "L2", "measured": true, "confidence": "inferred", "limiters_applied": ["O1:mixed_classes->inferred", "O2:no_runtime_trace->capped_L2"]}
+                              projection = 40
+  after repair  (this run)  : development_initiation = {"operation": "development_initiation", "level": "unreadable", "measured": false, "confidence": null, "limiters_applied": []}
+                              projection = None
+
+80 -> 40 is not two measurements of the same thing getting more precise. It is a privileged real
+reading (80) followed by an anonymous fabricated one (40) that never disclosed it was reading
+nothing, on a subject a reproducible reader cannot see at all.
+
+====================================================================================================
+PART ONE - the pre-repair script (git show eb0c6cb8a0cec4e17179fbcbb09f15c320a720a3), run for real
+====================================================================================================
+
+--- `python3 scripts/measure_qm2.py` at eb0c6cb8a0cec4e17179fbcbb09f15c320a720a3 ---   exit=0
+
+=== Q-M2: cost of ONE verification pass ===
+subject                        wall s    cpu s  calls    rss dKB
+gov-auction-report               0.69    0.001      1        324
+mcp-protocol-tester              3.07    0.005      3       1552
+AIpush                           2.88    0.004      3          0
+
+average per pass: wall 2.21 s | cpu 0.003 s | api calls 2.3
+
+at daily    re-verification: 30 passes/month -> 0.1 cpu-s, 70 api calls per project
+at weekly   re-verification: 4 passes/month -> 0.0 cpu-s, 10 api calls per project
+at monthly  re-verification: 1 passes/month -> 0.0 cpu-s, 2 api calls per project
+
+GitHub API budget: 5000 calls/hour for a token. At daily re-verification one project costs
+70 calls/month, so the token supports roughly 51429 projects before rate limits bind.
+
+--- .state/qm2/git_whiteknightonhorse_gov-auction-report.json after that run ---
+
+{
+  "projection": 40,
+  "development_initiation": {
+    "operation": "development_initiation",
+    "level": "L2",
+    "measured": true,
+    "confidence": "inferred",
+    "limiters_applied": [
+      "O1:mixed_classes->inferred",
+      "O2:no_runtime_trace->capped_L2"
+    ]
+  }
+}
+
+====================================================================================================
+PART TWO - the fixed script, run the same way over the same live subject
+====================================================================================================
+
+--- `python3 scripts/measure_qm2.py` (working tree) ---   exit=0
+
+=== Q-M2: cost of ONE verification pass ===
+subject                      read    wall s    cpu s  calls    rss dKB
+gov-auction-report           False     0.54    0.001      1        444
+mcp-protocol-tester          True      2.23    0.005      3       1448
+AIpush                       True      2.08    0.004      3          0
+
+average per pass: wall 1.62 s | cpu 0.003 s | api calls 2.3
+
+at daily    re-verification: 30 passes/month -> 0.1 cpu-s, 70 api calls per project
+at weekly   re-verification: 4 passes/month -> 0.0 cpu-s, 10 api calls per project
+at monthly  re-verification: 1 passes/month -> 0.0 cpu-s, 2 api calls per project
+
+GitHub API budget: 5000 calls/hour for a token. At daily re-verification one project costs
+70 calls/month, so the token supports roughly 51429 projects before rate limits bind.
+
+--- .state/qm2/git_whiteknightonhorse_gov-auction-report.json after that run ---
+
+{
+  "projection": null,
+  "development_initiation": {
+    "operation": "development_initiation",
+    "level": "unreadable",
+    "measured": false,
+    "confidence": null,
+    "limiters_applied": []
+  }
+}
+
+====================================================================================================
+THE PERMANENT GATE, GREEN
+====================================================================================================
+
+--- `python -m pytest tests/test_qm2_unreadable_subject.py -q` ---   exit=0
+
+....                                                                     [100%]
+4 passed in 0.03s
