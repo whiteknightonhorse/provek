@@ -169,11 +169,14 @@ A note takes one of them and writes it out: what the term measures, what it cann
 this repository's files settles the question. Reached from one sentence of prose on Method, with no
 navigation entry.
 
-**No note is published yet.** This section specifies the surface; the corpus is empty, because the
-capture has so far been refused by its own measurement (D-18). Until a note exists, `/method/notes/`
-is not emitted and the sentence on Method that leads to it is not written — `LAW-NOTES-ENTRANCE`
-fails the build in either direction. A specification is allowed to precede its instances; a page
-telling a reader that the writing exists is not, which is the distinction §4 already draws for
+**How many notes stand is not stated here, on purpose.** This section specifies the surface:
+`/method/notes/` is emitted exactly when `web/notes/src/` holds a captured note, and the sentence on
+Method that leads to it is written under that same condition — `LAW-NOTES-ENTRANCE` fails the build
+if the two diverge in either direction. A count belongs to the index the surface renders, the one
+copy of it that cannot drift from the artefact (§3.6 item 6 fixes the ceiling it may climb to, not
+how many currently sit under it); this document does not keep a second copy that could go stale
+between a capture and a reader. A specification is allowed to precede its instances; a page telling a
+reader that writing exists when none has landed is not, which is the distinction §4 already draws for
 phase 2.
 
 **The genre is the constraint, and it is not a matter of taste.** ADR-0009 ruled that teaching and
