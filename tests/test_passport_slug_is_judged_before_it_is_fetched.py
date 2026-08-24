@@ -87,11 +87,23 @@ def probe(slugs: list[str]) -> list[dict]:
             capture_output=True, text=True, timeout=60,
         )
     except FileNotFoundError:  # pragma: no cover - environment, not logic
-        pytest.fail(
+        # `raise`, not `pytest.fail(...)`, and the difference is the reason this handler is the
+        # only thing standing between a missing `node` and `done.returncode` below. `pytest.fail`
+        # does terminate - it is annotated `-> NoReturn` and raises `Failed` - but that is a
+        # property of somebody else's function, invisible here and to any reader or analyser
+        # working from this file. Written as a call, the line below is guarded by a fact not
+        # present at the point it is relied on; the day the call is swapped for something that
+        # returns, this function stops reporting "the instrument was absent" and starts raising
+        # `NameError` on `done` - an instrument reporting a state other than the one it found,
+        # which is invariant 1 in the gate that exists to hold invariant 1. CodeQL #53 said the
+        # same thing and was right about the shape while wrong about today's reachability.
+        # Both sibling probes in this suite already terminate this way (measured: they are the
+        # only other handlers of it in the tree); this one was the exception.
+        raise AssertionError(
             "`node` is not on PATH, so the only gate that RUNS the slug guard could not run. "
             "That is a refusal of the instrument and it is reported as one: it is not evidence "
             "that the guard is correct, and it must not be read as a pass."
-        )
+        ) from None
     if done.returncode != 0:
         pytest.fail(
             f"slug_probe exited {done.returncode}, so nothing was measured.\n"

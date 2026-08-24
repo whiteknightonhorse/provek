@@ -209,3 +209,76 @@ The endpoint itself changed state. A previous attempt recorded `code-scanning/al
 and correctly wrote the alert's state down as `unreadable` rather than as closed or as zero. With
 the token that `scripts/push.sh` uses, the endpoint answers 200 and the alert was readable and
 writable. The earlier reading was a true fact about credentials, not about the repository.
+
+## Third triage act, 2026-08-24 (T-S5) — one alert, closed by repair rather than by disposition
+
+Measured before this act: **6 open, 11 dismissed**. Five of the six are the operator's process
+metrics the second act left (`#30`–`#34`), unchanged and left again for the same reason. The sixth
+is new.
+
+**`#53` `py/uninitialized-local-variable`, `tests/test_passport_slug_is_judged_before_it_is_fetched.py:95`**
+— *"Local variable `done` may be used before it is initialized."* Raised at `2026-08-24T16:08:29Z`
+by the scan that ran after the second act shipped, on the file that act had just added.
+
+**It is unreachable today, and that was measured rather than argued.** Two readings, because the
+first alone is a claim about somebody else's code:
+
+```
+$ python3 -c "import pytest,inspect; print(inspect.signature(pytest.fail))"
+(reason: 'str' = '', pytrace: 'bool' = True) -> 'NoReturn'          # and it raises Failed(BaseException)
+
+$ PATH=/tmp/nonode python3 -m pytest tests/test_passport_slug_is_judged_before_it_is_fetched.py -x -q
+E  Failed: `node` is not on PATH, so the only gate that RUNS the slug guard could not run. ...
+tests/test_passport_slug_is_judged_before_it_is_fetched.py:90: Failed      # line 95 was never reached
+```
+
+The second is the one that settles it: the branch was **executed** with `node` off `PATH`, not
+reasoned about. So `dismissed: false positive` was available and would have been TRUE.
+
+**It was repaired anyway, and the reason is not tidiness.** `pytest.fail` terminates by virtue of a
+`NoReturn` annotation on a third-party function — a fact that is nowhere near the line relying on
+it. `done.returncode` on line 95 is therefore guarded by something invisible at the point of use,
+and CodeQL is not the only reader that cannot see it. Swap that call for anything that returns and
+the helper stops reporting *"the instrument was absent"* and starts raising `NameError` on `done`:
+an instrument reporting a state other than the one it found — invariant 1, inside the gate whose
+whole job is to hold invariant 1. The alert was **right about the shape and wrong about today's
+reachability**, and only the first half is worth acting on. The handler now ends in
+`raise AssertionError(...) from None`; the message is unchanged.
+
+**The tree's own form was measured, not assumed.** Both sibling probes —
+`tests/test_intake_survives_a_failed_writeback.py:89` and
+`tests/test_intake_sweep_distinguishes_its_states.py:118` — already raise, and neither carries an
+alert. Absence of an alert is `not_measured`, not `clean`, so the tree was scanned for the shape
+itself rather than for the flag:
+
+```
+python3 - <<'EOF'
+import ast, pathlib
+TERM = (ast.Raise, ast.Return, ast.Continue, ast.Break)
+for p in sorted(pathlib.Path('.').rglob('*.py')):
+    if '.git' in p.parts: continue
+    for n in ast.walk(ast.parse(p.read_text(encoding='utf-8'))):
+        if isinstance(n, ast.Try) and any(isinstance(s, ast.Assign) for s in n.body):
+            for h in n.handlers:
+                if not isinstance(h.body[-1], TERM):
+                    print(f'{p}:{h.lineno} ends in {ast.unparse(h.body[-1]).split("(")[0]}')
+EOF
+```
+
+Before the repair it printed exactly one line — the flagged handler. After, it prints nothing. The
+flagged file was the only instance in the tree, and the repair aligns it with the two siblings
+rather than inventing a house style for the occasion.
+
+**`used in tests` was available here and is not used.** `#40`, `#47`, `#48`, `#49` and `#51` were
+closed on test-code bases, so the precedent existed. It does not apply to a finding about whether a
+gate reports the state it measured: that a defect sits in `tests/` says where it is, not whether the
+instrument lies. The distinction is the same one the first act drew when `#40` was nearly dismissed
+as noise and was pointing at a real hole.
+
+**What is not claimed: that this edit closes the alert.** The rule both earlier acts applied applies
+unchanged — what closes a code-scanning alert is the SCAN, which runs after the push, and the edit
+that should close one is not the instrument that does. Until
+`GET /code-scanning/alerts?state=open` no longer lists `#53`, it is `not_measured`, not `clean`.
+
+**Still open after this act (5), all of them the operator's:** `#30`, `#31`, `#32`, `#33`, `#34` —
+the same five, untouched for the third time running.
