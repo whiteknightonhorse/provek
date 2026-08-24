@@ -107,7 +107,7 @@ export function loadNotes() {
  *  `<pattern>` elements answer to one name, so `url(#pv-hatch)` in the second figure resolves to
  *  the first figure's definition. The hatch that distinguishes an instrument's refusal from a small
  *  measurement is exactly the paint that would have gone wrong. Measured on the live page, not in
- *  the tree - see `evidence/MARKUP-001.txt`. */
+ *  the tree - see `evidence/MEASURED-001-the-first-note-pages-as-served.txt`. */
 const hatchDefs = (ns) => `<defs>
   <pattern id="${ns}-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
     <line x1="0" y1="0" x2="0" y2="6" stroke="var(--color-unknown)" stroke-width="2"/>
