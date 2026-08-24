@@ -1330,6 +1330,19 @@ is now assembled beside the file and moved into place in one motion, so a reader
 previous verdict intact and an `.inflight` file saying why. RUN 3 of the red run measures exactly
 this from inside the call.
 
+**The instrument that nearly decided all of this returned a refusal as silence.** The first reading
+of `logs/orchestra.log` reported that the string "Fable" did not occur in it at all, from which the
+repair and this entry would have been built on "the function has never once run". It occurs 99
+times. The journal is invalid UTF-8 from byte 18489, because `ask_fable` truncated its own log line
+by BYTES and severed a Cyrillic character — every line naming Fable carries the break, since that
+is the line being cut. Repaired to a character-wise cut; the existing journal is left alone, being
+the record of the run. The bound is the useful part and took a second measurement to establish: the
+orchestra does not go blind, because in the bare environment it actually runs in `grep` is GNU grep
+3.7 and reads the file correctly. What went blind was the ANALYSIS — in this agent's shell `grep` is
+a function wrapping ugrep, which on invalid UTF-8 exits 1 with empty stdout AND empty stderr, which
+is character-for-character what "no matches" looks like. §2.9 turned on the tooling the audit itself
+is performed with, and the only thing that caught it was measuring the same fact a second way.
+
 **Limits, stated rather than implied.** Both halves are exercised against fixtures that extract the
 shipped text of `orch.sh` at run time — not inside a live cycle, the same bound this decision
 already records for the quarantine hop. And `orch.sh` was RUNNING while it was repaired: bash parses
