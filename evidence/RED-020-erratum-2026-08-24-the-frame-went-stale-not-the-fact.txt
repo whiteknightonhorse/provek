@@ -1,0 +1,70 @@
+RED-020 - ERRATUM. Three lines of that artefact make a present-tense claim that stopped
+being true the morning after they were written. The artefact is NOT edited; this correction
+stands beside it.
+
+DATE OF THIS CORRECTION (UTC): 2026-08-24
+AUTHORITY               : ruling of 2026-08-24, item 5 (Fable) - "evidence is not rewritten;
+                          a dated correction is placed BESIDE it, precedent L-30"
+CORRECTED LINES         : evidence/RED-020-deploy-confirmed-over-a-dead-intake.txt:12
+                          evidence/RED-020-generator.py:72
+                          evidence/RED-020-generator.py:241
+
+THE CLAIM, QUOTED RATHER THAN PARAPHRASED:
+
+    RED-020-deploy-confirmed-over-a-dead-intake.txt:12
+        destroyed the only copy - ~/orchestra is not a git repository and held no backup:
+
+    RED-020-generator.py:72
+        `~/orchestra/` is not a git repository and the deploy script had no backup, so
+        overwriting it left
+
+    RED-020-generator.py:241
+        "destroyed the only copy - ~/orchestra is not a git repository and held no backup:\n\n"
+
+Three copies of one sentence, which is L-2's shape: line 241 is what PRODUCES line 12 of the
+`.txt`, and line 72 is the docstring that explains it. The `.txt` has not drifted from its
+generator - they agree with each other, and both are stale. That is the reason a reader cannot
+detect this by comparing the artefact with its producer, and the reason this file exists.
+
+WHAT IS STILL TRUE, AND IT IS THE LOAD-BEARING HALF. On 2026-08-24 the edit that replaced the
+five-address deploy check destroyed the only copy of the script it replaced, which is why that
+script is quoted in full inside the artefact instead of cited. The measurement RED-020 was built
+to keep - a confirmation printed over `/api/apply` answering 404 from 2026-08-20 to 2026-08-24,
+and the eight failing tests proving the replacement can go red - is untouched by this correction.
+No number, no run and no quoted output below those lines is affected.
+
+WHAT WENT STALE. `~/orchestra` HAS been a git repository since commit
+`20b24cf84360af484cf815dc755a9f3bd3d239ab`, authored 2026-08-24 04:32:09 +0000, 50 files,
+13574 insertions (measured with `git -C ~/orchestra show --stat 20b24cf`); `deploy.sh` is one of
+the 50. So the same overwrite performed today would leave a diff instead of a hole, and the
+sentence is now false about the live system in exactly the tense it is written in. The FACT
+inside the frame survived; the FRAME around it rotted, which is the class T-A2-5 repaired
+elsewhere: a document asserting something about a running system that the running system stopped
+answering.
+
+WHAT THIS ERRATUM DOES NOT CLAIM. A history that begins at 04:32 on 2026-08-24 does not reach
+backwards. The copy destroyed before it is still gone, still unrecoverable, and still the reason
+the replaced check is transcribed into the artefact. A backup created after a loss does not undo
+the loss, and if this file were read as saying otherwise it would be the founding defect of this
+project - a claim stronger than its artefact - committed inside the evidence directory.
+
+WHY THE ARTEFACT IS NOT EDITED, three reasons and none of them is inconvenience:
+
+  1. Invariant 5 keeps the red run as an artefact. An artefact edited after the fact is a
+     recollection of a run, not the run. This project's doctrine is supersede-never-erase.
+  2. The `.txt` is OUTPUT of `RED-020-generator.py`. Editing it by hand desynchronises an
+     artefact from its producer (L-26); regenerating it re-runs six mutations through pytest and
+     overwrites red output captured at a different moment on a one-core host.
+  3. Precedent L-30: a correction that cannot go into the record it belongs to stands beside it,
+     and the record stands wrong with this next to it.
+
+THE LIMIT OF THIS FILE, NAMED BECAUSE IT IS REAL. Nothing links line 12 to this erratum. A reader
+who opens only the `.txt` reads the stale sentence and never learns of this file; what they get is
+a directory listing where the two names sit adjacent. That is the price of not rewriting evidence,
+and it is paid knowingly rather than hidden - see D-28 in DECISIONS.md, which records the decision
+and this same cost.
+
+FOUND BY. Not by this erratum's author. The staleness was reported by the hand that created it, in
+`~/orchestra/FINDINGS.md`, on the day the repository history was created, with the fork left to a
+judge on the stated ground that the hand which creates a divergence is a poor judge of how
+tolerable it is. The judge answered on 2026-08-24 and this is the execution of that answer.

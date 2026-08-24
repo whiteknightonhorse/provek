@@ -22,3 +22,33 @@
 disk 10 GB - memory 1.5 GB - CPU <= 1 core - **concurrency = 1 process**
 Clones are `--depth 1` and the working copy is deleted after the audit.
 On contention THIS project yields; deferral is a named finding, not silence.
+
+## Rollback procedure (the return point is a commit; the damage need not be tracked)
+
+`git reset --hard` restores TRACKED files and does not touch untracked ones, so a rollback can
+leave exactly half of a broken state standing. On 2026-08-24 at 06:34 that happened in this tree:
+the reset returned the note manifest lines and left behind the two note sources they belonged to,
+the orphaned sources crashed `loadNotes()`, the gates read RED **after** the rollback, and the
+orchestra halted - correctly, over damage the rollback itself had created.
+
+Before `git reset --hard`, `git checkout -- .` or `git stash` here:
+
+1. **Inventory first**, because after the fact your own wreckage is indistinguishable from work
+   that was already lying here:
+   `git status --porcelain -z -uall | tr '\0' '\n' | grep '^?? ' | cut -c4- | sort`.
+   `-z` is not a preference: without it git QUOTES non-ASCII names, and a quoted name is not a
+   path any later command can resolve - measured, `~/orchestra/evidence/RED-H7-*`.
+2. **Roll back.**
+3. **Inventory again and take the difference.** A missing before-inventory is `not_measured`,
+   never "nothing appeared" - invariant 1, applied to the repair rather than to the product.
+4. **Park what appeared - MOVE it, never delete it.** Wreckage of a failed task goes to
+   `~/orchestra/quarantine/<UTC>-<task>/`, work deliberately set aside to
+   `~/orchestra/parked/<task>-<date>/`, in both cases with a file beside it saying why. `git clean`
+   is forbidden in this project without exception: it is one keystroke from erasing the evidence
+   corpus, the only asset here that cannot be rebuilt.
+5. **Re-run `./scripts/push.sh --gates-only`.** Green only after the park means the damage was in
+   the untracked half, and that is a finding to report by name, not a footnote.
+
+No gate in this repository enforces those five steps, and D-29 records why one cannot exist:
+a check whose trigger is the action it polices measures the person, not the tree (L-19). The
+machine half lives where a program does the rollback - `~/orchestra/orch.sh`.

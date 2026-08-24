@@ -1212,3 +1212,85 @@ deployment record is not something this repository has read. The three fields it
 constant `true` that used to be passed on every deploy. What that produces on screen is the
 operator's to confirm, and the sentence "the short sha never stands alone" above is a claim about
 those fields, not about a dashboard anybody here has looked at.
+
+## D-28. A line in `evidence/` that goes stale is corrected BESIDE the artefact, never inside it
+
+**Numbering.** D-27 is reserved by the ruling of 2026-08-24 for the deferral of the POST path, and
+is written by the task that measures it. Taking it here would have made two decisions answer to one
+number; the gap is named rather than left to read as a deleted record.
+
+**Decision.** `evidence/RED-020-*` keeps a sentence that was true when it was written and stopped
+being true the next morning — "`~/orchestra` is not a git repository and held no backup", in three
+places (`RED-020-deploy-confirmed-over-a-dead-intake.txt:12`, `RED-020-generator.py:72` and
+`:241`). Neither file is edited. The correction is a dated sibling,
+`evidence/RED-020-erratum-2026-08-24-the-frame-went-stale-not-the-fact.txt`, which quotes the three
+lines, separates the fact that survived from the frame that rotted, and says plainly that a history
+beginning at 04:32 on 2026-08-24 does not restore the copy destroyed before it.
+
+**Why.** Three reasons, and none of them is that editing would be inconvenient. Invariant 5 keeps
+the red run as an artefact, and an artefact edited afterwards is a recollection of a run rather
+than the run. The `.txt` is OUTPUT of `RED-020-generator.py`: editing it by hand desynchronises an
+artefact from its producer (L-26), and regenerating it re-runs six mutations through pytest and
+overwrites red output captured at a different moment. And the precedent is already set — L-30's
+correction could not go into the commit it belonged to and stands beside it, with the record left
+wrong on purpose.
+
+**Why it was not simply left alone.** The three lines are in the PRESENT TENSE about a live system.
+A reader gets a claim about how `~/orchestra` is kept today, not a note about how it was kept on
+2026-08-24 — the same class this project repaired in T-A2-5. The artefact stays; the claim gets
+answered.
+
+**The cost, named because it is real.** Nothing links line 12 to the erratum. A reader who opens
+only the `.txt` reads the stale sentence and never learns the correction exists; what they get is a
+directory listing where the two names sit adjacent, which is weaker than a footnote and is the
+price of not rewriting evidence. The alternative — a pointer inside the artefact — is an edit to
+the artefact, so there is no version of this decision that keeps both properties.
+
+**Found by the hand that created it.** The staleness was reported in `~/orchestra/FINDINGS.md` by
+the author of the commit that caused it, on the same day, with the fork explicitly left to a judge
+on the stated ground that the hand which creates a divergence is a poor judge of how tolerable it
+is. The judge answered on 2026-08-24 (ruling, item 5) and this records the execution of that
+answer, not a fresh opinion.
+
+## D-29. The rollback rule is prose here and code in `~/orchestra`, and no gate can close that gap
+
+**The incident, 2026-08-24 06:34 UTC.** T-C7's own acceptance criterion required simulating a
+process killed between writing a note source and writing its manifest line, so the tree was
+deliberately put into that half-written state. The task did not close, the orchestra rolled the
+tree back to the last good commit and marked it STUCK — and the reset returned the TRACKED half
+(the manifest lines, and T-C7's edits to `tests/test_notes_freshness.py` and `web/notes/emit.mjs`)
+while the UNTRACKED half, two `web/notes/src/*.md` sources, stayed exactly where it was. Orphaned
+sources crash `loadNotes()`, so the gates read red AFTER the rollback, and the orchestra halted
+deliberately rather than build on a tree it could not explain. The alarm was right; the state it
+was alarming about was manufactured by the recovery.
+
+**Decision.** The rollback procedure is written in `CLAUDE.md` — inventory the untracked paths
+BEFORE the reset, take the difference after it, MOVE what appeared into quarantine, and re-run the
+gates — and it is armed only where a program performs the rollback: `~/orchestra/orch.sh`, whose
+recovery path now does exactly those steps and is committed there rather than living, as it did
+until today, as an uncommitted edit on one host.
+
+**Why there is no gate here, and why that is not resignation.** A check that fires when an agent
+types `git reset --hard` would have to be triggered by the act it polices, which is L-19 exactly:
+the tripwire measures whoever walks into it and is silent in the state it exists for. Every gate
+this repository owns judges the TREE, and the tree after a bad rollback is indistinguishable from a
+tree that was always broken — which is precisely why the incident cost an orchestra halt to
+diagnose. Naming a `LAW-*` for this would be the fake anchor L-8 refuses.
+
+**What the machine half was measured to do, and what it was not.** Its first version counted the
+files it INTENDED to move: on a fixture carrying a Cyrillic filename — the shape of the file the
+06:34 quarantine was itself given, whose name is the Russian word for "why" — it logged "2 files
+carried out" while one file moved and the other stayed in the tree, because `git status
+--porcelain` quotes non-ASCII names and no such path exists to move. That is
+invariant 1 inside the repair: a refusal to resolve a name, returned as a count of files carried to
+safety. Repaired before it was committed, and the run is kept as
+`~/orchestra/evidence/RED-H7-a-quarantine-that-counted-what-it-did-not-move.txt`: the reading is
+now NUL-delimited, the outcome is three counters (moved / vanished before the move / move REFUSED)
+each exercised by a fixture, `mv`'s stderr is kept instead of discarded, and a missing
+before-inventory is reported as unmeasured rather than read as "nothing appeared" — the latter
+would have quarantined work that was lying in the tree before the task began.
+
+**Still not measured, stated rather than implied.** The hop has never executed inside a live cycle.
+The quarantine of 06:34 was made by hand, and what the red run above exercises is the shipped text
+of `orch.sh` extracted at run time against a fixture, not a real failed task. Until a cycle takes
+that branch, "the orchestra recovers from untracked damage" is a claim about a fixture.
