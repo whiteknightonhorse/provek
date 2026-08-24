@@ -170,10 +170,19 @@ def test_a_status_that_could_not_be_read_is_not_a_clean_tree(tmp_path, monkeypat
 
     The instrument is stubbed and the SUBJECT is not: what is under test is the branch `decide`
     takes when a reading fails, not git's output format, which the cases above exercise for real.
-    A repository that git can read but cannot `status` is not constructible on this host - the one
-    candidate, an unreadable subdirectory, makes git warn and exit 0 (see the module docstring's
-    named limit) - so refusing to test the branch would mean leaving the module's load-bearing
-    state to a mutation nobody ran.
+
+    THE REASON FOR THE STUB CHANGED UNDER THIS DOCSTRING, and the old one is quoted rather than
+    quietly replaced. It read: "a repository that git can read but cannot `status` is not
+    constructible on this host - the one candidate, an unreadable subdirectory, makes git warn and
+    exit 0 (see the module docstring's named limit)". That was true, and T-C8 made the warning
+    itself a refusal, so the state IS constructible now and
+    `test_a_tracked_file_under_an_unenterable_directory_is_unreadable_not_clean` builds it.
+
+    The stub stays because `_porcelain` has three ways to return None and only one of them now has
+    a fixture: git warning, git exiting nonzero, and `subprocess` refusing to run it at all. The
+    last two are still not constructible here without stubbing something, and this case is what
+    keeps `decide`'s branch armed for ALL of them - including under `--allow-dirty`, which the
+    fixture-built case does not exercise.
     """
     repo = _repo(tmp_path)
     monkeypatch.setattr(dl, "_porcelain", lambda root: None)
