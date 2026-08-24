@@ -1434,6 +1434,78 @@ that reason, and the live process was confirmed to still hold the old inode, mar
 in-place edit would have sent it to execute an arbitrary fragment of the new file at its old byte
 offset.
 
+**A fourth machine half, 2026-08-24 (T-H11): the submission mark now carries a measurement.** Twice
+in that one day the orchestra marked a task submitted-unverified over work that had never been
+planted, and both times the gates were honestly green — T-H4 at 05:01:20Z with the whole of its work
+in `stash@{0}`, T-S1 at 11:24:28Z with its work in the index. Green gates and planted work are two
+different claims: the gates judge the health of the TREE, and whether the work is IN that tree is a
+question none of them asks. Both divergences existed at the second of the mark and cost one command
+to see; the judge learned of them hours later, from a neighbouring task. The mark now goes into the
+plan beside a measurement block naming five things taken at that second: which tree was read, how
+many paths its porcelain reports, how deep its stash is, its local HEAD and the sha `origin/main`
+answers with.
+
+*It is a measurement and not a gate, and that is the same doctrine as above rather than a
+concession.* A check that refused the mark on a dirty tree would be triggered by the very act it
+polices, which is L-19 exactly — it would measure the hand and stay silent in the state it exists
+for, the state where nobody marks anything. Nothing in the new path can withhold the mark: every
+refusal of the instrument becomes a word in the line and the submission still goes in, exercised as
+its own case in the red run.
+
+*Four numbers rather than the two the task named, and the third was found by measuring rather than
+by reasoning.* The task asked for a porcelain count and the remote sha. On the fixture both read
+GREEN for T-H4 — `git stash` removes the work from porcelain, and the commit was already on the
+remote — so those two alone would have been blind to one of the two incidents they were written
+for, and blind in the most confident form available, a zero. Three shapes are now visible in one
+field each: work in the index shows up as a non-zero porcelain count, work in the stash as a
+non-zero stash depth, and work committed but never pushed leaves local HEAD and the remote sha
+unequal. Kept as
+`~/orchestra/evidence/RED-H11-green-gates-and-work-in-the-stash-read-the-same.txt`.
+
+*Three shapes is not coverage, and this sentence exists because without it the one above reads as
+though it were.* Unplanted work also takes forms none of the four fields sees, and the first
+instance is this task itself: `orch.sh` passes `--tree "$ROOT"`, so every mark measures the
+REPOSITORY, while T-H11's own work lay in `~/orchestra`, which has no origin at all — the line will
+be green, true, and about a different tree, which is why the tree it measured is named in it. Also
+blind: a commit on another local branch or in another worktree while `HEAD == main == remote`;
+`skip-worktree` and `assume-unchanged`, under which porcelain says nothing about edits to a tracked
+file; and a hand editing the plan file directly, which never reaches the ledger. None of these can
+be closed by a gate, for the reason the original could not.
+
+*It lives in `plan.py`, not in `orch.sh`, for the reason the commit moved in T-H8:* inside the call
+that makes the record there is no interval in which somebody has to remember. The first draft of
+this paragraph justified that with a fact the journal refutes. It said the plan's second permitted
+hand — the executor's own claim form, which the law of the plan allows beside the orchestra's — had
+been used on 2026-08-21 at 02:38. What `logs/orchestra.log:414` shows at that moment is the
+ORCHESTRA's form, stamped 2026-08-21T02:38:38Z, written by an agent calling `plan.py submit` out of
+band; the executor's form has never appeared in any plan or any journal, only in a docstring. The
+conclusion survives on firmer ground than it was given — the out-of-band hand went through `submit`,
+so a measurement in the ledger covers it and one in the orchestra would not — but the cost is worth
+recording, because a justification stronger than its artefact, inside the entry written against that
+very defect, is the worst instance this project has to offer. Found by Fable, refuting this change.
+A limit falls out of the correction and is now written in the ledger too: a hand that edits the plan
+file directly bypasses the ledger, and no measurement placed there can see it. `orch.sh` passes
+`--tree "$ROOT"` rather than letting the ledger infer the tree from its working directory, because a
+number measured off the wrong tree while looking like a measurement of the repository is worse than
+no number at all.
+
+*Limits, stated rather than implied.* The fixture drives the shipped `plan.py` as a subprocess
+against a throwaway repository with a real origin, not a live cycle — the same bound the halves
+above carry. Two things in it had to be repaired before it was kept, both of the kind it exists to
+catch. It first SIMULATED the gates and had them call the T-S1 tree red, which would have refuted
+the incident it reproduces; what the gates said is now quoted from `logs/orchestra.log`, where both
+marks are preceded by the journal's own line saying the gates were green. Its narration was also
+unfalsifiable: the paragraphs asserting a porcelain count of one and a stash depth of one were
+constant strings that would have printed word for word
+against a ledger writing no measurement at all, so the only non-zero exits were setup failures.
+Every narrated number is now checked against the line the shipped ledger wrote, substituting the
+pinned file takes the producer to exit 1 on ten failed expectations, and a control section inside
+the artefact demonstrates the checks firing. Finally, until the orchestra is relaunched the running
+process is playing out the pre-repair `orch.sh` and passes no `--tree` at all; the marks it makes
+resolve the tree from the live process's working directory instead, which was confirmed to be the
+repository. That the criterion is met by that route rather than by `--tree` is luck until the next
+launch, and is recorded here rather than left to be discovered.
+
 ## D-30. The CI toolchain is pinned by hash, and a set that goes stale reddens `main` on purpose
 
 **What was still unpinned after the actions were.** `ca539ec` replaced sixteen tag references with
