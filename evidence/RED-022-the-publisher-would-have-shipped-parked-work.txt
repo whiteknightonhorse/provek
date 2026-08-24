@@ -1,4 +1,4 @@
-RED-021  LAW-PUBLISH-JUDGED-TREE  the guard that lets the scheduler publish must be able to refuse
+RED-022  LAW-PUBLISH-JUDGED-TREE  the guard that lets the scheduler publish must be able to refuse
 taken 2026-08-24 during T-C5, on this host, python 3.10.12
 
 TWO RED RUNS ARE KEPT HERE. The first is the gate refusing THIS repository in situ; the

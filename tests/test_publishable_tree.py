@@ -112,7 +112,7 @@ def test_the_exit_code_reaches_the_caller(tmp_path, state, expected):
     # The first version of this case called `_repo(tmp_path)` and then made `tmp_path/elsewhere`,
     # which is INSIDE the repository git had just created - so `git status` answered for the parent
     # repo and the `unreadable` case measured a clean tree. It asserted 4, got 0, and the artefact
-    # is kept in `evidence/RED-021-*`. A directory outside a repository is the subject here, and
+    # is kept in `evidence/RED-022-*`. A directory outside a repository is the subject here, and
     # "outside" is a property of the path, not of the name.
     repo = _repo(tmp_path / "repo")
     if state == "foreign":
