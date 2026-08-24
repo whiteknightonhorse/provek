@@ -93,6 +93,19 @@ CI_GATES: dict[str, Door | Advisory] = {
     "full suite, whole tree": Door("--cov-fail-under=70"),
     # Likewise. CI builds the site; the door never did, so the assertions that read `web/dist`
     # judged whatever build happened to be lying on this host, or skipped when there was none.
+    # TWO JOBS NOW CARRY A STEP OF THIS NAME, and one row covers both because the door's single
+    # build is the counterpart of each. The `tests` job grew one because
+    # `tests/test_emitted_ids_are_unique.py` refuses to call an empty `web/dist` a clean sweep -
+    # correctly, since zero pages and zero duplicates are the same green (invariant 1) - and that
+    # job never built, so it read `check_did_not_run` and turned `main` red while the door stayed
+    # green. `push.sh` builds at step 6 and runs the suite at step 7, so on this host the artefact
+    # was simply lying there.
+    #
+    # That is this file's own blind spot, named rather than papered over: it compares which
+    # COMMANDS each side runs, never the STATE each side runs them against. Both sides ran
+    # `pytest`; only one of them ran it after a build. A correspondence of commands is not a
+    # correspondence of trees - the header has always said so, and this is the first instance to
+    # cost a red `main`.
     "build the site": Door("npm run build"),
     "gates that read the emitted artefact": Door("-m pytest"),
     "ruff": Door("-m ruff"),
@@ -432,7 +445,15 @@ def test_a_step_commented_out_at_the_door_is_not_vouched_for_by_its_own_comment(
     assert "-m ruff" in disabled and "npm run build" in disabled
     gaps = [p for p in divergences(WORKFLOW.read_text(encoding="utf-8"), disabled)
             if "checks LESS than the arbiter" in p]
-    assert len(gaps) == 4, f"a disabled door was reported as matching CI: {gaps}"
+    # 4 -> 5 on 2026-08-24. This number moves ONLY together with the NAME of the gap that was
+    # added; a bare bump is a gate weakened while wearing the clothes of a fix. Exactly one arrived:
+    # `tests: CI step 'build the site'`. The `tests` job (whole-tree suite) did not build the site,
+    # so `test_emitted_ids_are_unique` failed in CI against an empty `web/dist` - which that test
+    # correctly calls `check_did_not_run` rather than a clean sweep. Excluding it was not available:
+    # the whole-tree suite is deliberately BARE. So that job builds too, under the SAME step name as
+    # the one in `shipped`, which means the same CI_GATES row and the same door (`npm run build`).
+    # The prior four are untouched: tests/cov, shipped/build, shipped/pytest, lint/ruff.
+    assert len(gaps) == 5, f"a disabled door was reported as matching CI: {gaps}"
 
 
 def test_a_gate_chained_behind_a_setup_command_is_not_read_as_setup():

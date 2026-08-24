@@ -97,12 +97,25 @@ jobs:
       # the file can see that a `try` is written and never what the handler answers. It reports a
       # missing `node` as a red rather than skipping (L-16), so without this step the job would
       # depend on whatever the runner image happens to preinstall: a version nothing here declares,
-      # and a green that turns red the day the image changes. No `npm ci` - the probe imports one
-      # module and installs nothing.
+      # and a green that turns red the day the image changes.
+      #
+      # `npm ci` WAS deliberately absent here - the intake probe imports one module and installs
+      # nothing. That stopped being true: `tests/test_emitted_ids_are_unique.py` reads the EMITTED
+      # site and, correctly, refuses to call an empty `web/dist` a clean sweep ("zero pages and zero
+      # duplicates are the same green"). It failed in this job on 2026-08-24 because the job never
+      # built. Excluding it was not an option - the full suite below is deliberately BARE - so the
+      # job builds instead. The note is corrected rather than left standing: a comment the artefact
+      # contradicts is the defect this project exists to catch.
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4.4.0
         with:
           node-version: "22"
       - run: pip install --quiet pytest pytest-cov
+
+      - name: build the site
+        # Must run BEFORE the suite: a gate that reads an absent artefact reports
+        # `check_did_not_run`, and this project counts that as red, not as clean.
+        working-directory: web
+        run: npm ci && npm run build
 
       - name: full suite, whole tree
         # The BARE full suite, never a filtered subset. A red whole-tree run beats a green filter:
