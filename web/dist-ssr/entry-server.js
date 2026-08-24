@@ -1395,6 +1395,23 @@ function Method() {
 			}),
 			/* @__PURE__ */ jsx("h2", {
 				className: "mt-8 text-lg font-semibold",
+				children: "Notes on the method"
+			}),
+			/* @__PURE__ */ jsxs("p", {
+				className: "mt-1 text-sm text-[var(--color-ink-2)]",
+				children: [
+					"Parts of the methodology carry more argument than this page has room for, and those are written up separately, one note to a topic. The index lists what has been captured and nothing else, so it is also the record of how much of the method has been written down:",
+					" ",
+					/* @__PURE__ */ jsx("a", {
+						href: "/method/notes/",
+						className: "text-[var(--color-accent)] hover:underline",
+						children: "notes on the method"
+					}),
+					"."
+				]
+			}),
+			/* @__PURE__ */ jsx("h2", {
+				className: "mt-8 text-lg font-semibold",
 				children: "What is specified and not built"
 			}),
 			/* @__PURE__ */ jsxs("p", {

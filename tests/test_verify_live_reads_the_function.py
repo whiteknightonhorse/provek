@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import http.server
 import pathlib
+import re
 import subprocess
 import threading
 
@@ -27,14 +28,42 @@ import pytest
 
 SCRIPT = pathlib.Path(__file__).resolve().parents[1] / "scripts" / "verify_live.sh"
 
-HEALTHY = {
-    "/": 200,
-    "/apply/": 200,
-    "/registry/": 200,
-    "/method/": 200,
-    "/phase-2/": 200,
-    "/api/apply": 405,
-}
+
+def _checks_from_script() -> dict[str, int]:
+    """The address list, READ OUT OF THE SCRIPT instead of copied beside it.
+
+    This was a second hand-maintained copy of `CHECKS`, and it drifted the first time an address
+    was added: T-C4 published the note surface, put the two routes in the script, and every test in
+    this file went on describing the six-address world it had been written against. The suite was
+    green about a script it no longer matched, which is the state where a live check stops being
+    the thing the suite says it is.
+
+    L-20's rule is that the finding in such a divergence is the ABSENCE OF THE COMPARISON and not
+    the value that differed - patching the literal here would have returned the file to the day
+    before the drift and left the mechanism standing. So the comparison is now the definition:
+    there is one list, in the script, and a route added there arrives in this fixture whether or
+    not anybody remembers this file exists.
+    """
+    body = SCRIPT.read_text(encoding="utf-8")
+    m = re.search(r"^CHECKS=\(\n(.*?)^\)", body, re.S | re.M)
+    if not m:
+        raise AssertionError(f"{SCRIPT.name}: no CHECKS=( ... ) array to read")
+    out: dict[str, int] = {}
+    for line in m.group(1).splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        path, _, code = line.strip('"').rpartition(":")
+        out[path] = int(code)
+    # A PARSER THAT RETURNS NOTHING MUST NOT READ AS "every address is fine". An empty dict would
+    # make every assertion below vacuous and the whole suite would pass by measuring no addresses
+    # at all - invariant 1, in the fixture rather than in a counter.
+    if not out:
+        raise AssertionError(f"{SCRIPT.name}: CHECKS parsed to zero addresses")
+    return out
+
+
+HEALTHY = _checks_from_script()
 
 
 class _Origin:
@@ -157,3 +186,38 @@ def test_every_address_is_actually_visited(path: str):
         run = _run(origin.base)
     assert run.returncode != 0, f"{path} is in the list and is not read"
     assert "418" in run.stdout
+
+
+# THE FLOOR UNDER THE DERIVED LIST.
+#
+# Reading `HEALTHY` out of the script (above) ended the drift between two copies, and on its own it
+# would have bought that at a price nobody stated: a derived fixture shrinks with its source. Delete
+# an address from `CHECKS` and `HEALTHY` loses it too, every assertion in this file goes on passing,
+# and the deploy gate quietly reads less of the site than it did the day before - the same silence
+# that let `/api/apply` answer 404 through four confirmed deployments.
+#
+# This is a FLOOR and not a second mirror of the list, and the difference is what keeps it from
+# being the drift again: adding an address does not touch it, so it never goes stale on growth. It
+# fires in one direction only, when something load-bearing stops being read at all.
+REQUIRED = {
+    "/": 200,                                            # the origin talks to us at all
+    "/api/apply": 405,                                   # T-H1: the half of the site that is code
+    "/method/notes/": 200,                               # T-C4: the note index
+    "/method/notes/not-measured-is-not-zero/": 200,      # T-C4: the first published capture
+}
+
+
+def test_the_address_list_cannot_silently_shrink():
+    """An address removed from the script is a smaller deploy gate, and must not be a green suite."""
+    missing = sorted(REQUIRED.keys() - HEALTHY.keys())
+    assert not missing, (
+        f"{SCRIPT.name} no longer checks {missing}. Removing an address shrinks what a "
+        f"'DEPLOY CONFIRMED' covers; if that is intended, this floor is the place to argue it."
+    )
+
+
+def test_the_floor_pins_the_code_and_not_only_the_path():
+    """`/api/apply` present but expected to answer 200 would be the T-H1 defect with the address
+    still in the list - a static 404 page answering 200 is exactly what it looked like."""
+    wrong = {p: (HEALTHY[p], c) for p, c in REQUIRED.items() if HEALTHY.get(p) != c}
+    assert not wrong, f"{SCRIPT.name} expects the wrong code for {wrong} (got, wanted)"

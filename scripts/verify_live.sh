@@ -46,6 +46,15 @@ CHECKS=(
   "/method/:200"
   "/phase-2/:200"
   "/api/apply:405"
+  # The note surface, added when the first capture was published (T-C4). Both addresses are here
+  # rather than the index alone: the index is emitted whenever ANY note exists, so on its own it
+  # would stay green over a build that dropped the article and kept the list - which is the shape
+  # of every defect this file was rewritten for. The slug is pinned deliberately; if a note is
+  # retired the deploy goes red and a person decides, which is the loud failure and not the silent
+  # one. The route also answered 404 on the live site for four days while the repository held the
+  # machinery to emit it, and nothing measured that, because no gate here read the address (L-25).
+  "/method/notes/:200"
+  "/method/notes/not-measured-is-not-zero/:200"
 )
 
 # A NUMBER IS NOT A REASON (L-23), and this is where the refusal of the instrument would otherwise

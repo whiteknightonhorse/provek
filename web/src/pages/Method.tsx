@@ -95,20 +95,29 @@ export default function Method() {
           punishing someone for its own failure.
         </p>
 
-        {/* THE ENTRANCE TO THE NOTES IS ABSENT ON PURPOSE, and the absence is a measurement.
-            A paragraph stood here saying the methodology's harder parts "are written up as notes
-            on the method", linking to /method/notes/. Zero notes are captured - the capture went
-            red on a measured count and `web/notes/src/` holds nothing - so `prerender.mjs` emits
-            no such route, and the sentence pointed at a 404 while asserting in the present tense
-            that the writing existed. On this surface that is the defect this product sells the
-            detection of, so the sentence goes rather than the link being quietly softened.
+        {/* THE ENTRANCE RETURNED WITH THE FIRST NOTE, which is the condition the comment that
+            stood here set for it. A capture survived `notes_gen.py`'s own `measure()` on
+            2026-08-24, so `prerender.mjs` emits the route and this sentence no longer points at a
+            404 - the state `tests/test_notes_entrance.py` holds in both directions.
 
-            The machinery it belongs to stays: SPEC 3.6, D-18 and the five LAW-NOTES-* gates
-            specify a surface that is not yet populated, which is the treatment phase 2 already
-            gets (D-16). The entrance returns WITH the first note and not before, and that is not
-            left to anybody's memory: `tests/test_notes_entrance.py` is red if this page names
-            /method/notes/ while no note is captured, and red again if a note is captured while
-            this page does not name it. */}
+            THE WORDING STATES NO COUNT, and that is the whole care taken here. The sentence this
+            replaces claimed in the present tense that a body of writing existed while zero notes
+            were captured, which is L-16 and the defect this product sells the detection of. The
+            obvious repair - "one note is published so far" - swaps one unbacked claim for another
+            that nothing measures: it goes stale the moment a second note lands and no gate would
+            go red over it (L-7, L-13). So the prose points at the index and lets the index do the
+            counting, which is the only copy of that number that cannot drift from the artefact. */}
+
+        <h2 className="mt-8 text-lg font-semibold">Notes on the method</h2>
+        <p className="mt-1 text-sm text-[var(--color-ink-2)]">
+          Parts of the methodology carry more argument than this page has room for, and those are
+          written up separately, one note to a topic. The index lists what has been captured and
+          nothing else, so it is also the record of how much of the method has been written down:{" "}
+          <a href="/method/notes/" className="text-[var(--color-accent)] hover:underline">
+            notes on the method
+          </a>
+          .
+        </p>
 
         {/* The only route to the phase-2 page, and it is here rather than on the landing on
             purpose. The landing's argument is built to hold at zero funders - that is the whole
