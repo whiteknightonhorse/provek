@@ -1,0 +1,88 @@
+RED-023 - ERRATUM. The finding that artefact reported at its foot has been closed, and four of
+its present-tense sentences describe a gate that no longer behaves that way. The artefact is
+NOT edited; this correction stands beside it.
+
+DATE OF THIS CORRECTION (UTC): 2026-08-24
+AUTHORITY               : D-28 - "a line in evidence/ that goes stale is corrected BESIDE the
+                          artefact, never inside it", precedent
+                          evidence/RED-020-erratum-2026-08-24-the-frame-went-stale-not-the-fact.txt
+CAUSED BY               : T-C8, which repaired `publishable_tree._porcelain`. The new measurement
+                          is evidence/RED-035-a-tree-published-on-a-reading-git-said-it-had-not-
+                          finished.txt, produced by RED-035-generator.py.
+CORRECTED LINES         : evidence/RED-023-...-with-a-commits-name.txt:225, :247, :257-259, :261,
+                          :265-269
+
+WHAT HAS NOT CHANGED, FIRST, because it is the larger half of that file. Runs 1 to 6 stand
+untouched: the deploy refusing a dirty tree, `--allow-dirty` publishing under a content digest
+instead of a commit's name, the suite's own hole in run 4, the stale-deployment red in run 5 and
+the absent-argument red in run 6 all reproduce exactly as written. So does the measurement that
+opens run 7(b) and the whole of the FINDING section's subject matter: `git status` warns on
+stderr, exits 0, and omits the subtree. That is still true, still the defect, and it is now the
+thing the repaired gate READS.
+
+============================================================================================
+1. THE FINDING SECTION - a hole reported open, now closed
+============================================================================================
+
+    :257    porcelain -> []
+    :258    classify  -> 0        (PUBLISHABLE=0 FOREIGN=3 UNREADABLE=4)
+    :259    decide    -> 0  202ae11  commit_dirty=false
+    :261  The scheduler would publish it and this module would sign it with a commit's short sha.
+
+Re-taken on the same shape of tree on 2026-08-24 after T-C8, on this host, python 3.10.12:
+
+    _porcelain -> None
+    classify   -> 4  UNREADABLE
+    decide     -> 4  UNREADABLE   LABEL=None COMMIT_DIRTY=None
+
+`_porcelain` now returns its third state whenever `git status` writes to stderr, whatever its exit
+code, and both gates inherit it from that one reading. The full transcript, including the same
+tree measured again with the repair removed - where it still reads exactly as line 257-259 say -
+is in RED-035, part 3. The old numbers are not wrong; they are the behaviour of the commit that
+file was captured on, and RED-035 keeps them reproducible as a mutation rather than as a claim
+about a live gate.
+
+    :265  HALF OF IT IS CLOSED HERE ANYWAY, and only half - see run 7.
+    :267  UNTRACKED file in the reading above stays invisible, because `ls-files` omits it exactly
+    :268  as `status` does, and the scheduler's gate has no equivalent second reading at all.
+
+The untracked file is no longer invisible, and the scheduler's gate is where the reading that sees
+it now lives - the opposite arrangement to the one this sentence describes. What remains uncovered
+is a smaller and different class, named in `deploy_label.py`'s docstring and in D-33: a tree git
+reports clean with an EMPTY stderr over bytes it never opened.
+
+============================================================================================
+2. RUN 7(b) AND RUN 8 - the verdict is the same, the layer that takes it is not
+============================================================================================
+
+    :225  This is the case the clean path's reading exists for, and it is the one Fable expected
+          not to reach it.
+    :247  Before run 7 that deletion was green. A guard whose removal nothing notices is a guard
+          that is already gone.
+
+Run 7(b) still reaches `decide` and still comes out 4, so its ANSWER is unchanged; what changed is
+that `_porcelain` refuses the tree before the digest is consulted, so the clean path's reading is
+no longer what produces that 4. A reader repeating run 8's mutation today therefore gets a
+different failing test than the one printed there:
+`test_a_tracked_file_under_an_unenterable_directory_is_unreadable_not_clean` now SURVIVES it, and
+`test_a_file_git_called_clean_without_reading_it_is_not_labelled` - added by T-C8 on a state the
+new reader cannot see - is what goes red instead. Measured, in RED-035 part 4.
+
+That substitution was not a side effect anybody noticed afterwards. Run 8 exists because a guard
+whose removal nothing notices is already gone, and T-C8's repair would have put that guard back
+into exactly that condition; the replacement case was built in the same commit, and its red run is
+kept for the same reason run 8's is.
+
+============================================================================================
+WHY THE ARTEFACT IS NOT EDITED, AND WHAT THAT COSTS
+============================================================================================
+
+D-28's three reasons apply unchanged: invariant 5 keeps the red run as an artefact and an artefact
+edited afterwards is a recollection of a run rather than the run; and RED-023 is a HAND-CAPTURED
+transcript, so there is not even a generator whose re-run could be argued for.
+
+The cost is the one D-28 names and it is real here too. Nothing inside RED-023 points at this file.
+A reader who opens only that `.txt` reads at line 261 that the scheduler would publish such a tree,
+and never learns it no longer would; what they get is a directory listing where the two names sit
+adjacent. The alternative is an edit to the artefact, so there is no version of this that keeps
+both properties.

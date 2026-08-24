@@ -36,6 +36,15 @@ strength of a check that did not run - which is the shape this project exists to
 collapsing it into the second manufactures a daily false red that teaches walking past the gate
 (L-5). Each gets its own exit code and its own printed line.
 
+AND THE THIRD STATE HAS TWO WAYS IN, NOT ONE. `git status` exiting nonzero was the only one this
+module read until T-C8, and it is not the way the failure actually arrives: a directory this
+process cannot enter makes git WARN on stderr and EXIT 0, with that subtree simply absent from
+stdout. RED-023 run 4 measured it on this host and recorded the consequence as a finding rather
+than repairing it inside a neighbouring task - `porcelain -> []`, `classify -> PUBLISHABLE` over an
+untracked file no reader had opened. The stderr reading in `_porcelain` below is that finding
+closed: git saying "I did not look in there" is now `check_did_not_run` and never `nothing was
+there`. The price of reading it that way is named on the function itself and beside D-26.
+
 Bound to ABI-32-1 (the door is the only way out) and ABI-16-5 (a refusal is a named state).
 """
 from __future__ import annotations
@@ -72,10 +81,34 @@ PORCELAIN_STATUS_WIDTH = 3
 
 
 def _porcelain(root: pathlib.Path) -> list[str] | None:
-    """Dirty paths, or None if git could not be asked.
+    """Dirty paths, or None if git could not be asked - or answered without having read it all.
 
     None is a THIRD STATE and every caller treats it as one, exactly as `ratchet_decisions._tracked`
     does. An empty list here would say "the tree is clean" about a directory we failed to read.
+
+    THE EXIT CODE IS NOT WHERE THIS FAILURE ARRIVES, AND THAT WAS MEASURED BEFORE IT WAS BELIEVED.
+    A file under a directory this process cannot enter is not an error to `git status`: it writes
+    `warning: could not open directory 'sub/': Permission denied` to stderr, exits 0, and omits
+    that subtree from stdout. Taken on this host on 2026-08-24 (python 3.10.12, git exiting 0) and
+    kept in `evidence/RED-023-*` run 4 and `evidence/RED-035-*`. Reading only the return code turns
+    "I did not look in there" into "there is nothing in there", so the scheduler publishes a tree
+    over content no gate opened, and `deploy_label` - which shares this reader - signs it with a
+    commit's short sha. Both were measured doing exactly that before this line existed.
+
+    ANY stderr IS A REFUSAL HERE, AND THE TEXT IS DELIBERATELY NOT PARSED. Matching on
+    `could not open directory` would make this gate's coverage a list of the warnings someone
+    thought of, and the warning that publishes an unread tree is by definition the one nobody
+    thought of. So the condition is "git wrote to stderr", which is git saying it has something to
+    report about its own reading.
+
+    THE PRICE OF THAT WIDTH, NAMED HERE RATHER THAN DISCOVERED BY THE PERSON IT STOPS. A warning
+    with nothing to do with readability - a transient filesystem fault, a future git printing an
+    unrelated note - also returns None and reddens the cycle over a tree that may be perfectly
+    publishable. That false red is accepted, and the third state is the reason it is acceptable:
+    what it announces is that THE INSTRUMENT refused, `check_did_not_run`, not a verdict that the
+    tree is unfit. It costs one cycle, it prints git's own sentence as its cause, and the operator
+    who reads it is being sent to a real fault. The false GREEN it replaces publishes content
+    nothing opened, says nothing at all, and does it again tomorrow. Recorded beside D-26.
     """
     try:
         out = subprocess.run(
@@ -85,6 +118,16 @@ def _porcelain(root: pathlib.Path) -> list[str] | None:
     except (OSError, subprocess.SubprocessError):
         return None
     if out.returncode != 0:
+        return None
+
+    # Printed rather than swallowed, because a refusal whose cause is invisible is the shape that
+    # gets a gate deleted (L-5): "UNREADABLE" alone sends the operator hunting, and git has already
+    # said which directory it is. The caller prints WHAT the state is; this prints WHY it was taken.
+    warning = out.stderr.decode("utf-8", "replace").strip()
+    if warning:
+        print("git status exited 0 AND wrote to stderr, so its report is not a reading of the whole "
+              "tree - what follows is git's own sentence, not this gate's:\n"
+              f"{warning}", file=sys.stderr)
         return None
 
     paths: list[str] = []
@@ -117,9 +160,10 @@ def main(argv: list[str] | None = None) -> int:
 
     code, foreign, owned = classify(pathlib.Path(args.root))
     if code == UNREADABLE:
-        print(f"UNREADABLE: git could not report the state of {args.root}. This says NOTHING about "
-              f"whether the tree is publishable - it is not a clean tree and not a dirty one.",
-              file=sys.stderr)
+        print(f"UNREADABLE: git could not report the state of {args.root}, or reported it after "
+              f"saying it had not read all of it (any reason it printed is above). This says "
+              f"NOTHING about whether the tree is publishable - it is not a clean tree and not a "
+              f"dirty one.", file=sys.stderr)
         return UNREADABLE
     if code == FOREIGN_WORK:
         print(f"FOREIGN WORK IN THE TREE ({len(foreign)} path(s)): an unattended publisher would "

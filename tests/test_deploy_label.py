@@ -250,13 +250,28 @@ _needs_permissions = pytest.mark.skipif(
 
 @_needs_permissions
 def test_a_tracked_file_under_an_unenterable_directory_is_unreadable_not_clean(tmp_path):
-    """THE STATE THE CLEAN PATH'S DIGEST EXISTS FOR, and it is not the one that was predicted.
+    """THE VERDICT IS UNCHANGED AND THE LAYER THAT TAKES IT MOVED, which is why this case is armed.
 
     `git status` does not fail on a directory it cannot enter - it warns and exits 0 with the
     subtree simply missing from its output - so the tree LOOKS clean and would be signed with a
-    commit's short sha over content nothing read. The digest's reading is the only thing between
-    those two facts, and this case is what proves it is doing the work: delete the call and the
-    tree below is labelled `<short sha>`, clean, confidently.
+    commit's short sha over content nothing read. When this case was written, the digest's reading
+    of every `ls-files` path was the only thing between those two facts, and the premise it asserted
+    was `_porcelain(repo) == []`: the shared reader handing over an empty list, having been told
+    nothing and reporting nothing.
+
+    T-C8 CHANGED THAT PREMISE IN THE SHARED READER, and the assertion above is what caught it -
+    `_porcelain` now returns None the moment `git status` writes to stderr, so this tree is
+    UNREADABLE before `decide` ever reaches the digest. The verdict this case asserts is the same
+    one, taken one layer earlier and for a better reason: the instrument said it had not looked,
+    rather than us noticing afterwards that a file would not open.
+
+    WHAT THIS CASE THEREFORE NO LONGER DEFENDS, said plainly because a test whose subject has moved
+    out from under it is worse than no test. It does not arm the clean path's `content_digest`
+    call any more - delete that call and this case still passes.
+    `test_a_file_git_called_clean_without_reading_it_is_not_labelled` below is what arms it now, on
+    a state this reader cannot see: git reporting clean with an EMPTY stderr over bytes we cannot
+    read. Both are kept, because they fail for different reasons and the day one of them stops
+    failing is a different day.
     """
     repo = _repo(tmp_path)
     locked = repo / "locked"
@@ -268,13 +283,54 @@ def test_a_tracked_file_under_an_unenterable_directory_is_unreadable_not_clean(t
     locked.chmod(0o000)
     try:
         # The fixture asserts its own premise: if git could see in there, this case would be
-        # measuring an ordinary clean tree and passing for the wrong reason.
-        assert dl._porcelain(repo) == [], "git reported the locked subtree; the fixture is not the state it claims"
+        # measuring an ordinary clean tree and passing for the wrong reason. git exiting 0 is half
+        # of it - the half that made the old reading look like a measurement - and the shared
+        # reader refusing that answer is the other.
+        raw = subprocess.run(["git", "status", "--porcelain", "-z", "--untracked-files=all"],
+                             cwd=repo, capture_output=True, timeout=60)
+        assert raw.returncode == 0 and raw.stdout == b"", "git saw the locked subtree; wrong state"
+        assert dl._porcelain(repo) is None, "the shared reader accepted a report git warned about"
         code, fields, _ = dl.decide(repo, allow_dirty=False)
         assert code == dl.UNREADABLE
         assert fields == {}
     finally:
         locked.chmod(0o755)
+
+
+@_needs_permissions
+def test_a_file_git_called_clean_without_reading_it_is_not_labelled(tmp_path):
+    """THE REMAINDER, and the case that keeps the clean path's digest from becoming dead code.
+
+    T-C8 taught the shared reader to refuse any `git status` that wrote to stderr, which covers
+    every unreadable path git NOTICES. This is the class it cannot cover by construction: git
+    reporting a clean tree, with an empty stderr, over a file it did not open. `assume-unchanged`
+    is the cheapest true instance - git is told to trust the index for that path - and a stale stat
+    cache, an mtime that did not move, or a filesystem that lies about one produce the same shape
+    without anybody asking for it.
+
+    So the two readings are not redundant and the second is not defensive coding: one is the
+    instrument admitting it stopped, the other is opening the bytes that are about to be published.
+    Delete `if content_digest(root) is None` from the clean path and this case is what goes red -
+    it was `test_a_tracked_file_under_an_unenterable_directory_is_unreadable_not_clean` until the
+    reader above started catching that tree first (`evidence/RED-035-*`, part 3).
+    """
+    repo = _repo(tmp_path)
+    target = repo / "README.md"
+    target.chmod(0o000)
+    subprocess.run(["git", "update-index", "--assume-unchanged", "README.md"], cwd=repo, check=True)
+    try:
+        raw = subprocess.run(["git", "status", "--porcelain", "-z", "--untracked-files=all"],
+                             cwd=repo, capture_output=True, timeout=60)
+        assert raw.returncode == 0, "git failed; this case is about git NOT failing"
+        assert raw.stderr == b"", f"git warned, so the reader catches this one: {raw.stderr!r}"
+        assert dl._porcelain(repo) == [], "git called this tree clean; that is the premise"
+        assert dl.content_digest(repo) is None, "the file opened; the fixture is not its own subject"
+
+        code, fields, _ = dl.decide(repo, allow_dirty=False)
+        assert code == dl.UNREADABLE
+        assert fields == {}
+    finally:
+        target.chmod(0o644)
 
 
 @_needs_permissions

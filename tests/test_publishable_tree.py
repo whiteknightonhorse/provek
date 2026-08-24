@@ -14,6 +14,7 @@ subject missing. These repositories cost about a tenth of a second each.
 """
 from __future__ import annotations
 
+import os
 import pathlib
 import subprocess
 import sys
@@ -96,6 +97,78 @@ def test_a_tree_that_cannot_be_read_is_not_reported_as_clean(tmp_path):
     assert code == pt.UNREADABLE
     assert code not in (pt.PUBLISHABLE, pt.FOREIGN_WORK)
     assert (foreign, owned) == ([], [])
+
+
+# A `chmod 000` means nothing to root, so the two cases below could not express their own subject
+# there: they would build a directory git reads happily and then assert a refusal that never comes.
+# The skip is conditional on a MEASURED property of the runtime rather than on whether a fixture
+# happened to build - this host runs as uid 1011 and the CI runner is unprivileged, so both cases
+# are ARMED where they matter, which is the difference between this and the shape L-16 warns about.
+# Same guard, same reason, as `tests/test_deploy_label.py`.
+_needs_permissions = pytest.mark.skipif(
+    os.geteuid() == 0, reason="root ignores the permission bits these two cases are made of")
+
+
+@_needs_permissions
+def test_a_subtree_git_warned_about_is_unreadable_and_not_publishable(tmp_path):
+    """THE CASE THAT SHIPPED WRONG AND WAS MEASURED WRONG BEFORE IT WAS FIXED (RED-023 run 4).
+
+    `git status` does not fail on a directory it cannot enter: it warns on stderr, EXITS 0, and
+    leaves that subtree out of stdout. So the untracked file below - somebody's parked work, or
+    anything else - was invisible, the classifier saw no dirty paths, and the scheduler was handed
+    PUBLISHABLE over a tree nothing had read. The whole defect is that the failing instrument
+    answered with a number that looked like a measurement.
+
+    THE FIXTURE ASSERTS ITS OWN PREMISE FIRST, because if git ever stops warning, or starts
+    exiting nonzero, this case would still pass while measuring something else entirely - a test
+    that passes for a reason other than the one its name gives is the shape RED-023 run 4 caught in
+    the neighbouring suite, and it is caught by pinning the state the case claims to be in.
+    """
+    repo = _repo(tmp_path)
+    locked = repo / "locked"
+    locked.mkdir()
+    (locked / "parked.txt").write_text("untracked, and about to become invisible\n", encoding="utf-8")
+    locked.chmod(0o000)
+    try:
+        raw = subprocess.run(["git", "status", "--porcelain", "-z", "--untracked-files=all"],
+                             cwd=repo, capture_output=True, timeout=60)
+        assert raw.returncode == 0, "git FAILED here; the old exit-code reading would have caught it"
+        assert raw.stdout == b"", "git listed the locked subtree; this is not the state the case claims"
+        assert b"warning" in raw.stderr, f"git warned about nothing: {raw.stderr!r}"
+
+        assert pt._porcelain(repo) is None, "a warned reading is not a list of dirty paths"
+        code, foreign, owned = pt.classify(repo)
+        assert code == pt.UNREADABLE
+        assert code not in (pt.PUBLISHABLE, pt.FOREIGN_WORK)
+        assert (foreign, owned) == ([], [])
+    finally:
+        locked.chmod(0o755)
+
+
+@_needs_permissions
+def test_the_warned_tree_reaches_the_scheduler_as_a_refusal_that_names_its_cause(tmp_path):
+    """`notes_cron.py` reads the PROCESS exit code, and an operator reads the PROCESS stderr.
+
+    Two artefacts, and a gate that returned the right tuple to `classify` while exiting 0 would
+    publish exactly the tree this task exists to stop. The stderr assertion is not decoration: an
+    UNREADABLE with no cause printed sends the operator to hunt for uncommitted work that is not
+    there, and a refusal nobody can act on is the one that gets routed around (L-5). git's own
+    sentence names the directory, so it is git's sentence that is forwarded.
+    """
+    repo = _repo(tmp_path)
+    locked = repo / "locked"
+    locked.mkdir()
+    (locked / "parked.txt").write_text("untracked\n", encoding="utf-8")
+    locked.chmod(0o000)
+    try:
+        done = subprocess.run([sys.executable, str(GATE), "--root", str(repo)],
+                              capture_output=True, text=True, timeout=60)
+        assert done.returncode == pt.UNREADABLE, done.stdout + done.stderr
+        assert "UNREADABLE" in done.stderr
+        assert "could not open directory" in done.stderr, "git's cause was swallowed"
+        assert "PUBLISHABLE" not in done.stdout
+    finally:
+        locked.chmod(0o755)
 
 
 @pytest.mark.parametrize(

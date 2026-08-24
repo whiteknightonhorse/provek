@@ -1166,6 +1166,14 @@ commit's sha. The hole is in `publishable_tree._porcelain`, which the scheduler'
 too, so it is recorded as a finding rather than repaired by a neighbouring task. This gate refuses
 every dirty path git REPORTS and does not claim git reported all of them.
 
+**That limit was closed on 2026-08-24 by D-33, and this paragraph is left standing rather than
+rewritten.** It is the record of what was known when this decision was ratified, and the finding it
+names is the reason the repair exists at all; deleting it would leave D-33 looking like a
+precaution nobody had measured a need for. What changed: the shared reader now returns its third
+state whenever `git status` writes to stderr, so the sentence "this gate refuses every dirty path
+git REPORTS" is unchanged and the sentence before it no longer describes the gate. The price of
+that reading, and the class it still cannot see, are in D-33.
+
 **Decision: `wrangler@4` is NOT pinned to an exact version.** The deploy runs `npx --yes
 wrangler@4`, which floats across minor and patch releases. Pinning would freeze a tool that talks to
 somebody else's API and holds our credential, and security updates to it are worth more than the
@@ -1814,3 +1822,57 @@ It is also LATENT: nothing regenerates this evidence on a push, so between a tes
 somebody regenerating, the drift is invisible. That is a property of a snapshot kept as evidence
 rather than a defect to fix — the generator mutates its subject and runs the suite fifteen times,
 which is not something a door can do on every push.
+
+## D-33. A `git status` that warned did not measure the tree, whatever it exited
+
+**The defect, and why nothing about it was a mistyped line.** `publishable_tree._porcelain` read
+`git status --porcelain` and treated a zero exit as a reading of the whole tree. It is not one: a
+file under a directory the process cannot enter makes git print `warning: could not open directory
+'sub/': Permission denied` to stderr, **exit 0**, and leave that subtree out of stdout. So the gate
+that decides whether the unattended publisher may ship received an empty list and called it a clean
+tree — invariant 1's substitution, `check_did_not_run` arriving as `nothing_qualified`, inside the
+gate this project built to catch exactly that. Measured on this host and kept in
+`evidence/RED-035-*`: with an untracked file inside a `chmod 000` directory, `classify` returned
+PUBLISHABLE and the process exited 0, and `deploy_label` — which imports the same reader — labelled
+that tree with the commit's short sha and `COMMIT_DIRTY=false`.
+
+**The fork this closes was already recorded, and by the hand that could not close it.** D-26 names
+this limit in its own "what is NOT claimed" paragraph, `evidence/RED-023-*` measured it during T-H2
+run 4, and both left it standing on the stated ground that the module belongs to the SCHEDULER's
+gate and repairing another task's shipped gate in passing is not this project's habit. It went to
+`~/orchestra/FINDINGS.md` for the judge. This decision is the execution of that referral, not a
+fresh opinion about it.
+
+**Decision: a non-empty stderr from `git status` is `check_did_not_run`, and the exit code does not
+overrule it.** `_porcelain` returns its third state, the two gates built on it return UNREADABLE,
+and git's own sentence is printed above the refusal rather than summarised — an UNREADABLE with no
+cause sends the operator hunting for uncommitted work that is not there, and a refusal nobody can
+act on is the one that gets routed around (L-5).
+
+**Decision: the stderr text is NOT parsed, and the price of that is a false red we accept.** A
+condition matching `could not open directory` would make this gate's coverage a list of the
+warnings somebody thought of, and the warning that publishes an unread tree is by definition the
+one nobody thought of. So any stderr at all is a refusal, and a warning with nothing to do with
+readability — a transient filesystem fault, a future git printing an unrelated note — reddens a
+cycle over a tree that may be perfectly publishable. That is accepted, and the third state is
+precisely why it can be: what the red announces is that THE INSTRUMENT stopped, not a verdict that
+the tree is unfit, and it prints git's reason for stopping beside it. It costs one cycle and sends
+the operator to a real fault. The false GREEN it replaces publishes content nothing opened, says
+nothing at all, and does it again tomorrow. Nothing here treats a false red as free — L-5 is about
+exactly that — which is why the trade is written down at the line that makes it, in `_porcelain`'s
+docstring, rather than left for the person the gate stops.
+
+**Consequence, and it is the one that could have been shipped silently: a guard in the neighbouring
+gate lost its subject.** `deploy_label`'s clean path re-reads every file `git ls-files` names, and
+RED-023 run 8 proved that reading load-bearing by deleting it and watching a case go red. After
+this change that case is caught one layer earlier, so the same deletion would have gone green
+again — a guard whose removal nothing notices is already gone, which is run 8's own sentence turned
+on the repair. The replacement case is in the same commit: a file git reports clean, with an EMPTY
+stderr, over bytes it never opened (`assume-unchanged`, or any stat cache git trusts). Both cases
+are kept, because they fail for different reasons, and the mutation proving each is in
+`evidence/RED-035-*` parts 3 and 4.
+
+**What is still not measured, named rather than implied.** The reader refuses every unreadable path
+git NOTICES; the digest opens every path git LISTS. Neither sees a filesystem that answers without
+error and without the truth, and neither claims to. `evidence/RED-023-*` is not edited — D-28 — and
+the four sentences in it that this decision falsified are answered in a dated erratum beside it.

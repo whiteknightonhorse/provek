@@ -37,23 +37,28 @@ earned by a check that did not run - a claim stronger than the artefact, which i
 whole project exists to find - and collapsing it into the second manufactures a refusal that sends
 the operator to look for uncommitted work that may not exist.
 
-A NAMED LIMIT, MEASURED WHILE WRITING THIS AND ONLY HALF CLOSED HERE. `git status` does not fail on
-a directory it cannot read - it prints `warning: could not open directory 'sub/': Permission denied`
-to stderr and EXITS 0 with that subtree simply missing from its output. So a tree carrying an
-unreadable directory is reported CLEAN by the shared reader. That hole is in
-`publishable_tree._porcelain`, which the SCHEDULER's gate depends on as well, so closing it changes
-a shipped gate belonging to another task; it is written down in `~/orchestra/FINDINGS.md` for the
-judge rather than fixed in passing.
+THE NAMED LIMIT THAT STOOD HERE IS CLOSED, AND WHAT IT SHRANK TO IS NAMED IN ITS PLACE. This
+paragraph used to record a measurement: `git status` does not fail on a directory it cannot read -
+it prints `warning: could not open directory 'sub/': Permission denied` to stderr and EXITS 0 with
+that subtree missing from its output - so a tree carrying an unreadable directory was reported CLEAN
+by the shared reader, and an UNTRACKED file under it was invisible to this module too. The hole
+belonged to `publishable_tree._porcelain`, shared with the SCHEDULER's gate, so it went to
+`~/orchestra/FINDINGS.md` for the judge instead of being repaired by this task. T-C8 is that repair:
+the shared reader now returns its third state whenever `git status` writes to stderr, and this
+module inherits it through the import below rather than through a second copy of the rule (L-2).
 
-What is closed here is the half this module can reach on its own: the clean path re-reads every file
-`git ls-files` names, so a TRACKED file under such a directory turns the tree `unreadable` instead
-of signing it with a commit's sha. See the comment on that line for which of the three states each
-of these actually produces - all three were built as fixtures and measured, and one of them came out
-the opposite way round from the prediction. An UNTRACKED file under an unreadable directory remains
-invisible to `ls-files` exactly as it is to `status`, and nothing here sees it.
+THE REMAINDER IS ONE CLASS AND IT IS NOT THE SAME CLASS. The reader above refuses every unreadable
+path git NOTICES. It cannot refuse what git does not notice: a tree reported clean, with an empty
+stderr, over bytes git never opened - `assume-unchanged`, a stat cache that matches a file whose
+contents we cannot read, a filesystem that answers without error and without the truth. That is
+what the clean path's `content_digest` reading is for, it is the only thing left standing under it,
+and `tests/test_deploy_label.py` builds that state rather than assuming it. See the comment on that
+line for which of the four states each fixture actually produced - one of them came out the opposite
+way round from the prediction, and the reading below the guard is now the one the guard rests on.
 
 What this module claims is therefore exactly this: it refuses every dirty path git REPORTS, it
-refuses a tree holding a tracked file it cannot read, and it does not claim git reported everything.
+refuses a reading git said it did not finish, it refuses a tree holding a listed file it cannot
+open - and it does not claim a filesystem that lies silently would be caught by any of the three.
 
 Bound to ABI-32-1 (the door is the only way out) and ABI-16-5 (a refusal is a named state).
 """
@@ -172,27 +177,32 @@ def decide(root: pathlib.Path, allow_dirty: bool) -> tuple[int, dict[str, str], 
         # every file git listed, so a file this process cannot read makes the tree `unreadable`
         # instead of signing it with a commit's sha.
         #
-        # WHICH HALF OF THE LIMIT ABOVE THIS ACTUALLY COVERS, MEASURED rather than assumed - both
-        # states were built as fixtures on this host, and the answer was the opposite of the one
-        # predicted when the line was written:
+        # WHICH STATE REACHES THIS LINE, MEASURED rather than assumed - every case below was built
+        # as a fixture on this host, and two of them moved when T-C8 taught `_porcelain` to read
+        # git's stderr. The list is kept whole, including the states this line no longer decides,
+        # because a guard whose remaining subject is unstated is a guard the next reader deletes:
         #
-        #   tracked file under a directory this process cannot ENTER
-        #       `status` reports NOTHING (it warns and exits 0), so the tree looks clean - and this
-        #       reading is the only thing between that tree and a commit's sha. It returns
-        #       UNREADABLE. This is the case the line is here for, and it is covered.
+        #   file (tracked or not) under a directory this process cannot ENTER
+        #       `status` warns, exits 0, and omits the subtree. Until T-C8 the tracked half of this
+        #       was what this line existed for, and the untracked half was covered by nothing at
+        #       all. Now `_porcelain` returns None on that warning and `decide` is UNREADABLE
+        #       before it gets here. NOT this line's case any more.
         #
         #   tracked file that cannot be READ, in a directory that can be entered
-        #       `status` cannot compare it to the index, so git reports it as MODIFIED and the tree
-        #       is refused as dirty before this line runs. The refusal is honest - the tree cannot
-        #       be shown equal to HEAD - but it names the path as uncommitted work, which it is
-        #       not. Named here rather than smoothed over: it sends the operator to `git status`,
-        #       which will say the same thing, and not to the permission bit that caused it.
+        #       `status` cannot compare it to the index, so git reports it MODIFIED and the tree is
+        #       refused as DIRTY before this line runs. The refusal is honest - the tree cannot be
+        #       shown equal to HEAD - but it names the path as uncommitted work, which it is not.
+        #       Named rather than smoothed over: it sends the operator to `git status`, which says
+        #       the same thing, and not to the permission bit that caused it.
         #
-        #   UNTRACKED file under either
-        #       invisible to `ls-files` exactly as it is to `status`. NOT covered by anything here.
+        #   file git reports CLEAN, with an EMPTY stderr, whose bytes will not open
+        #       `assume-unchanged`, or any stat cache git trusts over a file we cannot read. git
+        #       says nothing, so nothing above this line can know. THIS is the state the reading
+        #       here is now the only cover for, and it is what
+        #       `test_a_file_git_called_clean_without_reading_it_is_not_labelled` builds.
         #
-        # So this narrows the hole named above; it does not close it. Suggested by Fable, which
-        # also asked which half it covers - the question that produced the measurement.
+        # Suggested by Fable, which asked which half it covers - the question that produced the
+        # measurement, and the reason the answer could be re-taken when the layer above changed.
         if content_digest(root) is None:
             return UNREADABLE, {}, []
         return LABELLED, {

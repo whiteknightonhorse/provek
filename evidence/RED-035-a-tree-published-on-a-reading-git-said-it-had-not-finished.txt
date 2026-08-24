@@ -1,0 +1,315 @@
+RED-035 - a tree published on a reading git had said it did not finish
+
+DATE (UTC): 2026-08-24
+SUBJECT   : scripts/publishable_tree.py (`_porcelain`), judged by tests/test_publishable_tree.py
+            scripts/deploy_label.py, which imports that reader, judged by tests/test_deploy_label.py
+LAWS      : LAW-PUBLISH-JUDGED-TREE, LAW-DEPLOY-LABEL-TRUE
+TASK      : T-C8. The finding it closes was raised by T-H2 and left standing on purpose - see the
+            last section of evidence/RED-023-*, and the erratum beside it.
+PRODUCED  : evidence/RED-035-generator.py, checked in beside this file so the runs below can be
+            repeated rather than believed. It refuses to write this file if any premise it depends
+            on is not the state it claims.
+
+WHY THIS FILE EXISTS
+
+Invariant 1 says a counter that can read zero must distinguish `nothing_qualified` from
+`check_did_not_run`. `git status --porcelain` returns a LIST, and an empty list is that zero. The
+instrument has one way of saying it did not look - a line on stderr, next to an exit code of 0 -
+and until this task both gates built on it read only the number. So "I could not open that
+directory" arrived as "there is nothing in that directory", which is the exact substitution this
+project exists to detect, sitting inside the gate that decides whether an unattended publisher may
+ship.
+
+==================================================================================================
+1. THE PREMISE - the state, before anything is claimed from it
+==================================================================================================
+
+A throwaway repository: one commit, plus an untracked file inside a directory at mode 000.
+
+$ git status --porcelain -z --untracked-files=all
+exit   : 0
+stdout : b''          <- empty: the untracked file is NOT in the report
+stderr : warning: could not open directory 'locked/': Permission denied
+
+git exits 0. That is the whole defect: a failing instrument answering with a number that has the
+shape of a measurement. Nothing about that exit code is wrong - git DID succeed at what it was
+asked - and nothing about the old reading was a typo.
+
+==================================================================================================
+2. THE SHIPPED CODE - the same tree, refused by name
+==================================================================================================
+
+_porcelain(root)      -> None
+classify(root)        -> 4 UNREADABLE foreign=[] owned=[]
+decide(root, False)   -> 4 UNREADABLE LABEL=None COMMIT_DIRTY=None
+git status exited 0 AND wrote to stderr, so its report is not a reading of the whole tree - what follows is git's own sentence, not this gate's:
+warning: could not open directory 'locked/': Permission denied
+git status exited 0 AND wrote to stderr, so its report is not a reading of the whole tree - what follows is git's own sentence, not this gate's:
+warning: could not open directory 'locked/': Permission denied
+git status exited 0 AND wrote to stderr, so its report is not a reading of the whole tree - what follows is git's own sentence, not this gate's:
+warning: could not open directory 'locked/': Permission denied
+
+$ python3 scripts/publishable_tree.py --root <fixture>
+exit   : 4
+stdout : (empty)
+stderr : git status exited 0 AND wrote to stderr, so its report is not a reading of the whole tree - what follows is git's own sentence, not this gate's:
+warning: could not open directory 'locked/': Permission denied
+UNREADABLE: git could not report the state of /tmp/red035-jz3q8ycj/repo, or reported it after saying it had not read all of it (any reason it printed is above). This says NOTHING about whether the tree is publishable - it is not a clean tree and not a dirty one.
+
+The refusal carries git's own sentence rather than this gate's summary of it, because UNREADABLE
+with no cause sends the operator hunting for uncommitted work that is not there, and a refusal
+nobody can act on is the one that gets routed around (L-5).
+
+==================================================================================================
+3. THE RED - the reading removed, which is the code of one commit ago
+==================================================================================================
+
+    - warning = out.stderr.decode("utf-8", "replace").strip()
+    + warning = ""   # MUTATION-1: the stderr reading, removed - the shipped behaviour of T-C7
+
+_porcelain(root)      -> []
+classify(root)        -> 0 PUBLISHABLE foreign=[] owned=[]
+decide(root, False)   -> 0 PUBLISHABLE LABEL=7d66c44 COMMIT_DIRTY=false
+
+$ python3 scripts/publishable_tree.py --root <fixture>
+exit   : 0
+stdout : PUBLISHABLE: nothing dirty outside the 4 cycle-owned paths (0 cycle-owned path(s) dirty).
+stderr : (empty)
+
+PUBLISHABLE, exit 0, over a tree holding a file nothing opened - and `deploy_label`, which shares
+this reader, signs it with the commit's short sha and COMMIT_DIRTY=false. Two gates, one reading,
+one hole; that shared import is why the repair had to be made here and not twice (L-2).
+
+Tests killed in tests/test_publishable_tree.py (test_a_subtree_git_warned_about_is_unreadable_and_not_publishable, test_the_warned_tree_reaches_the_scheduler_as_a_refusal_that_names_its_cause)
+Tests killed in tests/test_deploy_label.py (test_a_tracked_file_under_an_unenterable_directory_is_unreadable_not_clean)
+
+--- verbatim `python -m pytest tests/test_publishable_tree.py -q -rf` ---
+
+.....FF...                                                               [100%]
+=================================== FAILURES ===================================
+______ test_a_subtree_git_warned_about_is_unreadable_and_not_publishable _______
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-897/test_a_subtree_git_warned_abou0')
+
+    @_needs_permissions
+    def test_a_subtree_git_warned_about_is_unreadable_and_not_publishable(tmp_path):
+        """THE CASE THAT SHIPPED WRONG AND WAS MEASURED WRONG BEFORE IT WAS FIXED (RED-023 run 4).
+    
+        `git status` does not fail on a directory it cannot enter: it warns on stderr, EXITS 0, and
+        leaves that subtree out of stdout. So the untracked file below - somebody's parked work, or
+        anything else - was invisible, the classifier saw no dirty paths, and the scheduler was handed
+        PUBLISHABLE over a tree nothing had read. The whole defect is that the failing instrument
+        answered with a number that looked like a measurement.
+    
+        THE FIXTURE ASSERTS ITS OWN PREMISE FIRST, because if git ever stops warning, or starts
+        exiting nonzero, this case would still pass while measuring something else entirely - a test
+        that passes for a reason other than the one its name gives is the shape RED-023 run 4 caught in
+        the neighbouring suite, and it is caught by pinning the state the case claims to be in.
+        """
+        repo = _repo(tmp_path)
+        locked = repo / "locked"
+        locked.mkdir()
+        (locked / "parked.txt").write_text("untracked, and about to become invisible\n", encoding="utf-8")
+        locked.chmod(0o000)
+        try:
+            raw = subprocess.run(["git", "status", "--porcelain", "-z", "--untracked-files=all"],
+                                 cwd=repo, capture_output=True, timeout=60)
+            assert raw.returncode == 0, "git FAILED here; the old exit-code reading would have caught it"
+            assert raw.stdout == b"", "git listed the locked subtree; this is not the state the case claims"
+            assert b"warning" in raw.stderr, f"git warned about nothing: {raw.stderr!r}"
+    
+>           assert pt._porcelain(repo) is None, "a warned reading is not a list of dirty paths"
+E           AssertionError: a warned reading is not a list of dirty paths
+E           assert [] is None
+E            +  where [] = <function _porcelain at 0x7ff5a7e56e60>(PosixPath('/tmp/pytest-of-incubator/pytest-897/test_a_subtree_git_warned_abou0'))
+E            +    where <function _porcelain at 0x7ff5a7e56e60> = pt._porcelain
+
+tests/test_publishable_tree.py:139: AssertionError
+_ test_the_warned_tree_reaches_the_scheduler_as_a_refusal_that_names_its_cause _
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-897/test_the_warned_tree_reaches_t0')
+
+    @_needs_permissions
+    def test_the_warned_tree_reaches_the_scheduler_as_a_refusal_that_names_its_cause(tmp_path):
+        """`notes_cron.py` reads the PROCESS exit code, and an operator reads the PROCESS stderr.
+    
+        Two artefacts, and a gate that returned the right tuple to `classify` while exiting 0 would
+        publish exactly the tree this task exists to stop. The stderr assertion is not decoration: an
+        UNREADABLE with no cause printed sends the operator to hunt for uncommitted work that is not
+        there, and a refusal nobody can act on is the one that gets routed around (L-5). git's own
+        sentence names the directory, so it is git's sentence that is forwarded.
+        """
+        repo = _repo(tmp_path)
+        locked = repo / "locked"
+        locked.mkdir()
+        (locked / "parked.txt").write_text("untracked\n", encoding="utf-8")
+        locked.chmod(0o000)
+        try:
+            done = subprocess.run([sys.executable, str(GATE), "--root", str(repo)],
+                                  capture_output=True, text=True, timeout=60)
+>           assert done.returncode == pt.UNREADABLE, done.stdout + done.stderr
+E           AssertionError: PUBLISHABLE: nothing dirty outside the 4 cycle-owned paths (0 cycle-owned path(s) dirty).
+E             
+E           assert 0 == 4
+E            +  where 0 = CompletedProcess(args=['/usr/bin/python3', '/home/incubator/incubator/scripts/publishable_tree.py', '--root', '/tmp/py...ode=0, stdout='PUBLISHABLE: nothing dirty outside the 4 cycle-owned paths (0 cycle-owned path(s) dirty).\n', stderr='').returncode
+E            +  and   4 = pt.UNREADABLE
+
+tests/test_publishable_tree.py:166: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_publishable_tree.py::test_a_subtree_git_warned_about_is_unreadable_and_not_publishable
+FAILED tests/test_publishable_tree.py::test_the_warned_tree_reaches_the_scheduler_as_a_refusal_that_names_its_cause
+2 failed, 8 passed in 0.36s
+
+--- verbatim `python -m pytest tests/test_deploy_label.py -q -rf` ---
+
+...............F..                                                       [100%]
+=================================== FAILURES ===================================
+__ test_a_tracked_file_under_an_unenterable_directory_is_unreadable_not_clean __
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-898/test_a_tracked_file_under_an_u0')
+
+    @_needs_permissions
+    def test_a_tracked_file_under_an_unenterable_directory_is_unreadable_not_clean(tmp_path):
+        """THE VERDICT IS UNCHANGED AND THE LAYER THAT TAKES IT MOVED, which is why this case is armed.
+    
+        `git status` does not fail on a directory it cannot enter - it warns and exits 0 with the
+        subtree simply missing from its output - so the tree LOOKS clean and would be signed with a
+        commit's short sha over content nothing read. When this case was written, the digest's reading
+        of every `ls-files` path was the only thing between those two facts, and the premise it asserted
+        was `_porcelain(repo) == []`: the shared reader handing over an empty list, having been told
+        nothing and reporting nothing.
+    
+        T-C8 CHANGED THAT PREMISE IN THE SHARED READER, and the assertion above is what caught it -
+        `_porcelain` now returns None the moment `git status` writes to stderr, so this tree is
+        UNREADABLE before `decide` ever reaches the digest. The verdict this case asserts is the same
+        one, taken one layer earlier and for a better reason: the instrument said it had not looked,
+        rather than us noticing afterwards that a file would not open.
+    
+        WHAT THIS CASE THEREFORE NO LONGER DEFENDS, said plainly because a test whose subject has moved
+        out from under it is worse than no test. It does not arm the clean path's `content_digest`
+        call any more - delete that call and this case still passes.
+        `test_a_file_git_called_clean_without_reading_it_is_not_labelled` below is what arms it now, on
+        a state this reader cannot see: git reporting clean with an EMPTY stderr over bytes we cannot
+        read. Both are kept, because they fail for different reasons and the day one of them stops
+        failing is a different day.
+        """
+        repo = _repo(tmp_path)
+        locked = repo / "locked"
+        locked.mkdir()
+        (locked / "inside.txt").write_text("tracked, and about to become unreachable\n", encoding="utf-8")
+        subprocess.run(["git", "add", "-A"], cwd=repo, check=True)
+        subprocess.run(["git", "-c", "user.email=t@example.invalid", "-c", "user.name=t",
+                        "commit", "-qm", "second"], cwd=repo, check=True)
+        locked.chmod(0o000)
+        try:
+            # The fixture asserts its own premise: if git could see in there, this case would be
+            # measuring an ordinary clean tree and passing for the wrong reason. git exiting 0 is half
+            # of it - the half that made the old reading look like a measurement - and the shared
+            # reader refusing that answer is the other.
+            raw = subprocess.run(["git", "status", "--porcelain", "-z", "--untracked-files=all"],
+                                 cwd=repo, capture_output=True, timeout=60)
+            assert raw.returncode == 0 and raw.stdout == b"", "git saw the locked subtree; wrong state"
+>           assert dl._porcelain(repo) is None, "the shared reader accepted a report git warned about"
+E           AssertionError: the shared reader accepted a report git warned about
+E           assert [] is None
+E            +  where [] = <function _porcelain at 0x7f00d1bb7520>(PosixPath('/tmp/pytest-of-incubator/pytest-898/test_a_tracked_file_under_an_u0'))
+E            +    where <function _porcelain at 0x7f00d1bb7520> = dl._porcelain
+
+tests/test_deploy_label.py:292: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_deploy_label.py::test_a_tracked_file_under_an_unenterable_directory_is_unreadable_not_clean
+1 failed, 17 passed in 0.57s
+
+==================================================================================================
+4. THE GUARD ONE LAYER DOWN, WHICH THIS REPAIR COULD HAVE DISARMED IN SILENCE
+==================================================================================================
+
+`deploy_label.decide` re-reads every file `git ls-files` names before labelling a CLEAN tree, and
+RED-023 run 8 proved that reading load-bearing by deleting it and watching
+`test_a_tracked_file_under_an_unenterable_directory_is_unreadable_not_clean` go red. After part 2 that case is caught
+by the reader above, before the digest is ever consulted - so the same deletion would have gone
+green again, and a guard whose removal nothing notices is already gone.
+
+    - if content_digest(root) is None:
+    + if False:   # MUTATION-2: the clean path's reading of the bytes, deleted
+
+Tests killed (test_a_file_git_called_clean_without_reading_it_is_not_labelled)
+
+--- verbatim `python -m pytest tests/test_deploy_label.py -q -rf` ---
+
+................F.                                                       [100%]
+=================================== FAILURES ===================================
+_______ test_a_file_git_called_clean_without_reading_it_is_not_labelled ________
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-899/test_a_file_git_called_clean_w0')
+
+    @_needs_permissions
+    def test_a_file_git_called_clean_without_reading_it_is_not_labelled(tmp_path):
+        """THE REMAINDER, and the case that keeps the clean path's digest from becoming dead code.
+    
+        T-C8 taught the shared reader to refuse any `git status` that wrote to stderr, which covers
+        every unreadable path git NOTICES. This is the class it cannot cover by construction: git
+        reporting a clean tree, with an empty stderr, over a file it did not open. `assume-unchanged`
+        is the cheapest true instance - git is told to trust the index for that path - and a stale stat
+        cache, an mtime that did not move, or a filesystem that lies about one produce the same shape
+        without anybody asking for it.
+    
+        So the two readings are not redundant and the second is not defensive coding: one is the
+        instrument admitting it stopped, the other is opening the bytes that are about to be published.
+        Delete `if content_digest(root) is None` from the clean path and this case is what goes red -
+        it was `test_a_tracked_file_under_an_unenterable_directory_is_unreadable_not_clean` until the
+        reader above started catching that tree first (`evidence/RED-035-*`, part 3).
+        """
+        repo = _repo(tmp_path)
+        target = repo / "README.md"
+        target.chmod(0o000)
+        subprocess.run(["git", "update-index", "--assume-unchanged", "README.md"], cwd=repo, check=True)
+        try:
+            raw = subprocess.run(["git", "status", "--porcelain", "-z", "--untracked-files=all"],
+                                 cwd=repo, capture_output=True, timeout=60)
+            assert raw.returncode == 0, "git failed; this case is about git NOT failing"
+            assert raw.stderr == b"", f"git warned, so the reader catches this one: {raw.stderr!r}"
+            assert dl._porcelain(repo) == [], "git called this tree clean; that is the premise"
+            assert dl.content_digest(repo) is None, "the file opened; the fixture is not its own subject"
+    
+            code, fields, _ = dl.decide(repo, allow_dirty=False)
+>           assert code == dl.UNREADABLE
+E           assert 0 == 4
+E            +  where 4 = dl.UNREADABLE
+
+tests/test_deploy_label.py:330: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_deploy_label.py::test_a_file_git_called_clean_without_reading_it_is_not_labelled
+1 failed, 17 passed in 0.56s
+
+The case that died is the one built on the state the reader above CANNOT see: git reporting a tree
+clean, with an EMPTY stderr, over a file it did not open (`assume-unchanged`, or any stat cache it
+trusts). `test_a_tracked_file_under_an_unenterable_directory_is_unreadable_not_clean` survived this mutation,
+which is the measured form of the claim that the two readings cover different states rather than
+one of them being redundant.
+
+==================================================================================================
+5. RESTORED - both subjects back to their committed bytes, verified by sha256
+==================================================================================================
+
+baseline, before any mutation:
+    tests/test_publishable_tree.py     ..........                                                               [100%]
+10 passed in 0.35s
+    tests/test_deploy_label.py         ..................                                                       [100%]
+18 passed in 0.63s
+
+after the restore:
+    tests/test_publishable_tree.py     ..........                                                               [100%]
+10 passed in 0.32s
+    tests/test_deploy_label.py         ..................                                                       [100%]
+18 passed in 0.58s
+
+WHAT IS STILL NOT MEASURED, NAMED RATHER THAN IMPLIED
+
+The reader refuses every unreadable path git NOTICES, and the digest opens every path git LISTS.
+Neither can see a filesystem that answers without error and without the truth, and neither claims
+to. The price of the first is stated where it is paid, in `_porcelain`'s docstring and beside D-26:
+ANY stderr is a refusal, the text is not parsed, so an unrelated warning reddens a cycle over a
+tree that may be perfectly publishable. That false red announces that THE INSTRUMENT stopped and
+prints git's reason for stopping; the false green it replaces publishes content nothing opened and
+says nothing at all.

@@ -411,6 +411,15 @@ laws:
   # The gate is NOT "refuse a dirty tree". The cycle dirties the tree itself - it writes a note and
   # rewrites the manifest - so that rule would stop every cycle forever and be deleted by the first
   # agent it stopped. It is "refuse a tree dirty OUTSIDE the paths the cycle writes".
+  #
+  # T-C8 ARMED THE OTHER HALF OF THE TEXT BELOW - "unreadable is not clean" - rather than adding a
+  # law. `git status` has TWO ways of saying it did not read the tree, and this gate read one: a
+  # nonzero exit, and a warning on stderr beside an exit of ZERO. The second is the one that
+  # actually occurs - a directory the process cannot enter - and under it the gate answered
+  # PUBLISHABLE over a tree holding a file nothing had opened (measured, evidence/RED-035-*). D-33
+  # carries the reasoning and the price: any stderr is a refusal, its text is not parsed, so a false
+  # red is possible and is accepted because what it reports is the INSTRUMENT stopping rather than a
+  # verdict about the tree.
   - id: LAW-PUBLISH-JUDGED-TREE
     text: "the unattended publisher ships only a tree the gates judged; unreadable is not clean"
     gate: scripts/publishable_tree.py
