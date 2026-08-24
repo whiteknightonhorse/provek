@@ -1295,6 +1295,50 @@ The quarantine of 06:34 was made by hand, and what the red run above exercises i
 of `orch.sh` extracted at run time against a fixture, not a real failed task. Until a cycle takes
 that branch, "the orchestra recovers from untracked damage" is a claim about a fixture.
 
+**Two more machine halves under the same doctrine, 2026-08-24 (T-H8).** The gap this decision names
+turned out to have two further instances, and both are repaired the same way — inside the program,
+because a gate would again have to be triggered by the act it polices.
+
+*Records are now committed by the hand that writes them.* The briefs, the judge's answers and the
+plan edits are written by `orch.sh` and `plan.py`, but committing them was left to a hand that had
+already moved on to the next task; the orchestra tree stood dirty after the run three times in one
+day, the last time on twenty paths. The pinned revision contained zero occurrences of `git commit`.
+It now has `orch_commit()`, called at seven points of record, with three outcomes named separately —
+committed, nothing to commit, and REFUSED — because collapsing the last two would report a clean
+tree where the commit did not happen. Kept as
+`~/orchestra/evidence/RED-H8-b-records-written-by-a-hand-that-never-committed.txt`.
+
+*A zero-byte answer from the judge is a refusal, not a verdict.* An empty answer file is
+indistinguishable from a judgement, and the cost is not the missed call but the sentence put in the
+judge's mouth: the flow reads on, finds no acceptance line, and logs "Fable said there is more to do
+but returned no tasks" when Fable said nothing. `ask_fable()` now names the emptiness in the
+journal, retries once, and on a second empty answer writes the refusal INTO the answer file and
+returns a distinct code that both call sites branch on — the file itself can no longer consist of
+nothing. Kept as `~/orchestra/evidence/RED-H8-a-zero-byte-answer-read-as-a-verdict.txt`.
+
+**The task's own brief carried a measurement the journal contradicts, and that is the more useful
+finding.** The brief asserted two zero-byte answers, at 07:10 and 11:59. The journal says
+`ask_fable()` has run five times and every answer was non-empty (9416, 13015, 7311, 15966, 16751
+bytes); that 11:59:51 was the QUESTION, answered at 12:10:44 with the 16751 bytes on which the
+ledger accepted T-C7; and that exactly one genuine zero-byte file exists, from a Fable call made by
+hand outside the function. The defect was real, the transcription was not, and "measured twice by
+this instrument" would have been precisely the claim-stronger-than-artefact this project exists to
+catch. The cause of the misreading was itself the defect one layer down: `> "$out"` truncates the
+answer file when the call STARTS, so for the eleven minutes of a healthy call — up to forty by the
+timeout — it reads zero bytes, spelling "in flight" and "instrument refused" identically. The answer
+is now assembled beside the file and moved into place in one motion, so a reader mid-call sees the
+previous verdict intact and an `.inflight` file saying why. RUN 3 of the red run measures exactly
+this from inside the call.
+
+**Limits, stated rather than implied.** Both halves are exercised against fixtures that extract the
+shipped text of `orch.sh` at run time — not inside a live cycle, the same bound this decision
+already records for the quarantine hop. And `orch.sh` was RUNNING while it was repaired: bash parses
+a compound command whole, so the live process is playing out the pre-repair text and both halves
+take effect at the next launch. The installation was done by rename rather than in-place edit for
+that reason, and the live process was confirmed to still hold the old inode, marked `(deleted)`; an
+in-place edit would have sent it to execute an arbitrary fragment of the new file at its old byte
+offset.
+
 ## D-30. The CI toolchain is pinned by hash, and a set that goes stale reddens `main` on purpose
 
 **What was still unpinned after the actions were.** `ca539ec` replaced sixteen tag references with
