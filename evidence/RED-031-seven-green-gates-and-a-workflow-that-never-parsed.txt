@@ -1,0 +1,74 @@
+RED-031 - seven green gates, and a workflow file that never parsed
+====================================================================================================
+
+WHY THIS FILE EXISTS. `66f61ea` was pushed with a local `TREE GREEN` behind it - 7/7 gates, 642
+passed, 1 skipped, coverage 92.87% - and turned `main` RED in the same second it landed. The gates
+that vouched for it are not wrong about anything they measure. They simply never asked whether the
+file that runs them is a file GitHub can read.
+
+THE MEASUREMENT.
+
+  GET /repos/whiteknightonhorse/provek/actions/runs?head_sha=66f61ea...   HTTP 200
+    scorecard                     event=push  status=completed  conclusion=success
+    codeql                        event=push  status=completed  conclusion=success
+    .github/workflows/gates.yml   event=push  status=completed  conclusion=FAILURE
+
+  GET /repos/.../actions/runs/32746208605          created_at = 2026-08-24T15:39:41Z
+                                                   updated_at = 2026-08-24T15:39:41Z
+  GET /repos/.../actions/runs/32746208605/jobs     total_count = 0
+
+Created and concluded in the SAME SECOND, with ZERO jobs. That pair is the whole diagnosis: no job
+ran, so nothing the workflow contains failed. The run died at parse time - a startup failure - and
+a startup failure is not a test result. Reading it as "the suite failed" would have sent the next
+hour into the suite.
+
+CONTROL, and it is what makes the reading a fact about this commit rather than about the repository:
+the same workflow on the preceding `main` `d3a1e76` reads `conclusion=success`, taken from the same
+endpoint in the same minute. The instrument was answering, and it was answering differently for the
+two commits.
+
+A SECOND CONTROL, unplanned, and the more useful one. The first reading taken after the push was
+`GET /commits/66f61ea/check-runs`, which returned THREE runs - `analyze (python)`,
+`analyze (javascript-typescript)`, `scorecard` - every one of them `success`. The gates run does not
+appear there at all. A workflow that fails before its jobs exist publishes no check run, so the
+endpoint that lists check runs reported total success for a commit whose gates were red. Had that
+been the only reading, this push would have been recorded as green on an instrument that was
+structurally incapable of showing the failure. `total_count: 3` looked like data and was ABSENCE -
+invariant 1, arriving in the shape of three green rows rather than a blank.
+
+THE CAUSE, which is one character class.
+
+  - run: pip install --quiet --require-hashes --only-binary=:all: -r requirements/ci-tests.txt
+                                                          ^^
+
+`--only-binary=:all:` is followed by a space. In a YAML plain scalar `: ` is not text; it is how the
+language spells "the key ended here". So the parser read a mapping value inside a mapping value and
+refused the document:
+
+  yaml.safe_load(".github/workflows/gates.yml")
+  -> mapping values are not allowed here, line 128, column 69
+
+Three lines carried it, identically - 128, 167, 192 - because the three were written from one
+pattern. The repair is `run: |`. A block scalar's body is literal text, so the colons become the
+installer's business rather than the parser's, and the command itself is unchanged BYTE FOR BYTE.
+That mattered more than style here: the flags are the substance of the pinning, and a repair that
+quoted the line would have changed the tokens the project's own checker reads.
+
+WHAT THIS SAYS ABOUT THE GATE THAT PASSED IT. `scripts/verify_pip_pins.py` read all three lines
+correctly and reported them hash-pinned - it still does after the repair, three lines seen, byte for
+byte the same text. It was not fooled and it did not lie. But it reads the workflow with the
+hand-written scanner D-30 describes in its own words as "a hand-written approximation of a shell
+lexer inside a hand-written approximation of a YAML reader", and that scanner accepted a document
+the real parser rejects. A checker more permissive than the machine it stands in for will certify
+files that machine cannot run. Nothing in this repository loads a workflow with a YAML parser.
+
+That gap is NOT closed here, and the omission is deliberate rather than overlooked. Closing it means
+either a new dependency added to a hash-pinned set - which D-30 says moves only by a deliberate edit,
+and that edit is a decision, not a repair - or a second hand-written rule bolted onto the same
+scanner whose permissiveness is the finding. Both are choices for the judge. What this task owed was
+`main` back to green over damage its own push caused, and a written record that seven green gates
+and three green check runs agreed on a commit whose CI never started.
+
+THE RED THIS FILE PRESERVES is therefore not a test that was made to fail. It is a real one: the
+repository's full local gate suite, and the API endpoint most likely to be asked "is it green",
+both reporting success for a broken tree at the same moment.

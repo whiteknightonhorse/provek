@@ -125,7 +125,15 @@ jobs:
       #
       # WHEN THIS GOES RED IT IS WORKING, NOT FLAKY. The policy for moving these sets is D-30, and
       # the short of it is that a set changes by a deliberate edit and never by CI upgrading itself.
-      - run: pip install --quiet --require-hashes --only-binary=:all: -r requirements/ci-tests.txt
+      #
+      # A BLOCK SCALAR, AND THAT IS NOT STYLE. `--only-binary=:all:` is followed by a space, and
+      # `: ` is how YAML spells "the key ended here" - written as a plain scalar this line is a
+      # mapping inside a mapping, the file does not parse, and GitHub fails the run before a single
+      # job starts. Measured on `66f61ea`: zero jobs, red in the same second it was created. `|`
+      # makes the body literal text, so the colons are the installer's business and not the
+      # parser's.
+      - run: |
+          pip install --quiet --require-hashes --only-binary=:all: -r requirements/ci-tests.txt
 
       - name: build the site
         # Must run BEFORE the suite: a gate that reads an absent artefact reports
@@ -164,7 +172,9 @@ jobs:
       # Hash-pinned, for the reason written out once in the `tests` job above. A SEPARATE file from
       # that job's: this one runs the dist-dependent assertions and needs no coverage plugin, and
       # sharing one file to save a file would install the plugin here on no job's behalf.
-      - run: pip install --quiet --require-hashes --only-binary=:all: -r requirements/ci-shipped.txt
+      # Block scalar for the `: ` reason written out at the `tests` job above.
+      - run: |
+          pip install --quiet --require-hashes --only-binary=:all: -r requirements/ci-shipped.txt
 
       - name: build the site
         working-directory: web
@@ -189,7 +199,9 @@ jobs:
       # errors, so a mypy that got BETTER could redden `main` on an afternoon nobody touched this
       # tree. Pinned, that can only happen when somebody moves the set on purpose - which is the
       # whole of D-30, and the case that makes the policy worth writing down rather than assuming.
-      - run: pip install --quiet --require-hashes --only-binary=:all: -r requirements/ci-lint.txt
+      # Block scalar for the `: ` reason written out at the `tests` job above.
+      - run: |
+          pip install --quiet --require-hashes --only-binary=:all: -r requirements/ci-lint.txt
 
       - name: ruff
         run: ruff check src tests scripts
