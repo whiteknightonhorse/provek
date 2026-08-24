@@ -1,0 +1,145 @@
+T-G2 — TWO STASHES OUTLIVED THEIR WORK, AND ONE OF THEM WAS A TRAP
+==================================================================
+Recorded 2026-08-24. Judicial ruling: delete both, with insurance against irreversibility.
+This file is that insurance's index, and the record of what was measured before the drop.
+
+WHAT WAS DELETED, PINNED BY SHA RATHER THAN BY INDEX
+----------------------------------------------------
+  stash commit 4ee36b20e70ee3759fd94965e857c415522b6204
+    label   "On main: T-A2-5 parked work, moved aside by T-C5 so the 05:22 cron slot judges a
+             clean tree"
+    base    d6379f1cfd8a3e77f763d2688c3f37395993d71d
+    index   f1b1c38e22d2fe3f9e0452bcb1710d26e6a0d991
+    patch   T-G2-stash-a2-5-parked-work.patch             (base -> worktree; == stash apply)
+            T-G2-stash-a2-5-parked-work.staged-only.patch (base -> index; the staged half)
+
+  stash commit 891b1263ada87c53d417d20fe08eba68783ec202
+    label   "WIP on main: 0b7b3d9 Fable's pre-launch cross-check: the fabricated fields, and the
+             story never told"
+    base    0b7b3d9825759942e0fe028254e42de4c03cf9fa
+    index   22a50afe7d01592d465fd3fab6a614e3dc591f26  (tree identical to base: nothing was staged)
+    untrk   b0c045cde9e791b1db8d58564ab9ed0b43a10f9b  (inventory in the companion file)
+    patch   T-G2-stash-wip-0b7b3d9.patch                  (base -> worktree; tracked files only)
+
+THE PATCHES ARE PROVEN, NOT ASSERTED
+------------------------------------
+A saved patch that cannot be replayed is not insurance, and "I saved it" is exactly the class of
+claim this project exists to catch. Each patch was applied to its recorded base in a scratch index
+and the resulting tree hash compared to the stash's own tree:
+
+  T-G2-stash-a2-5-parked-work.patch            -> 3fb66b65b6aba951ad96d43f34b204fe5c73b333  MATCH
+  T-G2-stash-a2-5-parked-work.staged-only.patch -> 961d53879da5cca69cb079d84e03f0add069fb2d  MATCH
+  T-G2-stash-wip-0b7b3d9.patch                 -> b8b6dd70d952a4962e285aa2c4bde500cef1bc70  MATCH
+
+The first and third hashes are `git rev-parse <stash>^{tree}` for the two dropped stashes. The
+recovery command is therefore exact:
+  git read-tree <base> && git apply --cached <patch> && git write-tree
+
+Both stashes carried a staged/unstaged split. `git stash show -p` shows only the combined diff, so
+a single patch would have silently flattened the split and lost which three files were staged. For
+4ee36b20 the staged half was exactly evidence/RED-019-*.txt, evidence/RED-019-generator.py and
+tests/test_apply_names_the_probe_cost.py; the other seven files were unstaged. Both halves are
+saved, which is why there are three patches for two stashes.
+
+THE TRAP, MEASURED
+------------------
+4ee36b20 is the trap named in the ruling. Its content reached the remote in 005a865 in CORRECTED
+form; the stash holds the pre-correction text. The refuted quantity is a round counter, and it is
+readable as a one-line difference:
+
+  stash 4ee36b20, evidence/RED-019-...txt line 9:
+    "# two rounds of refutation, each round against the repairs made for the one before it, and every"
+
+  main (HEAD a369de3), same file, lines 9-10:
+    "# successive rounds of refutation, each round against the repairs made for the one before it. The"
+    "# ROUND headings below are the only count of those rounds: a number for them stood in this sentence"
+
+The fixed number was deleted on purpose: the same file goes on to record ROUND SEVEN. "Two" was a
+statement stronger than the artefact underneath it, in a file whose subject is statements stronger
+than their artefact. Applying this stash over HEAD would reinstate the refuted count, and it had
+already produced one false task formulation once. That is why it was carried as a trap and not
+merely as stale work.
+
+All three staged files are present on main. Nothing in 4ee36b20 is unreached.
+
+891b1263: DID IT CONTAIN ANYTHING THAT NEVER REACHED main?
+----------------------------------------------------------
+ANSWER: NO. It contained nothing that failed to reach main. Every hunk was checked individually
+against HEAD a369de3 rather than inferred from the label or the age of the base commit.
+
+  DECISIONS.md              D-15 landed; present on main at DECISIONS.md:227.
+  docs/COHORT_EXCLUSIONS.md landed; file identical to HEAD.
+  scripts/measure_qm2.py    landed; identical to HEAD (hardcoded path -> Path(__file__)).
+  src/pipeline.py           landed; identical to HEAD.
+  web/src/pages/Landing.tsx landed; identical to HEAD.
+  web/src/pages/Registry.tsx landed; identical to HEAD.
+  scripts/self_apply.py     deletion landed; the file does not exist on HEAD.
+  enforced_by.yaml          landed; LAW-SELF-APPLICATION gate reads scripts/cohort.py on HEAD.
+  requirements/ABI_MAP.yaml landed; the self_apply.py row is gone and cohort.py carries
+                            [ABI-18-3, ABI-31-3, ABI-31-4] on HEAD, so ABI-31-3 is still bound
+                            and no module is left unbound by the deletion.
+  web/index.html            landed; the pathname/popstate/pushState GA block is on HEAD verbatim.
+  web/functions/api/apply.js landed and was extended afterwards: the `delivered: null` pre-write
+                            and the write-back are on HEAD, now beside a sentinel and a sweep.
+  web/src/pages/Apply.tsx   landed, then superseded: the active-mandate removal reached main, and
+                            D-23 later returned the option in asking-rather-than-granting form.
+                            The GA disclosure paragraph is on HEAD at Apply.tsx:344.
+  web/dist-ssr/entry-server.js  build output; web/dist-ssr/ is gitignored on HEAD. Regenerated,
+                            never a source of record.
+
+  untracked tree b0c045c    COHORT_EXCLUSIONS.md is the PRE-edit blob 280efda at the old root path;
+                            the edited content lives on main at docs/COHORT_EXCLUSIONS.md. The
+                            untracked docs/INTAKE_OPERATIONS.md blob 4a63852 is an ancestor of the
+                            file on main, which has grown by 514 lines; its 19 absent lines were
+                            superseded, not dropped — the weekly KV sweep it described is on main
+                            as a daily sweep that additionally distinguishes "the sweep did not
+                            run" from "the sweep found nothing".
+                            The .refs/* files never reached main and were never meant to: they are
+                            the operator's working documents, which rule 7 keeps off the GitHub
+                            surface. Their absence is the design, not a loss.
+
+So the answer required by the acceptance criterion is recorded plainly: 891b1263 DID NOT CONTAIN
+anything that had not reached main.
+
+WHAT THIS TASK FOUND THAT THE RULING DID NOT KNOW
+-------------------------------------------------
+1. THE INDICES HAD DRIFTED, AND THE RULING IS WRITTEN IN INDICES.
+   The ruling names stash@{0} (T-A2-5) and stash@{1} (WIP 0b7b3d9). By the time it was executed a
+   THIRD stash had been pushed on top — "T-H4 parked by T-C6", stash commit e64678f337de..., landed
+   05:09 on 2026-08-24 — and the stack had become:
+       stash@{0}  e64678f  T-H4 parked work        <- NOT in the ruling
+       stash@{1}  4ee36b2  T-A2-5 parked work      <- ruling's stash@{0}
+       stash@{2}  891b126  WIP 0b7b3d9             <- ruling's stash@{1}
+   `git stash drop stash@{0}` twice, which is what the ruling says literally, would have destroyed
+   T-H4's parked work and left the trap in place — the exact inversion of the ruling's intent.
+   A stash reference is a POSITION IN A STACK, not a name for a piece of work, and a ruling that
+   pins work by index has a shelf life of one push. Both drops here were done by verifying
+   index -> SHA immediately before each drop, and the SHAs are recorded above.
+
+2. `git stash list` IS NOT EMPTY, AND EMPTYING IT WOULD HAVE BEEN THE DEFECT.
+   The acceptance criterion "git stash list is empty" was written when both stashes were all the
+   stashes. e64678f is live parked work belonging to T-H4/T-C6: docs/INTAKE_OPERATIONS.md rewritten
+   by a run that died on API 529 and never committed. It has not reached main. It is not this
+   task's to delete, and satisfying the criterion literally would have thrown away in-flight work
+   to make a list look tidy. The criterion is reported unmet, with the reason, rather than met by
+   damage. e64678f is intact and untouched.
+
+3. evidence/ IS EXEMPT FROM THE LANGUAGE RATCHET, WHICH MAKES "SAVE THE PATCH VERBATIM" SHARP.
+   891b1263 carries an untracked tree whose largest members are the operator's Russian working
+   documents and a 146 KB private specification. scripts/ratchet_language.py exempts evidence/ by
+   name ("archived evidence: historical run output is never rewritten"), so a verbatim dump of
+   that tree into evidence/ would have carried Russian operator documents onto the English-only
+   public surface PAST the only gate that inspects for them, permanently, pinned by head_sha.
+   The tracked half is saved as a replayable patch; the untracked half is saved as an inventory of
+   path, blob SHA and byte size. The blob SHA is the verbatim identity of each file, so the record
+   is exact and verifiable without reproducing content that does not belong in this repository.
+   Paths are recorded in git's own octal-escaped form, which is pure ASCII.
+
+WHY THE STASHES ARE GONE RATHER THAN KEPT
+-----------------------------------------
+A stash is the one place in this repository where work is invisible to every gate. It is not
+covered by the ratchets, it is not in the history the passports pin, and `git stash list` is read
+by nobody — which is how 4ee36b20 sat carrying a refuted number for long enough to mislead a task
+formulation. The patches in evidence/ are the opposite: tracked, pushed, judged by the same gates
+as everything else, and readable by the next agent WITHOUT the one operation that made the stash
+dangerous — being applied over HEAD by accident.

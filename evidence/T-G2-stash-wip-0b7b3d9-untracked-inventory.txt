@@ -1,0 +1,51 @@
+T-G2 — THE UNTRACKED HALF OF STASH 891b1263, AS AN INVENTORY AND NOT AS CONTENT
+==============================================================================
+Recorded 2026-08-24, beside T-G2-two-stashes-outlived-their-work.txt.
+
+Stash commit 891b1263ada87c53d417d20fe08eba68783ec202 had THREE parents. The third,
+b0c045cde9e791b1db8d58564ab9ed0b43a10f9b, is the tree of files that were untracked when
+`git stash -u` ran. `git stash show -p` does not show that tree, so a patch taken the
+obvious way would have dropped these nine files without saying so.
+
+WHY AN INVENTORY AND NOT THE BYTES. Four of these files are the operator's working documents,
+three of them Russian-titled, one a 146 KB private specification. Rule 7 keeps that material off
+the GitHub surface, and scripts/ratchet_language.py — the gate that would otherwise catch it —
+exempts evidence/ by name. Dumping the tree here would have published them past the only
+instrument watching, permanently, in a repository whose passports pin head_sha.
+
+The blob SHA IS the verbatim identity of each file: `git cat-file -p <sha>` returns the exact
+bytes for as long as the object survives, and the size below is the byte count. That is a
+measurement of what was there, not a summary of it. Paths are in git's octal-escaped form,
+which is pure ASCII.
+
+  mode   type  blob sha                                  bytes  path
+  100644 blob 28c126a14116a3d7dd953ecc71be2fe21ac36ae4    6523	.refs/AUDIT_BROWSER.md
+  100644 blob b104a919820ec0287233eccb2664db54c6e6758d   21376	.refs/PLAN_Implementation_v1.md
+  100644 blob b14d59900042b23ba9ba3f723d4668c7e748b8ec  146522	.refs/SPEC_AI_Business_Incubator_v1.md
+  100644 blob c18b48e5522ff50cd5d00c2f4de6e493a154cfb8   45267	.refs/new-project-setup-prompt.md
+  100644 blob 0d3449f91f7ce0b5ceb0c5e1ae192096f3f8cfbe   15966	".refs/\320\224\320\270\320\267\320\260\320\271\320\275 \320\261\320\265\320\267 AI-slop UNIVERSALDESIGNPROMPT.md"
+  100644 blob b6b21db3ce74c93f47fc7fc67ef949bb83aefab5    9482	".refs/\320\230\321\201\320\277\320\276\320\273\321\214\320\267\320\276\320\262\320\260\321\202\321\214 \320\260\321\200\321\205\320\270\321\202\320\265\320\272\321\202\321\203\321\200\321\203 Matt Pocock Skills.txt"
+  100644 blob 58bdda95a15edfa5cc252a649656d0746724ae45   24233	".refs/\320\244\320\273\320\276\321\202 AI \320\260\320\263\320\265\320\275\321\202\320\276\320\262.MD"
+  100644 blob 280efdae7d241cd8e3d2361d55562b211e7ca137    3631	COHORT_EXCLUSIONS.md
+  100644 blob 4a6385226ee08f201d8bebbe1fc3c47dcd82c297    2813	docs/INTAKE_OPERATIONS.md
+
+WHAT REACHED main, AND WHAT NEVER WAS MEANT TO
+----------------------------------------------
+  COHORT_EXCLUSIONS.md (280efda)       A stale copy at the OLD root path. This blob is the
+                                       pre-edit side of the same file's tracked hunk
+                                       (280efda..76c44a2); the edited content is on main at
+                                       docs/COHORT_EXCLUSIONS.md. Nothing unreached.
+  docs/INTAKE_OPERATIONS.md (4a63852)  An ancestor of the file on main, which is 514 lines longer.
+                                       Its 19 absent lines were superseded, not lost: the weekly
+                                       KV sweep became a daily one that also distinguishes "this
+                                       sweep did not run" from "this sweep found nothing".
+  .refs/* (seven files)                Never reached main and never should. Operator working
+                                       documents live on the laptop by rule 7. Their absence from
+                                       the repository is the design, and recording it as an
+                                       absence rather than as a gap is the point of this file.
+
+NOT A RECOVERY PATH FOR .refs/. These objects are unreachable now that the stash is dropped and
+will be collected by `git gc`. That is the intended outcome for material that does not belong in
+this repository; the operator holds these documents outside it. What is preserved here is the
+FACT that the stash carried them, which is what a later reader needs in order to know that the
+patch beside this file is the tracked half and not the whole.
