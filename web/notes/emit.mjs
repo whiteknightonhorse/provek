@@ -2,18 +2,33 @@
  * Method notes: deterministic emit. NO MODEL IS CALLED HERE, and that is the design.
  *
  * WHY. A note's prose is captured once, by `~/orchestra/notes_gen.py`, and committed under `src/`.
- * That directory is EMPTY today and `loadNotes()` therefore returns nothing, which is a real state
- * and not a failure: no capture has yet survived the generator's own `measure()` (D-18). A build
+ * `loadNotes()` returns whatever is in that directory, and an EMPTY one is a real state rather than
+ * a failure: the corpus is capped at `NOTE_CEILING` (D-18) and is under no obligation to be full.
+ * No count is written here on purpose. This paragraph carried one - "that directory is EMPTY today
+ * and `loadNotes()` therefore returns nothing" - which was true when it was written on 2026-08-20
+ * and stopped being true at `0a874e4`, when the first capture landed a source. A build
  * that called a model would depend on a network and on a token this host happens to hold,
  * would not be reproducible by a third party, and would make `dateModified` a function of when
  * somebody last rebuilt rather than of whether anything changed. So generation is a capture - the
  * same shape as the keyword base (D-17) - and this file only renders what is already in the tree.
  *
  * WHAT THIS FILE REFUSES. It reads the note's declared keys, addresses and figures and stops the
- * build when one of them does not hold: a key the base never returned, an address that resolves to
- * nothing, a body whose hash does not match the manifest. The refusals are duplicated as tests
- * under `tests/test_notes*.py`, which judge the EMITTED site rather than this code - a gate that
- * only lives in the generator is a gate the generator can be edited past.
+ * build when one of them does not hold: a key the base never returned, a declared demand state the
+ * base contradicts, an address that resolves to nothing, a slug the manifest does not pin.
+ *
+ * WHAT IT DOES NOT REFUSE, STATED BECAUSE THIS SENTENCE USED TO CLAIM OTHERWISE. It does NOT
+ * compare the body against `body_sha256`. That comparison lives in `tests/test_notes_freshness.py`
+ * and only there. The line above promised it for four days, and the promise is load-bearing in the
+ * wrong direction: `~/orchestra/notes_gen.py` publishes a note's manifest line BEFORE its prose
+ * precisely because `loadNotes()` tolerates a pin whose note has not landed yet, and a future
+ * repair that made this file honour its own old comment would turn that ordering into a build that
+ * fails on the instant a capture was interrupted (T-C7, `evidence/RED-024-*`). A comment that
+ * over-states a gate is not harmless documentation drift; it is a claim stronger than the artefact,
+ * which is the defect this project exists to find. Found by Fable.
+ *
+ * The refusals are duplicated as tests under `tests/test_notes*.py`, which judge the EMITTED site
+ * rather than this code - a gate that only lives in the generator is a gate the generator can be
+ * edited past.
  *
  * FIGURES ARE COMPUTED FROM THE ARTEFACTS, not checked against them. A figure drawn by hand and
  * verified by a test is a figure that happened to agree today; a figure read out of

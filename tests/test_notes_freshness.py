@@ -18,7 +18,23 @@ import pytest
 
 from .notes_support import DIST, emitted, ld_blocks, manifest, sources
 
-pytestmark = pytest.mark.skipif(not sources(), reason="no method notes captured in this checkout")
+# THE SKIP CONDITION READS BOTH HALVES OF THE PAIR, AND IT DID NOT UNTIL T-C7.
+#
+# "No notes captured" was taken to mean an empty source directory, so the whole module - including
+# `test_the_manifest_holds_nothing_that_is_not_a_note`, the only gate that refuses a pin with no
+# note behind it - stood down whenever `web/notes/src/` was empty. That is precisely the tree in
+# which that defect appears: `notes_gen.py` publishes the manifest line first and the prose second,
+# so between those two renames the first note of an empty tree is a pin with nothing under it, and
+# the gate against it was disarmed by the same emptiness that produced it. Measured, not reasoned:
+# `evidence/RED-024-...txt`, run 2, "kill after mutation 3" - the gate reported SKIPPED over a
+# manifest pinning a note that was not there.
+#
+# A module that stands down is `check_did_not_run`, never a pass, and the condition for standing
+# down has to be that there is nothing to judge on EITHER side. Found by Fable, refuting T-C7's
+# claim that the residual window was a single state.
+pytestmark = pytest.mark.skipif(
+    not sources() and not manifest(),
+    reason="no method notes captured and no manifest entries: neither half of the pair exists")
 
 
 def test_every_note_is_pinned_by_the_hash_of_the_text_that_was_captured():

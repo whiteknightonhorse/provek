@@ -1,0 +1,249 @@
+RED-024 - a note source outlived its manifest line
+==================================================================================================
+
+SUBJECT: ~/orchestra/notes_gen.py       (outside the repository, by design - D-17)
+         web/notes/emit.mjs             loadNotes()
+         tests/test_notes_freshness.py
+
+taken 2026-08-24 during T-C7, on this host, python 3.10.12, node v20.20.2
+
+THE DEFECT. A method note is TWO artefacts that pin each other: the prose at
+web/notes/src/<slug>.md and one line of web/notes/manifest.json. The generator wrote the prose
+inside build() and the manifest once, at the end of main(), after every topic had been drafted.
+Those are not two adjacent statements - between them sit all the model calls of every remaining
+note, fourteen minutes on the run of 2026-08-20 14:21. A process that dies anywhere in that span
+leaves a source no manifest line covers, and loadNotes() throws on exactly that pair. The build
+then fails on the MOMENT THE PROCESS DIED rather than on anything about the note.
+
+RUN 1 IS AGAINST THE PRE-REPAIR GENERATOR, NOT A DESCRIPTION OF IT. The bytes come from
+~/orchestra's git history at 765eb82, replayed with --generator, so this artefact could be re-taken
+after the repair had landed instead of becoming a paragraph asserting what the old code used to do.
+RUN 2, below it, is the same tool over the repaired generator.
+
+WHAT IS SIMULATED, AND HOW. A two-topic capture is replayed from prose this repository already
+holds - no model is called, but measure(), measure_links(), check_addresses() and the whole
+assembly path run for real. Every mutation under web/notes/ is recorded, and the tree each one
+leaves is judged by both readers of the pair. Each judged tree is, byte for byte, what a kill at
+that instant leaves. A real SIGKILL then confirms one of them, and a third phase forces the capture
+to measure red to check that a REFUSED capture strands nothing either.
+
+TWO TOPICS AND NOT ONE, BECAUSE THE ONE-NOTE RUN UNDERSTATES THIS. With a single topic the window
+is the tail of one build(); with two it is visibly the whole of the second note's drafting, and the
+first note's source sits unpinned across all of it.
+
+THE GATE COLUMN NAMES THREE STATES, NOT TWO, AND THE FIRST DRAFT OF THIS TOOL NAMED TWO. It
+reported pytest's summary line and treated anything without the word "failed" as clean - so a
+module that had DISARMED ITSELF and judged nothing was counted as a gate that looked and found
+nothing wrong. That is a refusal returned as a zero, inside the artefact whose subject is refusals
+returned as zeroes. Fable found it. Outcomes are now read per test: passed is a gate that ran and
+held, failed is a gate that ran and refused, and "did not run" is check_did_not_run and is neither.
+The same correction applies to the manifest column: a torn manifest reads UNREADABLE, never as a
+manifest pinning nothing.
+
+COMMAND: python3 RED-024-generator.py
+GENERATOR UNDER TEST: /tmp/pv-tc7-before-notes_gen.py  sha256 219c38db5b7498a6
+REPLAYED FROM: web/notes/src/not-measured-is-not-zero.md, captured prose, no model called
+TOPICS IN THE RUN: not-measured-is-not-zero, kill-window-second-note
+
+EVERY MUTATION UNDER web/notes/, IN ONE NUMBERING
+  a kill can land after any of these, and inside any that is not atomic.
+  SEEN is a path a reader enumerates: web/notes/src/*.md, or the manifest.
+
+   1. SEEN   TORN-ABLE  Path.write_text  web/notes/src/not-measured-is-not-zero.md
+   2. SEEN   TORN-ABLE  Path.write_text  web/notes/src/kill-window-second-note.md
+   3. SEEN   TORN-ABLE  Path.write_text  web/notes/manifest.json
+
+  3 mutations, 3 of them on a path a reader enumerates,
+  3 of those non-atomic and therefore able to leave a torn file
+
+WHAT EACH KILL POINT LEAVES, JUDGED BY THE TWO READERS OF THE PAIR
+
+  kill after mutation 1 - Path.write_text web/notes/src/not-measured-is-not-zero.md
+      sources on disk : not-measured-is-not-zero.md
+      manifest pins   : (nothing)
+      stranded files  : (none)
+      loadNotes()     : THROW notes: not-measured-is-not-zero is not in the manifest
+      freshness gate  : 2 passed, 1 failed, 1 did not run  |  test_the_manifest_holds_nothing_that_is_not_a_note: PASSED
+
+  kill INSIDE mutation 1 - web/notes/src/not-measured-is-not-zero.md half written
+      loadNotes()     : THROW notes: not-measured-is-not-zero is not in the manifest
+      freshness gate  : 2 passed, 1 failed, 1 did not run  |  test_the_manifest_holds_nothing_that_is_not_a_note: PASSED
+
+  kill after mutation 2 - Path.write_text web/notes/src/kill-window-second-note.md
+      sources on disk : kill-window-second-note.md, not-measured-is-not-zero.md
+      manifest pins   : (nothing)
+      stranded files  : (none)
+      loadNotes()     : THROW notes: kill-window-second-note is not in the manifest
+      freshness gate  : 2 passed, 1 failed, 1 did not run  |  test_the_manifest_holds_nothing_that_is_not_a_note: PASSED
+
+  kill INSIDE mutation 2 - web/notes/src/kill-window-second-note.md half written
+      loadNotes()     : THROW notes: kill-window-second-note is not in the manifest
+      freshness gate  : 2 passed, 1 failed, 1 did not run  |  test_the_manifest_holds_nothing_that_is_not_a_note: PASSED
+
+  kill after mutation 3 - Path.write_text web/notes/manifest.json
+      sources on disk : kill-window-second-note.md, not-measured-is-not-zero.md
+      manifest pins   : kill-window-second-note, not-measured-is-not-zero
+      stranded files  : (none)
+      loadNotes()     : OK 2
+      freshness gate  : 3 passed, 0 failed, 1 did not run  |  test_the_manifest_holds_nothing_that_is_not_a_note: PASSED
+
+  kill INSIDE mutation 3 - web/notes/manifest.json half written
+      loadNotes()     : THROW Expected ',' or '}' after property value in JSON at position 213
+      freshness gate  : 0 passed, 3 failed, 1 did not run  |  test_the_manifest_holds_nothing_that_is_not_a_note: FAILED
+
+PHASE TWO - A REAL SIGKILL, NOT A REPLAY OF ONE
+  the capture was re-run in a child killed by SIGKILL after mutation 1
+      sources on disk : not-measured-is-not-zero.md
+      stranded files  : (none)
+      loadNotes()     : THROW notes: not-measured-is-not-zero is not in the manifest
+      freshness gate  : 2 passed, 1 failed, 1 did not run  |  test_the_manifest_holds_nothing_that_is_not_a_note: PASSED
+
+PHASE THREE - A CAPTURE THAT MEASURES RED LEAVES NOTHING BEHIND
+  both topics forced to an unrepairable miss, so build() raises Refusal before it stages
+      sources on disk : (no source)
+      manifest pins   : (nothing)
+      stranded files  : (none)
+
+  GREEN: a refused capture publishes nothing and stages nothing.
+
+VERDICT
+
+  RED. 5 kill point(s) leave a tree on which loadNotes() throws,
+  which is a build that fails on the moment the process died:
+    - after mutation 1 (web/notes/src/not-measured-is-not-zero.md): notes: not-measured-is-not-zero is not in the manifest
+    - inside mutation 1 (web/notes/src/not-measured-is-not-zero.md, torn): notes: not-measured-is-not-zero is not in the manifest
+    - after mutation 2 (web/notes/src/kill-window-second-note.md): notes: kill-window-second-note is not in the manifest
+    - inside mutation 2 (web/notes/src/kill-window-second-note.md, torn): notes: kill-window-second-note is not in the manifest
+    - inside mutation 3 (web/notes/manifest.json, torn): Expected ',' or '}' after property value in JSON at position 213
+
+  RESIDUAL, REFUSED: 5 kill point(s) leave a tree the freshness gate
+  refuses even though the build loads it:
+    - after mutation 1 (web/notes/src/not-measured-is-not-zero.md): 2 passed, 1 failed, 1 did not run  |  test_the_manifest_holds_nothing_that_is_not_a_note: PASSED
+    - inside mutation 1 (web/notes/src/not-measured-is-not-zero.md, torn): 2 passed, 1 failed, 1 did not run  |  test_the_manifest_holds_nothing_that_is_not_a_note: PASSED
+    - after mutation 2 (web/notes/src/kill-window-second-note.md): 2 passed, 1 failed, 1 did not run  |  test_the_manifest_holds_nothing_that_is_not_a_note: PASSED
+    - inside mutation 2 (web/notes/src/kill-window-second-note.md, torn): 2 passed, 1 failed, 1 did not run  |  test_the_manifest_holds_nothing_that_is_not_a_note: PASSED
+    - inside mutation 3 (web/notes/manifest.json, torn): 0 passed, 3 failed, 1 did not run  |  test_the_manifest_holds_nothing_that_is_not_a_note: FAILED
+
+  Every mismatched pair a kill can leave was actually judged by the pair gate.
+
+
+==================================================================================================
+
+RUN 2 - THE SAME KILL POINTS, AFTER THE T-C7 REPAIR
+==================================================================================================
+
+WHAT CHANGED IN THE GENERATOR. build() no longer writes web/notes/src/<slug>.md. It stages the
+prose at .<slug>.md.staged - a name in neither reader's filter, since loadNotes() takes
+readdirSync(SRC).filter(f => f.endsWith(".md")) and notes_support.sources() takes SRC.glob("*.md").
+publish() then makes the pair visible per note, inside the loop, in two atomic renames: THE
+MANIFEST LINE FIRST, the prose second. Both files are written to a temporary path and moved with
+os.replace, so no reader-visible path is ever mutated by a primitive that can be interrupted
+half-way - which also removed the torn-JSON state run 1 found at mutation 3, a third broken tree
+the task had not named.
+
+WHY THAT ORDER. Two files cannot be published in one filesystem operation, so one is visible first
+and the only question is which intermediate state a kill can leave. Prose first leaves a source
+with no line to pin it, and loadNotes() throws on that - the defect above. The line first leaves an
+entry for a note that is not there yet, which loadNotes() never looks at: it enumerates the source
+directory and reads the manifest by slug, so an entry nobody asks for costs nothing.
+
+WHAT CHANGED IN THE REPOSITORY, AND WHY IT MAKES THIS RUN LOOK WORSE THAN IT OTHERWISE WOULD.
+tests/test_notes_freshness.py stood its whole module down whenever web/notes/src/ was empty - which
+is exactly the tree the repaired order produces for the FIRST note, so the one gate that refuses a
+pin with no note behind it was disarmed by the same emptiness that produced the state it judges.
+The skip condition now requires both halves of the pair to be absent. The consequence is honest
+rather than flattering: this run reports TWO refused kill points where an earlier draft of the
+report claimed one, because the second had never been judged at all. Fable found that too.
+
+THE RESIDUAL IS PRINTED RATHER THAN LEFT OUT. The freshness gate pins the pair in BOTH directions,
+so the intermediate state that is green for the build is red for that gate. No ordering satisfies a
+gate that refuses both directions of a mismatch; the only thing that would is making the pair one
+file, which is a change to a committed artefact and to LAW-NOTES-FRESHNESS and therefore a judge's
+call. What the repair achieves is measurable and is the whole of what it claims: the window fell
+from every remaining model call of the run to the gap between two adjacent os.replace calls with no
+work between them, and the build is green at every instant of it.
+
+COMMAND: python3 RED-024-generator.py
+GENERATOR UNDER TEST: /home/incubator/orchestra/notes_gen.py  sha256 e6020320cd1a68c6
+REPLAYED FROM: web/notes/src/not-measured-is-not-zero.md, captured prose, no model called
+TOPICS IN THE RUN: not-measured-is-not-zero, kill-window-second-note
+
+EVERY MUTATION UNDER web/notes/, IN ONE NUMBERING
+  a kill can land after any of these, and inside any that is not atomic.
+  SEEN is a path a reader enumerates: web/notes/src/*.md, or the manifest.
+
+   1. hidden TORN-ABLE  Path.write_text  web/notes/src/.not-measured-is-not-zero.md.staged
+   2. hidden TORN-ABLE  Path.write_text  web/notes/.manifest.json.tmp
+   3. SEEN   ATOMIC     os.replace       web/notes/manifest.json
+   4. SEEN   ATOMIC     os.replace       web/notes/src/not-measured-is-not-zero.md
+   5. hidden TORN-ABLE  Path.write_text  web/notes/src/.kill-window-second-note.md.staged
+   6. hidden TORN-ABLE  Path.write_text  web/notes/.manifest.json.tmp
+   7. SEEN   ATOMIC     os.replace       web/notes/manifest.json
+   8. SEEN   ATOMIC     os.replace       web/notes/src/kill-window-second-note.md
+
+  8 mutations, 4 of them on a path a reader enumerates,
+  0 of those non-atomic and therefore able to leave a torn file
+
+WHAT EACH KILL POINT LEAVES, JUDGED BY THE TWO READERS OF THE PAIR
+
+  kill after mutation 1 - Path.write_text web/notes/src/.not-measured-is-not-zero.md.staged
+      sources on disk : (no source)
+      manifest pins   : (nothing)
+      stranded files  : src/.not-measured-is-not-zero.md.staged
+      loadNotes()     : OK 0
+      freshness gate  : 0 passed, 0 failed, 4 did not run  |  test_the_manifest_holds_nothing_that_is_not_a_note: SKIPPED
+
+  kill after mutation 3 - os.replace web/notes/manifest.json
+      sources on disk : (no source)
+      manifest pins   : not-measured-is-not-zero
+      stranded files  : src/.not-measured-is-not-zero.md.staged
+      loadNotes()     : OK 0
+      freshness gate  : 2 passed, 1 failed, 1 did not run  |  test_the_manifest_holds_nothing_that_is_not_a_note: FAILED
+
+  kill after mutation 4 - os.replace web/notes/src/not-measured-is-not-zero.md
+      sources on disk : not-measured-is-not-zero.md
+      manifest pins   : not-measured-is-not-zero
+      stranded files  : (none)
+      loadNotes()     : OK 1
+      freshness gate  : 3 passed, 0 failed, 1 did not run  |  test_the_manifest_holds_nothing_that_is_not_a_note: PASSED
+
+  kill after mutation 7 - os.replace web/notes/manifest.json
+      sources on disk : not-measured-is-not-zero.md
+      manifest pins   : kill-window-second-note, not-measured-is-not-zero
+      stranded files  : src/.kill-window-second-note.md.staged
+      loadNotes()     : OK 1
+      freshness gate  : 2 passed, 1 failed, 1 did not run  |  test_the_manifest_holds_nothing_that_is_not_a_note: FAILED
+
+  kill after mutation 8 - os.replace web/notes/src/kill-window-second-note.md
+      sources on disk : kill-window-second-note.md, not-measured-is-not-zero.md
+      manifest pins   : kill-window-second-note, not-measured-is-not-zero
+      stranded files  : (none)
+      loadNotes()     : OK 2
+      freshness gate  : 3 passed, 0 failed, 1 did not run  |  test_the_manifest_holds_nothing_that_is_not_a_note: PASSED
+
+PHASE TWO - A REAL SIGKILL, NOT A REPLAY OF ONE
+  the capture was re-run in a child killed by SIGKILL after mutation 1
+      sources on disk : (no source)
+      stranded files  : src/.not-measured-is-not-zero.md.staged
+      loadNotes()     : OK 0
+      freshness gate  : 0 passed, 0 failed, 4 did not run  |  test_the_manifest_holds_nothing_that_is_not_a_note: SKIPPED
+
+PHASE THREE - A CAPTURE THAT MEASURES RED LEAVES NOTHING BEHIND
+  both topics forced to an unrepairable miss, so build() raises Refusal before it stages
+      sources on disk : (no source)
+      manifest pins   : (nothing)
+      stranded files  : (none)
+
+  GREEN: a refused capture publishes nothing and stages nothing.
+
+VERDICT
+
+  GREEN on the criterion T-C7 states: no kill point, and no torn write, leaves
+  a tree on which loadNotes() throws.
+
+  RESIDUAL, REFUSED: 2 kill point(s) leave a tree the freshness gate
+  refuses even though the build loads it:
+    - after mutation 3 (web/notes/manifest.json): 2 passed, 1 failed, 1 did not run  |  test_the_manifest_holds_nothing_that_is_not_a_note: FAILED
+    - after mutation 7 (web/notes/manifest.json): 2 passed, 1 failed, 1 did not run  |  test_the_manifest_holds_nothing_that_is_not_a_note: FAILED
+
+  Every mismatched pair a kill can leave was actually judged by the pair gate.
