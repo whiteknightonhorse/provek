@@ -79,11 +79,16 @@ def optional_token() -> str | None:
     they are kept under `evidence/TAINTED-SUDO-CORPUS/` rather than deleted.
 
     Fable ruled the remedy was a hand-issued scoped read-only token. Measurement found a stricter
-    answer and it is what ships: all three calls this pipeline makes are PUBLIC reads that return
-    200 with no credential, and a full cohort costs 24 of the 60 anonymous requests GitHub allows
-    per hour. So the default channel holds nothing at all - reproducible by any reader, not merely
-    by one the operator has chosen to grant. Raised to Fable as a strengthening of his ruling, not
-    a departure from it.
+    answer and it is what ships: every call this pipeline makes is a PUBLIC read that returns 200
+    with no credential - that much still holds. What does NOT still hold is the count first
+    written here: "all three calls... return 200... a full cohort costs 24 of the 60 anonymous
+    requests." Re-measured 2026-08-24 against the live API (same correction as `_api` in
+    src/collector/github.py; see evidence/RED-037-*): `whiteknightonhorse/gov-auction-report` now
+    answers 404, not 200, and a 404 short-circuits `collect_github` after the FIRST call - so the
+    three subjects in SUBJECTS above cost 3 + 3 + 1 = 7 calls per pass, not the flat 3-per-subject
+    this docstring assumed. So the default channel holds nothing at all - reproducible by any
+    reader, not merely by one the operator has chosen to grant. Raised to Fable as a strengthening
+    of his ruling, not a departure from it.
 
     A token is honoured when present, purely to widen the rate limit for a larger cohort. It never
     changes what is measured, and the passport records which channel was used so that "anyone can
