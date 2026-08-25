@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import functools
 import http.server
+import os
 import pathlib
 import subprocess
 import threading
@@ -65,7 +66,15 @@ class _Origin:
 
 
 def _run(*args: str) -> subprocess.CompletedProcess:
-    return subprocess.run(["bash", str(SCRIPT), *args], capture_output=True, text=True, timeout=60)
+    # The propagation window in `verify` is real seconds. These tests assert the VERDICT -- that a
+    # wrong label is refused -- and making each one sit through the production window turns a
+    # fast suite into one people learn to skip, which is how gates die. The window is exercised
+    # by its own test below; everywhere else it is collapsed.
+    env = dict(os.environ)
+    env.setdefault("DEPLOY_LABEL_TRIES", "2")
+    env.setdefault("DEPLOY_LABEL_SLEEP_S", "0")
+    return subprocess.run(["bash", str(SCRIPT), *args], capture_output=True, text=True,
+                          timeout=120, env=env)
 
 
 def test_the_round_trip_confirms_the_deployment_that_is_live(tmp_path):
@@ -205,3 +214,30 @@ def test_the_code_and_the_body_come_from_one_exchange():
 
     assert done.returncode == 0, done.stdout + done.stderr
     assert len(served) == 1, f"the label was fetched {len(served)} times, not once: {served}"
+
+
+def test_the_propagation_window_is_actually_used_and_its_size_is_stated(tmp_path):
+    """A wrong label is refused only after the window, and the refusal says how long it waited.
+
+    Measured 2026-08-25: `verify` read the old label, printed WRONG DEPLOYMENT IS LIVE, and the
+    edge served the new one seconds later -- the deployment had been in Production the whole time.
+    A false red costs what a false green costs: it teaches the next reader that this gate is noise.
+
+    This keeps the window honest in both directions. Remove the retry and the refusal stops naming
+    one, so this turns red. Widen it until a real mismatch is waited out forever, and the number
+    it was widened to is printed in the failure where a person will see it.
+    """
+    upload = tmp_path / "dist"
+    upload.mkdir()
+    _run("stamp", "aaaaaaa", str(upload))
+    with _Origin(upload) as origin:
+        env = dict(os.environ, DEPLOY_LABEL_TRIES="3", DEPLOY_LABEL_SLEEP_S="0")
+        r = subprocess.run(["bash", str(SCRIPT), "verify", "bbbbbbb", origin.base],
+                           capture_output=True, text=True, timeout=120, env=env)
+    assert r.returncode != 0, "a label that never matched was accepted"
+    out = r.stdout + r.stderr
+    assert "WRONG DEPLOYMENT IS LIVE" in out
+    assert "Read 3 time(s)" in out, (
+        "the refusal does not report THREE reads. It must report what it performed, not what "
+        "was configured: written the other way, disabling the retry left this green. "
+        f"edge catching up: {out[-300:]}")

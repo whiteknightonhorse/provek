@@ -89,6 +89,24 @@ case "$cmd" in
     #
     # `-w '\n%{http_code}'` puts the code on its own last line of the same response, so there is
     # one exchange, one exit status, and no window.
+    # A WINDOW FOR PROPAGATION, AND ONLY THAT. Measured 2026-08-25: this check read the old
+    # label, printed WRONG DEPLOYMENT IS LIVE, and the edge served the new one seconds later. The
+    # deployment was in Production in `wrangler pages deployment list` the whole time. A false red
+    # costs exactly what a false green costs -- it teaches the next reader that this gate is noise
+    # and to push past it -- so the read is retried for a bounded window before any verdict.
+    #
+    # The window is bounded and STATED IN THE FAILURE, so a real mismatch is still a mismatch and
+    # nobody has to guess whether it was given time. Retries happen only while the answer is a
+    # readable 200 carrying the WRONG label: an unreadable address and a non-200 stay immediately
+    # red, because those are not "not yet", they are "not measured" and "in trouble".
+    # Overridable so the suite does not pay the window on every run: the wrong-label test asserts
+    # the REFUSAL, and making it wait sixty real seconds to do so is how a suite becomes something
+    # people skip. Production leaves both unset and gets the full window.
+    PROPAGATION_TRIES="${DEPLOY_LABEL_TRIES:-10}"
+    PROPAGATION_SLEEP_S="${DEPLOY_LABEL_SLEEP_S:-6}"
+    attempt=0
+    while : ; do
+    attempt=$((attempt + 1))
     answer=$(curl -sS -m "$TIMEOUT_S" -w '\n%{http_code}' "$url" 2>/dev/null)
     rc=$?
     if [ "$rc" != "0" ]; then
@@ -115,11 +133,27 @@ case "$cmd" in
     fi
     live=$(printf '%s' "$body" | tr -d '\r\n')
     if [ "$live" != "$label" ]; then
+      if [ "$attempt" -lt "$PROPAGATION_TRIES" ]; then
+        sleep "$PROPAGATION_SLEEP_S"
+        continue
+      fi
+      # THE COUNT REPORTED IS THE ONE PERFORMED, not the one configured. Written the other way
+      # first, and its own test could not tell the two apart: disabling the retry entirely left
+      # the message still claiming three reads over sixty seconds while it had read once. An error
+      # text that overstates what it did is the defect this repository exists to name, and it had
+      # got into the sentence whose whole job is to be believed.
+      waited=$(( (attempt - 1) * PROPAGATION_SLEEP_S ))
       echo "WRONG DEPLOYMENT IS LIVE: $url says '$live', this run published '$label'."
+      echo "Read $attempt time(s) over ${waited}s, so this is not the edge catching up."
       echo "The tool reported success over an upload that did not become the live one."
       exit 1
     fi
+    if [ "$attempt" -gt 1 ]; then
+      echo "(the edge served the previous label for $(( (attempt - 1) * PROPAGATION_SLEEP_S ))s first)"
+    fi
     echo "LABEL CONFIRMED: $url says '$live', which is what this run published."
+    break
+    done
     ;;
 
   *)
