@@ -455,6 +455,13 @@ function Registry({ reg }) {
 				" UTC."
 			]
 		}),
+		/* @__PURE__ */ jsx("div", {
+			className: "mt-5",
+			children: /* @__PURE__ */ jsxs(Strip, {
+				tone: "warn",
+				children: [/* @__PURE__ */ jsx("strong", { children: "Erratum, 2026-08-25." }), " Every passport issued under profile 1.0.0 states an evidence window of 30 days. The collector read the last 50 commits by count instead, and never looked at a date. The whole registry is being re-measured against the window that was published; corrected verdicts will be re-issued together, in whichever direction each one moves, and the superseded documents will stay readable rather than disappear."]
+			})
+		}),
 		/* @__PURE__ */ jsxs("div", {
 			className: "mt-6 flex flex-wrap items-baseline justify-between gap-3",
 			children: [/* @__PURE__ */ jsxs("label", {

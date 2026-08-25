@@ -5,7 +5,7 @@
  * near-empty state is designed rather than apologised for. */
 
 import { useMemo, useState } from "react";
-import { Page } from "../components/Chrome";
+import { Page, Strip } from "../components/Chrome";
 import { AbsentMark } from "../components/Measured";
 import { effectiveStatus, slug } from "../types";
 import type { Registry as R } from "../types";
@@ -34,6 +34,27 @@ export default function Registry({ reg }: { reg: R }) {
         evidence behind it. Generated{" "}
         {reg.generated_at.slice(0, 19).replace("T", " ")} UTC.
       </p>
+
+      {/* ERRATA, AND IT IS PUBLISHED BEFORE THE CORRECTED NUMBERS EXIST. Every passport issued
+          under profile 1.0.0 declares an evidence window of 30 days; the collector actually read
+          the last 50 commits by count and never looked at a date. Those are different quantities,
+          and on an active repository the count window is the smaller one -- provek's own history
+          proved it the day this was found: fresh commits had pushed an unattributed commit from
+          the previous day past position 50, so the instrument reported a closed identity window
+          that a 30-day reading shows open.
+          Announcing the defect before the re-measured numbers are known is the only form of
+          pre-commitment still available: published afterwards, an erratum is indistinguishable
+          from a note explaining why the new numbers are the good ones. Which verdicts survive is
+          decided by the re-measure, not by this notice. */}
+      <div className="mt-5">
+        <Strip tone="warn">
+          <strong>Erratum, 2026-08-25.</strong> Every passport issued under profile 1.0.0 states an
+          evidence window of 30 days. The collector read the last 50 commits by count instead, and
+          never looked at a date. The whole registry is being re-measured against the window that
+          was published; corrected verdicts will be re-issued together, in whichever direction each
+          one moves, and the superseded documents will stay readable rather than disappear.
+        </Strip>
+      </div>
 
       {/* THE SUMMARY STRIP WAS REMOVED 2026-08-25 at the operator's instruction: it was a wall
           of prose above the table it described, and the reader came here for the table. Nothing
