@@ -20,3 +20,11 @@ web/.wrangler/
 # refuse its own tree. NOT to be removed by `git clean`, which is forbidden here anyway: unlinking
 # the lock file while a run holds it releases the guarantee without any error.
 .state/
+
+# Backups of the environment file. `.env` itself was ignored; its copies were not, so a single
+# `cp .env .env.bak` inside the tree would have staged every key in it. The neighbouring apibase
+# repository carried this exact gap and closed it as A-02; closing it here too rather than
+# trusting that nobody will ever make that copy.
+.env.bak*
+.env*.bak*
+*.bak-*

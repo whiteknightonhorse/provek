@@ -66,6 +66,15 @@ function Footer() {
 					". It does not measure reliability, decision quality, profitability, or the presence of an accountable party."
 				] }),
 				/* @__PURE__ */ jsx("p", { children: "Methodology is published in full. A verdict is reproducible by a third party from the same inputs — if it were not, this would be a brand rather than a standard." }),
+				/* @__PURE__ */ jsxs("p", { children: [
+					/* @__PURE__ */ jsx("a", {
+						href: "/method/notes/",
+						className: "underline underline-offset-2 hover:text-[var(--color-ink)]",
+						children: "Notes on the method"
+					}),
+					" ",
+					"— the method, one topic at a time."
+				] }),
 				/* @__PURE__ */ jsx("p", { children: "provek.dev" })
 			]
 		})

@@ -82,6 +82,20 @@ export function Footer() {
           Methodology is published in full. A verdict is reproducible by a third party from the same
           inputs &mdash; if it were not, this would be a brand rather than a standard.
         </p>
+        {/* The notes were live at /method/notes/ and reachable from nowhere: nothing on the site
+            linked to them, so a reader arrived only by typing the address and a crawler only by
+            the sitemap. A footer link appears on every page, which is what gives the section any
+            standing at all. The anchor text is the target page's own heading rather than "here":
+            the words in the link are what describe the destination to both readers and crawlers. */}
+        <p>
+          <a
+            href="/method/notes/"
+            className="underline underline-offset-2 hover:text-[var(--color-ink)]"
+          >
+            Notes on the method
+          </a>{" "}
+          &mdash; the method, one topic at a time.
+        </p>
         <p>provek.dev</p>
       </div>
     </footer>
