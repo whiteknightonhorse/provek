@@ -36,6 +36,35 @@ EXEMPT_PATHS = {
 }
 EXEMPT_REASON = "archived evidence: historical run output is never rewritten"
 
+# Binary formats that cannot carry prose at all. A PNG has no sentences to be English or not, so
+# checking it for Cyrillic is not a check that can fail — but "I could not read it" must never be
+# reported as "I read it and it was fine", which is what a bare `continue` on UnicodeDecodeError
+# would do for EVERY undecodable file, prose included.
+#
+# Admission is by MAGIC BYTES, never by extension. A suffix is a claim the file makes about
+# itself, and this repository's whole subject is that a claim is not evidence: a file named
+# `.png` whose bytes are not a PNG stays UNREADABLE and still refuses the push.
+BINARY_MAGIC = {
+    ".png": (b"\x89PNG\r\n\x1a\n",),
+    ".ico": (b"\x00\x00\x01\x00",),
+    ".jpg": (b"\xff\xd8\xff",),
+    ".jpeg": (b"\xff\xd8\xff",),
+    ".webp": (b"RIFF",),
+    ".woff2": (b"wOF2",),
+}
+
+
+def proven_binary(path: pathlib.Path) -> bool:
+    """True only when the file's own first bytes match the format its suffix claims."""
+    magics = BINARY_MAGIC.get(path.suffix.lower())
+    if not magics:
+        return False
+    try:
+        head = path.open("rb").read(16)
+    except OSError:
+        return False
+    return any(head.startswith(m) for m in magics)
+
 
 def tracked_files() -> list[str]:
     r = subprocess.run(["git", "ls-files"], cwd=ROOT, capture_output=True, text=True)
@@ -52,8 +81,15 @@ def check() -> list[str]:
             continue
         try:
             text = p.read_text(encoding="utf-8")
-        except (UnicodeDecodeError, OSError):
-            problems.append(f"UNREADABLE: {rel} — cannot be checked, and that is not a pass")
+        except UnicodeDecodeError:
+            if proven_binary(p):
+                continue
+            problems.append(
+                f"UNREADABLE: {rel} — not UTF-8, and its bytes do not match any binary format "
+                "this gate can prove carries no prose; cannot be checked, and that is not a pass")
+            continue
+        except OSError:
+            problems.append(f"UNREADABLE: {rel} — cannot be read at all, and that is not a pass")
             continue
         hits = [(i, ln) for i, ln in enumerate(text.splitlines(), 1) if CYRILLIC.search(ln)]
         if hits:
