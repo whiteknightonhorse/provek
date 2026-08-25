@@ -1,9 +1,9 @@
 ---
 {
   "slug": "not-measured-is-not-zero",
-  "title": "The vocabulary of absence in a measurement - Provek",
-  "h1": "Three absences, and the fourth an instrument invents",
-  "description": "States what nothing_qualified, check_did_not_run, and unreadable each mean, and the fourth absence: an instrument blind to a quantity reporting it as a finding.",
+  "title": "Four Ways a Measurement Can Be Absent - Provek",
+  "h1": "Four states of absence, and the one that hides as a finding",
+  "description": "Distinguishes nothing_qualified, check_did_not_run and unreadable, plus the state where a blind instrument's empty reading reads as a finding.",
   "keys": [],
   "addresses": [
     {
@@ -62,9 +62,9 @@
     "plan_model": "claude-sonnet-5",
     "prose_model": "claude-haiku-4-5",
     "generated_at": "2026-08-24",
-    "topics_sha256": "44957c1f90a68e7b14bd005585339d07bcd2c5ba30028263475145cd919da03b",
-    "generator_sha256": "219c38db5b7498a6f8cd93face8c8e182f114895bf0fce77395e37241e0b7a07",
-    "plan_sha256": "1820173eaaec1ae512d8fdb4687babee329b91a6197d62f3f57e76d85c4a48dc"
+    "topics_sha256": "92359f33c15c21e05fdc8ba6030b8b74f393b5eb25bc96a68e0f9f80521c3652",
+    "generator_sha256": "bbea990ba7773340efd88c806a7fca00008e597099f09397289b814ed1a5c56c",
+    "plan_sha256": "6f9a2f3990bdfc1f9fa8dcb101822586b6fbccd805bb6dad36484389e9456303"
   },
   "lifecycle": {
     "status": "current",
@@ -75,64 +75,68 @@
 }
 ---
 
-A passport renders absence in three distinct named states rather than a zero: nothing_qualified when the check ran but matched nothing, check_did_not_run when the check never ran, unreadable when the source refused to answer. Beside these sits a fourth absence that lies outside the taxonomy - an instrument that cannot see the quantity it was asked about, which returns success and empty data, indistinguishable from a true zero at the point of reading.
+An unmeasured field is not a blank. A passport must name which of three reasons left an operation unmeasured: the check did not run, it ran but nothing qualified, or the source refused to answer. A fourth exists: an instrument that cannot see the quantity, producing an indistinguishable reading. Unless the instrument's reach is disclosed alongside the finding, absence remains indistinguishable from the three.
 
-## Three states a measurement can carry instead of a number
+## Three states, not a blank
 
-The [SPEC §3.1](/method/) requirement is that each operation carries either a measurement level or, when absent, its reason. Three absence states exist: `nothing_qualified` when the check ran but found nothing, `check_did_not_run` when it never ran, and `unreadable` when the source refused to answer. These are members of the `NotMeasured` enumeration in `src/abs_profile/measured.py`.
+The passport distinguishes three states of absence: `nothing_qualified` when the check ran and found no match, `check_did_not_run` when the check never ran, and `unreadable` when the source declined to answer.
 
-A `Measurement` object enforces a strict rule: it holds either a value or an absence reason, never both and never neither. This guards against the defect that haunted seven production systems, where "no data" and "the source is dead" became indistinguishable. Decision D-03 requires that absence appear always as text and reason, never as zero or blank.
+Each measurement carries exactly one of: a value, or the reason it is absent. A `Measurement` dataclass enforces this by rejecting any instance that is both empty and doubled. One return value meaning two states of the world caused seven defects in the operator's systems, including a twelve-week outage where "no news" and "the source is dead" returned identically, hiding the failure from monitoring.
 
-The `gate_verdict` method returns PASS, FAIL, or NOT_MEASURED. Absent measurements are never treated as failures (ABI-33-4). Absence and violation are separate facts requiring separate operator responses.
+As [the method](/method/) specifies, every operation must show either a level or `not_measured` with its reason. Two of three operations on every current subject read `not_measured`. The table looks sparse, and that sparseness is the truth staying visible. An interface rendering absence as zero would reintroduce the defect: "the source is dead" mistaken for "nothing matched".
 
-## The defect this taxonomy was built to stop
+An instrument that cannot see a quantity still answers HTTP 200 with an empty list, indistinguishable from a true zero at the point of reading. A conclusion drawn from such an instrument is not evidence, and it becomes more dangerous when it happens to be correct.
 
-One twelve-week source outage went undetected because its signature-no return values-matched the signature of a system with no findings. This pattern repeated across seven instances in the operator's production systems, in each case preventing detection of the actual failure state.
+## The accountability block's separate discipline
 
-Fixing it required accepting visible consequences: Decision D-03 mandates that absence appear textually with its reason, and as a result, two of every three operations on each current subject read `not_measured` in the [registry](/registry/). The resulting tables look sparse-and that sparseness is the truth of the measurement landscape, kept visible rather than hidden under zeros.
+The accountability block requires each field to be `{value, measured, reason}` with defaults `measured: false, reason: check_did_not_run`. All passports were re-emitted under schema 2.0.0 from 2026-08-20 onward.
 
-## A fourth absence: an instrument blind to the quantity
+Under 1.0.0, the block was `T | None` and emitters built from defaults without inspecting anything. Artefacts claimed "we checked and found none" while meaning "nobody looked". The specification enabled this defect: [the method](/method/) demanded a reason for every unmeasured operation in item 3, then granted an honest `none` to the accountability block in item 5 without requiring the same apparatus. Three emitters took that licence, and every passport under 1.0.0 falsely claimed a completed check.
 
-The first three absence states describe checks that ran or did not. A fourth emerges from checking against the wrong instrument. When `/commits/{sha}/status` returned zero statuses, that was correctly read as "no deploy integration" - the reading was sound, the measurement empty.
+Fable's ruling on 2026-08-20 named the schema as primary defect and the specification as complicit. The front door — which rendered nulls inconsistently in adjacent rows — was acquitted because that inconsistency is what revealed the defect. The specification's erratum in item 5 acknowledges it granted the conclusion without apparatus.
 
-Against the same commits, `/commits/{sha}/check-runs` returns four successful runs - the legacy endpoint does not. A conclusion from an incapable instrument is not evidence, more dangerous when correct because it repeats.
+The wrapper is per-field rather than a coverage list because the distinction must survive quotation. This mirrors the logic that keeps `verified` and `self_reported` on separate branches: the structure must persist when extracted or cited, not collapse under selection. A JSON export carrying an addressee field must show whether that addressee was measured or defaulted.
 
-This extends the three siblings by a third: beside `nothing_qualified` and `unreadable` sits "the wrong source was asked". HTTP 200 with an empty list is indistinguishable from true zero. A check against the legacy endpoint looks identical to a system genuinely publishing nothing.
+LAW-NOT-MEASURED lived in the `Measurement` class, not enforced at the boundary. Exemption from the score silently became exemption from measurement discipline — fields bypassing that class never had to declare absence. Schema 2.0.0 gates at the boundary itself: `tests/test_no_bare_nulls.py` rejects any document containing a null without the reason wrapper. Now the invariant has machinery behind it.
 
-Fable discovered this while refuting a brief offering the empty measurement as proof. The armed instance: every passport publishes the `access_channel` its evidence arrived through - LAW-GRANTED-CHANNEL-ONLY, `tests/test_granted_channel_only.py`.
+## When the instrument cannot see the quantity
 
-## The same failure wearing a different mechanism
+The three named states - nothing_qualified, check_did_not_run, unreadable - occupy distinct places in the grammar of absence. A fourth sits at the boundary: an endpoint that cannot see a quantity returns HTTP 200 with an empty list, indistinguishable from zero at the point of capture. Two GitHub endpoints show the risk. The `/commits/{sha}/status` endpoint reported zero integrations for every commit; the reading was correct. The `/commits/{sha}/check-runs` endpoint returned four runs on the same commits. The legacy API cannot carry what the modern one does.
 
-A Bing probe read `https://provek.dev/BingSiteAuth.xml` with Python's default user agent and got `403` - as it did for the homepage, which a browser agent gets `200` for. Cloudflare refused the client, not the resource; it was one line from being logged as `carries_expected_code: false`.
+A conclusion drawn from an instrument that cannot see the quantity is not evidence. It is more dangerous when correct, because it will be repeated elsewhere. The wrong-source state is the fourth member in the operation-level absence grammar of [the method](/method/): beside nothing_qualified and unreadable sits the case where an endpoint was asked, answered 200 with no data, and vanished into zero.
 
-Written that same hour to honour L-10, the probe already ran a control site beside every zero-capable call. The lesson did not transfer because it arrived as "ask the right endpoint" and this failure has a different mechanism: the right endpoint, correctly asked, returning status that encodes the asker rather than the resource.
+Fable found this while refuting a brief that used an empty measurement as proof. The reading was correct - no deploy integrations existed - but the proof was invalid, because it came from an instrument blind to deploy integrations. This form of failure is most dangerous when correct: the conclusion will be trusted and the pattern will be repeated without record of its source.
 
-Before recording absence, establish that the instrument would have seen presence. [The specification](/method/) §3.1 demands this discipline. `404` is absence. `403`, `429`, `5xx` are the server declining to say; they land in `not_measured`, never in the same field as a measured `false`. The probe honoured this rule for one blindness - asking the wrong endpoint. Here, with the right endpoint and right call, the mechanism differed, and without code enforcing it, the lesson did not persist.
+No general code gate exists for this failure, because a checker cannot know an endpoint is blind. One instance is armed as a model: every passport in [the registry](/registry/) carries the `access_channel` field, declaring which instrument supplied the evidence. This allows verdicts to carry both reading and instrument, governed by LAW-GRANTED-CHANNEL-ONLY. The test `tests/test_granted_channel_only.py` rejects any passport missing or mismatching the channel.
 
-## Absence as measured in this project's own keyword capture
+## Where this showed up in the keyword base
 
-The `bing_serp_related` source answered with HTTP 200, carrying ten organic results including python.org, yet yielded zero related-question items across responses of 117 kB and 124 kB. Whether an empty result reflects true absence or blindness in the client cannot be determined from the signal alone.
+The bing_serp_related source is the only candidate for "people also ask" items. It answered HTTP 200, carried organic results including python.org, but yielded zero related-question items - recorded as `unreadable` in [the method](/method/), contributing no keys and no zeros. An instrument that cannot be shown to see a quantity cannot yield a reading about the measured property.
 
-Three control queries supplied the ground truth: `weather` and `how to boil an egg`, chosen as the least plausible things on the web to have no related searches, both returned zero. The third control's full response page also yielded nothing. An empty result from an instrument that cannot be shown able to see the quantity is a statement about the client, not about Bing.
+Three control queries were run before trusting this zero: "weather" and "how to boil an egg" were chosen as implausible to have no related searches. All three returned zero despite 117 kB and 124 kB response bodies. L-10 requires measuring a source's ability to see non-zero before trusting its zero as a reading.
 
-This source is recorded `unreadable` and contributes no keys to the [registry](/registry/) and no zeros to any field; a test refuses to let a blind source do either, and refuses, separately, to let any source with a zero-returning control be `ok`.
+**Erratum, 2026-08-24 — T-B10, D-34:** all three controls returned zero, so the ability to see quantity was argued from plausibility rather than measured. Zero controls establish nothing in either direction. The honest state is `capability_unproven` - a statement about nobody, not the client. The source contributes no keys and no zeros. This defect appears in the repository's own explanation at source material lines 100-135.
 
-GetKeyword gave 812 readings and then returned `{"ErrorCode":4,"Message":"ThrottleUser"}` — a quota on the Bing account, not a property of the keywords. A second attempt at one call per second met the same refusal on all 43 rows it reached before stopping. These 427 rows remain `unreadable`; writing zero there would destroy the only evidence that the reading never arrived.
+Demand data retrieval faced different constraints. `GetKeyword` returned 812 readings then `{"ErrorCode":4,"Message":"ThrottleUser"}` - a quota on the account, not a fact about keywords. Those 427 rows sit in `unreadable` state. A second pass at one call per second met the same refusal on 43 more rows. The state records what is known: the instrument would not answer.
 
-Nothing_qualified is the state where the instrument answered completely. Bing has no impressions for that exact query in the measurement window, the expected reading for most keywords. ERC-8004's own name returns nothing — `GetRelatedKeywords("erc-8004")` came back with an empty list, and `GetKeyword("erc-8004")` with `Query: null`. This standard, as measured, has no search demand at all. 733 rows carry this state.
-
-The single `check_did_not_run` row is endpoint domain verification. Normalisation stripped the `(Optional)` qualifier from the standard's heading; the demand figure belonged to the unstripped string. A reading belongs to the string it was taken for, so it was discarded. The [specification](/method/) §3.1 demands this discipline — before recording absence, establish that the instrument would have seen presence.
+`nothing_qualified` names a different absence: 733 rows where the instrument answered and Bing carries no demand data for those terms. The check ran and nothing matched. Unlike `unreadable`, the instrument can see the quantity; it simply found none.
 
 {{figure:keyword-demand-states}}
 
-## Where the reason travels inside the passport
+## What a passport's per-operation table renders
 
-A per-operation table at [SPEC](/method/) §3.1 shows level L0-L5 or, if `not_measured`, its reason, confidence, and applicable limiters. Accountability fields mirror this structure: each carries its value or the reason for none, recorded as {value, measured, reason} in D-13, default `measured: false, reason: check_did_not_run`. Schema 2.0.0; every passport re-emitted.
+A passport's per-operation table embodies decision D-03: every unmeasured operation shows the word `not_measured` and its reason, never blank or zero. Each row names an operation, assigns a level from L0 to L5, carries confidence (`measured` or `inferred`), and lists the limiters applied. When an operation remains unmeasured, the reason is one of three forms: `nothing_qualified` when the check ran but matched nothing, `check_did_not_run` when the check never executed, or `unreadable` when the source refused to answer.
 
-Until 2026-08-20 the specification broke this symmetry. Item 5 granted "claims addressee (which may honestly be none)" — no reason required — while item 3, two lines above, demanded a reason for every unmeasured operation. Three emitters took the licence and built accountability blocks from defaults without inspecting them. Every passport under schema 1.0.0 claimed a completed check that never ran.
+L-10 names a fourth absence: the wrong source was asked. An endpoint answers HTTP 200 with an empty list, indistinguishable from true zero at the point of reading. A conclusion drawn from an instrument that cannot see the quantity is not evidence. Before recording absence, the instrument must be shown able to see presence. This extends the project's foundational rule from L-1: "no news" and "the source is dead" must never read the same.
 
-Fable's ruling held the schema the primary defect, the specification complicit. The front door, which rendered the same null two ways in adjacent rows, was acquitted: that inconsistency detected the defect. Schema 1.0.0 let a field carry absence without its reason, making the unchecked field indistinguishable from a measured answer. The accountable statement and the non-inspected field look identical at the point of reading.
+The table stays sparse by design. Two of three operations on current subjects read `not_measured`, and that sparsity is the truth the artifact must keep visible. This rendering prevents the collapse that caused seven production defects across the operator's systems.
 
-The reason must travel with the field into a [registry](/registry/) entry, quotation, or report. The wrapper sits on every field rather than on a coverage list elsewhere because the distinction survives citation only when it travels in the data itself. That structural requirement is what the three absences — `nothing_qualified`, `check_did_not_run`, `unreadable` — exist to enforce.
+Beside the per-operation table sits the control map, detailing what was inspected, what lay out of reach and why, and what an undiscovered path would look like. Coverage statements anchor measurement in reality rather than assumption.
+
+The projection 0-100 appears adjacent to a disclaimer clarifying that the score measures autonomy and explicitly not reliability, decision quality, profitability, or the presence of an accountable party. This disclaimer is never in a footnote, and the placement matters: the score and its constraint must be read together.
+
+Gate logic processes these states according to [the specification](/method/), implementing ABI-33-4: when `Measurement.gate_verdict()` returns PASS, FAIL, or NOT_MEASURED, an absent measurement is never treated as failure. "The subject failed" and "we could not measure the subject" are distinct statements requiring different responses. Missing measurement is not a violation.
+
+The [registry](/registry/) publishes the `access_channel` through which each measurement arrived, pairing the instrument with the reading. This prevents the instrument's blindness from dissolving into an empty result.
 
 {{figure:registry-coverage}}
