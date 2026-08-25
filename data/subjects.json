@@ -53,6 +53,16 @@
       "repo": "whiteknightonhorse/provek",
       "affiliation": "same_owner",
       "source": "cohort-b5"
+    },
+    {
+      "repo": "whiteknightonhorse/cryptocardhub-public",
+      "affiliation": "independent",
+      "source": "intake:b6fafaaf-3eb5-49dc-8d73-c44a82e11ee0"
+    },
+    {
+      "repo": "whiteknightonhorse/provek-method",
+      "affiliation": "same_owner",
+      "source": "intake:7b63bcb1-eeb8-450d-a0a5-6ad40e2097ab"
     }
   ]
 }
