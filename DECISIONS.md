@@ -2262,3 +2262,59 @@ date can show that; what is measured is that the JSON/HTTP path answers correctl
 it is the path Microsoft's own notice describes as continuing rather than the one it retires. Also
 not shown: why the cabinet's banner reads as broadly as it does, or whether Bing intends to widen
 the retirement later — both are the operator's cabinet, unreadable from this host.
+
+## D-37. T-B13's brief asked D-35 to answer twice; the actual gap was one unsynced copy
+
+**Numbering.** Commissioned as a task against D-34's open referral. By the time it was picked up,
+D-35 above had already answered that referral — landed the same day, one number back. The next
+free number is taken rather than either decision above being reopened, the same device D-31 used
+for the D-30 collision.
+
+**The premise did not survive contact with the tree.** T-B13's brief, verbatim in
+`~/orchestra/tasks/ORCHESTRA_PLAN.md`, restates D-34's finding — a literal "an indexation reading
+exists" condition is satisfied by a zero, releasing the ceiling at the exact moment measurement
+says the published pages reached nobody — and proposes a fix: require at least one qualifying
+row for `provek.dev` from a verified property under live control before the ceiling moves. Read
+against `enforced_by.yaml`, `web/notes/emit.mjs` and `tests/test_notes_ceiling.py` as they stand
+today, that fix is already in the tree, and it is stricter than the brief's own proposal: D-35
+replaced the flat condition with a ladder that requires a control-proven NONZERO row at each of
+two separate rungs (a crawl row, then an impressions row) rather than one lift point, and pairs
+every reading against a control site the same way T-B13 asks for. Writing a second decision that
+restated T-B13's single-threshold version beside D-35's ladder would not have closed the gap D-34
+left open — it would have given the same law two live definitions, which is the failure L-2 names,
+not a repair of it.
+
+**The gap that was real.** `~/orchestra/notes_cron.py` is named directly in T-B13's brief, and
+reading it on 2026-08-25 found it still carrying D-18's retired wording in two places: the
+docstring above `NOTES_PER_DAY` ("an indexation reading from a VERIFIED Bing Webmaster property")
+and the `ceiling_reached` journal line's `detail` string, unsynced since before D-34 measured the
+zero and untouched across T-B12's edit to the same file on 2026-08-24 21:59 UTC — after D-35
+landed. Both are corrected in this task to describe the ladder and cite D-35, rather than to
+restate a condition the tree no longer enforces.
+
+**A second, more urgent defect found in the same function while fixing the first.**
+`note_ceiling()` read `emit.mjs`'s source text with `re.search(r"export const NOTE_CEILING =
+(\d+);", ...)`. D-35 turned that export from a literal digit into a derived expression,
+`NOTE_STEP.ceiling`; the regex requires a digit immediately after `=` and stopped matching the
+moment the ladder landed. Measured directly: `re.search(r"export const NOTE_CEILING = (\d+);",
+pathlib.Path("web/notes/emit.mjs").read_text())` returns `None` against the live file. Every call
+to `step_capture()` therefore raises `Red` before it reaches the line this task was sent to edit —
+`note_ceiling()` is the first statement in that function. `logs/notes_cron.run.log` shows the cron
+has not reached its capture slot since the ladder landed (today's slot is 04:53 UTC, checked at
+00:56), so the break was live and undetected, roughly four hours from firing. This is not a
+neighbouring task: it is the same function, in the file this task was sent to edit, whose only
+purpose is to produce the number the corrected wording describes — leaving it broken while
+polishing the comment beside it would itself be a claim (the comment) outrunning its artefact (a
+function that cannot run), which is the defect this whole project exists to catch. `note_ceiling()`
+now imports `emit.mjs` and reads its live `NOTE_CEILING` export via `node --input-type=module`,
+the same pattern `tests/test_notes_ceiling.py` already uses to hold the build to its own ladder —
+reading the computed value rather than re-deriving `ceilingFrom()` a second time in Python, which
+would itself be the L-2 copy the function's own docstring disclaims. Verified after the edit:
+`note_ceiling()` returns `3` against the live tree, matching `NOTE_STEP.ceiling`.
+
+**What is not decided here.** The ladder's rungs, numbers and control-pairing rule are D-35's and
+are unchanged by this entry. `NOTES_PER_DAY` and the publishing rate stay where D-35 left them.
+Whether other files outside `~/orchestra/notes_cron.py` still read `emit.mjs`'s ceiling by
+scraping source text rather than running it was not swept — `note_ceiling()` was the one this task
+named and the one measured broken; a repository-wide sweep for the same pattern is a separate,
+unstarted question, named here rather than assumed answered.
