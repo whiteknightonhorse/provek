@@ -95,12 +95,11 @@ if [ "${1:-}" = "--gates-only" ]; then echo "TREE GREEN (gates only, nothing pus
 # what the consumer receives; here, a file on this host is not what the clone receives. Refusing a
 # dirty tree is the cheap version - it makes the tree and the commit the same artefact, so the
 # gates that ran above are the gates that apply to what is pushed.
-DIRTY=$(git status --porcelain)
-if [ -n "$DIRTY" ]; then
-  echo "REFUSED: the working tree is not clean, so the gates above did not judge what would be pushed." >&2
-  echo "$DIRTY" >&2
-  exit 1
-fi
+# T-S11: this used to read `git status --porcelain` straight into a variable, and an empty result
+# is also what git prints when it warned on stderr and left a subtree out of stdout entirely - the
+# same hole D-33 closed in publishable_tree.py, here at the door itself. clean_tree_gate.sh keeps
+# UNREADABLE apart from DIRTY and apart from CLEAN; its red run is fixture-tested, not asserted.
+./scripts/clean_tree_gate.sh
 
 # AND THE COMMIT THE GATES JUDGED MUST BE THE COMMIT THE PUSH SENDS.
 # A clean tree equals HEAD; the command below pushes `main`. On another branch, or in a detached

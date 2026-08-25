@@ -1,0 +1,123 @@
+RED-038 - a door that read a warned tree as clean
+
+DATE (UTC): 2026-08-25
+SUBJECT   : scripts/clean_tree_gate.sh, judged by tests/test_clean_tree_gate_reads_git_stderr.py
+LAWS      : LAW-DOOR-MATCHES-ARBITER, invariant 1 (not_measured is a state of its own)
+TASK      : T-S11. The fork was named at D-33's own line: that decision closed
+            `scripts/publishable_tree.py._porcelain` and named two more readers with the identical
+            defect rather than fixing them in passing - `scripts/push.sh`'s own dirty-tree check
+            (this file) and `~/orchestra/orch.sh`'s `untracked_inventory` (evidence in the
+            orchestra's own tree, not here - it is outside every gate this repository has).
+PRODUCED  : evidence/RED-038-generator.py, checked in beside this file so the runs below can be
+            repeated rather than believed. It refuses to write this file if any premise it depends
+            on is not the state it claims.
+
+WHY THIS FILE EXISTS
+
+Invariant 1 says a counter that can read zero must distinguish `nothing_qualified` from
+`check_did_not_run`. `git status --porcelain` returns a LIST, and an empty list is that zero. The
+door's job is to tell "the tree is clean" apart from "git did not read the whole tree", and until
+this task it could not: `DIRTY=$(git status --porcelain)` read the porcelain list and nothing else,
+so a directory this process cannot enter - warn on stderr, exit 0, subtree missing from stdout -
+came back as an empty `$DIRTY` and the door would have pushed on the strength of a check that never
+ran.
+
+==================================================================================================
+PART 1 - THE PREMISE (raw git, on the fixture, before any gate touches it)
+==================================================================================================
+
+$ git status --porcelain
+exit   : 0
+stdout : b''          <- empty: the untracked file is NOT in the report
+stderr : warning: could not open directory 'locked/': Permission denied
+
+
+Suite green before any mutation:
+...                                                                      [100%]
+3 passed in 0.09s
+
+The SHIPPED gate on this fixture (T-S11's fix, already in the tree):
+$ bash scripts/clean_tree_gate.sh <fixture>
+exit   : 2
+stdout : (empty)
+stderr : UNREADABLE: git status wrote to stderr, so its report is not a reading of the whole tree - what follows is git's own sentence, not this gate's:
+warning: could not open directory 'locked/': Permission denied
+
+==================================================================================================
+PART 2 - THE RED (the stderr check removed - the door's own behaviour one commit ago)
+==================================================================================================
+
+The mutated gate on the SAME fixture:
+$ bash scripts/clean_tree_gate.sh <fixture>
+exit   : 0
+stdout : CLEAN
+stderr : (empty)
+
+pytest on the mutated gate:
+..F                                                                      [100%]
+=================================== FAILURES ===================================
+___________ test_a_subtree_git_warned_about_is_unreadable_not_clean ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-1056/test_a_subtree_git_warned_abou0')
+
+    @_needs_permissions
+    def test_a_subtree_git_warned_about_is_unreadable_not_clean(tmp_path):
+        """THE CASE THAT SHIPPED WRONG BEFORE THIS TASK. `git status` does not fail on a directory it
+        cannot enter: it warns on stderr, EXITS 0, and leaves that subtree out of stdout. The old
+        `DIRTY=$(git status --porcelain)` reading in push.sh saw no dirty paths and let the door
+        through - a tree nothing had read, called clean.
+    
+        THE FIXTURE ASSERTS ITS OWN PREMISE FIRST: if git ever stops warning here, or starts exiting
+        nonzero, this case would pass while measuring something else - the failure mode
+        `evidence/RED-023-*` names in the neighbouring gate.
+        """
+        repo = _repo(tmp_path)
+        locked = repo / "locked"
+        locked.mkdir()
+        (locked / "parked.txt").write_text("untracked, and about to become invisible\n", encoding="utf-8")
+        locked.chmod(0o000)
+        try:
+            raw = subprocess.run(["git", "status", "--porcelain"], cwd=repo, capture_output=True, timeout=60)
+            assert raw.returncode == 0, "git FAILED here; the old exit-code reading would have caught it"
+            assert raw.stdout == b"", "git listed the locked subtree; this is not the state the case claims"
+            assert b"warning" in raw.stderr, f"git warned about nothing: {raw.stderr!r}"
+    
+            done = _run(repo)
+>           assert done.returncode == UNREADABLE, done.stdout + done.stderr
+E           AssertionError: CLEAN
+E             
+E           assert 0 == 2
+E            +  where 0 = CompletedProcess(args=['bash', '/home/incubator/incubator/scripts/clean_tree_gate.sh', '/tmp/pytest-of-incubator/pytest-1056/test_a_subtree_git_warned_abou0/repo'], returncode=0, stdout='CLEAN\n', stderr='').returncode
+
+tests/test_clean_tree_gate_reads_git_stderr.py:94: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_clean_tree_gate_reads_git_stderr.py::test_a_subtree_git_warned_about_is_unreadable_not_clean
+1 failed, 2 passed in 0.10s
+
+Case(s) that died: test_a_subtree_git_warned_about_is_unreadable_not_clean
+
+==================================================================================================
+PART 3 - THE RESTORE
+==================================================================================================
+
+scripts/clean_tree_gate.sh restored byte-for-byte (sha256 verified). Suite green again:
+...                                                                      [100%]
+3 passed in 0.09s
+
+The fixed gate, re-run on the same fixture, for the record:
+$ bash scripts/clean_tree_gate.sh <fixture>
+exit   : 2
+stdout : (empty)
+stderr : UNREADABLE: git status wrote to stderr, so its report is not a reading of the whole tree - what follows is git's own sentence, not this gate's:
+warning: could not open directory 'locked/': Permission denied
+
+==================================================================================================
+READING
+==================================================================================================
+
+Part 1 is the premise this file refuses to be written without: git DOES exit 0, DOES leave the
+locked subtree out of stdout, and DOES warn on stderr, on this host, today. Part 2 is the shipped
+gate with T-S11's stderr check removed - i.e. the door's actual behaviour before this task - printing
+CLEAN and exiting 0 over that same unread tree, which is the defect this task closes. Part 3 shows
+the fix restored and the suite green, plus the fixed gate's actual answer on the identical fixture:
+UNREADABLE, exit 2, git's own warning printed rather than summarised.

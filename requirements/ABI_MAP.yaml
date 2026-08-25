@@ -97,6 +97,12 @@ scripts/deploy_stamp.sh:          [ABI-16-5, ABI-16-11]
 # code - a tree git could not report on is neither clean nor dirty, and publishing on the strength
 # of that reading is the defect it exists to prevent.
 scripts/publishable_tree.py:      [ABI-32-1, ABI-16-5]
+# T-S11: the same third state, at the door itself rather than at the scheduler's copy of it.
+# `push.sh` used to read `git status --porcelain` straight into a variable, which cannot tell "the
+# tree is clean" from "git warned on stderr and left a subtree unread" - the exact hole D-33 closed
+# one module over. Same two requirements as publishable_tree.py because it is the same kind of
+# refusal at the same kind of door.
+scripts/clean_tree_gate.sh:       [ABI-32-1, ABI-16-5]
 # T-H2: the same door, one question later - not "may this tree go out" but "what is what went out
 # CALLED". Same two requirements because it is the same door and the same kind of refusal; the
 # module is separate because the two callers have opposite exemptions, not because the subject is.
