@@ -17,6 +17,7 @@ import json
 import re
 import subprocess
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
 
 from src.abs_profile.evidence import EvidenceClass
 from src.abs_profile.measured import Measurement, NotMeasured
@@ -60,6 +61,15 @@ class GitHubEvidence:
     distinct_authors: Measurement
     bot_author_share: Measurement       # share of commits from bot/app accounts
     workflow_runs: Measurement          # automated CI runs - a trace of INITIATION
+    identity_window_closed: Measurement = field(default_factory=lambda: Measurement(value=None, absent=NotMeasured.UNREADABLE))
+    """Was every non-bot commit attributed by the PLATFORM or by a signature?
+
+    Closed, `distinct_authors` is a count. Open, it is a lower bound: behind one unattributed key
+    there can be any number of people, and no `authors <= N` claim is provable. The ladder answers
+    an open window with its floor rather than with a guess in either direction, and rather than
+    with `not measured` -- which would reward a subject for injecting one anonymous commit."""
+    unlinked_commit_share: Measurement = field(default_factory=lambda: Measurement(value=None, absent=NotMeasured.UNREADABLE))
+    unlinked_key_count: Measurement = field(default_factory=lambda: Measurement(value=None, absent=NotMeasured.UNREADABLE))
     evidence_class: EvidenceClass = EvidenceClass.PLATFORM_OBSERVED
     notes: list[str] = field(default_factory=list)
 
@@ -133,8 +143,47 @@ def _api(path: str, token: str | None = None) -> tuple[int, object]:
         return int(code) if code.isdigit() else 0, None
 
 
-def authors_and_bot_commits(commits: list[dict]) -> tuple[set[str], int]:
-    """Distinct human authors, and how many commits came from bot accounts.
+EVIDENCE_WINDOW_DAYS = 30
+"""ASSIGNED, and already published: every passport carries it as `evidence_window_days`.
+
+Ratified 2026-08-25 by adopting the number the documents had been promising rather than choosing
+a new one. The instrument was brought to the promise; the promise was not rewritten to match the
+instrument."""
+
+COMMITS_PER_PAGE = 100
+"""Structural, not policy: the largest page the GitHub commits endpoint will return.
+
+Named because the gate that refuses bare numbers at a comparison was right to refuse this one -
+read as a literal, `len(batch) < 100` is indistinguishable from a threshold somebody chose, and
+the day the API changes it, the short-page test silently stops detecting the end of the window."""
+
+COMMIT_PAGE_CEILING = 10
+"""ASSIGNED. A fuse, not a window: ten pages of commits inside 30 days and the read stops UNDERREAD.
+
+Reaching it cannot help a subject. Flooding a window is something only the subject can do, and
+doing it costs them closure - the refusal points down, which is the correct direction for a gate
+to be wrong in."""
+
+CLOSURE_MASS_FLOOR = 10
+"""ASSIGNED. Fewer than ten non-bot commits in the window and closure grants no level.
+
+Closure says every commit was attributed. Over two commits that is true and means nothing, and a
+subject would climb the ladder by committing almost nothing - silence as a strategy. Below the
+floor the ladder answers with the same floor it gives an OPEN window, so staying quiet is never
+better than being read."""
+
+
+def authors_and_bot_commits(commits: list[dict]) -> tuple[set[str], int, set[str], int]:
+    """Attributed authors, bot commits, and the keys nothing vouches for.
+
+    IDENTITY IS RESOLVED BY THE PLATFORM OR BY CRYPTOGRAPHY, NEVER BY US. A commit GitHub
+    attributes to a login is attributed: linking an address to an account requires proving you
+    control the address, and the attribution is then visible to any anonymous reader. A signed
+    commit is attributed by the signature. A commit with neither carries only the name and address
+    its author typed into their own `git config` -- written by the side being measured, which is
+    exactly what a key may not be. Merging such commits into an identity would encode a guess;
+    splitting them encodes a different guess. They are counted apart instead, and the count they
+    produce is a LOWER BOUND rather than a number (Fable, 2026-08-25).
 
     Split out of `collect_github` so it can be judged without a network: the rule it carries was
     ratified separately (ladder.SOLE_AUTHOR, 2026-08-25), and a ratified rule that only a live API
@@ -153,14 +202,26 @@ def authors_and_bot_commits(commits: list[dict]) -> tuple[set[str], int]:
     """
     logins: set[str] = set()
     bot_commits = 0
+    unlinked_keys: set[str] = set()
+    unlinked_commits = 0
     for c in commits:
         a = c.get("author") or {}
-        login = a.get("login") or ((c.get("commit") or {}).get("author") or {}).get("email", "?")
-        if a.get("type") == "Bot" or str(login).endswith("[bot]"):
+        login = a.get("login")
+        cm = (c.get("commit") or {}).get("author") or {}
+        signed = bool(((c.get("commit") or {}).get("verification") or {}).get("verified"))
+        if a.get("type") == "Bot" or str(login or "").endswith("[bot]"):
             bot_commits += 1        # bot_author_share still measures every one of them
+            continue
+        if login:
+            logins.add(login)       # the PLATFORM attributed this commit to an account
+        elif signed:
+            logins.add(cm.get("email", "?"))   # cryptography attributed it instead
         else:
-            logins.add(login)
-    return logins, bot_commits
+            # NEITHER the platform nor a signature vouches for who wrote this. The e-mail is
+            # whatever the author's `git config` said, which the measured side writes itself.
+            unlinked_keys.add(cm.get("email", "?"))
+            unlinked_commits += 1
+    return logins, bot_commits, unlinked_keys, unlinked_commits
 
 
 def collect_github(full_name: str, token: str | None = None) -> GitHubEvidence:
@@ -194,20 +255,84 @@ def collect_github(full_name: str, token: str | None = None) -> GitHubEvidence:
         # invariant 1 and R4's shape at once, and it is refutable by anyone who opens the URL.
         return GitHubEvidence(full_name, None, None, unread(), unread(), unread(), unread(),
                               notes=notes, read=False)
+    # Defaults before the branch. A source that did not answer leaves these UNREADABLE rather
+    # than undefined: an exception here would read as a crash, not as an absent measurement.
+    closed = unread()
+    unlinked_share = unread()
+    unlinked_key_count = unread()
 
-    code, commits = _api(f"/repos/{full_name}/commits?per_page=50", token)
-    if code != 200 or not isinstance(commits, list) or not commits:
+    # THE WINDOW IS TIME, AND IT IS THE TIME WE PUBLISH. Until 2026-08-25 this read the last 50
+    # commits by COUNT while every passport declared `evidence_window_days: 30`. Those are
+    # different quantities, and the difference is not academic: a count window is EVACUATED BY THE
+    # ACTIVITY OF THE SUBJECT BEING MEASURED. Our own repository demonstrated it - roughly fifty
+    # commits in one day pushed an unattributed commit from the day before past position 50, and
+    # the instrument reported a closed identity window that a 30-day reading shows open.
+    #
+    # A time window cannot be evacuated by working harder; it can only be waited out in real time,
+    # and the dates are public, so waiting it out is visible to any reader. Between two unratified
+    # numbers the PUBLISHED one wins: 30 days is a promise made in every issued document, 50 was a
+    # literal in a URL that promised nothing (Fable, 2026-08-25).
+    since = (datetime.now(timezone.utc) - timedelta(days=EVIDENCE_WINDOW_DAYS)).isoformat()
+    commits: list[dict] = []
+    window_fully_read = False
+    code = 0
+    for page in range(1, COMMIT_PAGE_CEILING + 1):
+        code, batch = _api(
+            f"/repos/{full_name}/commits"
+            f"?per_page={COMMITS_PER_PAGE}&since={since}&page={page}", token)
+        if code != 200 or not isinstance(batch, list):
+            break
+        commits.extend(batch)
+        if len(batch) < COMMITS_PER_PAGE:
+            window_fully_read = True     # a short page means the window is exhausted
+            break
+    else:
+        # The ceiling was reached with pages still coming. UNDERREAD is not the same finding as
+        # OPEN: open means a counter-example was seen, underread means the instrument never
+        # finished looking. They publish apart and weigh the same at the gate, because closure is
+        # a claim about EVERY commit in the window and a partial read cannot make it.
+        notes.append(f"window not fully read: stopped at the {COMMIT_PAGE_CEILING}-page ceiling")
+
+    if code != 200:
+        # THE SOURCE REFUSED. Nothing about the subject is known from here.
         signed = authors = bots = unread()
         head = None
         notes.append(redact(f"commit history not read, HTTP {code}"))
+    elif not commits:
+        # THE SOURCE ANSWERED AND THE WINDOW IS EMPTY. These are different worlds and collapsing
+        # them was a defect I introduced with the time window: a repository whose last commit
+        # predates the window had its silence reported as "we could not read it", which is a
+        # statement about US wearing a statement about THEM. The read succeeded; there was simply
+        # nothing inside the thirty days.
+        #
+        # `nothing_qualified` is the declared reason closest to this - the check ran and nothing
+        # matched. It is not exact: the window was empty rather than full of things that failed to
+        # count, and LAW-NOT-MEASURED enumerates three reasons with no fourth for "no evidence in
+        # the window". Recorded here as a known imprecision rather than left for a reader to
+        # discover, and put to the judge separately; it changes no published number, because both
+        # readings withhold the projection.
+        signed = authors = bots = Measurement(value=None, absent=NotMeasured.NOTHING_QUALIFIED)
+        head = None
+        notes.append(f"no commits inside the {EVIDENCE_WINDOW_DAYS}-day evidence window")
     else:
         head = commits[0].get("sha")
         verified = sum(1 for c in commits
                        if (c.get("commit") or {}).get("verification", {}).get("verified"))
-        logins, botn = authors_and_bot_commits(commits)
+        logins, botn, unlinked_keys, unlinked_n = authors_and_bot_commits(commits)
         signed = Measurement(value=round(verified / len(commits), 3))
         authors = Measurement(value=len(logins))
         bots = Measurement(value=round(botn / len(commits), 3))
+        # The window is CLOSED when every non-bot commit was attributed by the platform or by a
+        # signature. Open, the author count cannot be an upper bound: any number of people can
+        # stand behind one unattributed key.
+        non_bot = len(commits) - botn
+        # Closure needs all three: nothing unattributed, the whole window actually read, and
+        # enough commits for the claim to mean anything. Closure over two commits is a vacuum
+        # truth - true, and evidence of nothing.
+        closed = Measurement(value=(unlinked_n == 0 and window_fully_read
+                                    and non_bot >= CLOSURE_MASS_FLOOR))
+        unlinked_share = Measurement(value=round(unlinked_n / len(commits), 3))
+        unlinked_key_count = Measurement(value=len(unlinked_keys))
 
     code, runs = _api(f"/repos/{full_name}/actions/runs?per_page=1", token)
     if code == 200 and isinstance(runs, dict):
@@ -217,4 +342,7 @@ def collect_github(full_name: str, token: str | None = None) -> GitHubEvidence:
         notes.append(f"CI runs not read, HTTP {code}")
 
     return GitHubEvidence(full_name, bool(repo.get("private")), head,
-                          signed, authors, bots, wf, notes=notes)
+                          signed, authors, bots, wf, notes=notes,
+                          identity_window_closed=closed,
+                          unlinked_commit_share=unlinked_share,
+                          unlinked_key_count=unlinked_key_count)

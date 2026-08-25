@@ -1,6 +1,6 @@
 {
   "subject_id": "git:whiteknightonhorse/AIpush",
-  "projection": 40,
+  "projection": null,
   "passport": {
     "schema_version": "2.0.0",
     "subject_id": "git:whiteknightonhorse/AIpush",
@@ -8,25 +8,22 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-08-25T06:44:57.922506+00:00",
-    "valid_until": "2026-09-24T06:44:57.922506+00:00",
-    "status": "verified",
+    "issued_at": "2026-08-25T10:26:12.563314+00:00",
+    "valid_until": "2026-09-24T10:26:12.563314+00:00",
+    "status": "unverified",
     "provenance": {
       "protocol_version": "1.0.0",
-      "profile_version": "1.0.0",
+      "profile_version": "1.1.0",
       "evidence_window_days": 30
     },
     "verified": {
       "operations": [
         {
           "operation": "development_initiation",
-          "level": "L2",
-          "measured": true,
-          "confidence": "inferred",
-          "limiters_applied": [
-            "O1:mixed_classes->inferred",
-            "O2:no_runtime_trace->capped_L2"
-          ]
+          "level": "nothing_qualified",
+          "measured": false,
+          "confidence": null,
+          "limiters_applied": []
         },
         {
           "operation": "deployment",
@@ -43,30 +40,45 @@
           "limiters_applied": []
         }
       ],
-      "projection": 40,
-      "projection_absent_reason": null,
+      "projection": null,
+      "projection_absent_reason": "check_did_not_run",
       "observations": {
         "signed_commit_share": {
-          "value": 0.0,
-          "measured": true,
-          "absent_reason": null
+          "value": null,
+          "measured": false,
+          "absent_reason": "nothing_qualified"
         },
         "distinct_authors": {
-          "value": 2,
-          "measured": true,
-          "absent_reason": null
+          "value": null,
+          "measured": false,
+          "absent_reason": "nothing_qualified"
         },
         "bot_author_share": {
-          "value": 0.0,
-          "measured": true,
-          "absent_reason": null
+          "value": null,
+          "measured": false,
+          "absent_reason": "nothing_qualified"
         },
         "workflow_runs": {
           "value": 0,
           "measured": true,
           "absent_reason": null
         },
-        "head_sha": "84deaf4de6d0b0e732c002ecc92df15b7af4b2f4"
+        "identity_window_closed": {
+          "value": null,
+          "measured": false,
+          "absent_reason": "unreadable"
+        },
+        "unlinked_commit_share": {
+          "value": null,
+          "measured": false,
+          "absent_reason": "unreadable"
+        },
+        "unlinked_key_count": {
+          "value": null,
+          "measured": false,
+          "absent_reason": "unreadable"
+        },
+        "head_sha": null
       },
       "control_map_valid": true,
       "control_map_cap": 5,

@@ -1,6 +1,6 @@
 {
   "subject_id": "git:whiteknightonhorse/provek-method",
-  "projection": 80,
+  "projection": 40,
   "passport": {
     "schema_version": "2.0.0",
     "subject_id": "git:whiteknightonhorse/provek-method",
@@ -8,19 +8,19 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-08-25T07:03:09.498483+00:00",
-    "valid_until": "2026-09-24T07:03:09.498483+00:00",
+    "issued_at": "2026-08-25T10:26:12.563314+00:00",
+    "valid_until": "2026-09-24T10:26:12.563314+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
-      "profile_version": "1.0.0",
+      "profile_version": "1.1.0",
       "evidence_window_days": 30
     },
     "verified": {
       "operations": [
         {
           "operation": "development_initiation",
-          "level": "L4",
+          "level": "L2",
           "measured": true,
           "confidence": "inferred",
           "limiters_applied": [
@@ -42,7 +42,7 @@
           "limiters_applied": []
         }
       ],
-      "projection": 80,
+      "projection": 40,
       "projection_absent_reason": null,
       "observations": {
         "signed_commit_share": {
@@ -62,6 +62,21 @@
         },
         "workflow_runs": {
           "value": 1,
+          "measured": true,
+          "absent_reason": null
+        },
+        "identity_window_closed": {
+          "value": false,
+          "measured": true,
+          "absent_reason": null
+        },
+        "unlinked_commit_share": {
+          "value": 0.0,
+          "measured": true,
+          "absent_reason": null
+        },
+        "unlinked_key_count": {
+          "value": 0,
           "measured": true,
           "absent_reason": null
         },

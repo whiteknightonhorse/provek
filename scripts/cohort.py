@@ -23,7 +23,7 @@ from src.abs_profile.evidence import EvidenceClass
 from src.abs_profile.identity import Binding, BindingKind
 from src.abs_profile.ladder import SMALL_TEAM_FOR_L3, SOLE_AUTHOR, L
 from src.abs_profile.measured import NotMeasured
-from src.collector.github import access_channel, collect_github
+from src.collector.github import EVIDENCE_WINDOW_DAYS, access_channel, collect_github
 from src.passport.passport import Accountability, Provenance, build
 from src.registry.public_registry import PublicRegistry, Row
 from src.transport.file_transport import FileTransport
@@ -142,7 +142,10 @@ if ONLY:
                 verifier_affiliation=_r["verifier_affiliation"]))
         print(f"carried forward: {len(registry._rows)} already-published row(s)")
 now = datetime.now(timezone.utc)
-PROV = Provenance("1.0.0", "1.0.0", 30)
+# PROFILE 1.1.0: the evidence window became the window that was published, and identity
+# resolution became the platform's job rather than ours. A passport must say which ruleset read
+# it, or a corrected document is indistinguishable from a changed subject.
+PROV = Provenance("1.0.0", "1.1.0", EVIDENCE_WINDOW_DAYS)
 SITE = "https://provek.dev"
 
 
@@ -164,6 +167,12 @@ def observations(ev) -> dict:
         "distinct_authors": m(ev.distinct_authors),
         "bot_author_share": m(ev.bot_author_share),
         "workflow_runs": m(ev.workflow_runs),
+        # PUBLISHED SO THE CLOSURE CAN BE RECOMPUTED, not just the count that came out of it.
+        # Without these a reader sees `distinct_authors: 1` and cannot tell a genuinely
+        # sole-authored repository from one whose commits nothing vouches for.
+        "identity_window_closed": m(ev.identity_window_closed),
+        "unlinked_commit_share": m(ev.unlinked_commit_share),
+        "unlinked_key_count": m(ev.unlinked_key_count),
         "head_sha": ev.head_sha,
     }
 
@@ -214,7 +223,21 @@ for full in COHORT:
 
     lvl = None
     if ev.signed_commit_share.is_measured and ev.distinct_authors.is_measured:
-        if ev.distinct_authors.value == SOLE_AUTHOR:
+        # PLATFORM CLOSURE (Fable, 2026-08-25). The author count is only an author COUNT when
+        # every non-bot commit in the window was attributed by the platform or by a signature.
+        # Otherwise it is a LOWER BOUND: any number of people can stand behind one unattributed
+        # key, so no `authors <= N` claim is provable and the two rungs that depend on such a
+        # claim - sole author, small team - cannot be reached.
+        #
+        # The answer to an open window is the FLOOR, not `not measured`. Not measured would pay a
+        # subject for injecting a single anonymous commit: a repository with twenty authors could
+        # erase an inconvenient number by making one commit nobody can attribute. A rule where
+        # corrupting your own evidence improves your verdict is worse than a rule that merely
+        # errs. The floor cannot be gamed downward-into-upward: every way of opening the window
+        # lowers the result.
+        if not (ev.identity_window_closed.is_measured and ev.identity_window_closed.value):
+            lvl = L.L2
+        elif ev.distinct_authors.value == SOLE_AUTHOR:
             lvl = L.L4
         elif ev.distinct_authors.value <= SMALL_TEAM_FOR_L3:
             lvl = L.L3

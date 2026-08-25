@@ -8,12 +8,12 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-08-25T06:44:57.922506+00:00",
-    "valid_until": "2026-09-24T06:44:57.922506+00:00",
+    "issued_at": "2026-08-25T10:26:12.563314+00:00",
+    "valid_until": "2026-09-24T10:26:12.563314+00:00",
     "status": "unverified",
     "provenance": {
       "protocol_version": "1.0.0",
-      "profile_version": "1.0.0",
+      "profile_version": "1.1.0",
       "evidence_window_days": 30
     },
     "verified": {
@@ -59,6 +59,21 @@
           "absent_reason": "unreadable"
         },
         "workflow_runs": {
+          "value": null,
+          "measured": false,
+          "absent_reason": "unreadable"
+        },
+        "identity_window_closed": {
+          "value": null,
+          "measured": false,
+          "absent_reason": "unreadable"
+        },
+        "unlinked_commit_share": {
+          "value": null,
+          "measured": false,
+          "absent_reason": "unreadable"
+        },
+        "unlinked_key_count": {
           "value": null,
           "measured": false,
           "absent_reason": "unreadable"

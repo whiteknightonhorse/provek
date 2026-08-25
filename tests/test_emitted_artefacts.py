@@ -196,12 +196,42 @@ def test_the_private_subject_rule_is_in_the_code_not_only_in_this_test():
 
 def test_an_unread_subject_claims_nothing_on_its_own_behalf():
     """Fable B2. `private: false` was published under 'claimed by the subject' for repositories
-    that answered 404 - the opposite of the truth, spoken in the subject's name by a template."""
+    that answered 404 - the opposite of the truth, spoken in the subject's name by a template.
+
+    THE PROXY WAS CORRECTED 2026-08-25, AND NOT LOOSENED. This asked "is the projection absent?"
+    because, until the evidence window became a span of time, absent and unread were the same set.
+    They no longer are: a repository that answers perfectly well and has made no commits in thirty
+    days is READ and has no projection. For that subject `private: false` is a measurement we
+    actually took, and forbidding it would suppress a true reading.
+
+    So the question is now the one the docstring always meant -- did the source answer us -- and
+    it is asked of the recorded reason rather than inferred from a missing number. The forbidden
+    case is untouched: `unreadable` still may not carry a claim in the subject's name, which is
+    the 404 this test was written for.
+    """
     for p in _passports():
-        if p["verified"]["projection"] is not None:
+        v = p["verified"]
+        if v["projection"] is not None:
             continue
+        if v["projection_absent_reason"] != "unreadable":
+            continue                      # answered us; a reading of it is ours to publish
         assert "private" not in p["self_reported"], (
             f"{p['subject_id']} publishes a claim its subject never made")
+
+
+def test_a_subject_that_answered_may_report_what_we_read(tmp_path=None):
+    """The other half of the pair, so the correction above cannot quietly become a blanket pass.
+
+    If someone re-widens the rule back to "any absent projection", this fails: a read subject with
+    an empty window would stop publishing the `private` we genuinely measured, and the registry
+    would go quiet about something it knows.
+    """
+    read_but_empty = [p for p in _passports()
+                      if p["verified"]["projection"] is None
+                      and p["verified"]["projection_absent_reason"] != "unreadable"]
+    for p in read_but_empty:
+        assert "private" in p["self_reported"], (
+            f"{p['subject_id']} answered us and the passport says nothing about what we read")
 
 
 def test_a_map_does_not_report_inspecting_what_it_could_not_read():
