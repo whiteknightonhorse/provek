@@ -33,6 +33,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+import evidence_stamp  # noqa: E402 - T-S14, every artefact names the tree it was captured against
+
 OUT = ROOT / "evidence" / "RED-033-a-lock-that-was-never-taken-reported-as-contention.txt"
 SUITE = "tests/test_run_budgeted_names_its_refusals.py"
 SUBJECT = ROOT / "scripts" / "run_budgeted.sh"
@@ -221,6 +224,7 @@ def main() -> int:
 
 HEADER = f"""RED-033 - a lock that was never taken, reported as a busy neighbour
 
+{evidence_stamp.tree_stamp()}
 DATE (UTC): 2026-08-24
 SUBJECT   : scripts/run_budgeted.sh, judged by tests/test_run_budgeted_names_its_refusals.py
 LAW       : LAW-BUDGET-LOCK-UNDER-THE-PROJECT

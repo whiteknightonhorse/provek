@@ -552,3 +552,15 @@ laws:
     text: "every workflow file is loaded by a real YAML parser AT THE DOOR - in CI a file that does not parse runs no job, so this cannot judge itself there - and a parser that is absent, a file that cannot be read and a directory with no workflows are each their own state rather than a clean tree"
     gate: scripts/verify_workflow_yaml.py
     test: tests/test_workflows_parse.py
+  # T-S14. RED-032 already went stale: its line numbers were written against one revision and T-S5
+  # moved them in another, and nothing in the artefact said so - the citation looked current
+  # because the file carried no revision to check it against. D-28 forbids rewriting RED-032 itself
+  # to fix that; the repair is forward-only, one generator at a time, starting with the helper
+  # every `*-generator.py` now calls. `requirements/EVIDENCE_LEGACY.txt` freezes the sixty-seven
+  # files that predate this law, named once rather than exempted by a pattern (CLAUDE.md's
+  # `.gitignore` doctrine) - a file landing in `evidence/` after this commit either carries
+  # `tree: <sha>` in its own header or the ratchet fails the build over it.
+  - id: LAW-EVIDENCE-STAMPED-TREE
+    text: "an evidence artefact names the tree revision it was generated against - clean, dirty, or unreadable, never silently omitted - unless it predates this law and is named in requirements/EVIDENCE_LEGACY.txt"
+    gate: scripts/ratchet_evidence.py
+    test: tests/test_ratchet_evidence.py

@@ -46,6 +46,9 @@ import sys
 import time
 
 REPO = pathlib.Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO / "scripts"))
+import evidence_stamp  # noqa: E402 - T-S14, every artefact names the tree it was captured against
+
 ORCHESTRA = pathlib.Path.home() / "orchestra"
 QUARANTINE = ORCHESTRA / "quarantine" / "20260824T063401Z"
 SRC_DIR = REPO / "web" / "notes" / "src"
@@ -892,7 +895,9 @@ def main() -> int:
     if len(set(bodies)) != len(bodies):
         raise Bail("two blocks carry identical output - one of the runs did not happen (L-26)")
 
-    text = HEADER + "\n" + "\n\n".join(
+    title, rest = HEADER.split("\n", 1)
+    stamped_header = title + "\n" + evidence_stamp.tree_stamp(REPO) + "\n" + rest
+    text = stamped_header + "\n" + "\n\n".join(
         f"{'=' * 98}\n{h}\n{'=' * 98}\n\n{b}" for h, b in BLOCKS) + "\n"
     pathlib.Path(args.out).write_text(text, encoding="utf-8")
     print(f"\nwritten: {args.out} ({len(text)} bytes, {len(BLOCKS)} blocks)")

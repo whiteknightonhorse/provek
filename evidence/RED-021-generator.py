@@ -54,6 +54,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+import evidence_stamp  # noqa: E402 - T-S14, every artefact names the tree it was captured against
+
 SCRIPT = ROOT / "scripts" / "verify_live.sh"
 SUITE_FILE = ROOT / "tests" / "test_verify_live_reads_the_function.py"
 SUITE = "tests/test_verify_live_reads_the_function.py"
@@ -284,6 +287,7 @@ def main() -> int:
 
     header = (
         f"RED-021 - a deploy gate that reads less every release\n"
+        f"{evidence_stamp.tree_stamp()}\n"
         f"{'=' * 98}\n\n"
         f"Regenerate with:  python3 evidence/RED-021-generator.py\n"
         f"Verify with:      python3 evidence/RED-021-generator.py --check\n\n"

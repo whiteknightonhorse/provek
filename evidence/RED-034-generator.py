@@ -36,6 +36,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+import evidence_stamp  # noqa: E402 - T-S14, every artefact names the tree it was captured against
+
 OUT = ROOT / "evidence" / "RED-034-the-file-every-gate-read-and-no-parser-had-opened.txt"
 SUITE = "tests/test_workflows_parse.py"
 SUBJECT = ROOT / "scripts" / "verify_workflow_yaml.py"
@@ -383,6 +386,7 @@ def main() -> int:
 
 HEADER = f"""RED-034 - the file every gate read, and no parser had ever opened
 
+{evidence_stamp.tree_stamp()}
 DATE (UTC): 2026-08-24
 SUBJECT   : scripts/verify_workflow_yaml.py, judged by tests/test_workflows_parse.py
 LAW       : LAW-WORKFLOWS-PARSE

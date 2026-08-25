@@ -145,6 +145,17 @@ scripts/verify_pip_pins.py:       [ABI-32-1, ABI-16-11]
 # as "no problems found", which is exactly how the gap this module closes stayed invisible.
 scripts/verify_workflow_yaml.py:  [ABI-32-1, ABI-16-11]
 
+# T-S14: evidence artefacts (RED-*, GREEN-*, MEASURED-*) quote line numbers and diffs out of a
+# specific revision and never said which one - RED-032 already went stale under T-S5 with nothing
+# in the file to say so. ABI-13-6/ABI-16-11/ABI-33-4 rather than a new requirement because the
+# module's whole job is the same three-state distinction `src/abs_profile/measured.py` already
+# holds - clean / dirty / unreadable, none of them a silent default - applied to a different
+# counter. The ratchet carries no separate binding: it is the enforcing half of the same law, the
+# way `ratchet_decisions.py` and `ratchet_scope.py` are each one module for one requirement rather
+# than two.
+scripts/evidence_stamp.py:        [ABI-13-6, ABI-16-11, ABI-33-4]
+scripts/ratchet_evidence.py:      [ABI-13-6, ABI-16-11, ABI-33-4]
+
 # CI configuration is data, not code, and carries no ABI mapping. The `uses:` lines inside it are
 # not data, though - they name executable code fetched at run time - and `scripts/verify_action_pins.py`
 # above is what judges them. NEITHER IS THE FILE ITSELF DATA IN THE SENSE THAT MATTERS: it is the

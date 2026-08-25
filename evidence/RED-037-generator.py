@@ -44,6 +44,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+import evidence_stamp  # noqa: E402 - T-S14, every artefact names the tree it was captured against
+
 OUT = ROOT / "evidence" / "RED-037-an-unread-subject-scored-anyway.txt"
 OLD_PIN = "eb0c6cb8a0cec4e17179fbcbb09f15c320a720a3"   # HEAD immediately before the T-S8 repair
 SUBJECT = "whiteknightonhorse/gov-auction-report"
@@ -155,6 +158,7 @@ def main() -> int:
 
     body = f"""RED-037 - an unread subject scored anyway
 
+{evidence_stamp.tree_stamp()}
 DATE (UTC)     : 2026-08-24
 SUBJECT        : scripts/measure_qm2.py, development_initiation scoring for {SUBJECT}
 TASK           : T-S8

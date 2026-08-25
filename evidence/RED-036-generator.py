@@ -39,6 +39,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+import evidence_stamp  # noqa: E402 - T-S14, every artefact names the tree it was captured against
+
 OUT = ROOT / "evidence" / "RED-036-a-ladder-that-climbed-on-a-control-that-had-said-nothing.txt"
 SUBJECT = ROOT / "web" / "notes" / "emit.mjs"
 SRC = ROOT / "web" / "notes" / "src"
@@ -309,8 +312,9 @@ def main() -> int:
     return 0
 
 
-HEADER = """RED-036 - a ladder that climbed on a control that had said nothing
+HEADER = f"""RED-036 - a ladder that climbed on a control that had said nothing
 
+{evidence_stamp.tree_stamp()}
 DATE (UTC): 2026-08-24
 SUBJECT   : web/notes/emit.mjs, judged by tests/test_notes_ceiling.py
 LAW       : LAW-NOTES-CEILING

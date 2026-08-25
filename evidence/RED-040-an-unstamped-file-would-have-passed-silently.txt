@@ -1,0 +1,38 @@
+# RED-040 - an unstamped file would have passed silently before this task
+#
+# tree: 3a3267d31aa8b1b8e73423e53afee555bb971cc6 (dirty)
+#
+# Produced by evidence/RED-040-generator.py, checked in beside this file so the run below can be
+# repeated rather than believed. Proves scripts/ratchet_evidence.py CAN FAIL (invariant 5): a real,
+# unstamped file was written directly into evidence/, judged by the ratchet as a subprocess against
+# the actual working tree, and removed again - each state captured in its own buffer rather than
+# assumed from the fact that a file was written.
+#
+# SUBJECT: scripts/ratchet_evidence.py, arming LAW-EVIDENCE-STAMPED-TREE (D- pending, T-S14).
+
+====================================================================================================
+BEFORE THE PLANT - `python3 scripts/ratchet_evidence.py`, exit 0
+====================================================================================================
+
+evidence ratchet clean
+
+====================================================================================================
+THE PLANT - evidence/_red040-planted-unstamped.txt, verbatim
+====================================================================================================
+
+This file was planted by evidence/RED-040-generator.py to prove
+scripts/ratchet_evidence.py refuses an unstamped, non-legacy evidence file.
+It carries no revision stamp anywhere in it.
+
+====================================================================================================
+WITH THE PLANT IN PLACE - `python3 scripts/ratchet_evidence.py`, exit 1
+====================================================================================================
+
+1 evidence file(s) missing a tree stamp:
+  - evidence/_red040-planted-unstamped.txt: no 'tree: <sha>' stamp in its first 20 lines, and it is not named in requirements/EVIDENCE_LEGACY.txt
+
+====================================================================================================
+AFTER THE PLANT WAS REMOVED - `python3 scripts/ratchet_evidence.py`, exit 0
+====================================================================================================
+
+evidence ratchet clean

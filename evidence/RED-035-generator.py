@@ -48,6 +48,9 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+import evidence_stamp  # noqa: E402 - T-S14, every artefact names the tree it was captured against
+
 OUT = ROOT / "evidence" / "RED-035-a-tree-published-on-a-reading-git-said-it-had-not-finished.txt"
 SCRIPTS = ROOT / "scripts"
 TREE_GATE = SCRIPTS / "publishable_tree.py"
@@ -282,6 +285,7 @@ SEP = "=" * 98
 
 REPORT = f"""RED-035 - a tree published on a reading git had said it did not finish
 
+{evidence_stamp.tree_stamp()}
 DATE (UTC): 2026-08-24
 SUBJECT   : scripts/publishable_tree.py (`_porcelain`), judged by tests/test_publishable_tree.py
             scripts/deploy_label.py, which imports that reader, judged by tests/test_deploy_label.py

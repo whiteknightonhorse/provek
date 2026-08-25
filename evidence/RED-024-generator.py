@@ -67,6 +67,9 @@ ORCHESTRA = pathlib.Path.home() / "orchestra"
 """Where the generator and its topic list live. Absent in a clone - see the note above."""
 
 REAL_REPO = pathlib.Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REAL_REPO / "scripts"))
+import evidence_stamp  # noqa: E402 - T-S14, every artefact names the tree it was captured against
+
 SCRATCH = pathlib.Path("/tmp/pv-notes-kill-window")
 REPO = SCRATCH / "repo"
 SNAPS = SCRATCH / "snapshots"
@@ -592,6 +595,7 @@ def main() -> int:
     if args.label:
         out += [args.label, ""]
     out += [
+        evidence_stamp.tree_stamp(REAL_REPO),
         f"COMMAND: python3 {pathlib.Path(__file__).name}",
         f"GENERATOR UNDER TEST: {generator}  sha256 {sha256_of(generator)}",
         f"REPLAYED FROM: web/notes/src/{SEED_NOTE}.md, captured prose, no model called",

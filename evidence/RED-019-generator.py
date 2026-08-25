@@ -64,6 +64,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+import evidence_stamp  # noqa: E402 - T-S14, every artefact names the tree it was captured against
+
 ARTEFACT = ROOT / "evidence" / "RED-019-an-offer-narrower-than-what-arrives.txt"
 SUITE = "tests/test_apply_names_the_probe_cost.py"
 
@@ -727,7 +730,9 @@ def main(argv: list[str]) -> int:
                     .replace("{n_true}", str(len(GREEN_REWRITES)))
                     .replace("{n_total}", str(len(MUTATIONS))))
     pristine = {p: (ROOT / p).read_text(encoding="utf-8") for p in (FORM, PROBER, DOC)}
-    out, seen = [header], {}
+    _title, _rest = header.split("\n", 1)
+    stamped_header = f"{_title}\n# {evidence_stamp.tree_stamp()}\n{_rest}"
+    out, seen = [stamped_header], {}
     try:
         for n, (name, prose, edits) in enumerate(MUTATIONS, start=1):
             touched = apply(edits, pristine)

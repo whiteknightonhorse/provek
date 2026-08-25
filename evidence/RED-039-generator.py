@@ -40,6 +40,9 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+import evidence_stamp  # noqa: E402 - T-S14, every artefact names the tree it was captured against
+
 OUT = ROOT / "evidence" / "RED-039-a-hand-written-yaml-reader-silently-truncated-a-law.txt"
 OLD_PIN = "1d57504198583d13065f366519e87ad387b4c616"  # HEAD immediately before T-S13's fix
 LAWS_PATH = ROOT / "enforced_by.yaml"
@@ -136,6 +139,7 @@ def main() -> int:
 
     body = f"""RED-039 - a hand-written YAML reader silently truncated a law
 
+{evidence_stamp.tree_stamp()}
 DATE (UTC)     : 2026-08-25
 SUBJECT        : scripts/ratchet_decisions.py._load_laws, reading enforced_by.yaml
 TASK           : T-S13

@@ -44,6 +44,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+import evidence_stamp  # noqa: E402 - T-S14, every artefact names the tree it was captured against
+
 SRC = ROOT / "docs" / "INTAKE_OPERATIONS.md"
 ARTEFACT = ROOT / "evidence" / "RED-018-a-sweep-that-cannot-name-what-it-found.txt"
 SUITE = "tests/test_intake_sweep_distinguishes_its_states.py"
@@ -417,7 +420,9 @@ def pytest_run() -> subprocess.CompletedProcess:
 
 def main(argv: list[str]) -> int:
     pristine = SRC.read_text(encoding="utf-8")
-    out, seen = [HEADER], {}
+    _title, _rest = HEADER.split("\n", 1)
+    stamped_header = f"{_title}\n# {evidence_stamp.tree_stamp()}\n{_rest}"
+    out, seen = [stamped_header], {}
     try:
         for n, (name, prose, old, new) in enumerate(MUTATIONS, start=1):
             if pristine.count(old) != 1:

@@ -35,6 +35,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+import evidence_stamp  # noqa: E402 - T-S14, every artefact names the tree it was captured against
+
 OUT = ROOT / "evidence" / "RED-032-a-slug-that-walked-out-of-the-passport-directory.txt"
 SUITE = "tests/test_passport_slug_is_judged_before_it_is_fetched.py"
 
@@ -185,6 +188,8 @@ def main() -> int:
 
 
 HEADER = f"""# RED-032 - a passport slug that walked out of the passport directory
+#
+# {evidence_stamp.tree_stamp()}
 #
 # Produced by evidence/RED-032-generator.py, checked in beside this file so the runs below can be
 # repeated rather than believed. It establishes that LAW-SLUG-JUDGED-BEFORE-FETCH CAN FAIL

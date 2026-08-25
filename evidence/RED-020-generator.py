@@ -41,6 +41,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+import evidence_stamp  # noqa: E402 - T-S14, every artefact names the tree it was captured against
+
 SRC = ROOT / "scripts" / "verify_live.sh"
 ARTEFACT = ROOT / "evidence" / "RED-020-deploy-confirmed-over-a-dead-intake.txt"
 SUITE = "tests/test_verify_live_reads_the_function.py"
@@ -231,6 +234,7 @@ def main() -> int:
 
     body = (
         "RED-020 - the deploy check, proved able to go red on a dead intake\n\n"
+        f"{evidence_stamp.tree_stamp()}\n"
         "DATE (UTC): 2026-08-24\n"
         "SUBJECT   : scripts/verify_live.sh, judged by " + SUITE + "\n\n"
         "WHY THIS FILE EXISTS. Invariant 5: a test must be ABLE to fail, and the red run is the\n"

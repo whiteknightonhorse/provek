@@ -39,6 +39,9 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+import evidence_stamp  # noqa: E402 - T-S14, every artefact names the tree it was captured against
+
 OUT = ROOT / "evidence" / "RED-038-a-door-that-read-a-warned-tree-as-clean.txt"
 GATE = ROOT / "scripts" / "clean_tree_gate.sh"
 SUITE = "tests/test_clean_tree_gate_reads_git_stderr.py"
@@ -212,6 +215,7 @@ SEP = "=" * 98
 
 REPORT = f"""RED-038 - a door that read a warned tree as clean
 
+{evidence_stamp.tree_stamp()}
 DATE (UTC): 2026-08-25
 SUBJECT   : scripts/clean_tree_gate.sh, judged by tests/test_clean_tree_gate_reads_git_stderr.py
 LAWS      : LAW-DOOR-MATCHES-ARBITER, invariant 1 (not_measured is a state of its own)

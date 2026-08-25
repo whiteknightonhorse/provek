@@ -1,0 +1,77 @@
+# Every evidence/ file that existed BEFORE scripts/evidence_stamp.py and scripts/ratchet_evidence.py
+# (T-S14). Frozen in the same commit that adds the ratchet - named exhaustively rather than as a
+# pattern, the same doctrine CLAUDE.md states for ~/orchestra's own .gitignore: a wildcard here
+# ("anything that already exists") would just as quietly cover the next hand-added file as it
+# covers these sixty-seven, and this list exists precisely so that stops being possible.
+#
+# D-28 forbids rewriting any of these to carry a stamp they were not generated with - the repair is
+# forward-only. This list does not grow after this commit: a file landing in evidence/ from here on
+# either carries `tree: <sha>` in its own header or scripts/ratchet_evidence.py fails the build over
+# it, with no third way past.
+AMADEUS-DEMO-001.json
+AMADEUS-DEMO-001.txt
+AMADEUS-RPC-ANOMALY-001.txt
+GREEN-001.txt
+GREEN-002.txt
+GREEN-003.txt
+GREEN-004-every-pin-re-derived-from-its-owner.txt
+GREEN-005-the-pinned-toolchain-was-run-before-it-was-committed.txt
+GREEN-006-the-parser-was-installed-from-the-pinned-set-before-the-gate-relied-on-it.txt
+KEYWORD-CAPTURE-001.txt
+MEASURED-001-the-first-note-pages-as-served.txt
+MEASURED-002-the-shared-lock-this-project-was-relying-on.txt
+PROBE-001.txt
+QM1-001.txt
+QM1-002-sample.json
+QM1-002.txt
+QM1-003-operators.json
+QM2-001.txt
+RED-001-ratchets.txt
+RED-002-push-gate.txt
+RED-003-phase-two.txt
+RED-004-keyword-source.txt
+RED-005-badge-without-run.txt
+RED-006-notes-entrance-without-notes.txt
+RED-007-law-that-never-leaves-this-host.txt
+RED-008-readme-fragment-not-verbatim.txt
+RED-009-intake-accepts-active-mandate.txt
+RED-010-cohort-silence-is-not-a-finding.txt
+RED-011-door-checks-less-than-the-arbiter.txt
+RED-012-survey-absence-collapse.txt
+RED-013-prober-without-a-mandate.txt
+RED-014-intake-grants-what-it-was-asked.txt
+RED-015-absence-measured-with-a-broken-instrument.txt
+RED-016-a-200-is-not-a-measurement.txt
+RED-017-nothing-was-saved-about-a-saved-record.txt
+RED-018-a-sweep-that-cannot-name-what-it-found.txt
+RED-019-an-offer-narrower-than-what-arrives.txt
+RED-020-deploy-confirmed-over-a-dead-intake.txt
+RED-020-erratum-2026-08-24-the-frame-went-stale-not-the-fact.txt
+RED-021-a-deploy-gate-that-reads-less-every-release.txt
+RED-022-the-publisher-would-have-shipped-parked-work.txt
+RED-023-a-deploy-that-signed-someone-elses-work-with-a-commits-name.txt
+RED-023-erratum-2026-08-24-the-hole-that-file-reported-is-closed.txt
+RED-024-a-note-source-outlived-its-manifest-line.txt
+RED-025-a-red-note-had-nothing-between-it-and-the-live-site.txt
+RED-026-a-tag-is-a-pointer-somebody-else-may-move.txt
+RED-027-a-pinned-line-is-one-edit-from-unpinned.txt
+RED-028-a-gate-that-could-be-walked-past-four-ways.txt
+RED-029-the-repair-carried-the-same-defect-one-layer-down.txt
+RED-030-the-eighth-way-past-and-the-honest-line-it-would-have-reddened.txt
+RED-031-seven-green-gates-and-a-workflow-that-never-parsed.txt
+RED-032-a-slug-that-walked-out-of-the-passport-directory.txt
+RED-033-a-lock-that-was-never-taken-reported-as-contention.txt
+RED-034-the-file-every-gate-read-and-no-parser-had-opened.txt
+RED-035-a-tree-published-on-a-reading-git-said-it-had-not-finished.txt
+RED-036-a-ladder-that-climbed-on-a-control-that-had-said-nothing.txt
+RED-037-an-unread-subject-scored-anyway.txt
+RED-038-a-door-that-read-a-warned-tree-as-clean.txt
+RED-039-a-hand-written-yaml-reader-silently-truncated-a-law.txt
+SELF-001.txt
+T-G2-stash-a2-5-parked-work.patch
+T-G2-stash-a2-5-parked-work.staged-only.patch
+T-G2-stash-wip-0b7b3d9.patch
+T-G2-stash-wip-0b7b3d9-untracked-inventory.txt
+T-G2-two-stashes-outlived-their-work.txt
+T-H4-stash-e64678f-intake-operations.patch
+T-H4-two-stashes-drop-insurance.txt
