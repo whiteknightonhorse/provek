@@ -1,5 +1,30 @@
 # Intake: what the operator has to do, and how often
 
+> **SUPERSEDED IN PART, 2026-08-25. The operator no longer has to do anything.**
+>
+> This document opened by calling intake "machinery plus one human habit", and said of the daily
+> sweep that *"daily" is a habit of a person, not a job on a machine* -- because the store was not
+> reachable from the machine. It is now: the deploy token was granted Workers KV read and write.
+>
+> The habit is replaced by `~/orchestra/intake_cron.py`, every five minutes. It reads the store,
+> admits a subject under the rules below, measures it anonymously, publishes the verdict, deploys,
+> confirms the row **on the live site**, and only then marks the record handled. An applicant is
+> told on the form that their entry appears in the registry within about fifteen minutes; measured
+> end to end on the first real run, the whole cycle took sixty-five seconds.
+>
+> **Why this section exists rather than a rewrite.** The reasoning below is still correct and still
+> load-bearing -- particularly the part about `false` and `null` being different findings, which the
+> automation implements rather than replaces. What changed is WHO performs it. Deleting the pages
+> would take the reasoning with them; leaving them unmarked would leave a document instructing a
+> person to do what a machine now does, which is how a rule survives its own repeal.
+>
+> **What is still a person's job:** nothing on the daily path. Deciding whether a refused applicant
+> should be admitted after all, and ratifying changes to the ladder, remain the operator's.
+>
+> **The evidence that the habit needed replacing:** on 2026-08-25 the store held three requests
+> that had gone unswept for five days. Nobody was late; the habit was simply a promise kept until
+> someone is busy.
+
 Intake is machinery plus one human habit. The machinery is described so the habit has something to
 key on; the habit is written down because Fable made the human reply leg conditional on it actually
 being performed rather than intended.

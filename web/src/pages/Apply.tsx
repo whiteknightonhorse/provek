@@ -131,10 +131,26 @@ export default function Apply() {
               )}
             </Strip>
           </div>
+          {/* THIS PARAGRAPH DESCRIBED A HABIT, AND THE HABIT IS GONE. It said runs were
+              performed by hand, that there was no promised date, and that the applicant would be
+              "contacted at the address you gave". Two of those three were true on 2026-08-25 and
+              the third never was: there is no mail channel here, and there was none when the
+              sentence was written. Intake now runs unattended every five minutes, so the page
+              says where the answer appears and how long it takes. The registry entry IS the
+              answer - a public artefact the applicant can check themselves, rather than a message
+              they would have to trust arrived. */}
           <p className="mt-5 text-sm text-[var(--color-ink-2)]">
-            Verification runs are performed by hand at this stage. If yours runs, the passport
-            appears in the registry and you are contacted at the address you gave. There is no
-            queue position and no promised date, because nothing here has promised one.
+            The run is automatic. Your entry appears in the{" "}
+            <a href="/registry/" className="underline underline-offset-2">registry</a> within about
+            fifteen minutes, and that entry is the answer &mdash; we do not send mail, so there is
+            nothing to wait for in an inbox.
+          </p>
+          <p className="mt-3 text-sm text-[var(--color-ink-2)]">
+            Appearing is not the same as scoring well. If your repository cannot be read by a
+            visitor holding no credentials, your row will say <em>not measured</em> and give the
+            reason, because a source we could not read is a state and not a zero. A verdict is
+            computed from what is publicly observable and from nothing else, which is what lets
+            anyone recompute it.
           </p>
           {/* SAID ONLY TO THE PERSON WHO ASKED, and said plainly. Recording a request is not
               granting it, and the gap between the two is where somebody would otherwise assume

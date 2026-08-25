@@ -1106,9 +1106,26 @@ function Apply() {
 					children: sent.delivered ? /* @__PURE__ */ jsxs(Fragment, { children: [/* @__PURE__ */ jsx("strong", { children: "Your request is recorded and the notification to the operator went out." }), " Nothing further is required from you."] }) : /* @__PURE__ */ jsxs(Fragment, { children: [/* @__PURE__ */ jsx("strong", { children: "Your request is recorded." }), " The notification to the operator did not go through, so it may be read later than usual. The record itself is safe - we are telling you this rather than claiming otherwise."] })
 				})
 			}),
-			/* @__PURE__ */ jsx("p", {
+			/* @__PURE__ */ jsxs("p", {
 				className: "mt-5 text-sm text-[var(--color-ink-2)]",
-				children: "Verification runs are performed by hand at this stage. If yours runs, the passport appears in the registry and you are contacted at the address you gave. There is no queue position and no promised date, because nothing here has promised one."
+				children: [
+					"The run is automatic. Your entry appears in the",
+					" ",
+					/* @__PURE__ */ jsx("a", {
+						href: "/registry/",
+						className: "underline underline-offset-2",
+						children: "registry"
+					}),
+					" within about fifteen minutes, and that entry is the answer — we do not send mail, so there is nothing to wait for in an inbox."
+				]
+			}),
+			/* @__PURE__ */ jsxs("p", {
+				className: "mt-3 text-sm text-[var(--color-ink-2)]",
+				children: [
+					"Appearing is not the same as scoring well. If your repository cannot be read by a visitor holding no credentials, your row will say ",
+					/* @__PURE__ */ jsx("em", { children: "not measured" }),
+					" and give the reason, because a source we could not read is a state and not a zero. A verdict is computed from what is publicly observable and from nothing else, which is what lets anyone recompute it."
+				]
 			}),
 			sent.asked === "active" && /* @__PURE__ */ jsxs("p", {
 				className: "mt-4 text-sm text-[var(--color-ink-2)]",
