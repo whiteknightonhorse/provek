@@ -1,0 +1,58 @@
+{
+  "_comment": [
+    "THE subject list. It was a literal inside scripts/cohort.py, which meant a subject could only",
+    "be added by editing the program that measures subjects. Intake needs to add one without a",
+    "human opening an editor, so the list moved out here and the program reads it.",
+    "",
+    "affiliation is PER SUBJECT and it is not decoration. `same_owner` says the subject and the",
+    "verifier's owner are the same person; without it these first rows would read as independent",
+    "verifications, which they are not. An applicant who arrives through /apply/ is NOT the",
+    "operator, so their passport must not carry it -- stamping the constant onto everyone would",
+    "understate every external verdict and, worse, would let a self-verification hide among them.",
+    "",
+    "source records where the row came from. `intake:<id>` is the KV key's uuid, so any published",
+    "verdict can be traced back to the request that asked for it."
+  ],
+  "subjects": [
+    {
+      "repo": "whiteknightonhorse/AI-Property-Sales-Platform",
+      "affiliation": "same_owner",
+      "source": "cohort-b5"
+    },
+    {
+      "repo": "whiteknightonhorse/audiobook-shorts-series",
+      "affiliation": "same_owner",
+      "source": "cohort-b5"
+    },
+    {
+      "repo": "whiteknightonhorse/gov-auction-report",
+      "affiliation": "same_owner",
+      "source": "cohort-b5"
+    },
+    {
+      "repo": "whiteknightonhorse/cryptocardhub-defycard",
+      "affiliation": "same_owner",
+      "source": "cohort-b5"
+    },
+    {
+      "repo": "whiteknightonhorse/APIbase",
+      "affiliation": "same_owner",
+      "source": "cohort-b5"
+    },
+    {
+      "repo": "whiteknightonhorse/AIpush",
+      "affiliation": "same_owner",
+      "source": "cohort-b5"
+    },
+    {
+      "repo": "whiteknightonhorse/mcp-protocol-tester",
+      "affiliation": "same_owner",
+      "source": "cohort-b5"
+    },
+    {
+      "repo": "whiteknightonhorse/provek",
+      "affiliation": "same_owner",
+      "source": "cohort-b5"
+    }
+  ]
+}

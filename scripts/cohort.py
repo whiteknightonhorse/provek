@@ -8,6 +8,7 @@ exactly the behaviour this product exists to expose.
 Every passport carries verifier_affiliation=same_owner - without it the first registry entries
 would read as INDEPENDENT verifications.
 """
+import json
 import os
 import sys
 from datetime import datetime, timezone
@@ -69,16 +70,16 @@ def optional_token() -> str | None:
     return os.environ.get("PROVEK_GITHUB_TOKEN", "").strip() or None
 
 
-COHORT = [
-    "whiteknightonhorse/AI-Property-Sales-Platform",
-    "whiteknightonhorse/audiobook-shorts-series",
-    "whiteknightonhorse/gov-auction-report",
-    "whiteknightonhorse/cryptocardhub-defycard",
-    "whiteknightonhorse/APIbase",
-    "whiteknightonhorse/AIpush",
-    "whiteknightonhorse/mcp-protocol-tester",
-    "whiteknightonhorse/provek",
-]
+# THE LIST LIVES IN data/subjects.json, not here. It was a literal in this file, which meant a
+# subject could only be added by editing the program that measures subjects -- and intake has to
+# add one without a human opening an editor. Read, never defaulted: a missing file is a refusal,
+# because an empty cohort would publish a registry of nothing and read as "we verify no one".
+_SUBJECTS = json.loads((Path(__file__).resolve().parents[1] / "data" / "subjects.json")
+                        .read_text(encoding="utf-8"))["subjects"]
+if not _SUBJECTS:
+    raise SystemExit("data/subjects.json lists no subjects; refusing to publish an empty registry")
+COHORT = [s["repo"] for s in _SUBJECTS]
+AFFILIATION = {s["repo"]: s["affiliation"] for s in _SUBJECTS}
 
 tok = optional_token()
 
@@ -196,7 +197,11 @@ for full in COHORT:
               claims=({"source": "github", "private": ev.private} if ev.read
                       else {"source": "github"}),
               observations=observations(ev),
-              mandate_ref="self-mandate-0001", verifier_affiliation="same_owner",
+              # PER SUBJECT. `same_owner` on an applicant's passport would claim the verifier and
+              # the subject are the same person, which is false and understates their verdict; the
+              # self-mandate is ours and means nothing on a repository we do not own.
+              mandate_ref=("self-mandate-0001" if AFFILIATION[full] == "same_owner" else None),
+              verifier_affiliation=AFFILIATION[full],
               access_channel=access_channel(tok))
     m = p.to_machine()
     # The return value is deliberately dropped, and the call is not: publishing is the side effect
@@ -235,4 +240,19 @@ for full in COHORT:
     print("%-42s %-7s %-9s %-6s %s" % (full.split("/")[1][:40], op["level"],
                                        m["verified"]["projection"], ci, lim))
 
-print("\nregistry:", registry.write(now))
+written = registry.write(now)
+print("\nregistry:", written)
+
+# MIRROR TO WHAT IS ACTUALLY SERVED. This script wrote `public/`; the site and prerender.mjs read
+# `web/public/data/`. Both trees are tracked, both are judged -- by DIFFERENT tests -- and nothing
+# copied one to the other. A human did, by hand, every time. That is one artefact with two homes
+# and no writer, which is the shape this project has paid for repeatedly; left alone it would have
+# let intake publish verdicts into a file no reader is ever served.
+served = Path(__file__).resolve().parents[1] / "web" / "public" / "data"
+(served / "passports").mkdir(parents=True, exist_ok=True)
+mirrored = 0
+for src in sorted((out / "passports").glob("*.json")):
+    (served / "passports" / src.name).write_bytes(src.read_bytes())
+    mirrored += 1
+(served / "registry.json").write_bytes((out / "registry" / "registry.json").read_bytes())
+print(f"mirrored to served tree: registry.json + {mirrored} passport(s)")
