@@ -2434,3 +2434,62 @@ convention and were out of this task's brief (`*-generator.py` only). If any of 
 unstamped file after this commit, `scripts/ratchet_evidence.py` will fail the build over it - which
 is the ratchet doing its job, not a gap in it - and wiring those three scripts to the same helper is
 named here rather than assumed done.
+
+## D-40. The door-matches-CI and re-issue-clock readers are judged by a real parser too, and neither is rewritten
+
+**Decision.** `tests/test_door_matches_ci.py.parse_steps` (reading `.github/workflows/gates.yml`'s
+job/step structure) and `tests/test_reissue_obligation.py._has_cron` (reading the same file's
+`on.schedule` trigger) are hand-written scanners, not YAML parsers - the last two instances of class
+L-31 named in T-S7 and closed for `ratchet_scope.py`/`ratchet_decisions.py` by T-S13/D-38. Both
+files now carry the same shape of cross-check D-38 used: the hand reader's output beside PyYAML's,
+on the live workflow and on a fixture chosen to exercise a limit each reader's own docstring already
+named rather than a limit invented for this task. Neither reader is replaced or retired - the
+argument is unchanged from D-38 and D-30: a hand-written approximation kept honest by a comparison
+is the right shape here, not a first draft of a general parser, and `executable_lines` (which reads
+`scripts/push.sh`, a shell script) is untouched because PyYAML has nothing to say about it.
+
+**Where the comparison runs, and why nothing new is pinned.** The same D-30 fork D-38 already
+resolved the same way: PyYAML has lived in `requirements/ci-tests.in` since D-32, installed by the
+`tests` job, which is the job both of these files already run in (`gates.yml`'s `tests` job runs
+`pytest tests -q ...` over the whole tree, and `scripts/push.sh` step 7 runs the identical command).
+Adding `import yaml` at test-module scope costs nothing new: neither `scripts/ratchet_scope.py` nor
+`scripts/ratchet_decisions.py` nor the code under test here (`parse_steps`, `_step_keys`,
+`_has_cron`) imports it, so the `ratchets` job's zero-dependency property, and `scripts/push.sh`
+itself, are both unchanged.
+
+**What the comparison found: no live defect, unlike D-38's truncated law.** Both hand readers agree
+with PyYAML on the actual `gates.yml` today - `test_hand_written_parser_matches_pyyaml_on_the_live_
+workflow` and `test_hand_written_reader_matches_pyyaml_on_the_live_workflow` both pass unmodified.
+One real quirk surfaced and was normalised rather than treated as a divergence: `_step_keys` does
+not strip trailing comments from a `uses:` value (`actions/checkout@<sha>  # v4.4.0`), while PyYAML
+does not see the comment at all - `_step_identity` compares only the action name before `@`, which
+is the same substring `divergences()` itself uses to classify third-party actions, so the comment is
+not something either reader's correctness depends on.
+
+**What the new tests prove beyond the live file, per invariant 5.** Each file's docstring already
+named a limit its hand reader was never meant to cover: `parse_steps` does not follow YAML anchors
+or aliases ("a step defined by an alias reads as absent"), and `_has_cron` does not either
+("`schedule: *defaults` ... cannot follow an anchor and guessing would be a false green"). Both new
+suites add a fixture where the alias resolves to something live - a step, a cron entry - so PyYAML
+reads it as present while the hand reader reads the same document as absent, and assert the two
+readers actually diverge there rather than merely stating the limit in prose. `_has_cron`'s existing
+`DEAD_CLOCKS["aliased schedule"]` fixture is excluded from the table-wide comparison for a distinct
+reason: it names an anchor that is undefined anywhere in that fixture, which is invalid YAML on its
+own terms and raises out of `yaml.safe_load` rather than returning a boolean a table can compare -
+an exception is not the same statement as "resolves to nothing live," and the new alias fixture is
+built to be valid YAML so the divergence is a boolean rather than a crash.
+
+**Every fixture that predates this task is unaffected, because neither reader's behaviour changed.**
+`divergences()`, `parse_steps`, `_step_keys`, `executable_lines`, and `_has_cron` are all byte-for-
+byte what they were before this commit; only new functions were added beside them. The full suite
+(751 tests, unchanged pass count) and every fixture in `test_the_comparison_is_able_to_fail`,
+`test_a_step_commented_out_at_the_door_is_not_vouched_for_by_its_own_comment`, and
+`test_the_clock_check_is_able_to_fail` still reads the same red on the same mutation it did before -
+watched, not merely re-run, per the brief's own instruction not to change a reader without watching
+its fixtures fail on the new code path.
+
+**What was not done.** Neither reader is rewritten into a general YAML parser, for the reason both
+module docstrings already gave and D-38 already generalised. No `enforced_by.yaml` entry is added:
+these two test files are already the `test` of record for `LAW-DOOR-MATCHES-ARBITER` and
+`LAW-REISSUE-OR-FINDING`, and a new law naming the same two files a third time would be the L-2
+shape D-38 already declined to repeat.

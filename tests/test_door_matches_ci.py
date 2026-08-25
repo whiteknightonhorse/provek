@@ -42,12 +42,23 @@ with its own failure modes and belongs to whoever takes it deliberately, not to 
 made it possible. It is recorded as a named deferral rather than done in passing.
 `scripts/ratchet_scope.py` keeps the ORIGINAL reason intact and unaffected: the `ratchets` job
 installs nothing at all, so a ratchet that imported PyYAML would not run there.
+
+T-S15, ON THE READER ITSELF (class L-31, closed for `ratchet_scope.py` and `ratchet_decisions.py`
+by T-S13/D-38 on the same argument). `parse_steps`/`_step_keys` are STILL not rewritten into a
+parser - the paragraph above is not overturned, only answered: `_pyyaml_step_identities` below puts
+this reader's (job, step) reading beside PyYAML's, on the live workflow and on a fixture this
+reader is DOCUMENTED to get wrong (`parse_steps`'s own docstring: "Anchors and aliases are not
+followed, so a step defined by an alias reads as absent") - so that documented limit is now a
+measured, armed comparison rather than a sentence nobody watches. `executable_lines` is untouched
+by this: it reads `scripts/push.sh`, a shell script, and PyYAML has nothing to say about it.
 """
 from __future__ import annotations
 
 import re
 from datetime import date, datetime, timezone
 from pathlib import Path
+
+import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github" / "workflows" / "gates.yml"
@@ -404,6 +415,67 @@ def _mypy_step() -> dict[str, str]:
     raise AssertionError("gates.yml has no step named 'mypy'")
 
 
+# --- the hand-written reader is judged by a real parser too (T-S15, class L-31) -----------------
+#
+# NOT a rewrite of `parse_steps` - the module docstring says why. This is the comparison D-38
+# already used for `ratchet_scope.py` and `ratchet_decisions.py`: put the hand reader's output
+# beside PyYAML's and let a divergence fail a test, on the live document and on a fixture the hand
+# reader is documented not to cover. The two readers are compared on what `divergences()` actually
+# looks at - a step's identity (its `name`, or a marker built from `run`/`uses` when it has none) -
+# rather than on every key `_step_keys` happens to carry, because fields like `with:` are read by
+# neither reader today and asserting equality on them would be a control for nobody's finding.
+
+def _step_identity(keys: dict[str, object]) -> str:
+    """The same identity `divergences()` reasons about, computed from either reader's output.
+
+    A step's `name` if it has one - the only key `CI_GATES` is ever keyed by. Failing that, a
+    marker from `uses` (the action name before `@`, so a trailing comment PyYAML strips and
+    `_step_keys` does not - see `test_hand_written_parser_matches_pyyaml_on_the_live_workflow` -
+    is not read as a divergence) or from `run`'s first line.
+    """
+    name = keys.get("name")
+    if name is not None:
+        return str(name)
+    uses = keys.get("uses")
+    if uses is not None:
+        return f"__uses__:{str(uses).split('@', 1)[0].strip()}"
+    run = keys.get("run") or ""
+    first = str(run).strip().splitlines()[0] if str(run).strip() else ""
+    return f"__unnamed_run__:{first}"
+
+
+def _hand_step_identities(text: str) -> list[tuple[str, str]]:
+    out: list[tuple[str, str]] = []
+    for job, step in parse_steps(text):
+        if "__job_uses__" in step:
+            out.append((job, f"__job_uses__:{step['__job_uses__']}"))
+        elif "__unparsed__" in step:
+            out.append((job, "__unparsed__"))
+        else:
+            out.append((job, _step_identity(step)))
+    return out
+
+
+def _pyyaml_step_identities(text: str) -> list[tuple[str, str]]:
+    """The real parser's reading of the same document, projected onto the identities above."""
+    doc = yaml.safe_load(text)
+    jobs = doc.get("jobs") if isinstance(doc, dict) else None
+    out: list[tuple[str, str]] = []
+    for job, body in (jobs or {}).items():
+        if not isinstance(body, dict):
+            continue
+        if "uses" in body:
+            out.append((job, f"__job_uses__:{body['uses']}"))
+            continue
+        for step in body.get("steps") or []:
+            if not isinstance(step, dict):
+                out.append((job, "__unparsed__"))
+                continue
+            keys = {k: step[k] for k in ("name", "run", "uses") if k in step}
+            out.append((job, _step_identity(keys)))
+    return out
+
+
 # --- the two lists are one list ----------------------------------------------------------------
 
 def test_every_blocking_ci_gate_is_also_at_the_door():
@@ -559,6 +631,57 @@ def test_a_construct_the_parser_cannot_model_is_a_red_and_not_a_pass():
     swallowed = ("jobs:\n  j:\n    steps:\n      - name: ruff\n        continue-on-error: true\n"
                  "        run: ruff check src\n")
     assert any("does not model" in p for p in divergences(swallowed, DOOR.read_text()))
+
+
+# --- the hand-written parser is judged by a real parser too (T-S15, class L-31) -----------------
+
+def test_hand_written_parser_matches_pyyaml_on_the_live_workflow():
+    """T-S15 (class L-31, closed for the ratchet readers by T-S13/D-38 on the same argument).
+    `parse_steps` is a hand-written scanner, not a YAML parser, and a scanner more permissive than
+    the machine it stands in for certifies files that machine reads differently - the found
+    instance in `enforced_by.yaml` (D-38) is the shape this guards against here, on the document
+    every gate in this file is actually judged against.
+    """
+    text = WORKFLOW.read_text(encoding="utf-8")
+    assert _hand_step_identities(text) == _pyyaml_step_identities(text)
+
+
+def test_the_mypy_step_body_hand_reads_the_same_text_pyyaml_does():
+    """The one field a divergence here would actually be dangerous in: `_mypy_step()["run"]` is
+    what `test_the_date_is_stated_identically_everywhere_it_is_stated` and the two tests after it
+    read the advisory contract out of. `_step_keys`'s block-scalar handling keeps each line's
+    indent relative to the STEP rather than to the scalar - two spaces wider than PyYAML's, which
+    dedents to the scalar's own margin - so the comparison is made after `textwrap.dedent`, which
+    is exactly the transform that difference is. A text divergence beyond that uniform indent would
+    survive dedenting and fail this.
+    """
+    import textwrap
+    text = WORKFLOW.read_text(encoding="utf-8")
+    hand_body = _mypy_step()["run"]
+    doc = yaml.safe_load(text)
+    for body in doc["jobs"].values():
+        for step in body.get("steps") or []:
+            if isinstance(step, dict) and step.get("name") == "mypy":
+                pyyaml_body = step["run"]
+                break
+    assert textwrap.dedent(hand_body) == pyyaml_body
+
+
+def test_a_step_defined_by_an_alias_is_a_divergence_the_comparison_can_catch():
+    """Proves the comparison itself can fail (invariant 5), on the construct `parse_steps`'s own
+    docstring already names as unhandled: "Anchors and aliases are not followed, so a step defined
+    by an alias reads as absent". PyYAML resolves the alias to the real step; `parse_steps` reads
+    only the marker line `- *gate` and finds no `:` in it, so `_step_keys` returns an EMPTY dict
+    for that step - not the anchored step's name, nothing. The fixture must actually diverge, or
+    this test proves nothing.
+    """
+    aliased = ("jobs:\n  j:\n    steps:\n      - &gate\n        name: real gate\n"
+               "        run: pytest\n      - *gate\n")
+    hand = _hand_step_identities(aliased)
+    pyyaml = _pyyaml_step_identities(aliased)
+    assert hand != pyyaml, "the fixture must actually diverge, or this test proves nothing"
+    assert hand == [("j", "real gate"), ("j", "__unnamed_run__:")]
+    assert pyyaml == [("j", "real gate"), ("j", "real gate")]
 
 
 # --- the advisory step carries an expiry, and the expiry is armed -------------------------------

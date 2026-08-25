@@ -22,6 +22,8 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import yaml
+
 from src.liveness import commitments as C
 from src.liveness.obligations import (
     MAX_AGE,
@@ -85,9 +87,14 @@ def _has_cron(workflow: str) -> bool:
     is corrected where it stands rather than quietly kept, because a lapsed reason left in place is
     how an inherited arrangement goes on reading as a decided one (L-2).
 
-    The hand-parser stays for now and its replacement is a named deferral, not an oversight: the
-    limits below are measured and the fixtures exercise them, and swapping the reader is a change
-    that has to be watched to fire in its own right. `scripts/ratchet_scope.py` keeps the original
+    T-S15, ON THE READER ITSELF (class L-31, closed for `ratchet_scope.py` and `ratchet_decisions.py`
+    by T-S13/D-38 on the same argument). This function is not replaced - the reasoning D-38 already
+    made for the ratchet readers applies unchanged here: a hand-written approximation kept honest by
+    a comparison against the real parser is the shape, not a rewrite into one. `_pyyaml_has_cron`
+    below is that comparison, exercised against the live workflow, against every row of
+    `LIVE_CLOCKS`/`DEAD_CLOCKS`, and against a fixture this function is DOCUMENTED to get wrong (the
+    aliased-schedule limit named two paragraphs down) - so the gap between the two readers is
+    measured rather than merely disclosed in prose. `scripts/ratchet_scope.py` keeps the original
     reason unchanged - the `ratchets` job installs nothing, so a ratchet importing PyYAML would not
     run at all.
 
@@ -119,6 +126,35 @@ def _has_cron(workflow: str) -> bool:
                 if item_key.strip("\"'") == "cron" and value.strip().strip("\"'"):
                     return True
     return False
+
+
+def _pyyaml_has_cron(workflow: str) -> bool:
+    """The same question `_has_cron` answers, put to the real parser - the cross-check T-S15 adds.
+
+    THE GITHUB-ACTIONS `on:` TRAP, MEASURED RATHER THAN GUESSED AROUND. YAML 1.1 resolves an
+    unquoted `on` to the boolean `True`, so `yaml.safe_load("on:\\n  push:\\n")` returns
+    `{True: {"push": None}}` - a real divergence from what a human reading the file sees, and the
+    reason `doc.get("on", doc.get(True))` below tries both keys rather than one. This is not this
+    function inventing leniency: it is the same document `_has_cron` reads, read correctly.
+
+    WHAT IS DELIBERATELY NOT COVERED. `schedule: *defaults` resolves an alias `_has_cron` cannot
+    follow - see the limit named in `_has_cron`'s own docstring - and `yaml.safe_load` raises when
+    the anchor is undefined, which `DEAD_CLOCKS["aliased schedule"]` is. That fixture is therefore
+    excluded from the table comparison below and given its own resolvable-alias fixture instead,
+    because an exception is not a divergence a boolean comparison can express.
+    """
+    doc = yaml.safe_load(workflow)
+    if not isinstance(doc, dict):
+        return False
+    on = doc.get("on", doc.get(True))
+    if not isinstance(on, dict):
+        return False
+    schedule = on.get("schedule")
+    if isinstance(schedule, dict):
+        schedule = [schedule]
+    if not isinstance(schedule, list):
+        return False
+    return any(isinstance(item, dict) and str(item.get("cron", "")).strip() for item in schedule)
 
 
 def _run(*, ran_days_ago: float, lapses_in_days: float = 30.0, rows: int = 8) -> C.CohortRun:
@@ -414,6 +450,49 @@ def test_the_clock_check_is_able_to_fail():
         assert _has_cron(sample), f"false red on a valid live trigger: {name}"
     for name, sample in DEAD_CLOCKS.items():
         assert not _has_cron(sample), f"false green on a dead trigger: {name}"
+
+
+# --- the hand-written reader is judged by a real parser too (T-S15, class L-31) ----------------
+
+def test_hand_written_reader_matches_pyyaml_on_the_live_workflow():
+    """T-S15 (class L-31, closed for the ratchet readers by T-S13/D-38). `_has_cron` is a
+    hand-written scanner, not a parser, and a scanner more permissive than the machine it stands
+    in for certifies triggers that machine would read differently. This is that comparison, on the
+    document it actually governs: if `gates.yml`'s real `schedule:` ever moved somewhere this
+    scanner cannot see while PyYAML could still find it - or the other way round - this is where
+    it would show up first, rather than in a clock nobody heard stop ticking.
+    """
+    wf = (ROOT / ".github" / "workflows" / "gates.yml").read_text(encoding="utf-8")
+    assert _has_cron(wf) == _pyyaml_has_cron(wf)
+
+
+def test_hand_written_reader_matches_pyyaml_on_every_control_fixture():
+    """The same comparison, on the whole `LIVE_CLOCKS`/`DEAD_CLOCKS` table `test_the_clock_check_
+    is_able_to_fail` already exercises - so a shape added to that table for one reader is checked
+    against both. `"aliased schedule"` is excluded: it references an anchor that is never defined
+    anywhere in that one-line fixture, which is invalid YAML on its own terms and raises out of
+    `yaml.safe_load` rather than returning a comparable boolean - `_has_cron`'s own line-scanner has
+    no notion of "invalid" and reads it as merely absent. The next test gives the alias limit a
+    fixture PyYAML CAN load, where the divergence is a boolean rather than an exception.
+    """
+    for name, sample in {**LIVE_CLOCKS, **DEAD_CLOCKS}.items():
+        if name == "aliased schedule":
+            continue
+        assert _has_cron(sample) == _pyyaml_has_cron(sample), f"reader diverges from PyYAML: {name}"
+
+
+def test_an_alias_that_resolves_to_a_live_cron_is_a_divergence_the_comparison_can_catch():
+    """Proves the comparison itself can fail (invariant 5), on the construct `_has_cron`'s own
+    docstring already names as unhandled: an aliased `schedule:`. Unlike `DEAD_CLOCKS["aliased
+    schedule"]`, the anchor here IS defined, so PyYAML resolves it to a real cron entry while
+    `_has_cron` - which does not follow anchors at all - reads the same document as dead. The
+    fixture must actually diverge, or this test proves nothing; `_has_cron` staying False is the
+    documented, safe-direction failure (a false red, never a false green).
+    """
+    aliased = ('on:\n  push:\n  defaults: &sched\n    - cron: "17 7 * * *"\n'
+               '  schedule: *sched\n')
+    assert not _has_cron(aliased), "the fixture must be dead to the hand reader, or this proves nothing"
+    assert _pyyaml_has_cron(aliased), "PyYAML must resolve the alias, or this proves nothing"
 
 
 def test_the_incubator_is_meeting_its_own_reissue_obligation():
