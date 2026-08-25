@@ -101,7 +101,7 @@ def main() -> int:
 # the actual working tree, and removed again - each state captured in its own buffer rather than
 # assumed from the fact that a file was written.
 #
-# SUBJECT: scripts/ratchet_evidence.py, arming LAW-EVIDENCE-STAMPED-TREE (D- pending, T-S14).
+# SUBJECT: scripts/ratchet_evidence.py, arming LAW-EVIDENCE-STAMPED-TREE (D-39, T-S14).
 
 {"=" * 100}
 BEFORE THE PLANT - `python3 scripts/ratchet_evidence.py`, exit {rc_before}

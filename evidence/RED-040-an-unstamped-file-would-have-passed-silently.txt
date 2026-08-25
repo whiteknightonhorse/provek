@@ -1,6 +1,6 @@
 # RED-040 - an unstamped file would have passed silently before this task
 #
-# tree: 3a3267d31aa8b1b8e73423e53afee555bb971cc6 (dirty)
+# tree: 575a002997afc2cbd3cfd9ecdf0a29d0b4753bb3 (dirty)
 #
 # Produced by evidence/RED-040-generator.py, checked in beside this file so the run below can be
 # repeated rather than believed. Proves scripts/ratchet_evidence.py CAN FAIL (invariant 5): a real,
@@ -8,7 +8,7 @@
 # the actual working tree, and removed again - each state captured in its own buffer rather than
 # assumed from the fact that a file was written.
 #
-# SUBJECT: scripts/ratchet_evidence.py, arming LAW-EVIDENCE-STAMPED-TREE (D- pending, T-S14).
+# SUBJECT: scripts/ratchet_evidence.py, arming LAW-EVIDENCE-STAMPED-TREE (D-39, T-S14).
 
 ====================================================================================================
 BEFORE THE PLANT - `python3 scripts/ratchet_evidence.py`, exit 0

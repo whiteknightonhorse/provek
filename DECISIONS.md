@@ -2383,3 +2383,54 @@ and `tests/test_ratchet_decisions.py` are already the `test` of record for `LAW-
 `LAW-DECISION-RATCHET`, and `ratchet_decisions.py`'s own dangling check asks only whether a law's
 gate and test files exist, not what they assert — a new law naming the same two files a third and
 fourth time would be the shape L-2 already names, not a repair of it.
+
+## D-39. Evidence artefacts now name the tree revision they were captured against, forward-only
+
+**Decision.** `evidence/*.txt` quotes line numbers, diffs and file paths out of the working tree at
+the moment its generator ran, and until T-S14 no artefact said which revision that was. The
+divergence had already happened once: RED-032's citations were written against one revision and
+T-S5 moved the lines they pointed at, with nothing in RED-032 itself to tell a reader the citations
+had gone stale. `scripts/evidence_stamp.py` gives every `*-generator.py` a shared `tree_stamp()` -
+clean, dirty, or `unreadable`, never a silent default (invariant 1, the same ABI-13-6/ABI-16-11/
+ABI-33-4 cluster `src/abs_profile/measured.py` already binds, applied here to a different counter
+that can just as easily lie) - and reuses `publishable_tree._porcelain` for the dirty reading
+rather than a second `git status` parser (L-2), which means it inherits D-33's stderr fix instead
+of reopening the hole that fix closed.
+
+**Forward-only, per D-28.** RED-032 is not rewritten - editing an old artefact to fix it is exactly
+what D-28 forbids. All fifteen existing `*-generator.py` scripts are edited instead, so the NEXT
+time any of them runs it produces a stamped artefact; their already-committed `.txt` outputs are
+untouched (verified: `git diff` against each was checked empty after every generator that was test-
+run during this task, and the one accidental regeneration - RED-032, run once to smoke-test the
+mechanism - was reverted with `git checkout --` the moment the diff showed it had rewritten
+committed evidence). `scripts/ratchet_evidence.py` is the enforcing half: it fails the build on any
+file under `evidence/` that carries no stamp and is not named in `requirements/EVIDENCE_LEGACY.txt`
+- the sixty-seven files that predate this law, frozen once, in this commit, as an explicit list
+rather than a pattern (CLAUDE.md's own doctrine for `~/orchestra`'s `.gitignore`: a wildcard
+exemption for "whatever already exists" would silently cover the next hand-added file too).
+
+**Why no new pinned set, no new push.sh step, no CI change.** The same reasoning D-38 gives for
+`test_ratchet_scope.py`/`test_ratchet_decisions.py`: `scripts/ratchet_evidence.py` carries no
+`import yaml`-equivalent external dependency, so there is nothing to pin, and the check runs as a
+test (`tests/test_ratchet_evidence.py`) inside the existing `7/7 tests` step rather than as an
+eighth door step - the same shape T-S7's `LAW-WORKFLOWS-PARSE` already established for a check with
+no prior home. `tests/test_door_matches_ci.py` stays green unchanged.
+
+**What RED-040 proves, and why it is one mutation and not several.** Invariant 5: a ratchet that
+has only ever been run against a tree it already agrees with cannot be told apart from `return []`.
+`evidence/RED-040-generator.py` plants one real, unstamped file directly under `evidence/`, runs
+`scripts/ratchet_evidence.py` as a subprocess against the actual working tree, captures the refusal
+verbatim, removes the plant, and proves the ratchet is clean again - refusing to write its artefact
+unless every one of those states was true. One mutation is the right count here, unlike RED-032's
+six: this ratchet has exactly one behaviour to demonstrate (an unstamped, non-legacy file is
+refused), so a second mutation would restate the same fact rather than cover a distinct direction.
+RED-040's own output carries the stamp it argues for, produced by the same helper - a generator
+demanding a rule its own artefact did not follow would be the exact asymmetry SPEC.md §3.1 was
+corrected for once already.
+
+**What this does not do.** It does not retrofit `scripts/measure_qm1.py`, `scripts/measure_qm2.py`
+or `scripts/amadeus_demo.py`, which also write into `evidence/` under a different naming
+convention and were out of this task's brief (`*-generator.py` only). If any of them writes a new,
+unstamped file after this commit, `scripts/ratchet_evidence.py` will fail the build over it - which
+is the ratchet doing its job, not a gap in it - and wiring those three scripts to the same helper is
+named here rather than assumed done.
