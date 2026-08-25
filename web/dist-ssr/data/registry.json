@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-08-25T06:44:57.922506+00:00",
+  "generated_at": "2026-08-25T07:01:20.743701+00:00",
   "disclaimer": "The score measures AUTONOMY. It does not measure reliability, decision quality, profitability, or the presence of an accountable party. An absent projection is not a zero.",
-  "count": 8,
+  "count": 10,
   "subjects": [
     {
       "subject_id": "git:whiteknightonhorse/AI-Property-Sales-Platform",
@@ -54,6 +54,16 @@
       "verifier_affiliation": "same_owner"
     },
     {
+      "subject_id": "git:whiteknightonhorse/cryptocardhub-public",
+      "status": "verified",
+      "projection": 40,
+      "projection_absent_reason": null,
+      "protocol_version": "1.0.0",
+      "valid_until": "2026-09-24T07:01:20.743701+00:00",
+      "passport_ref": "https://provek.dev/data/passports/git_whiteknightonhorse_cryptocardhub-public.json",
+      "verifier_affiliation": "independent"
+    },
+    {
       "subject_id": "git:whiteknightonhorse/gov-auction-report",
       "status": "unverified",
       "projection": null,
@@ -79,8 +89,18 @@
       "projection": 60,
       "projection_absent_reason": null,
       "protocol_version": "1.0.0",
-      "valid_until": "2026-09-24T06:44:57.922506+00:00",
+      "valid_until": "2026-09-24T07:01:20.743701+00:00",
       "passport_ref": "https://provek.dev/data/passports/git_whiteknightonhorse_provek.json",
+      "verifier_affiliation": "same_owner"
+    },
+    {
+      "subject_id": "git:whiteknightonhorse/provek-method",
+      "status": "verified",
+      "projection": 80,
+      "projection_absent_reason": null,
+      "protocol_version": "1.0.0",
+      "valid_until": "2026-09-24T07:01:20.743701+00:00",
+      "passport_ref": "https://provek.dev/data/passports/git_whiteknightonhorse_provek-method.json",
       "verifier_affiliation": "same_owner"
     }
   ]
