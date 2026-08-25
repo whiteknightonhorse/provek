@@ -965,7 +965,11 @@ function Passport({ p }) {
 							className: "text-[var(--color-ink-2)]",
 							children: v.coverage.unknown_shape
 						})],
-						["Level ceiling implied by the map", v.control_map_cap === null ? /* @__PURE__ */ jsx(AbsentMark, { reason: null }) : `L${v.control_map_cap}`]
+						["Level ceiling implied by the map", v.control_map_cap === null ? /* @__PURE__ */ jsx(AbsentMark, { reason: null }) : v.control_map_cap === 5 && Object.keys(v.coverage.out_of_reach ?? {}).length > 0 ? /* @__PURE__ */ jsxs("span", { children: [
+							"none — no limiting path was found ",
+							/* @__PURE__ */ jsx("em", { children: "among the surfaces that were inspected" }),
+							". Surfaces out of reach cannot raise this ceiling and cannot confirm it."
+						] }) : `L${v.control_map_cap}`]
 					] })
 				})
 			]

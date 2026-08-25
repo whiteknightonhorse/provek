@@ -349,9 +349,23 @@ export default function Passport({ p }: { p: P }) {
                 </ul>
               )],
               ["An undiscovered path would look like", <span className="text-[var(--color-ink-2)]">{v.coverage.unknown_shape}</span>],
-              ["Level ceiling implied by the map", v.control_map_cap === null
-                ? <AbsentMark reason={null} />
-                : `L${v.control_map_cap}`],
+              /* THIS ROW READ `L5` AND THAT WAS A CLAIM THE MAP CANNOT MAKE. `implied_level_cap`
+                 returns 5 for "no limiting path was found", and the row printed it as a settled
+                 ceiling three paragraphs under the map's own sentence that it "can never prove
+                 that no undiscovered path exists". On the page for a subject whose coverage
+                 lists three of four surfaces as out of reach, a bare L5 reads as "maximum
+                 autonomy permitted" when what happened is that nobody could look.
+                 The value is unchanged; what it says about itself is not. A ceiling of 5 over
+                 partial coverage is stated as no ceiling FROM WHAT WAS INSPECTED, which is the
+                 whole of what was measured. */
+              ["Level ceiling implied by the map",
+                v.control_map_cap === null
+                  ? <AbsentMark reason={null} />
+                  : v.control_map_cap === 5 && Object.keys(v.coverage.out_of_reach ?? {}).length > 0
+                    ? <span>none &mdash; no limiting path was found <em>among the surfaces that
+                        were inspected</em>. Surfaces out of reach cannot raise this ceiling and
+                        cannot confirm it.</span>
+                    : `L${v.control_map_cap}`],
             ]}
           />
         </div>
