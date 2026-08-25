@@ -1,0 +1,39 @@
+# Dependency updates.
+#
+# Scorecard alert #31 (Dependency-Update-Tool, high) said "no dependency update tool
+# configurations found". That was true: nothing watched these manifests, so a published
+# advisory against a pinned dependency would have reached us only if a human happened to read
+# about it. This file is the fix, not a badge for it.
+#
+# Every manifest in the tree is listed. A partial list would be worse than none: it reports
+# coverage it does not have, which is the failure this project exists to name.
+version: 2
+updates:
+  # The shipped site. `web-1.0` is the frozen predecessor and still builds, so it is watched too:
+  # an unwatched tree that can still be built is an unwatched tree that can still be deployed.
+  - package-ecosystem: npm
+    directory: /web
+    schedule: { interval: weekly }
+    open-pull-requests-limit: 5
+  - package-ecosystem: npm
+    directory: /web-1.0
+    schedule: { interval: weekly }
+    open-pull-requests-limit: 3
+  - package-ecosystem: npm
+    directory: /demo/amadeus
+    schedule: { interval: weekly }
+    open-pull-requests-limit: 3
+
+  # Python requirements are pip-compile outputs. Dependabot edits the .txt lockfiles; the .in
+  # files stay authored by hand, so a bumped pin never silently widens a declared constraint.
+  - package-ecosystem: pip
+    directory: /requirements
+    schedule: { interval: weekly }
+    open-pull-requests-limit: 5
+
+  # The workflows themselves. An action pinned to a moved tag is a supply-chain path into CI,
+  # and CI is what judges every other gate here.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }
+    open-pull-requests-limit: 5
