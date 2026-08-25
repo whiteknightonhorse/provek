@@ -1,6 +1,6 @@
 {
   "subject_id": "git:whiteknightonhorse/APIbase",
-  "projection": 80,
+  "projection": 60,
   "passport": {
     "schema_version": "2.0.0",
     "subject_id": "git:whiteknightonhorse/APIbase",
@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-08-20T08:30:14.931533+00:00",
-    "valid_until": "2026-09-19T08:30:14.931533+00:00",
+    "issued_at": "2026-08-25T06:44:57.922506+00:00",
+    "valid_until": "2026-09-24T06:44:57.922506+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -20,7 +20,7 @@
       "operations": [
         {
           "operation": "development_initiation",
-          "level": "L4",
+          "level": "L3",
           "measured": true,
           "confidence": "inferred",
           "limiters_applied": [
@@ -42,7 +42,7 @@
           "limiters_applied": []
         }
       ],
-      "projection": 80,
+      "projection": 60,
       "projection_absent_reason": null,
       "observations": {
         "signed_commit_share": {
@@ -51,7 +51,7 @@
           "absent_reason": null
         },
         "distinct_authors": {
-          "value": 1,
+          "value": 2,
           "measured": true,
           "absent_reason": null
         },
@@ -61,11 +61,11 @@
           "absent_reason": null
         },
         "workflow_runs": {
-          "value": 867,
+          "value": 983,
           "measured": true,
           "absent_reason": null
         },
-        "head_sha": "582948f9f99e9247f0c83daf2d40f5bf1073ea61"
+        "head_sha": "1a38e5b5965c95a10aa1855a477ea1a4f05911e2"
       },
       "control_map_valid": true,
       "control_map_cap": 5,

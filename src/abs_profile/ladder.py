@@ -56,7 +56,32 @@ NOT_MEASURED_BY_LADDER = (
 SOLE_AUTHOR = 1
 """ASSIGNED. One distinct author is the strongest signal a repository can give that no human
 rota is behind the commits. It is not proof - attack T1 is unimplementable - which is why a level
-built on it is capped and marked `inferred`."""
+built on it is capped and marked `inferred`.
+
+WHAT COUNTS AS AN AUTHOR - RATIFIED BY THE OPERATOR 2026-08-25. Accounts the platform classifies
+as bots are EXCLUDED from this count. The rule follows from the sentence above rather than
+softening it: this constant claims to detect a HUMAN rota, and a dependency bot's commit is not
+evidence of one. Counting it made the signal assert people from commits no person wrote, and cost
+a subject a level for adding automation - an inverted incentive in the instrument that sells
+autonomy measurement.
+
+It was ratified on evidence that it is not self-serving: applying it changes NEITHER of the
+operator's own scores. provek stays L3 (a second identity remains after the bot is removed) and
+APIbase stays L3 (its second account is typed `User`). A rule that rescued our own number would
+have deserved more suspicion, not less.
+
+THE RESIDUAL HOLES, NAMED RATHER THAN DISCOVERED LATER:
+* Automation running on ordinary user accounts (`apibase-dispatch`, `provek-dispatch`) still
+  counts as a human. This error points DOWN - it understates autonomy, never overstates it -
+  which is the correct direction for a gate to be wrong in.
+* Identity resolution is separately defective and NOT addressed here: the collector reads
+  `login` and falls back to the commit e-mail, so three different names sharing one address
+  collapse into one author while one person with a linked account and one without split into
+  two. Measured on provek 2026-08-25. It is left open deliberately - fixing it could RAISE the
+  operator's own scores, so it needs its own control and its own ruling, not a quiet edit by the
+  interested party.
+* Hiding a second human behind a self-installed GitHub App remains possible, but requires
+  repository-admin rights, which is attack T1 above - already acknowledged as unmeasurable."""
 
 SIGNED_SHARE_FOR_L4 = 0.9
 """ASSIGNED. The share of commits carrying a verified signature required before a sole-author

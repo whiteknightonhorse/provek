@@ -83,6 +83,24 @@ AFFILIATION = {s["repo"]: s["affiliation"] for s in _SUBJECTS}
 
 tok = optional_token()
 
+# A TOKEN MAY NOT BUILD A PUBLISHED ARTEFACT. The token was meant to widen the request budget, and
+# the docstring of optional_token says it "changes the budget, never the evidence". Measured
+# 2026-08-25: that is false of the WRITTEN DOCUMENT. Run with a credential, the passport of a
+# PRIVATE subject stops saying `unreadable` and starts carrying values -- signed_commit_share,
+# distinct_authors, workflow_runs, head_sha -- that no anonymous reader can recompute. The
+# projection stays withheld and the channel is stamped honestly, so nothing lies; but the artefact
+# now depends on WHO built it, and every page of this site promises a verdict reproducible by a
+# third party from the same inputs.
+#
+# So the refusal is here, at the point of writing, not in a note asking the operator to remember.
+# For diagnostics, copy this script elsewhere and point its output at a scratch directory: the
+# limit belongs to what gets PUBLISHED, not to what may be measured.
+if tok:
+    raise SystemExit(
+        "REFUSED: PROVEK_GITHUB_TOKEN is set. A credentialed run writes passports an anonymous "
+        "reader cannot reproduce, and reproducibility is the claim this registry makes. Unset it "
+        "and wait for the anonymous window if the budget is exhausted.")
+
 out = Path(__file__).resolve().parents[1] / "public"
 transport = FileTransport(out / "passports")
 registry = PublicRegistry(out / "registry")

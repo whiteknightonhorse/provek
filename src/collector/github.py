@@ -133,6 +133,36 @@ def _api(path: str, token: str | None = None) -> tuple[int, object]:
         return int(code) if code.isdigit() else 0, None
 
 
+def authors_and_bot_commits(commits: list[dict]) -> tuple[set[str], int]:
+    """Distinct human authors, and how many commits came from bot accounts.
+
+    Split out of `collect_github` so it can be judged without a network: the rule it carries was
+    ratified separately (ladder.SOLE_AUTHOR, 2026-08-25), and a ratified rule that only a live API
+    call can exercise is a rule nothing guards.
+
+    BOTS ARE COUNTED, BUT NOT AS AUTHORS. `distinct_authors` feeds SOLE_AUTHOR, whose docstring
+    calls it the strongest signal that no HUMAN ROTA is behind the commits. A dependency bot's
+    commit is not evidence of a human rota, so counting it there made the signal assert people on
+    the strength of commits no person wrote - and cost a subject a level for becoming MORE
+    automated, which is the one thing this ladder exists to reward.
+
+    The test is the PLATFORM's classification, never the name. Renaming an account
+    `something-bot` opens no hole: GitHub types such an account `User`, and the `[bot]` suffix
+    cannot be typed into a user login at all - square brackets are not legal there, and the
+    platform synthesises that suffix for Apps alone.
+    """
+    logins: set[str] = set()
+    bot_commits = 0
+    for c in commits:
+        a = c.get("author") or {}
+        login = a.get("login") or ((c.get("commit") or {}).get("author") or {}).get("email", "?")
+        if a.get("type") == "Bot" or str(login).endswith("[bot]"):
+            bot_commits += 1        # bot_author_share still measures every one of them
+        else:
+            logins.add(login)
+    return logins, bot_commits
+
+
 def collect_github(full_name: str, token: str | None = None) -> GitHubEvidence:
     """Gather evidence about a repository. Unreachability yields NotMeasured, never zeros."""
     notes: list[str] = []
@@ -174,13 +204,7 @@ def collect_github(full_name: str, token: str | None = None) -> GitHubEvidence:
         head = commits[0].get("sha")
         verified = sum(1 for c in commits
                        if (c.get("commit") or {}).get("verification", {}).get("verified"))
-        logins, botn = set(), 0
-        for c in commits:
-            a = c.get("author") or {}
-            login = a.get("login") or ((c.get("commit") or {}).get("author") or {}).get("email", "?")
-            logins.add(login)
-            if a.get("type") == "Bot" or str(login).endswith("[bot]"):
-                botn += 1
+        logins, botn = authors_and_bot_commits(commits)
         signed = Measurement(value=round(verified / len(commits), 3))
         authors = Measurement(value=len(logins))
         bots = Measurement(value=round(botn / len(commits), 3))
