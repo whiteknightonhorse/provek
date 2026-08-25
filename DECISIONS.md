@@ -2318,3 +2318,68 @@ Whether other files outside `~/orchestra/notes_cron.py` still read `emit.mjs`'s 
 scraping source text rather than running it was not swept — `note_ceiling()` was the one this task
 named and the one measured broken; a repository-wide sweep for the same pattern is a separate,
 unstarted question, named here rather than assumed answered.
+
+## D-38. Two more hand-written YAML readers are judged by a real parser, and the D-30 fork is resolved by reuse rather than a new pinned set
+
+**Decision.** `scripts/ratchet_scope.py._load_map` (reading `requirements/ABI_MAP.yaml`) and
+`scripts/ratchet_decisions.py._load_laws` (reading `enforced_by.yaml`) are hand-written scanners,
+not YAML parsers, and T-S7 already named the general shape: *a checker more permissive than the
+machine it stands in for will certify files that machine cannot run* (L-31). `tests/test_ratchet_scope.py`
+and `tests/test_ratchet_decisions.py` now put each reader's output beside PyYAML's — on the live
+file and on planted fixtures — and a divergence fails the suite. Neither reader is replaced or
+retired: T-S13's brief said so explicitly, and it is the same argument D-30 makes about its own
+shell lexer — the comparison is what buys the property, not a rewrite into a full parser.
+
+**The D-30 fork, and which branch was taken.** T-S13 offered two ways to get PyYAML in front of
+these two files: pin a hash-checked set for the `ratchets` CI job (D-30's own pattern, a fourth
+file beside `ci-tests.txt`, `ci-shipped.txt` and `ci-lint.txt`), or run the comparison where PyYAML
+already lives. The second was cheaper and is what T-S7 had already done for the same class of
+defect: `verify_workflow_yaml.py`'s own docstring records that "the `ratchets` job … installs
+nothing at all, by design, so `scripts/ratchet_*.py` hand-parse," and PyYAML has lived in
+`requirements/ci-tests.in` since D-32, installed by the `tests` job and, on this host, present
+without being pinned by `scripts/push.sh` at all (measured: PyYAML 5.4.1 on the audit host,
+6.0.3 in CI). Adding a new pinned set would have meant a `pip-compile` run, a fourth file for
+`verify_pip_pins.py`'s cross-set version check to hold in sync, and a new install step in a job
+whose one architectural property — that it installs nothing — a docstring elsewhere in this
+repository already treats as load-bearing. Writing the cross-check as a TEST instead costs none of
+that: the ratchets themselves are unchanged in shape (no `import yaml` at module scope, so they
+still start with zero dependencies in the `ratchets` job), and the comparison runs in the `tests`
+job and at the door's own pytest step, exactly where `test_workflows_parse.py` already runs the
+identical class of check for the workflow files. "Ratchets move to the `tests` job's environment"
+is true of the VERIFICATION, not of the two ratchet scripts, which is the reading that keeps both
+of T-S7's docstrings — the one on `verify_workflow_yaml.py` and the one on
+`test_door_matches_ci.py` — true rather than retroactively wrong.
+
+**What the comparison found, on the first file it was pointed at.** `enforced_by.yaml`'s
+`LAW-EMITTED-IDS-UNIQUE` carries a `text` field quoting `url(#x)`. `_load_laws` stripped every line
+on the first `#` before ever tokenising it — correct for an actual comment, blind to one quoted
+inside a value — so the field had been silently truncated to `...a url(` for as long as this law
+has existed in the file, with no error and no divergence anyone could see: `id`, `gate` and `test`,
+the three fields this ratchet actually judges dangling-ness by, sit on later, unaffected lines, and
+`text` is read by nothing downstream. That is the found instance of class L-31 rather than a
+constructed one. `_strip_comment` — quotes tracked, `#` inside them left alone — closes it in both
+readers; `requirements/ABI_MAP.yaml` carries no live instance (every value there is a bare
+identifier, never free text), and the identical fix is applied to `_load_map` anyway, before an
+instance rather than after one, because the defect is a property of the parsing strategy and not
+of today's data. The red run, captured against the pinned pre-fix commit and the live file rather
+than asserted, is `evidence/RED-039-a-hand-written-yaml-reader-silently-truncated-a-law.txt`.
+
+**What the new tests prove beyond the live file, per invariant 5.** A test that only reads the
+current tree and finds it clean cannot tell a working comparison from a function returning `[]` —
+the same argument `test_workflows_parse.py`'s own docstring makes about itself. Both new test
+modules therefore also carry a fixture the fix does not and was never meant to cover — a YAML block
+scalar for `enforced_by.yaml`, a flow sequence spanning two physical lines for `ABI_MAP.yaml` —
+and assert the divergence is CAUGHT, not merely that the live file passes.
+
+**What was not done.** Neither reader is rewritten into a general YAML parser; T-S13's brief
+forbade exactly that move, and D-30 already argues why a hand-written approximation kept honest by
+a comparison is the right shape rather than a first draft of one. `scripts/push.sh` is unchanged:
+it already runs the full suite at step 7, on a host where PyYAML happens to be present without any
+`pip install` naming it, which is the same unpinned-toolchain gap D-30 names and declines to close
+for `pytest`, `ruff` and `mypy` at the door — named here rather than treated as newly created by
+this task, since it predates it. No new `enforced_by.yaml` entry is added, unlike T-S7's
+`LAW-WORKFLOWS-PARSE`: T-S7 was arming a check with no existing home, while `tests/test_ratchet_scope.py`
+and `tests/test_ratchet_decisions.py` are already the `test` of record for `LAW-SCOPE-RATCHET` and
+`LAW-DECISION-RATCHET`, and `ratchet_decisions.py`'s own dangling check asks only whether a law's
+gate and test files exist, not what they assert — a new law naming the same two files a third and
+fourth time would be the shape L-2 already names, not a repair of it.

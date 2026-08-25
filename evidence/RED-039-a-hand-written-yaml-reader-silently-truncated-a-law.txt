@@ -1,0 +1,55 @@
+RED-039 - a hand-written YAML reader silently truncated a law
+
+DATE (UTC)     : 2026-08-25
+SUBJECT        : scripts/ratchet_decisions.py._load_laws, reading enforced_by.yaml
+TASK           : T-S13
+PRODUCED       : evidence/RED-039-generator.py, checked in beside this file so the runs below can
+                 be repeated rather than believed.
+PRE-FIX PIN    : 1d57504198583d13065f366519e87ad387b4c616 (HEAD immediately before this task's `_strip_comment` fix)
+
+====================================================================================================
+THE DIVERGENCE NAMED
+====================================================================================================
+
+`enforced_by.yaml` carries, for LAW-EMITTED-IDS-UNIQUE:
+
+  text: "no emitted page defines the same id twice, because a url(#x) reference resolves to the
+         first match and paints the second element from the wrong definition"
+
+The hand-written reader split every line on the first '#' before ever tokenising it - correct for
+an actual comment, and blind to one quoted inside a value. Read back from 1d57504198583d13065f366519e87ad387b4c616 and run for
+real against the live file, it produced:
+
+  LAW-EMITTED-IDS-UNIQUE (pre-fix hand-written reader)
+  {'id': 'LAW-EMITTED-IDS-UNIQUE', 'text': 'no emitted page defines the same id twice, because a url(', 'gate': 'web/notes/emit.mjs', 'test': 'tests/test_emitted_ids_are_unique.py'}
+
+PyYAML, asked about the same bytes:
+
+  LAW-EMITTED-IDS-UNIQUE (PyYAML, ground truth)
+  {'id': 'LAW-EMITTED-IDS-UNIQUE', 'text': 'no emitted page defines the same id twice, because a url(#x) reference resolves to the first match and paints the second element from the wrong definition', 'gate': 'web/notes/emit.mjs', 'test': 'tests/test_emitted_ids_are_unique.py'}
+
+The `text` field is truncated at the quoted '#' with no error - the reader reports the file as
+clean either way, because 'id', 'gate' and 'test', the three fields this ratchet actually judges
+dangling-ness by, sit on later, unaffected lines. Nothing downstream reads `text`, which is the
+only reason the loss went unnoticed rather than unnoticeable.
+
+====================================================================================================
+THE FIX, ON THE SAME LIVE FILE
+====================================================================================================
+
+The working tree's `scripts/ratchet_decisions.py` (`_strip_comment`, quote-aware) reads the same
+LAW-EMITTED-IDS-UNIQUE:
+
+  {'id': 'LAW-EMITTED-IDS-UNIQUE', 'text': 'no emitted page defines the same id twice, because a url(#x) reference resolves to the first match and paints the second element from the wrong definition', 'gate': 'web/notes/emit.mjs', 'test': 'tests/test_emitted_ids_are_unique.py'}
+
+Which agrees with PyYAML, and the whole-file comparison agrees too: the fixed reader's 58 laws
+equal PyYAML's 58 laws, byte for byte, entry for entry.
+
+====================================================================================================
+THE PERMANENT GATE, GREEN
+====================================================================================================
+
+--- `python -m pytest tests/test_ratchet_decisions.py tests/test_ratchet_scope.py -q` ---   exit=0
+
+...........                                                              [100%]
+11 passed in 0.39s

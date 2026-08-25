@@ -9,6 +9,25 @@ TWO SYMMETRIC DEFECTS, both paid for in the operator's systems (ABI-16-8, ABI-16
 
 This gate catches the first: a law in enforced_by.yaml whose gate or test does not exist is
 dangling.
+
+T-S13, ON THE READER ITSELF (class L-31, closed for the workflow files by T-S7's
+`verify_workflow_yaml.py`, here for this reader). `_load_laws` below is a hand-written scanner, not
+a YAML parser, and a scanner more permissive than the machine it stands in for certifies files that
+machine reads differently. It did: `_load_laws` split every line on the first `#` before tokenising
+it, so LAW-EMITTED-IDS-UNIQUE's own `text` - which quotes `url(#x)` - was silently truncated to
+`...a url(` with no error, for as long as this file has carried that law. `id`, `gate` and `test`,
+the three fields this ratchet actually judges, sat on later lines and were untouched; `text` is
+read by nobody downstream, which is the only reason the truncation went unnoticed rather than
+unnoticeable. `_strip_comment` below closes the found instance; the ratchet still does not
+implement YAML, and does not need to - `tests/test_ratchet_decisions.py` puts this file's own
+reading of `enforced_by.yaml` beside PyYAML's, on the live document and on planted fixtures, and a
+future divergence fails THAT suite rather than rotting here in silence.
+
+WHERE THE CROSS-CHECK RUNS, AND WHY NOT HERE. This module imports nothing beyond the standard
+library because the `ratchets` CI job installs nothing at all - by design, the same reason
+`scripts/ratchet_scope.py` hand-parses. PyYAML lives in `requirements/ci-tests.in` (D-32), so the
+comparison against it runs as a TEST, in the `tests` job and at the door's own pytest step, rather
+than as an import added here that would make this ratchet fail to start in the job it runs in.
 """
 from __future__ import annotations
 
@@ -18,6 +37,27 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 LAWS = ROOT / "enforced_by.yaml"
+
+
+def _strip_comment(line: str) -> str:
+    """`line` up to an unquoted '#', quotes tracked so a value's own '#' is not read as one.
+
+    The previous form was `line.split("#", 1)[0]` - correct for a bare comment and wrong the
+    moment a value's text contains the character, which is exactly what LAW-EMITTED-IDS-UNIQUE's
+    `text` does (see the module docstring). This is not a YAML grammar, only the one construct
+    this file's values use today; the cross-check in `tests/test_ratchet_decisions.py` is what
+    stays armed for whatever this still does not cover.
+    """
+    quote: str | None = None
+    for i, ch in enumerate(line):
+        if quote:
+            if ch == quote:
+                quote = None
+        elif ch in "'\"":
+            quote = ch
+        elif ch == "#":
+            return line[:i]
+    return line
 
 
 def _tracked() -> set[str] | None:
@@ -40,7 +80,7 @@ def _tracked() -> set[str] | None:
 def _load_laws(path: pathlib.Path) -> list[dict]:
     laws, cur = [], None
     for raw in path.read_text(encoding="utf-8").splitlines():
-        line = raw.split("#", 1)[0].rstrip()
+        line = _strip_comment(raw).rstrip()
         if not line.strip():
             continue
         s = line.strip()
