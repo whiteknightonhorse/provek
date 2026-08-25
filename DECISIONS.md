@@ -2493,3 +2493,63 @@ module docstrings already gave and D-38 already generalised. No `enforced_by.yam
 these two test files are already the `test` of record for `LAW-DOOR-MATCHES-ARBITER` and
 `LAW-REISSUE-OR-FINDING`, and a new law naming the same two files a third time would be the L-2
 shape D-38 already declined to repeat.
+
+## D-41. A stale `deploy-label.txt` was measured against a build-determinism check, not against
+the live label itself - Fable's round-3 refutation caught two absences this record now names
+
+**The gap, measured.** T-E1 opened with `https://provek.dev/deploy-label.txt` reading `8c9e969`
+while `HEAD` was `0983b4b` - one commit ahead. `LAW-DEPLOY-LABEL-TRUE` (D-25/T-C7) only proves the
+label matches the tree a given deploy run published; it says nothing about a tree that moved
+afterward, and inventing "the label is close enough" would be exactly the unearned claim this
+project exists to catch (invariant 1's cousin: a name is not the artefact).
+
+**What actually separates the two commits.** `git show --stat 0983b4b` (T-S15) touches
+`DECISIONS.md`, `tests/test_door_matches_ci.py`, and `tests/test_reissue_obligation.py` only -
+nothing under `web/`. That is a reason to expect the built site is unchanged, not a proof of it;
+the brief's own instruction was to measure the second branch of the criterion rather than trust the
+diff.
+
+**The measurement, and what a first draft of it over-claimed.** `web/dist` was built twice from a
+clean `npm run build`: once from the working tree at `HEAD` (`0983b4b`), once from a `git worktree`
+checked out at the label's commit (`8c9e969`, `web/node_modules` symlinked in - the lock files are
+byte-identical between the two commits, but that fact is beside the point since neither build runs
+`npm ci` at all, matching what `~/orchestra/deploy.sh` itself does). Both builds reduce to
+`find dist -type f | sort | xargs sha256sum`; the two listings diff byte-for-byte equal - full
+listing and combined digest recorded in
+`evidence/MEASURED-003-dist-build-is-deterministic-across-0983b4b-and-8c9e969.txt`, stamped with the
+tree it was taken against. A first draft of this record read that result as "the tree a fresh
+deploy of `HEAD` would publish is provably the same tree the stale label already names." Fable's
+round-3 refutation (`~/orchestra/fable_E1_round3_answer.md`) caught that this is false by
+construction, in two named ways the digest cannot see:
+
+1. `deploy-label.txt` is written by `deploy_stamp.sh` AFTER `npm run build` and BEFORE
+   `wrangler pages deploy` - it is never produced by the build itself, so neither `dist/` above
+   contains one at all. The live site necessarily still reads `8c9e969` in that exact file until a
+   real deploy runs; a fresh deploy of `HEAD` would differ from the current live site in precisely
+   the byte-readable file the whole task is about, and this measurement never claimed otherwise once
+   named correctly.
+2. `wrangler pages deploy dist` reads the Cloudflare Pages Functions bundle (`web/functions/`,
+   backing `/api/apply`) from the working directory, not from inside `dist/` - `find dist` cannot
+   see it, and `wrangler@4` is deliberately not pinned to an exact version (D-26), so a fresh deploy
+   could bundle Functions differently from what is currently live. Not measured, not ruled out.
+
+What survives, precisely: the STATIC ASSET TREE built from `HEAD` is byte-identical to the STATIC
+ASSET TREE built from `8c9e969`, confirming via a second, independent path (build determinism
+across checkout locations) a fact the source-level diff already implied. It is not proof that the
+live site and a fresh `HEAD` deploy are indistinguishable overall - the label file and the Functions
+bundle are named exceptions, not silently covered.
+
+**The live sweep.** `PROVEK_BASE_URL=https://provek.dev ./scripts/verify_live.sh` read all eight
+addresses (`/`, `/apply/`, `/registry/`, `/method/`, `/phase-2/`, `/api/apply`, `/method/notes/`,
+`/method/notes/not-measured-is-not-zero/`) at 200/405 as required - `LIVE READING GREEN`.
+
+**What is still open, and why this entry does not close T-E1.** T-E1's own acceptance bar also
+requires T-C5 counted, and T-C5 is `submitted-unverified` pending the scheduled cron tick at 04:53
+UTC on 2026-08-25 - `notes_cron.jsonl` carries no `day: 2026-08-25` entry as of this measurement
+(03:04 UTC), and T-C5's own criterion forbids forcing that door. This record closes the
+build-determinism branch for the pair `0983b4b` / `8c9e969` only, on its own terms and no further:
+committing it moves `HEAD`, so if the 04:53 tick lands green it deploys unconditionally and the
+label moves past `0983b4b` on its own (first branch of T-E1's criterion, nothing left to measure
+here); if the tick lands red or does not land, `deploy-label.txt` stays at `8c9e969` but `HEAD` is
+now past this commit, and this record's byte-identity claim would need remeasuring for whatever
+`HEAD` is current at that point rather than being read forward as still covering it.

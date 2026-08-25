@@ -1,0 +1,97 @@
+MEASURED-003 - `npm run build` gives byte-identical `web/dist` from two checkouts, and what that
+does and does not prove about the live `deploy-label.txt` lag
+
+tree: 0983b4b6857ca414cda83ac2048d344c2e83ffaa (dirty)
+
+T-E1 opened with `https://provek.dev/deploy-label.txt` reading `8c9e969` while `HEAD` is
+`0983b4b` - one commit ahead. `git diff 8c9e969..0983b4b --stat` touches only `DECISIONS.md`,
+`tests/test_door_matches_ci.py`, `tests/test_reissue_obligation.py` - nothing under `web/`, so
+source identity between the two commits was already established by that diff before any build ran.
+
+WHAT THIS FILE ADDS ON TOP OF THE DIFF. `npm run build` was run twice on the same `web/node_modules`
+(no `npm ci` in either run, matching what `~/orchestra/deploy.sh` itself does at its build step -
+it never reinstalls): once in the working tree at `HEAD` (`0983b4b`), once in a separate
+`git worktree` checked out at `8c9e969` with `web/node_modules` symlinked in. Both `dist/` were
+reduced to `find dist -type f | sort | xargs sha256sum`; the two 43-line listings diff byte-for-byte
+equal. This adds evidence of BUILD DETERMINISM across checkout paths on top of the already-known
+source identity - it is not a second, independent proof that the two commits build the same content
+(the diff already showed that), and it does not need `npm ci`-vs-symlink reasoning to hold: the lock
+files are identical between the two commits (`git show <sha>:web/package-lock.json | sha256sum`
+matches on both), but that fact is beside the point since neither build touches `npm ci` at all.
+
+Listing for `HEAD` (`0983b4b`), identical to the listing for `8c9e969` - `diff` between the two is
+empty:
+
+ef8bc68ae05941a7f7e9695c0a860e5cae934b170fb86584c75fa472b4ce3657  ./404.html
+0ff00dac13a1524e511ec1b1c929e0b4e03a1ef042e8bbd534382c03833759bc  ./apply/index.html
+328d50b6ece9ca25c46eea3e885ba497f6237f2fb84ef7b92f88e14a1a25e381  ./assets/ibm-plex-mono-latin-400-normal-CvHOgSBP.woff
+08949f728dc52d528e69b1667d15c89a5686a4ee9a296ff90983985f99c380f7  ./assets/ibm-plex-mono-latin-400-normal-DMJ8VG8y.woff2
+09f018c58556e5801ecc49d5b5275dcff4c73311c2af6b88e31c51d76d076a9d  ./assets/ibm-plex-mono-latin-500-normal-CB9ihrfo.woff
+01d285447409c8a588692162439a038b8cbd7871309ee20267b0d2d91c6e8e22  ./assets/ibm-plex-mono-latin-500-normal-DSY6xOcd.woff2
+3b646991d30055a93a4ecc499713d4347953a74a947ecab435ab72070cbdab0e  ./assets/ibm-plex-sans-latin-400-normal-CDDApCn2.woff2
+828907bfd14855c880789878bd2b38ffd284a6c27c8b80f6069900f70dae3901  ./assets/ibm-plex-sans-latin-400-normal-CYLoc0-x.woff
+0717336fb31fcdcde4b8deb3675bb4a0f7f6d484864afcd6751ac29975962203  ./assets/ibm-plex-sans-latin-500-normal-6ng42L7E.woff2
+8d2c7b2eca91869d447851a9c8bd07edf629b26025eacb882291e03b384b4e35  ./assets/ibm-plex-sans-latin-500-normal-BgVn5rGT.woff
+7861a349af1e925a80d56547c2c9e0b1e9f6a9002a9a6867351da2f05122ad21  ./assets/ibm-plex-sans-latin-600-normal-Cu4Hd6ag.woff
+8960851d691c054ed38e259bdcf1a6190d157b4203ed5bb32c632a863fb8ec2f  ./assets/ibm-plex-sans-latin-600-normal-CuJfVYMP.woff2
+7d086709da5312d0746cd03d2e4f41fc8c82fa7a460ce6befcab06bf42d7bb02  ./assets/index-CF6bpvRK.css
+fb0ff970e40064829936dc808e84e91eba16d9292163e425d450dd38fded042b  ./assets/index-DyfCrMjR.js
+a77cf003b0f1e357412656e5f6e82a3283f03ac2022e7654ddb6c57058de355d  ./BingSiteAuth.xml
+768a0c57c926381807abbf4b7f9d8688f535ae94a0743799b31e134e7c3f9db1  ./data/passports/git_whiteknightonhorse_AI-Property-Sales-Platform.json
+f0ba6034e8a8ca36d348c545b387ee6bfbadd8f354230bc85dcf54a7e018ff30  ./data/passports/git_whiteknightonhorse_AIpush.json
+728ff6a3109135a26ab38f719f64eb9c85d73eb54319cf06d2c76c4426766122  ./data/passports/git_whiteknightonhorse_APIbase.json
+a4ac62e515a95b7d6d467411864796cc09283d1570782ec039aba011dccf442d  ./data/passports/git_whiteknightonhorse_audiobook-shorts-series.json
+f29043f5dfa41030fe7f839cf06e83a34c1f0187072d17eb447fef24fdf82938  ./data/passports/git_whiteknightonhorse_cryptocardhub-defycard.json
+ff507aad99dc7f529609c4ad290d951991ef67242a1e57f0e33b40a174c01531  ./data/passports/git_whiteknightonhorse_gov-auction-report.json
+3b04653407a043b7d775b6c837280b22ea07acfbeb72952bfef93b172d6151e4  ./data/passports/git_whiteknightonhorse_mcp-protocol-tester.json
+792124647301c6eec0869bb86f86755b6f45ceea8232c3c7e4c60ae5f5a85da7  ./data/passports/git_whiteknightonhorse_provek.json
+302b93922d4a03473e58d5ba700a3dd94a57172a5b6e29694ef3acdd4236c921  ./data/registry.json
+b8f566893eacbb28f7764c00c5d36807bd457678917ce1d5b43be092e42770a5  ./favicon.svg
+27a31e2d2062576da1cbb6f79e4205e780514c42bdc132555a2d31fb1d112b67  ./_headers
+f1af2dab05223c308df44f0f323b02ce32dd6966003f94f0133952b18dafac16  ./index.html
+d5f9448b0deee97f4a0241c4ec72eabb8c5214c4bb014aa298ef98e3ef8027eb  ./method/index.html
+f0140e24d1492954318dfa6368b491128d59d6b8cdbb65fef97aaf65b2a7efc2  ./method/notes/index.html
+aca64c59823e3dc80f3af7f2e0a7f8a32e640fcaefd6f3abf52943a5eb3e551c  ./method/notes/not-measured-is-not-zero/index.html
+0eeedaafe79b29e87181c007ceeeb69b45c7c862e070bb3517fe65f5bc074bb7  ./method/notes/what-erc-8004-provides-and-what-it-does-not/index.html
+75f628675125f9b286cd380da97bdc0e79ab73b07d2a0e2131873e03c71ccdb8  ./p/git_whiteknightonhorse_AI-Property-Sales-Platform/index.html
+4463e4b375c1b2f4f3c913867991b86f78e715c0bda6dc0e35f1a88f48fb26cf  ./p/git_whiteknightonhorse_AIpush/index.html
+d88d9a246a9250dcc14c5486d3b29cf504bf4923c16d8339f2c5bbc99c627334  ./p/git_whiteknightonhorse_APIbase/index.html
+e48f87a0a8b942d38117e94637f4ae1b9fcce667e08b5d191c300f83a86b2818  ./p/git_whiteknightonhorse_audiobook-shorts-series/index.html
+7262d84fb852faeed63d13d6ff4b4281c2db53278c37c71a08e7e1174a960316  ./p/git_whiteknightonhorse_cryptocardhub-defycard/index.html
+325cff8c717a10d8df0baa6a9a5284f31f844f04e966780a5cdc7c1c8d3bd951  ./p/git_whiteknightonhorse_gov-auction-report/index.html
+1e265cfea382659145a16b4b3aee0babef75a32ace101c32b44ad7a5d40f4903  ./p/git_whiteknightonhorse_mcp-protocol-tester/index.html
+5fe7fdf723b64d37e29811cc74a8bc2d39de471c270ebc6084880b9f3604d55a  ./p/git_whiteknightonhorse_provek/index.html
+a13e3b049bb84fa975f8d4bc028c5d2f134853e11a3cba8f6efcae8d1ec9595d  ./phase-2/index.html
+3d4c37ba452e5a35354e8e0a403e1a6d51ff0536ec30ec4d781990db8c4495a9  ./registry/index.html
+4d36b23849eb1ca200b24df3746d70bbd6be67bc6efd78545683fe265b0bdf7a  ./robots.txt
+45f84eda7f8350c0e104471c0c7c03da521322b10a034e8a8ddc4f67c19cac6b  ./sitemap.xml
+
+Combined digest of the sorted 43-line listing above (`sha256sum` of the listing file), same on
+both sides: `3a8180037c5bbba5a0021bd6df0b00359b88b517226cc9e1f51b5c20142fc841`
+
+WHAT THIS DOES NOT COVER, NAMED RATHER THAN LEFT IMPLICIT (Fable round 3 refutation,
+2026-08-25T03:1xZ, caught the two absences below in a draft of this file that did not name them):
+
+1. `deploy-label.txt` itself. `~/orchestra/deploy.sh` calls `deploy_stamp.sh stamp` AFTER
+   `npm run build` and BEFORE `wrangler pages deploy` - the label is written directly into `dist`
+   as a build step of its own, never produced by `npm run build`. Neither listing above contains a
+   `deploy-label.txt` line at all (`find ... -iname 'deploy-label*'` on both `dist/` returned
+   nothing) - the digest is structurally blind to the one file the live lag is actually about. The
+   live site necessarily still reads `8c9e969` in that file until a real deploy runs; this
+   measurement does not close that gap and was never able to.
+2. The Cloudflare Pages Functions bundle (`web/functions/`, backing `/api/apply`). `wrangler pages
+   deploy dist` reads Functions from the working directory, not from inside `dist/`, so `find dist`
+   never sees it and this digest says nothing about it. `wrangler@4` is pinned by neither exact
+   version nor lockfile-frozen output (deliberately, per D-26), so a fresh deploy could bundle
+   Functions with a newer wrangler minor than the one that produced the live deployment - a
+   difference this measurement cannot see and does not claim to rule out.
+
+WHAT IS ESTABLISHED, PRECISELY. `web/dist` built from `HEAD` (`0983b4b`) is byte-identical, file by
+file, to `web/dist` built from the labelled commit (`8c9e969`) - for the STATIC ASSET TREE ONLY, not
+for the deploy stamp and not for the Functions bundle. Combined with the source-level diff already
+showing no changes under `web/` between the two commits, this is a second, independent confirmation
+(build-path determinism) of a fact the diff already implied, not a proof that a fresh deploy of
+`HEAD` would be indistinguishable from what is currently live.
+
+Both `dist/` directories and both raw listings were removed from `/tmp` after this file was written;
+this artefact is what remains, per the disk budget (10 GB, this host, ten projects).
