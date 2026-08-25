@@ -88,7 +88,16 @@
         view();
       })();
     </script>
+    <!-- The SVG was the only icon declared, and it was the only one that existed: /favicon.ico,
+         /apple-touch-icon.png and /site.webmanifest all answered 404 on the live site. That is not
+         a cosmetic gap. Google's result pages and Safari's tabs fetch the raster names by
+         convention, not the declared SVG, so the mark was absent exactly where a stranger meets
+         the site first. The rasters below are rendered FROM favicon.svg, so there is one design
+         and several encodings of it, never a second drawing that can drift from the first. -->
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#f5f3ee" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#121317" media="(prefers-color-scheme: dark)" />
