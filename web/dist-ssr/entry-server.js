@@ -455,29 +455,6 @@ function Registry({ reg }) {
 				" UTC."
 			]
 		}),
-		/* @__PURE__ */ jsx("div", {
-			className: "mt-5 space-y-2",
-			children: /* @__PURE__ */ jsxs(Strip, {
-				tone: "info",
-				children: [
-					/* @__PURE__ */ jsxs("strong", { children: [reg.count, " records."] }),
-					" ",
-					reg.subjects.every((s2) => s2.verifier_affiliation === "same_owner") ? "All of them are the operator’s own systems, marked as affiliated." : `${reg.subjects.filter((s2) => s2.verifier_affiliation === "same_owner").length} of them are the operator\u2019s own systems, marked as affiliated.`,
-					" ",
-					"A registry of trust that padded itself with invented entries would be doing the exact thing it exists to detect, so it stays this size until real subjects grant a mandate.",
-					reg.subjects.some((s2) => s2.projection_absent_reason === "unreadable") && /* @__PURE__ */ jsxs(Fragment, { children: [
-						" ",
-						/* @__PURE__ */ jsxs("strong", { children: [
-							reg.subjects.filter((s2) => s2.projection_absent_reason === "unreadable").length,
-							" ",
-							"could not be measured at all:"
-						] }),
-						" ",
-						"their sources do not answer a reader holding no credential. Evidence only we can reach is not evidence anyone else can recompute, so those rows carry no number rather than a number nobody could check."
-					] })
-				]
-			})
-		}),
 		/* @__PURE__ */ jsxs("div", {
 			className: "mt-6 flex flex-wrap items-baseline justify-between gap-3",
 			children: [/* @__PURE__ */ jsxs("label", {

@@ -5,7 +5,7 @@
  * near-empty state is designed rather than apologised for. */
 
 import { useMemo, useState } from "react";
-import { Page, Strip } from "../components/Chrome";
+import { Page } from "../components/Chrome";
 import { AbsentMark } from "../components/Measured";
 import { effectiveStatus, slug } from "../types";
 import type { Registry as R } from "../types";
@@ -35,32 +35,11 @@ export default function Registry({ reg }: { reg: R }) {
         {reg.generated_at.slice(0, 19).replace("T", " ")} UTC.
       </p>
 
-      {/* The honest state, stated as method rather than apology. */}
-      <div className="mt-5 space-y-2">
-        <Strip tone="info">
-          {/* Derived, not asserted. The landing sentence was fixed to read from the rows and this
-              one was not - and it becomes a false accusation on the day the first independent
-              subject arrives, which is the day we are inviting people. */}
-          <strong>{reg.count} records.</strong>{" "}
-          {reg.subjects.every((s2) => s2.verifier_affiliation === "same_owner")
-            ? "All of them are the operator\u2019s own systems, marked as affiliated."
-            : `${reg.subjects.filter((s2) => s2.verifier_affiliation === "same_owner").length} of them are the operator\u2019s own systems, marked as affiliated.`}{" "}
-          A registry of trust that padded itself with invented entries would be doing the exact
-          thing it exists to detect, so it stays this size until real subjects grant a mandate.
-          {reg.subjects.some((s2) => s2.projection_absent_reason === "unreadable") && (
-            <>
-              {" "}
-              <strong>
-                {reg.subjects.filter((s2) => s2.projection_absent_reason === "unreadable").length}{" "}
-                could not be measured at all:
-              </strong>{" "}
-              their sources do not answer a reader holding no credential. Evidence only we can reach
-              is not evidence anyone else can recompute, so those rows carry no number rather than a
-              number nobody could check.
-            </>
-          )}
-        </Strip>
-      </div>
+      {/* THE SUMMARY STRIP WAS REMOVED 2026-08-25 at the operator's instruction: it was a wall
+          of prose above the table it described, and the reader came here for the table. Nothing
+          it said is lost -- the affiliation of every row is a column, and an unmeasured row
+          states its own reason where the number would be. A count of them belongs to whoever
+          wants to count, not to everyone who opens the page. */}
 
       <div className="mt-6 flex flex-wrap items-baseline justify-between gap-3">
         <label className="flex items-center gap-2 text-sm">
