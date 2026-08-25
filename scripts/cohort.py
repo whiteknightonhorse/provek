@@ -81,6 +81,27 @@ if not _SUBJECTS:
 COHORT = [s["repo"] for s in _SUBJECTS]
 AFFILIATION = {s["repo"]: s["affiliation"] for s in _SUBJECTS}
 
+# INCREMENTAL MODE, and it exists because of arithmetic, not taste. Scoring one subject costs three
+# anonymous GitHub calls and the anonymous budget is 60 an hour, so a full pass over N subjects
+# costs 3N. At today's eight that is 24 and a rebuild is cheap; at nineteen it is 57, which is one
+# pass per hour -- and intake promises an applicant a registry entry within fifteen minutes. A
+# design that only works while the registry is small is a design that breaks on success.
+#
+# So PROVEK_ONLY measures the named subjects and PRELOADS every other row from the registry that is
+# already published, instead of re-deriving it. The rows carried forward are not re-asserted: they
+# keep the valid_until they were issued with, and `to_machine` downgrades a verified row to stale
+# once that passes. Carrying a row forward therefore cannot silently refresh it.
+#
+# A full pass still has to happen -- that is the daily refresh, run when the budget allows.
+ONLY = [r.strip() for r in os.environ.get("PROVEK_ONLY", "").split(",") if r.strip()]
+if ONLY:
+    unknown = [r for r in ONLY if r not in AFFILIATION]
+    if unknown:
+        raise SystemExit(f"REFUSED: PROVEK_ONLY names subjects absent from data/subjects.json: "
+                         f"{unknown}. A verdict may not be published for a subject the list does "
+                         f"not carry -- that is where affiliation and provenance come from.")
+    COHORT = ONLY
+
 tok = optional_token()
 
 # A TOKEN MAY NOT BUILD A PUBLISHED ARTEFACT. The token was meant to widen the request budget, and
@@ -104,6 +125,22 @@ if tok:
 out = Path(__file__).resolve().parents[1] / "public"
 transport = FileTransport(out / "passports")
 registry = PublicRegistry(out / "registry")
+
+if ONLY:
+    # Carry forward what is already published, so a one-subject run does not erase the rest.
+    # Reconstructed from the emitted artefact, which is the only record of those verdicts.
+    from src.registry.public_registry import Status
+    _prev = out / "registry" / "registry.json"
+    if _prev.is_file():
+        for _r in json.loads(_prev.read_text(encoding="utf-8"))["subjects"]:
+            if _r["subject_id"].removeprefix("git:") in ONLY:
+                continue                      # about to be re-measured; do not carry the old row
+            registry.upsert(Row(
+                _r["subject_id"], Status(_r["status"]), _r["projection"],
+                _r["projection_absent_reason"], _r["protocol_version"],
+                datetime.fromisoformat(_r["valid_until"]), _r["passport_ref"],
+                verifier_affiliation=_r["verifier_affiliation"]))
+        print(f"carried forward: {len(registry._rows)} already-published row(s)")
 now = datetime.now(timezone.utc)
 PROV = Provenance("1.0.0", "1.0.0", 30)
 SITE = "https://provek.dev"
