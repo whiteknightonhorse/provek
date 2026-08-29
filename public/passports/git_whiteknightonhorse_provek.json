@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-08-28T03:43:01.503702+00:00",
-    "valid_until": "2026-09-27T03:43:01.503702+00:00",
+    "issued_at": "2026-08-29T03:43:01.665198+00:00",
+    "valid_until": "2026-09-28T03:43:01.665198+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -61,7 +61,7 @@
           "absent_reason": null
         },
         "workflow_runs": {
-          "value": 297,
+          "value": 298,
           "measured": true,
           "absent_reason": null
         },
