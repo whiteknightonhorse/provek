@@ -564,3 +564,12 @@ laws:
     text: "an evidence artefact names the tree revision it was generated against - clean, dirty, or unreadable, never silently omitted - unless it predates this law and is named in requirements/EVIDENCE_LEGACY.txt"
     gate: scripts/ratchet_evidence.py
     test: tests/test_ratchet_evidence.py
+  # D-42. A narrow, predicate-gated exception to the ornament ban - three landing-page
+  # clips, admitted below the first screen and nowhere else. This law arms the two
+  # predicates a source-tree scan can judge before any asset exists - placement (4) and
+  # captioning (3). Predicates 1, 2 and 5 are properties of a rendered file, not of this
+  # tree, and are named as owed in D-42 rather than silently claimed covered here.
+  - id: LAW-STAGED-MEDIA-LANDING-ONLY
+    text: "a /media/ asset is referenced only from Landing.tsx, below the first screen, and never from an evidence surface; if referenced, Landing.tsx also carries the staged-scene caption"
+    gate: scripts/ratchet_staged_media.py
+    test: tests/test_ratchet_staged_media.py

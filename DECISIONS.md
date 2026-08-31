@@ -2553,3 +2553,83 @@ label moves past `0983b4b` on its own (first branch of T-E1's criterion, nothing
 here); if the tick lands red or does not land, `deploy-label.txt` stays at `8c9e969` but `HEAD` is
 now past this commit, and this record's byte-identity claim would need remeasuring for whatever
 `HEAD` is current at that point rather than being read forward as still covering it.
+
+## D-42. A narrow, predicate-gated exception to the ornament ban - three landing-page clips, admitted below the first screen and nowhere else
+
+**Decision.** The operator ordered three short video clips for the landing page on 2026-08-31.
+Fable reviewed the request against every existing ban on manufactured or stock imagery and ruled
+that a narrow exception is admissible without weakening D-07: D-07 itself already carves out
+"density and restraint **everywhere except the landing**", and SPEC.md:405 gives the landing page
+the one screen this project has ever allowed air. A sketch that asserts no fact about Provek and
+shows only mechanism - two robots, a card changing hands - functions as a diagram, and SPEC.md
+already permits diagrams; it is not the marketing photograph or the fabricated-evidence image the
+prior bans were written to stop. The exception is bounded by five checkable predicates, not by
+intent, exactly because "it isn't really ornament" is the argument every future request for an
+image will also make.
+
+**The five admissibility predicates. An image or clip is admissible if and only if all five hold:**
+
+1. **Zero readable generated characters.** OCR over the raw frames is empty; every character a
+   viewer reads is burned in afterward by `ffmpeg drawtext` from the committed script
+   (`docs/media/FILM_SCRIPT.md`), character-for-character.
+2. **No interface, document, chart, data screen, or number in frame** - nothing a reader could crop
+   out and cite as evidence of a fact.
+3. **Fictionality on the face of the artefact.** The characters exist nowhere real, and the page
+   captions the clip "Staged scene - an illustration, not a measurement."
+4. **Placement is the landing page only, below the first screen.** Zero media on any evidence
+   surface: passport, registry, brief, method, notes, phase-2.
+5. **No fact from `registry.json` or a passport is reproduced in pixels.** Every number a reader
+   sees lives in the DOM and goes stale with the data, never with a video file that outlives it.
+
+**Drift test, so the boundary does not migrate by analogy.** "Generate a dashboard screenshot for
+a note" fails predicate 2. "A photograph of a server" fails predicate 3 (it asserts a real thing,
+not a staged fiction). "A clip on a passport page" fails predicate 4. A future request that clears
+all five is still, on its own terms, the same narrow admission this decision makes - it does not
+widen it.
+
+**Every prior copy of the ban this project ever wrote, cited, and ruled on individually:**
+
+- **`DECISIONS.md:457-463`** (inside D-18, on method notes): *"A stock photograph of a person at a
+  laptop carries no fact about anything this page says [...] it is ornament, and ornament is
+  forbidden by D-07 and SPEC S10. `REPLICATE_API_TOKEN` is refused separately and more firmly: an
+  image manufactured by a model to look like evidence, on a site about evidence, is worse than
+  stock."` **This is the one instance the exception narrows, and only for the surface it was never
+  written about.** D-18's ban stood for `/method/notes/`, a page whose entire genre is descriptive
+  provenance of a measurement - an image there would sit beside real figures computed from
+  `registry.json` and could be read as one of them. That is predicate 5 by another name, and D-18's
+  ban stands there completely unchanged: no note may carry an image, generated or stock, today or
+  under this decision. What D-42 adds is a second, disjoint surface - the landing page, below the
+  first screen - that D-18's paragraph never addressed and predicate 4 now names explicitly so the
+  two do not get reread as one rule.
+- **`DECISIONS.md:87-93`** (D-07, "Strict instrument, not a marketing page"): untouched. D-07's own
+  text is the source of the exception, not its casualty - "density and restraint everywhere
+  **except the landing**" already drew this exact line before this decision existed. D-42 exercises
+  a permission D-07 already granted; it repeals nothing in it.
+- **`SPEC.md:63`** ("Density over decoration") - untouched. That sentence describes the registry
+  table, a page predicate 4 forbids the exception from ever reaching.
+- **`SPEC.md:202`** ("an ornament on a page about evidence is the failure this product exists to
+  find") - untouched. That sentence is written about method notes' figure rule (SPEC S3.6), the
+  same surface D-18 already covers above; predicate 4 keeps the exception structurally unable to
+  reach it.
+- **`SPEC.md:405`** (design direction, "The landing is the only screen with air") - untouched, and
+  it is the clause that makes this decision possible rather than one it revises.
+- **`SPEC.md:425-433`** (S10 Forbidden) - untouched. Nothing in the forbidden list is struck: "the
+  stock hero of centred headline plus two buttons plus a framed screenshot" is still forbidden, and
+  the three admitted clips are neither a stock hero nor a screenshot; "any fabricated registry
+  entry" is still forbidden, and predicate 5 is what keeps a rendered pixel from ever being read as
+  one.
+
+**What is not decided here.** This decision authorises the exception and arms its gate before any
+asset exists - `web/public/media/` is not created by this commit and no image, video, or Renoise
+render is produced or committed by it (that work is later steps, blocked separately). The shot
+script the caption and predicate 1 depend on is committed verbatim, unedited, as
+`docs/media/FILM_SCRIPT.md`.
+
+**Enforcement.** `LAW-STAGED-MEDIA-LANDING-ONLY` (`enforced_by.yaml`) binds this decision's two
+checkable-in-source-tree predicates - placement (4) and captioning (3) - to
+`scripts/ratchet_staged_media.py`, proved by mutation in `tests/test_ratchet_staged_media.py`: a
+`<video>` planted in `Passport.tsx` fails the build. Predicates 1, 2 and 5 are properties of a
+rendered file this ratchet cannot see with nothing yet committed to inspect; they are named here as
+owed to whatever gate runs at generation time, not silently assumed covered - a ratchet that
+claimed more than it measures would be exactly the false-green this project has already paid for
+twice (D-15, and the truncated-law defect in D-38).
