@@ -76,15 +76,37 @@ def test_a_staged_video_on_landing_with_its_caption_passes():
     assert rsm.check() == []
 
 
-def test_a_video_on_landing_without_the_caption_fails():
-    victim = rsm.LANDING
-    original = victim.read_text(encoding="utf-8")
-    try:
-        victim.write_text(original + '\n<video src="/media/order-1.mp4" />\n', encoding="utf-8")
-        problems = rsm.check()
-        assert any("Landing.tsx" in p and "predicate 3" in p for p in problems), problems
-    finally:
-        victim.write_text(original, encoding="utf-8")
+def test_a_video_on_landing_without_the_caption_fails(tmp_path, monkeypatch):
+    """Predicate 3 has teeth: a /media/ reference with no staged-scene caption is refused.
+
+    This used to append a <video> to the REAL Landing.tsx and expect a violation. That fixture
+    expired the moment the feature shipped: once the live file carries the caption, an appended
+    video inherits it, no violation is produced, and a test named for the caption-less case stops
+    exercising it while still passing as long as nobody looks. It also wrote to a production source
+    file mid-run, so a crash between the write and the restore left the tree corrupt.
+
+    The tree is now BUILT, so the test measures the rule instead of the repository's contents.
+    Every path the module derives - ROOT included, since it formats `relative_to(ROOT)` into the
+    message - is redirected, or the synthetic file is not under the root the module reports against.
+    """
+    src = tmp_path / "web" / "src" / "pages"
+    src.mkdir(parents=True)
+    landing = src / "Landing.tsx"
+    monkeypatch.setattr(rsm, "ROOT", tmp_path)
+    monkeypatch.setattr(rsm, "WEB_SRC", tmp_path / "web" / "src")
+    monkeypatch.setattr(rsm, "WEB_FUNCTIONS", tmp_path / "web" / "functions")
+    monkeypatch.setattr(rsm, "LANDING", landing)
+    monkeypatch.setattr(rsm, "EVIDENCE_FILES", ())
+
+    landing.write_text('<video src="/media/order-1.mp4" />\n', encoding="utf-8")
+    problems = rsm.check()
+    assert any("Landing.tsx" in p and "predicate 3" in p for p in problems), problems
+
+    # ... and the SAME file with the caption is accepted, so the assertion above is about the
+    # caption and not merely about the presence of a media reference.
+    landing.write_text(
+        '<video src="/media/order-1.mp4" />\n' + rsm.STAGED_CAPTION + "\n", encoding="utf-8"
+    )
     assert rsm.check() == []
 
 

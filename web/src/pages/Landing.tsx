@@ -1,11 +1,192 @@
 /** The only screen allowed air. Content follows docs/WHY_GET_VERIFIED.md, including its limits -
  * those are part of the pitch, not a caveat to bury. */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Page, Strip } from "../components/Chrome";
 import { AbsentMark } from "../components/Measured";
 import { slug } from "../types";
 import type { Registry as R } from "../types";
+
+/** THE THREE CLIPS. D-42 admits them here and nowhere else, which is why the `/media/` paths sit
+ * in this file rather than in a component of their own: `scripts/ratchet_staged_media.py` refuses
+ * a media reference anywhere under web/src but Landing.tsx, and a tidier component would trip it.
+ *
+ * The transcript below is DOM TEXT, not a caption track and not an image: it is the same words the
+ * frames carry, burned in from docs/media/FILM_SCRIPT.md, so a reader who never plays a byte of
+ * video gets the whole argument - and so the acceptance gate can compare it to the script
+ * character-for-character. */
+const CLIPS = [
+  {
+    src: "/media/provek-1-order.mp4",
+    poster: "/media/provek-1-order.webp",
+    name: "The order",
+    lines: [
+      "ORDER — $5,000",
+      "> ORDER ACCEPTED",
+      "PAY",
+      "PASSPORT?",
+      "WHAT?",
+      "AI BUSINESS PASSPORT.",
+    ],
+  },
+  {
+    src: "/media/provek-2-proof.mp4",
+    poster: "/media/provek-2-proof.webp",
+    name: "The proof",
+    lines: [
+      "I'M AUTONOMOUS.",
+      "YEAH. PROVE IT.",
+      "I HAVE A GITHUB.",
+      "THAT'S NOT A PASSPORT.",
+      "LOOK. 4,000 STARS.",
+      "PASSPORT.",
+    ],
+  },
+  {
+    src: "/media/provek-3-passport.mp4",
+    poster: "/media/provek-3-passport.webp",
+    name: "The passport",
+    lines: [
+      "AI BUSINESS PASSPORT",
+      "> CHECKING EVIDENCE…",
+      "VERIFIED",
+      "(NOT FOREVER)",
+      "PAY ✓  EXECUTE ✓  COMPLETE ✓",
+      "AI agents will do business with AI agents.",
+      "They need a way to prove who they are.",
+      "PROVEK",
+      "provek.dev",
+    ],
+  },
+];
+
+function Film() {
+  const [i, setI] = useState(0);
+  const [reduced, setReduced] = useState(true); // pessimistic until measured: never autoplay first
+  const [inView, setInView] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+  const vids = useRef<(HTMLVideoElement | null)[]>([]);
+
+  useEffect(() => {
+    setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }, []);
+
+  // Plays only while it is actually on screen. A clip running in a scrolled-past section is
+  // bandwidth and battery spent on nobody.
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => setInView(entries.some((e) => e.isIntersecting)),
+      { threshold: 0.4 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    vids.current.forEach((v, n) => {
+      if (!v) return;
+      if (n !== i) {
+        v.pause();
+        return;
+      }
+      if (reduced || !inView) v.pause();
+      else void v.play().catch(() => undefined); // a refused autoplay is not an error worth throwing
+    });
+  }, [i, reduced, inView]);
+
+  return (
+    <section className="mt-14 max-w-[46rem]">
+      <h2 className="text-lg font-semibold">Thirty-nine seconds, if you would rather watch</h2>
+      <p className="mt-2 text-sm text-[var(--color-ink-2)]">
+        Two robots argue about whether one of them can prove what it is. The second one checks the
+        passport before it pays.
+      </p>
+
+      <div ref={box} className="mt-5">
+        <div className="relative aspect-video border border-[var(--color-line)] bg-[var(--color-paper-2)]">
+          {CLIPS.map((c, n) => (
+            <video
+              key={c.src}
+              ref={(el) => {
+                vids.current[n] = el;
+              }}
+              src={c.src}
+              poster={c.poster}
+              // The first clip may fetch its metadata; the other two fetch nothing until they are
+              // reached. A visitor who watches one clip should not pay for three.
+              preload={n === 0 ? "metadata" : "none"}
+              muted
+              playsInline
+              controls={reduced}
+              onEnded={() => setI((n2) => (n2 + 1) % CLIPS.length)}
+              aria-label={`Clip ${n + 1} of ${CLIPS.length}: ${c.name}`}
+              className={`absolute inset-0 h-full w-full object-cover ${n === i ? "" : "invisible"}`}
+            />
+          ))}
+        </div>
+
+        <div className="mt-3 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              aria-label="Previous clip"
+              onClick={() => setI((n) => (n - 1 + CLIPS.length) % CLIPS.length)}
+              className="border border-[var(--color-line-2)] px-2 py-1 text-xs text-[var(--color-ink-2)]"
+            >
+              ←
+            </button>
+            {CLIPS.map((c, n) => (
+              <button
+                key={c.src}
+                type="button"
+                aria-label={`Show clip ${n + 1} of ${CLIPS.length}: ${c.name}`}
+                aria-current={n === i ? "true" : undefined}
+                onClick={() => setI(n)}
+                className={`h-1 w-6 ${n === i ? "bg-[var(--color-accent)]" : "bg-[var(--color-line)]"}`}
+              />
+            ))}
+            <button
+              type="button"
+              aria-label="Next clip"
+              onClick={() => setI((n) => (n + 1) % CLIPS.length)}
+              className="border border-[var(--color-line-2)] px-2 py-1 text-xs text-[var(--color-ink-2)]"
+            >
+              →
+            </button>
+          </div>
+          <span className="text-xs text-[var(--color-ink-3)]">
+            {CLIPS.map((c) => c.name).join(" · ")}
+          </span>
+        </div>
+
+        <p className="mt-3 border-l-2 border-[var(--color-line)] pl-3 text-xs leading-relaxed text-[var(--color-ink-3)]">
+          Staged scene — an illustration, not a measurement. Nothing in it is evidence, no number
+          from the registry appears in it, and the robots do not exist.
+        </p>
+
+        <details className="mt-3">
+          <summary className="cursor-pointer text-xs text-[var(--color-ink-2)]">
+            Transcript — every word on screen, as text
+          </summary>
+          <div className="mt-2 space-y-3">
+            {CLIPS.map((c) => (
+              <div key={c.src}>
+                <div className="text-xs uppercase tracking-wide text-[var(--color-ink-3)]">{c.name}</div>
+                <ul className="mt-1 space-y-0.5 font-mono text-xs text-[var(--color-ink-2)]">
+                  {c.lines.map((l) => (
+                    <li key={l}>{l}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </details>
+      </div>
+    </section>
+  );
+}
 
 /** `reg` is null while the registry is still loading. Rendering a 0 or an invented row there
  * would state a measured fact we do not have yet - a fabrication in the one place this product
@@ -164,6 +345,8 @@ export default function Landing({ reg }: { reg: R | null }) {
           </Strip>
         </div>
       </section>
+
+      <Film />
 
       <section className="mt-12 max-w-[46rem]">
         <h2 className="text-lg font-semibold">The limits, up front</h2>
