@@ -1,3 +1,11 @@
 # The registry and every passport are meant to be found and quoted.
+#
+# Content-Signal splits "found" from "trained on" on purpose (Fable's ruling, values fixed - do
+# not edit): search and live retrieval read the LIVE page at request time, so a citation carries
+# today's status and today's valid_until. Training bakes today's verdict into the model's weights
+# with no field for it to expire in (ABI-15-5, "a fact needs a place to expire"): a model trained
+# now would go on saying "APIbase - L4" long after that passport reads stale. ai-train=no is that
+# rule applied to the one channel with no expiry mechanism at all.
 User-agent: *
 Allow: /
+Content-Signal: search=yes, ai-input=yes, ai-train=no

@@ -17,6 +17,20 @@
 /data/*
   Cache-Control: public, max-age=0, must-revalidate
 
+# RFC 8288 Link headers, on every page, pointing at the two documents this project asks to be
+# found by regardless of which page a crawler entered on: the registry (the same relation
+# `rel="alternate"` already used on <link> in the page head, so a crawler reading only headers and
+# one reading the HTML learn the same thing) and the RFC 9727 API catalog, whose own registered
+# relation type is `api-catalog`.
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
+  Link: <https://provek.dev/data/registry.json>; rel="alternate"; type="application/json", <https://provek.dev/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"
+
+# RFC 9727 requires this exact media type; a static file with no extension would otherwise be
+# served as octet-stream and an RFC-aware reader would refuse to parse it.
+/.well-known/api-catalog
+  Content-Type: application/linkset+json
+
+/llms.txt
+  Content-Type: text/plain; charset=utf-8

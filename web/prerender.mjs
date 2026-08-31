@@ -352,10 +352,20 @@ const urls = written.map((route) => {
 writeFileSync(join(DIST, "sitemap.xml"),
   `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`);
 
-writeFileSync(join(DIST, "robots.txt"),
-  "# The registry and every passport are meant to be found and quoted.\n" +
-  "User-agent: *\nAllow: /\n\n" +
-  `Sitemap: ${SITE}/sitemap.xml\n`);
+// ROBOTS.TXT IS `public/robots.txt` PLUS THE SITEMAP LINE, and it used to be neither.
+//
+// This call rewrote the file with a hardcoded copy of its own, running AFTER `vite build` had
+// already copied `public/robots.txt` into DIST. So the file in the repository was not the file the
+// site served, and editing the source changed nothing a reader receives - measured 2026-08-31,
+// when a `Content-Signal` directive added to `public/robots.txt` was silently overwritten here.
+// Two spellings of one file with no gate between them: the source lost, quietly, every build.
+//
+// The Sitemap line stays generated because it is the only part that depends on SITE, which the
+// build knows and a static file cannot. Everything else now has exactly one home. If the source
+// file is missing this THROWS rather than falling back to a copy: a fallback would restore the
+// very defect - a second spelling that wins whenever the first is unavailable.
+const robotsSource = readFileSync("public/robots.txt", "utf8").trimEnd();  // same relative form as registry.json above
+writeFileSync(join(DIST, "robots.txt"), `${robotsSource}\n\nSitemap: ${SITE}/sitemap.xml\n`);
 
 console.log(`prerendered ${written.length} routes + 404 + sitemap`);
 for (const r of written) console.log("   ", r);

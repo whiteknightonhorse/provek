@@ -1,0 +1,74 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://provek.dev/",
+      "item": [
+        {
+          "href": "https://provek.dev/data/registry.json",
+          "type": "application/json",
+          "title": "Provek registry: every subject submitted, what could be established, and the evidence behind it."
+        },
+        {
+          "href": "https://provek.dev/data/passports/git_whiteknightonhorse_AI-Property-Sales-Platform.json",
+          "type": "application/json",
+          "title": "Autonomy passport: git:whiteknightonhorse/AI-Property-Sales-Platform"
+        },
+        {
+          "href": "https://provek.dev/data/passports/git_whiteknightonhorse_AIpush.json",
+          "type": "application/json",
+          "title": "Autonomy passport: git:whiteknightonhorse/AIpush"
+        },
+        {
+          "href": "https://provek.dev/data/passports/git_whiteknightonhorse_APIbase.json",
+          "type": "application/json",
+          "title": "Autonomy passport: git:whiteknightonhorse/APIbase"
+        },
+        {
+          "href": "https://provek.dev/data/passports/git_whiteknightonhorse_audiobook-shorts-series.json",
+          "type": "application/json",
+          "title": "Autonomy passport: git:whiteknightonhorse/audiobook-shorts-series"
+        },
+        {
+          "href": "https://provek.dev/data/passports/git_whiteknightonhorse_cryptocardhub-defycard.json",
+          "type": "application/json",
+          "title": "Autonomy passport: git:whiteknightonhorse/cryptocardhub-defycard"
+        },
+        {
+          "href": "https://provek.dev/data/passports/git_whiteknightonhorse_cryptocardhub-public.json",
+          "type": "application/json",
+          "title": "Autonomy passport: git:whiteknightonhorse/cryptocardhub-public"
+        },
+        {
+          "href": "https://provek.dev/data/passports/git_whiteknightonhorse_gov-auction-report.json",
+          "type": "application/json",
+          "title": "Autonomy passport: git:whiteknightonhorse/gov-auction-report"
+        },
+        {
+          "href": "https://provek.dev/data/passports/git_whiteknightonhorse_mcp-protocol-tester.json",
+          "type": "application/json",
+          "title": "Autonomy passport: git:whiteknightonhorse/mcp-protocol-tester"
+        },
+        {
+          "href": "https://provek.dev/data/passports/git_whiteknightonhorse_provek.json",
+          "type": "application/json",
+          "title": "Autonomy passport: git:whiteknightonhorse/provek"
+        },
+        {
+          "href": "https://provek.dev/data/passports/git_whiteknightonhorse_provek-method.json",
+          "type": "application/json",
+          "title": "Autonomy passport: git:whiteknightonhorse/provek-method"
+        },
+        {
+          "href": "https://provek.dev/api/apply",
+          "type": "text/plain",
+          "title": "Submit a subject for verification. This is the only endpoint: GET answers 405, an empty POST answers 400, no other method or path exists."
+        },
+        {
+          "href": "https://provek.dev/sitemap.xml",
+          "type": "application/xml",
+          "title": "Sitemap."
+        }
+      ]
+    }
+  ]
+}
