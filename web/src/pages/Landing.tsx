@@ -74,44 +74,29 @@ function Film() {
   // Plays only while it is actually on screen. A clip running in a scrolled-past section is
   // bandwidth and battery spent on nobody.
   //
-  // AN OBSERVER ALONE IS NOT ENOUGH, and the effect twenty lines above this one already says why:
-  // Chrome suspends IntersectionObserver delivery while a document is hidden, so a page restored
-  // into a background tab and then focused can sit with no callback ever arriving. That effect
-  // answers it with a synchronous rect read plus a timed valve; this one had neither, and the
-  // failure mode is not a cosmetic offset but a slider that never plays at all. Measured on the
-  // live site 2026-08-31: a fresh observer with these exact options, on this exact element, fully
-  // in view, delivered nothing in three seconds - and `play()` was therefore never called once.
+  // The rect is read once, synchronously, before the observer is armed - the same move the paced
+  // effect above makes, and for the reason it states there: an observer's first delivery is
+  // asynchronous, so a section already in view at mount would otherwise wait for it.
   //
-  // So the rect is the source of truth and the observer is the cheap fast path. `measure` is
-  // idempotent and costs one layout read; it runs on mount, on scroll and on resize, throttled to
-  // one frame, which is what the observer was avoiding and is affordable for one element.
+  // WHAT WAS AND WAS NOT MEASURED, because the previous version of this comment claimed more than
+  // it knew. On 2026-08-31 this slider was observed on the live site never to call `play()`, and
+  // that was written up as an observer-delivery defect. It was not one: the measuring tab was
+  // `document.visibilityState === "hidden"` the whole time, and a hidden tab suspends observer
+  // delivery AND requestAnimationFrame AND autoplay by design. The world was never stated, so the
+  // reading meant nothing. Autoplay behaviour here remains UNVERIFIED from that environment rather
+  // than verified-good; what is verified is everything that does not need a visible tab - the
+  // markup, the transcript, the media delivery, and the labels.
   useEffect(() => {
     const el = box.current;
     if (!el) return;
-    let frame = 0;
-    const measure = () => {
-      frame = 0;
-      const r = el.getBoundingClientRect();
-      const visible = Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0);
-      setInView(visible > 0 && visible / Math.max(r.height, 1) >= 0.4);
-    };
-    const schedule = () => {
-      if (!frame) frame = window.requestAnimationFrame(measure);
-    };
-    measure();
-
-    const io = new IntersectionObserver(schedule, { threshold: [0, 0.4, 1] });
+    const r = el.getBoundingClientRect();
+    setInView(r.top < window.innerHeight && r.bottom > 0);
+    const io = new IntersectionObserver(
+      (entries) => setInView(entries.some((e) => e.isIntersecting)),
+      { threshold: 0.4 },
+    );
     io.observe(el);
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule, { passive: true });
-    document.addEventListener("visibilitychange", schedule);
-    return () => {
-      io.disconnect();
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
-      document.removeEventListener("visibilitychange", schedule);
-      if (frame) window.cancelAnimationFrame(frame);
-    };
+    return () => io.disconnect();
   }, []);
 
   useEffect(() => {
