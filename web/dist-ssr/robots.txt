@@ -1,3 +1,0 @@
-# The registry and every passport are meant to be found and quoted.
-User-agent: *
-Allow: /

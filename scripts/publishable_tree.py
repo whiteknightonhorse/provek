@@ -57,8 +57,12 @@ import sys
 # Paths the publication cycle itself writes. A dirty path under one of these is the cycle's own
 # output; a dirty path anywhere else is somebody's parked work.
 #
-# `web/dist-ssr/` and `web/dist/` are build products - the first is tracked and rewritten by every
-# `npm run build`, the second is gitignored and never appears here at all. Listing a generated
+# `web/dist-ssr/` and `web/dist/` are build products, and since 2026-08-31 BOTH are gitignored and
+# untracked, so neither appears here at all. `.gitignore` had listed `web/dist-ssr/` all along, but
+# thirteen files had been committed before that line existed and an ignore rule does not reach what
+# is already tracked - so every `npm run build` rewrote tracked files and dirtied the tree. That
+# stayed invisible while the build happened to be byte-for-byte identical, and surfaced the day the
+# registry data actually changed: `scripts/push.sh` refused its own step 6. Listing a generated
 # directory as cycle-owned means a hand edit inside it would also pass, and that is accepted rather
 # than glossed: the next build overwrites it, so an edit there is not content a reader can receive.
 CYCLE_OWNED = (
