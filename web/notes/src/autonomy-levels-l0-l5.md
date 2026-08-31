@@ -115,7 +115,9 @@ The codebase labels these **assigned, not measured**. They are a stated reading 
 
 Accounts the platform classifies as bots are excluded from the author count, ratified by the operator on 2026-08-25. The rule follows from what `SOLE_AUTHOR` in [the methodology](/method/) claims to detect: one distinct author is the strongest signal of a human rota behind the commits. A dependency bot's commit is not evidence of a human rota. Counting it would assign people to code no person wrote and penalize adding automation - an inverted incentive in an instrument measuring autonomy.
 
-This rule was ratified on evidence it does not serve the operator's interests. Applying it changes neither of the operator's scores. provek stays L3 because a second identity remains after the bot is removed. APIbase stays L3 because its second account is typed `User`, not `Bot`. A rule that raised the operator's levels would deserve suspicion; unchanged scores do not.
+This rule was ratified on evidence it does not serve the operator's interests. Applying it changes neither of the operator's scores. provek stays L3 because a second identity remains after the bot is removed. A rule that raised the operator's levels would deserve suspicion; unchanged scores do not.
+
+APIbase is L3 for a different reason, corrected here 2026-08-31 after Fable found the original one false. Within its 30-day evidence window APIbase has a single author, so there is no second account for this rule to exclude at all. It is L3 because `signed_commit_share` is 0.0, below the 0.9 `SIGNED_SHARE_FOR_L4` threshold a sole author must clear to reach L4 - the same rule that keeps `pipeline.verify` from granting it L4.
 
 Automation running on ordinary user accounts such as `apibase-dispatch` and `provek-dispatch` still counts as a human author. This error points downward - it understates autonomy rather than overstating it, which is the correct direction for a gate to fail in.
 

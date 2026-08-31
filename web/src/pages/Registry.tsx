@@ -56,6 +56,25 @@ export default function Registry({ reg }: { reg: R }) {
         </Strip>
       </div>
 
+      {/* SECOND ERRATUM, SAME SHAPE AS THE FIRST (Fable, 2026-08-31): a defect in the RULE, not in
+          the data behind it. `scripts/cohort.py` granted L4 to a sole author without ever checking
+          the signature share the published methodology requires for that rung -
+          `SIGNED_SHARE_FOR_L4` was not even imported there. `pipeline.verify`, computed from the
+          SAME inputs, correctly withheld L4 for exactly this reason - a cohort computed from LESS
+          evidence was outranking a pipeline computed from more, which is backwards: a compensation
+          for weighing less evidence (the wider small-team band `SMALL_TEAM_FOR_L3` is ratified for)
+          may only widen what a subject can still reach, never widen what it can additionally claim.
+          The rule now matches what is published on this site in both procedures. */}
+      <div className="mt-3">
+        <Strip tone="warn">
+          <strong>Erratum, 2026-08-31.</strong> A defect in the rule, not the data: the cohort
+          granted L4 to a sole author without checking the signature share the published
+          methodology requires for that rung. The rule now matches what is published; APIbase, the
+          one passport the defect affected, moved from L4 to L3 (projection 80 to 60). Nothing here
+          disappears &mdash; this notice stays up next to the one it follows.
+        </Strip>
+      </div>
+
       {/* THE SUMMARY STRIP WAS REMOVED 2026-08-25 at the operator's instruction: it was a wall
           of prose above the table it described, and the reader came here for the table. Nothing
           it said is lost -- the affiliation of every row is a column, and an unmeasured row

@@ -41,7 +41,7 @@ at `passport.*`, and coverage at `passport.verified.coverage`.
 [
   {
     "operation": "development_initiation",
-    "level": "L4",
+    "level": "L3",
     "measured": true,
     "confidence": "inferred",
     "limiters_applied": [

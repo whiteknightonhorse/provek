@@ -62,6 +62,20 @@ export default function Method() {
           <Facts rows={LADDER} />
         </div>
 
+        {/* THE WINDOW WAS A NUMBER IN `provenance` BEFORE IT WAS A RULE ANYONE COULD READ (Fable,
+            2026-08-31). Every passport already states `evidence_window_days`, but nowhere on this
+            page did the number decide anything in the reader's eyes - it looked like a footnote
+            about how the evidence was gathered, not like the input that the author-count rungs are
+            computed against. It is EVIDENCE_WINDOW_DAYS in src/collector/github.py, and it decides
+            how many distinct authors a subject shows before the ladder ever looks at signatures. */}
+        <h2 className="mt-8 text-lg font-semibold">The evidence window</h2>
+        <p className="mt-1 text-sm text-[var(--color-ink-2)]">
+          Author counts are read over a rolling 30-day window, not over the repository's whole
+          history. A subject with one author in the last 30 days and twelve before that is read as
+          one author &mdash; the window is what "distinct authors" means throughout this
+          methodology, and every passport states the exact window it used.
+        </p>
+
         <h2 className="mt-8 text-lg font-semibold">What it does not measure</h2>
         <ul className="mt-2 text-sm text-[var(--color-ink-2)] list-disc pl-5 space-y-1">
           <li>decision quality</li>
@@ -69,6 +83,23 @@ export default function Method() {
           <li>whether the autonomy is desirable</li>
           <li>reliability, and whether anyone is accountable</li>
         </ul>
+
+        {/* THE DENOMINATOR IS THE PART THAT WAS MISSING (Fable, 2026-08-31). A visitor who sees
+            "60" or "80" on the registry with no formula in reach reads it against an unstated
+            denominator of 100, the way a school mark or a credit score would be read. The true
+            denominator is 5 points per MEASURED operation - unmeasured operations drop out of the
+            sum on both sides rather than counting as zero, which is the same "absence is not a
+            zero" rule this page states elsewhere applied to the one number visitors are most
+            likely to skim past. */}
+        <h2 className="mt-8 text-lg font-semibold">The projection</h2>
+        <p className="mt-1 text-sm text-[var(--color-ink-2)]">
+          The 0-100 number on the registry is: sum the ladder value of every MEASURED operation,
+          divide by 5 times the count of operations that were measured, multiply by 100. Operations
+          with no measurement do not enter the sum or the count &mdash; they are absent, not zero.
+          A subject with exactly one measured operation, scored L3, projects to 60: 3 &divide; (5
+          &times; 1) &times; 100. A second measured operation would change the denominator, and
+          therefore the number, even if its own level changed nothing else.
+        </p>
 
         <h2 className="mt-8 text-lg font-semibold">Evidence classes</h2>
         <p className="mt-1 text-sm text-[var(--color-ink-2)]">
@@ -108,6 +139,23 @@ export default function Method() {
             go red over it (L-7, L-13). So the prose points at the index and lets the index do the
             counting, which is the only copy of that number that cannot drift from the artefact. */}
 
+        {/* THE GAP THIS CLOSES (Fable, 2026-08-31). `github` is listed as `inspected` on every
+            passport that could read it, and GitHub separately exposes a Deployments API - over a
+            hundred records, readable anonymously - that this project has never queried. Leaving
+            that unsaid let `inspected: [github]` imply more than it meant: the channel was
+            inspected for commits and authorship, not for deployment history. The honest fix costs
+            nothing to build: the `deployment` operation is declared in `coverage.out_of_reach`
+            with the reason "collector not implemented", the same place `server`, `treasury` and
+            `database` already say why they are unreached. */}
+        <h2 className="mt-8 text-lg font-semibold">What "deployment" means on a passport today</h2>
+        <p className="mt-1 text-sm text-[var(--color-ink-2)]">
+          The `github` channel is inspected for commits and authorship only. No collector queries
+          deployment history &mdash; not even GitHub's own Deployments records, which are public.
+          Every passport now states this plainly, in `coverage.out_of_reach`, with the reason
+          "collector not implemented" &mdash; a declared absence of collection, never a probe that
+          ran and found nothing.
+        </p>
+
         <h2 className="mt-8 text-lg font-semibold">Notes on the method</h2>
         <p className="mt-1 text-sm text-[var(--color-ink-2)]">
           Parts of the methodology carry more argument than this page has room for, and those are
@@ -136,6 +184,28 @@ export default function Method() {
           </a>
           .
         </p>
+
+
+        {/* WHY THIS LIST EXISTS AT ALL (Fable, 2026-08-31). "Declared holds the door, undeclared
+            does not" - the L4 defect this page's other additions respond to was exactly an
+            undeclared rule change nobody could have caught by reading this page, because the page
+            said nothing for the change to contradict. Naming what is NOT yet published here is
+            cheaper than the alternative, which is a reader discovering the gap by finding a
+            surprising verdict, the way this one was found. */}
+        <h2 className="mt-8 text-lg font-semibold">Open items</h2>
+        <p className="mt-1 text-sm text-[var(--color-ink-2)]">
+          Measured or coded today, and not yet published here as a rule of the method:
+        </p>
+        <ul className="mt-2 text-sm text-[var(--color-ink-2)] list-disc pl-5 space-y-1">
+          <li>the rules for L0, L1, L2 and L5 &mdash; only L3 and L4's thresholds are stated above</li>
+          <li>the denominator `signed_commit_share` is a share OF &mdash; which commits are counted
+            in it</li>
+          <li>the comparison operators used at each threshold (&ge;, &le;, or ==)</li>
+          <li>whether any level above L4 is reachable at all under `SOLE_AUTHOR`</li>
+          <li>the full list of limiters O1-O3 and what each one does to a verdict</li>
+          <li>the inputs `identity_window_closed`, `has_runtime_trace`, the `unlinked_*` measures,
+            and `control_map_cap`</li>
+        </ul>
 
       </div>
     </Page>

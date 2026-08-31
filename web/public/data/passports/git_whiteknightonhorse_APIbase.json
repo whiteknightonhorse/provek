@@ -1,6 +1,6 @@
 {
   "subject_id": "git:whiteknightonhorse/APIbase",
-  "projection": 80,
+  "projection": 60,
   "passport": {
     "schema_version": "2.0.0",
     "subject_id": "git:whiteknightonhorse/APIbase",
@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-08-31T03:43:01.845277+00:00",
-    "valid_until": "2026-09-30T03:43:01.845277+00:00",
+    "issued_at": "2026-08-31T04:40:13.761093+00:00",
+    "valid_until": "2026-09-30T04:40:13.761093+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -20,7 +20,7 @@
       "operations": [
         {
           "operation": "development_initiation",
-          "level": "L4",
+          "level": "L3",
           "measured": true,
           "confidence": "inferred",
           "limiters_applied": [
@@ -42,7 +42,7 @@
           "limiters_applied": []
         }
       ],
-      "projection": 80,
+      "projection": 60,
       "projection_absent_reason": null,
       "observations": {
         "signed_commit_share": {
@@ -89,6 +89,7 @@
           "github"
         ],
         "out_of_reach": {
+          "deployment": "collector not implemented",
           "server": "runtime not presented by the subject",
           "treasury": "outside MVP scope",
           "database": "no access through the chosen channel"
