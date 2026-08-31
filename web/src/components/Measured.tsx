@@ -8,7 +8,7 @@
  * while a genuinely failing check shows a measured 0 in red. Two different states of the world,
  * two different appearances - proven in a product people already trust. */
 
-const REASON_TEXT: Record<string, string> = {
+export const REASON_TEXT: Record<string, string> = {
   nothing_qualified: "the check ran and nothing qualified",
   check_did_not_run: "the check did not run",
   unreadable: "the source could not be read",
@@ -36,13 +36,21 @@ export function AbsentMark({ reason }: { reason: string | null }) {
   );
 }
 
-/** The 0..100 projection, or its absence with the reason. */
+/** The 0..100 projection, or its absence with the reason.
+ *
+ * `arithmetic`, added 2026-08-31: the exact expression `src/verify/scorer.py::projection()` used
+ * to reach `value` - `round(sum(level for measured) / (5 * len(measured)) * 100)` - spelled out
+ * in the reader's units so "60" reads as "one operation, at L3, out of a possible L5" rather than
+ * as a raw score out of 100. Built by the caller from the real operations, never hand-typed here:
+ * a mismatch between this line and the number above it would be worse than the plain number was. */
 export function Projection({
   value,
   absentReason,
+  arithmetic,
 }: {
   value: number | null;
   absentReason: string | null;
+  arithmetic?: string | null;
 }) {
   if (value === null) {
     return (
@@ -56,21 +64,37 @@ export function Projection({
     );
   }
   return (
-    <div className="flex items-baseline gap-2">
-      <span className="text-5xl font-semibold tabular-nums leading-none">{value}</span>
-      <span className="text-sm text-[var(--color-ink-3)]">/ 100</span>
+    <div>
+      <div className="flex items-baseline gap-2">
+        <span className="text-5xl font-semibold tabular-nums leading-none">{value}</span>
+        <span className="text-sm text-[var(--color-ink-3)]">/ 100</span>
+      </div>
+      {arithmetic && (
+        <p className="mt-1 font-mono text-[11.5px] text-[var(--color-ink-3)]">{arithmetic}</p>
+      )}
     </div>
   );
 }
 
-/** Level rail: the number or "?" plus a colour bar underneath. Anatomy from OpenSSF Scorecard. */
+/** Level rail: the number, plus a six-notch scale (L0..L5) underneath filled to the level.
+ *
+ * ACCEPTED LAYOUT, 2026-08-31, AND THE ONE THING THE MOCKUP GOT WRONG.
+ *
+ * The approved mockup filled the notches in `--color-pass`. That is exactly the shape Fable's
+ * I3 was written against: "this rail used to paint L4-L5 in the pass colour and L0-L1 in the
+ * fail colour, while the Method page said in words that the ladder does not measure whether
+ * autonomy is desirable." A green scale says HIGHER IS BETTER two lines under a sentence that
+ * says the opposite - Measures autonomy. Not reliability, not decision quality.
+ *
+ * The conflict was carried to the operator rather than resolved by either side of it, and the
+ * ruling on 2026-08-31 was NEUTRAL INK: the notches fill in `--color-ink-2`, so the rail reads
+ * as a POSITION on a scale (three of six) and never as a grade. The layout the mockup was
+ * approved for survives intact; only the judgement the colour smuggled in is gone.
+ *
+ * L5 means "no human control path exists for this operation" - a fact, not an achievement.
+ * Nothing on this rail may imply otherwise. */
 export function LevelRail({ level, measured }: { level: string; measured: boolean }) {
   const n = measured ? Number(level.replace("L", "")) : null;
-  // NO GOOD/BAD MAPPING (Fable, I3). This rail used to paint L4-L5 in the pass colour and
-  // L0-L1 in the fail colour, while the Method page said in words that the ladder does not
-  // measure whether autonomy is desirable. L0 - "a human performs the operation" - is a state,
-  // and a company at L0 on treasury control may well be the prudent one. The bar now shows
-  // POSITION on the ladder in one neutral ink; the number carries the fact.
   return (
     <div className="w-14 shrink-0 text-center">
       <div
@@ -81,14 +105,18 @@ export function LevelRail({ level, measured }: { level: string; measured: boolea
           ? level
           : <><span className="slot" aria-hidden="true" /><span className="sr-only">not measured</span></>}
       </div>
-      {/* The bar restates the level it sits under; it carries no fact of its own, so it is
-          decorative rather than a second, colour-only channel. */}
       {measured && (
-        <div className="mt-1 h-[3px] w-full rounded-sm bg-[var(--color-line)]" aria-hidden="true">
-          <div
-            className="h-full rounded-sm bg-[var(--color-ink-2)]"
-            style={{ width: `${((n ?? 0) / 5) * 100}%` }}
-          />
+        <div className="mt-1">
+          <div className="flex gap-0.5" aria-hidden="true">
+            {Array.from({ length: 6 }, (_, i) => (
+              <div
+                key={i}
+                className="h-1 flex-1"
+                style={{ background: i < (n ?? 0) ? "var(--color-ink-2)" : "var(--color-line)" }}
+              />
+            ))}
+          </div>
+          <div className="mt-0.5 font-mono text-[10.5px] text-[var(--color-ink-3)]">L0 … L5</div>
         </div>
       )}
     </div>

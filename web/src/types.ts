@@ -126,7 +126,11 @@ export function daysUntil(validUntil: string, now: Date = new Date()): number {
 }
 
 export interface Observation {
-  value: number | null;
+  /** `identity_window_closed` is a boolean by construction (src/collector/github.py) - the
+   *  other six measured fields are counts or shares (numbers). Declaring this as `number | null`
+   *  was itself stale relative to the artefact it claims to mirror (D-10): nothing here checked
+   *  that a boolean could reach a renderer built only for a number. */
+  value: number | boolean | null;
   measured: boolean;
   absent_reason: string | null;
 }

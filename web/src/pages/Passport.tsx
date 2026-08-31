@@ -7,9 +7,10 @@
 
 import { useState } from "react";
 import { Facts, Page, Strip } from "../components/Chrome";
-import { AbsentMark, LevelRail, Projection } from "../components/Measured";
+import { AbsentMark, LevelRail, Projection, REASON_TEXT } from "../components/Measured";
 import { daysUntil, effectiveStatus, slug } from "../types";
 import type { Fact, Passport as P } from "../types";
+import { formatObservationValue } from "../formatObservation";
 
 const SITE = "https://provek.dev";
 
@@ -19,6 +20,30 @@ const OBS_LABEL: Record<string, string> = {
   bot_author_share: "Share of commits from bot or app accounts",
   workflow_runs: "Automated CI runs observed",
   head_sha: "Commit the reading was taken at",
+  // Added 2026-08-31 - these three carried no label at all and rendered under their raw
+  // machine name (`identity_window_closed`, `unlinked_commit_share`, `unlinked_key_count`)
+  // beside the five above. Meaning taken from `src/collector/github.py`'s own docstrings, not
+  // guessed: see `authors_and_bot_commits` for exactly what "unlinked" means there.
+  identity_window_closed: "Author identity window closed",
+  unlinked_commit_share: "Share of commits with an unlinked author identity",
+  unlinked_key_count: "Distinct unlinked author keys",
+};
+
+/** Which of the two observation blocks a key belongs in (accepted layout, 2026-08-31).
+ *
+ * DATA-DRIVEN, NOT A SWITCH ON THE RENDER SIDE: a key this map has never seen falls into
+ * `"reading"` by construction (`OBS_GROUP[key] ?? "reading"` below) rather than throwing or
+ * disappearing - a ninth observation the collector starts emitting tomorrow still has somewhere
+ * to render today, even if nobody has sorted it into its proper group yet. */
+const OBS_GROUP: Record<string, "authorship" | "reading"> = {
+  signed_commit_share: "authorship",
+  distinct_authors: "authorship",
+  bot_author_share: "authorship",
+  unlinked_commit_share: "authorship",
+  unlinked_key_count: "authorship",
+  workflow_runs: "reading",
+  identity_window_closed: "reading",
+  head_sha: "reading",
 };
 
 const OP_LABEL: Record<string, string> = {
@@ -140,30 +165,106 @@ function ShareActions({ subjectId }: { subjectId: string }) {
   );
 }
 
+/** `identity_window_closed` as `yes`/`no` rather than the bare word a boolean formats to
+ * elsewhere. "Not true, not empty" (accepted layout, 2026-08-31): the checkmark makes the closed
+ * state legible at a glance, in the one colour the operations rail already uses for "reached" -
+ * `no` gets no icon and no colour of its own, because inventing a cross or a warn tint for the
+ * open state would be asserting a verdict ("open is bad") this field does not itself carry. */
+function IdentityWindowMark({ closed }: { closed: boolean }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 font-mono">
+      {closed && (
+        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+          <path
+            d="M2 6.3l2.6 2.6L10 2.7"
+            fill="none"
+            stroke="var(--color-pass)"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      )}
+      {closed ? "yes" : "no"}
+    </span>
+  );
+}
+
+/** One observation row: label left, value right on a wide screen (`justify-between`,
+ * `items-baseline`); label above value, stacked, on a narrow one. Replaces `Facts` for this
+ * section only - `Facts`'s label-column-width table reads fine for four accountability rows, but
+ * the accepted layout wants a different rhythm here, and `Facts` still serves every other section
+ * on this page unchanged. */
+function ObsRow({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-0.5 py-2 border-b border-[var(--color-line)] last:border-b-0 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
+      <span className="text-[13px] text-[var(--color-ink-3)] sm:text-sm sm:text-[var(--color-ink-2)]">
+        {label}
+      </span>
+      <span className="font-mono text-base text-[var(--color-ink)] sm:text-[15px]">{value}</span>
+    </div>
+  );
+}
+
 export default function Passport({ p }: { p: P }) {
   const v = p.verified;
   const affiliated = p.verifier_affiliation === "same_owner";
   const unmeasured = v.operations.filter((o) => !o.measured).length;
+  const stale = effectiveStatus(p.status, p.valid_until) === "stale";
+
+  // THE ARITHMETIC LINE under the projection number (accepted layout, 2026-08-31) - built from
+  // the real operations, not hand-typed, so it can never say something the number above it does
+  // not. Mirrors `src/verify/scorer.py::projection()` exactly:
+  // `round(sum(level for measured) / (5 * len(measured)) * 100)`. `5` and `100` are that
+  // function's own literals, not invented here; the numerator and the operation count are read
+  // straight off `v.operations`.
+  const measuredOps = v.operations.filter((o) => o.measured);
+  const projectionArithmetic =
+    measuredOps.length > 0
+      ? `${measuredOps.length === 1 ? measuredOps[0].level : `(${measuredOps.map((o) => o.level).join(" + ")})`} ÷ (5 × ${measuredOps.length} measured op${measuredOps.length === 1 ? "" : "s"}) × 100`
+      : null;
 
   return (
     <Page>
       <nav className="text-xs text-[var(--color-ink-3)] mb-3">
         <a href="/registry/" className="text-[var(--color-accent)] hover:underline">Registry</a>
         <span className="mx-1.5">›</span>
-        <span>{p.subject_id}</span>
+        <span className="break-all">{p.subject_id}</span>
       </nav>
 
       <h1 className="text-2xl font-semibold tracking-tight break-all">{p.subject_id}</h1>
 
-      {/* Provenance is the second thing on the page, as in SSL Labs and Scorecard. */}
-      <p className="mt-1.5 text-xs text-[var(--color-ink-3)]">
-        Issued {p.issued_at.slice(0, 19).replace("T", " ")} UTC &nbsp;|&nbsp; valid until{" "}
-        {p.valid_until.slice(0, 10)}
-        {daysUntil(p.valid_until) > 0 && (
-          <span className="text-[var(--color-ink-3)]"> ({daysUntil(p.valid_until)} days)</span>
-        )} &nbsp;|&nbsp; protocol {p.provenance.protocol_version}{" "}
-        &nbsp;|&nbsp; profile {p.provenance.profile_version} &nbsp;|&nbsp; evidence window{" "}
-        {p.provenance.evidence_window_days} days
+      {/* Validity, next to the name (accepted layout, 2026-08-31) - the clock icon and the count
+          of days are the one thing on this page a reader decides on a schedule, so it sits with
+          the title rather than buried in the provenance line below. `daysUntil` and
+          `effectiveStatus` are the same functions the rest of the page already calls; nothing
+          here is a second, independent computation of the same fact. */}
+      <p
+        className="mt-1.5 flex items-center gap-1.5 text-xs"
+        style={{ color: stale ? "var(--color-warn)" : "var(--color-ink-3)" }}
+      >
+        <svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true" className="shrink-0">
+          <circle
+            cx="8" cy="8" r="6.25" fill="none"
+            stroke={stale ? "var(--color-warn)" : "var(--color-pass)"} strokeWidth="1.3"
+          />
+          <path
+            d="M8 4.5V8l2.4 1.4" fill="none"
+            stroke={stale ? "var(--color-warn)" : "var(--color-pass)"} strokeWidth="1.3"
+            strokeLinecap="round" strokeLinejoin="round"
+          />
+        </svg>
+        {stale
+          ? `valid until ${p.valid_until.slice(0, 10)} — lapsed`
+          : `valid until ${p.valid_until.slice(0, 10)} — ${daysUntil(p.valid_until)} days left`}
+      </p>
+
+      {/* Provenance is the second thing on the page, as in SSL Labs and Scorecard. Validity now
+          lives in the line above, next to the name, so it is not repeated here. */}
+      <p className="mt-1 text-xs text-[var(--color-ink-3)]">
+        Issued {p.issued_at.slice(0, 19).replace("T", " ")} UTC &nbsp;|&nbsp; protocol{" "}
+        {p.provenance.protocol_version} &nbsp;|&nbsp; profile {p.provenance.profile_version}{" "}
+        &nbsp;|&nbsp; evidence window {p.provenance.evidence_window_days} days
       </p>
 
       {/* Share actions. What a company holding this passport can DO with it (task 7 of the
@@ -214,7 +315,7 @@ export default function Passport({ p }: { p: P }) {
       </p>
 
       {/* A2. A verdict lapses by time with no event, and until now the surface never said so. */}
-      {effectiveStatus(p.status, p.valid_until) === "stale" && (
+      {stale && (
         <div className="mt-3">
           <Strip tone="warn">
             <strong>This passport has lapsed.</strong> Its evidence window closed on{" "}
@@ -253,13 +354,17 @@ export default function Passport({ p }: { p: P }) {
 
       {/* Verdict block: number plus the dimensions it is made of. */}
       <section className="mt-6 bg-[var(--color-paper)] border border-[var(--color-line)]">
-        <div className="grid gap-6 p-5 md:grid-cols-[minmax(14rem,18rem)_1fr]">
+        <div className="grid grid-cols-1 gap-6 p-5 md:grid-cols-[minmax(14rem,18rem)_1fr]">
           <div>
             <h2 className="text-xs uppercase tracking-wide text-[var(--color-ink-2)]">
               Autonomy projection
             </h2>
             <div className="mt-2">
-              <Projection value={v.projection} absentReason={v.projection_absent_reason} />
+              <Projection
+                value={v.projection}
+                absentReason={v.projection_absent_reason}
+                arithmetic={projectionArithmetic}
+              />
             </div>
             {/* D-02: the caveat sits beside the number, not in a footnote. A caveat that must be
                 hunted for is a caveat that was not given - and a screenshot is how this page gets
@@ -284,7 +389,13 @@ export default function Passport({ p }: { p: P }) {
                   <LevelRail level={o.level} measured={o.measured} />
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-baseline gap-2">
-                      <span className="font-medium">{OP_LABEL[o.operation] ?? o.operation}</span>
+                      {/* NOT MEASURED STOPS COMPETING WITH A REAL FINDING (accepted layout,
+                          2026-08-31). The name drops to `--color-ink-2` and the description below
+                          to `--color-ink-3` only in this state - a measured operation keeps its
+                          full-weight name and its existing ink-2 description unchanged. */}
+                      <span className={o.measured ? "font-medium" : "font-medium text-[var(--color-ink-2)]"}>
+                        {OP_LABEL[o.operation] ?? o.operation}
+                      </span>
                       {/* SPEC 3.1 item 3 requires confidence and the limiters applied. They were
                           computed and then dropped at the emission boundary, so every level in the
                           registry - all of them O1-limited - rendered exactly like a measured one
@@ -295,14 +406,43 @@ export default function Passport({ p }: { p: P }) {
                       )}
                       {!o.measured && <AbsentMark reason={o.level} />}
                     </div>
-                    <p className="mt-0.5 text-sm text-[var(--color-ink-2)]">
+                    <p
+                      className={
+                        "mt-0.5 text-sm " +
+                        (o.measured ? "text-[var(--color-ink-2)]" : "text-[var(--color-ink-3)]")
+                      }
+                    >
                       {OP_DESC[o.operation] ?? ""}
                     </p>
+                    {/* The reason `AbsentMark` above carries only in a hover title and in
+                        screen-reader-only text - invisible to a sighted mouseless or touch
+                        reader. This line states the same `REASON_TEXT` value (never a new
+                        sentence) so everyone gets it, not just a pointer. */}
+                    {!o.measured && (
+                      <p className="mt-0.5 text-xs text-[var(--color-ink-3)]">
+                        Reason: {REASON_TEXT[o.level] ?? o.level}.
+                      </p>
+                    )}
                     {o.limiters_applied.length > 0 && (
                       <ul className="mt-1.5 space-y-0.5">
                         {o.limiters_applied.map((lim) => (
                           <li key={lim} className="text-xs text-[var(--color-ink-3)]">
-                            <span className="font-mono">{lim.split(":")[0]}</span>{" "}
+                            {/* "O1" set in the monospace face above is not reliably distinct from
+                                "01" (flagged from an operator's own screenshot) - dropping the
+                                monospace face here and spelling out "Limiter" makes the code
+                                self-explanatory whatever the glyph looks like. It links to
+                                /method/, which is the one page that discusses limiters at all;
+                                that page does not yet publish the O1-O3 list itself (measured
+                                2026-08-31 on the live site - it is named there only under "Open
+                                items" as not yet written down), so this points at the right
+                                destination rather than promising a page section that does not
+                                exist. */}
+                            <a
+                              href="/method/"
+                              className="font-medium text-[var(--color-ink-2)] hover:underline"
+                            >
+                              Limiter {lim.split(":")[0]}
+                            </a>{" "}
                             {LIMITER_TEXT[lim] ?? lim}
                           </li>
                         ))}
@@ -340,15 +480,25 @@ export default function Passport({ p }: { p: P }) {
             </>
           )}
         </p>
-        <div className="mt-3 bg-[var(--color-paper)] border border-[var(--color-line)] px-5 py-1">
-          <Facts
-            rows={[
+        {/* FOUR TILES, NOT FOUR TABLE ROWS (accepted layout, 2026-08-31): name on top, the
+            measured value or the `.slot` placeholder underneath. Two across on a narrow screen,
+            one row of four once there is room - `AccFact` itself is unchanged, so the `.slot`
+            pattern and the "not measured rather than none" sentence above still mean exactly
+            what they meant before. */}
+        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {(
+            [
               ["Emergency stop", <AccFact f={p.accountability.emergency_stop} yes="present" no="none" />],
               ["Claims addressee", <AccFact f={p.accountability.claims_addressee} />],
               ["Insurance", <AccFact f={p.accountability.insurance} />],
               ["Dispute path", <AccFact f={p.accountability.dispute_path} />],
-            ]}
-          />
+            ] as const
+          ).map(([label, node]) => (
+            <div key={label} className="border border-[var(--color-line)] bg-[var(--color-paper)] px-3 py-2.5">
+              <div className="text-xs text-[var(--color-ink-2)]">{label}</div>
+              <div className="mt-1 text-sm">{node}</div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -363,19 +513,47 @@ export default function Passport({ p }: { p: P }) {
             be recomputed rather than believed &mdash; and so a reader who disagrees with the
             reasoning can say where.
           </p>
-          <div className="mt-3 bg-[var(--color-paper)] border border-[var(--color-line)] px-5 py-1">
-            <Facts
-              rows={Object.entries(v.observations).map(([key, o]) => [
-                OBS_LABEL[key] ?? key,
-                typeof o === "string" || o === null ? (
-                  <span className="font-mono text-xs">{o ?? "—"}</span>
-                ) : o.measured ? (
-                  <span className="tabular-nums">{o.value}</span>
-                ) : (
-                  <AbsentMark reason={o.absent_reason} />
-                ),
-              ])}
-            />
+          {/* TWO GROUPS, MONO HEADERS (accepted layout, 2026-08-31): authorship/signature
+              evidence beside how-and-when-we-read evidence, rather than one undifferentiated
+              list of eight rows. `OBS_GROUP` assigns the split by key, not by a switch here - an
+              observation key with no assignment still renders, filed under "reading" (see the
+              map's own comment), so a ninth key added later cannot make rows disappear. */}
+          <div className="mt-3 grid grid-cols-1 gap-7 md:grid-cols-2">
+            {(["authorship", "reading"] as const).map((group) => (
+              <div key={group}>
+                <h3 className="font-mono text-xs uppercase tracking-wide text-[var(--color-ink-2)]">
+                  {group === "authorship" ? "Authorship & signatures" : "Reading & window"}
+                </h3>
+                <div className="mt-2 bg-[var(--color-paper)] border border-[var(--color-line)] px-4">
+                  {Object.entries(v.observations)
+                    .filter(([key]) => (OBS_GROUP[key] ?? "reading") === group)
+                    .map(([key, o]) => (
+                      <ObsRow
+                        key={key}
+                        label={OBS_LABEL[key] ?? key}
+                        value={
+                          typeof o === "string" || o === null ? (
+                            <span className="break-all">{o ?? "—"}</span>
+                          ) : !o.measured ? (
+                            <AbsentMark reason={o.absent_reason} />
+                          ) : key === "identity_window_closed" ? (
+                            <IdentityWindowMark closed={Boolean(o.value)} />
+                          ) : (
+                            formatObservationValue(key, o.value as number | boolean)
+                          )
+                        }
+                      />
+                    ))}
+                  {/* Not one of the eight `v.observations` keys - `p.provenance.evidence_window_days`
+                      is a top-level passport field, already stated once near the title. Repeated
+                      here because the mockup groups it with the other reading/window facts; the
+                      value itself is the same real field, not a second measurement of it. */}
+                  {group === "reading" && (
+                    <ObsRow label="Evidence window" value={`${p.provenance.evidence_window_days} days`} />
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </section>
       )}
@@ -386,7 +564,7 @@ export default function Passport({ p }: { p: P }) {
         <div className="mt-3 bg-[var(--color-paper)] border border-[var(--color-line)] px-5 py-1">
           <Facts
             rows={[
-              ["Binding", <code className="font-mono text-xs">{p.subject_id}</code>],
+              ["Binding", <code className="font-mono text-xs break-all">{p.subject_id}</code>],
               ["Strength", p.binding_strength === "strong"
                 ? <span style={{ color: "var(--color-pass)" }}>strong</span>
                 : <span style={{ color: "var(--color-warn)" }}>weak</span>],
@@ -452,7 +630,10 @@ export default function Passport({ p }: { p: P }) {
         </h2>
         <div className="mt-3 border border-dashed border-[var(--color-line-2)] bg-[var(--color-paper-2)] px-5 py-1">
           <Facts
-            rows={Object.entries(p.self_reported).map(([k, val]) => [k, String(val)])}
+            rows={Object.entries(p.self_reported).map(([k, val]) => [
+              k,
+              <span className="break-words">{String(val)}</span>,
+            ])}
           />
         </div>
       </section>
