@@ -15,7 +15,7 @@ not imported - so the function under test is lifted out of its source with `ast`
 import ast
 from pathlib import Path
 
-from src.abs_profile.ladder import L, SIGNED_SHARE_FOR_L4, SMALL_TEAM_FOR_L3, SOLE_AUTHOR
+from src.abs_profile.ladder import SIGNED_SHARE_FOR_L4, SMALL_TEAM_FOR_L3, SOLE_AUTHOR, L
 from src.abs_profile.measured import Measurement, NotMeasured
 
 _FN_NAME = "cohort_development_initiation_level"
