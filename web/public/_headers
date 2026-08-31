@@ -34,3 +34,13 @@
 
 /llms.txt
   Content-Type: text/plain; charset=utf-8
+
+/llms-full.txt
+  Content-Type: text/plain; charset=utf-8
+
+# ARD (Agentic Resource Discovery) manifest. JSON, and CORS-open like the rest of the machine-
+# readable surface (the registry and every passport are meant to be fetched cross-origin by an
+# agent, not just read same-origin by this site's own pages).
+/.well-known/ai-catalog.json
+  Content-Type: application/json
+  Access-Control-Allow-Origin: *

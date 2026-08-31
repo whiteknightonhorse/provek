@@ -1,0 +1,140 @@
+{
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "Provek",
+    "url": "https://provek.dev"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:provek.dev:registry:subjects",
+      "displayName": "Provek registry",
+      "type": "application/json",
+      "url": "https://provek.dev/data/registry.json",
+      "representativeQueries": [
+        "Which AI-run businesses are in the Provek registry?",
+        "What evidence backs subject X's verification?",
+        "Which subjects applied to Provek and what was established?"
+      ]
+    },
+    {
+      "identifier": "urn:air:provek.dev:passport:git_whiteknightonhorse_AI-Property-Sales-Platform",
+      "displayName": "Autonomy passport: git:whiteknightonhorse/AI-Property-Sales-Platform",
+      "type": "application/json",
+      "url": "https://provek.dev/data/passports/git_whiteknightonhorse_AI-Property-Sales-Platform.json",
+      "representativeQueries": [
+        "Which operations of git:whiteknightonhorse/AI-Property-Sales-Platform are verified autonomous, and at what level?",
+        "What is the autonomy passport of git:whiteknightonhorse/AI-Property-Sales-Platform?",
+        "What evidence supports each operation score for git:whiteknightonhorse/AI-Property-Sales-Platform?"
+      ]
+    },
+    {
+      "identifier": "urn:air:provek.dev:passport:git_whiteknightonhorse_AIpush",
+      "displayName": "Autonomy passport: git:whiteknightonhorse/AIpush",
+      "type": "application/json",
+      "url": "https://provek.dev/data/passports/git_whiteknightonhorse_AIpush.json",
+      "representativeQueries": [
+        "Which operations of git:whiteknightonhorse/AIpush are verified autonomous, and at what level?",
+        "What is the autonomy passport of git:whiteknightonhorse/AIpush?",
+        "What evidence supports each operation score for git:whiteknightonhorse/AIpush?"
+      ]
+    },
+    {
+      "identifier": "urn:air:provek.dev:passport:git_whiteknightonhorse_APIbase",
+      "displayName": "Autonomy passport: git:whiteknightonhorse/APIbase",
+      "type": "application/json",
+      "url": "https://provek.dev/data/passports/git_whiteknightonhorse_APIbase.json",
+      "representativeQueries": [
+        "Which operations of git:whiteknightonhorse/APIbase are verified autonomous, and at what level?",
+        "What is the autonomy passport of git:whiteknightonhorse/APIbase?",
+        "What evidence supports each operation score for git:whiteknightonhorse/APIbase?"
+      ]
+    },
+    {
+      "identifier": "urn:air:provek.dev:passport:git_whiteknightonhorse_audiobook-shorts-series",
+      "displayName": "Autonomy passport: git:whiteknightonhorse/audiobook-shorts-series",
+      "type": "application/json",
+      "url": "https://provek.dev/data/passports/git_whiteknightonhorse_audiobook-shorts-series.json",
+      "representativeQueries": [
+        "Which operations of git:whiteknightonhorse/audiobook-shorts-series are verified autonomous, and at what level?",
+        "What is the autonomy passport of git:whiteknightonhorse/audiobook-shorts-series?",
+        "What evidence supports each operation score for git:whiteknightonhorse/audiobook-shorts-series?"
+      ]
+    },
+    {
+      "identifier": "urn:air:provek.dev:passport:git_whiteknightonhorse_cryptocardhub-defycard",
+      "displayName": "Autonomy passport: git:whiteknightonhorse/cryptocardhub-defycard",
+      "type": "application/json",
+      "url": "https://provek.dev/data/passports/git_whiteknightonhorse_cryptocardhub-defycard.json",
+      "representativeQueries": [
+        "Which operations of git:whiteknightonhorse/cryptocardhub-defycard are verified autonomous, and at what level?",
+        "What is the autonomy passport of git:whiteknightonhorse/cryptocardhub-defycard?",
+        "What evidence supports each operation score for git:whiteknightonhorse/cryptocardhub-defycard?"
+      ]
+    },
+    {
+      "identifier": "urn:air:provek.dev:passport:git_whiteknightonhorse_cryptocardhub-public",
+      "displayName": "Autonomy passport: git:whiteknightonhorse/cryptocardhub-public",
+      "type": "application/json",
+      "url": "https://provek.dev/data/passports/git_whiteknightonhorse_cryptocardhub-public.json",
+      "representativeQueries": [
+        "Which operations of git:whiteknightonhorse/cryptocardhub-public are verified autonomous, and at what level?",
+        "What is the autonomy passport of git:whiteknightonhorse/cryptocardhub-public?",
+        "What evidence supports each operation score for git:whiteknightonhorse/cryptocardhub-public?"
+      ]
+    },
+    {
+      "identifier": "urn:air:provek.dev:passport:git_whiteknightonhorse_gov-auction-report",
+      "displayName": "Autonomy passport: git:whiteknightonhorse/gov-auction-report",
+      "type": "application/json",
+      "url": "https://provek.dev/data/passports/git_whiteknightonhorse_gov-auction-report.json",
+      "representativeQueries": [
+        "Which operations of git:whiteknightonhorse/gov-auction-report are verified autonomous, and at what level?",
+        "What is the autonomy passport of git:whiteknightonhorse/gov-auction-report?",
+        "What evidence supports each operation score for git:whiteknightonhorse/gov-auction-report?"
+      ]
+    },
+    {
+      "identifier": "urn:air:provek.dev:passport:git_whiteknightonhorse_mcp-protocol-tester",
+      "displayName": "Autonomy passport: git:whiteknightonhorse/mcp-protocol-tester",
+      "type": "application/json",
+      "url": "https://provek.dev/data/passports/git_whiteknightonhorse_mcp-protocol-tester.json",
+      "representativeQueries": [
+        "Which operations of git:whiteknightonhorse/mcp-protocol-tester are verified autonomous, and at what level?",
+        "What is the autonomy passport of git:whiteknightonhorse/mcp-protocol-tester?",
+        "What evidence supports each operation score for git:whiteknightonhorse/mcp-protocol-tester?"
+      ]
+    },
+    {
+      "identifier": "urn:air:provek.dev:passport:git_whiteknightonhorse_provek",
+      "displayName": "Autonomy passport: git:whiteknightonhorse/provek",
+      "type": "application/json",
+      "url": "https://provek.dev/data/passports/git_whiteknightonhorse_provek.json",
+      "representativeQueries": [
+        "Which operations of git:whiteknightonhorse/provek are verified autonomous, and at what level?",
+        "What is the autonomy passport of git:whiteknightonhorse/provek?",
+        "What evidence supports each operation score for git:whiteknightonhorse/provek?"
+      ]
+    },
+    {
+      "identifier": "urn:air:provek.dev:passport:git_whiteknightonhorse_provek-method",
+      "displayName": "Autonomy passport: git:whiteknightonhorse/provek-method",
+      "type": "application/json",
+      "url": "https://provek.dev/data/passports/git_whiteknightonhorse_provek-method.json",
+      "representativeQueries": [
+        "Which operations of git:whiteknightonhorse/provek-method are verified autonomous, and at what level?",
+        "What is the autonomy passport of git:whiteknightonhorse/provek-method?",
+        "What evidence supports each operation score for git:whiteknightonhorse/provek-method?"
+      ]
+    },
+    {
+      "identifier": "urn:air:provek.dev:intake:apply",
+      "displayName": "Apply for verification",
+      "type": "text/plain",
+      "url": "https://provek.dev/api/apply",
+      "representativeQueries": [
+        "How does an AI-run business apply for Provek verification?",
+        "Where does an agent submit a subject to Provek?"
+      ]
+    }
+  ]
+}
