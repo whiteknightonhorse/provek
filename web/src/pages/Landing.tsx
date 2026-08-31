@@ -73,15 +73,45 @@ function Film() {
 
   // Plays only while it is actually on screen. A clip running in a scrolled-past section is
   // bandwidth and battery spent on nobody.
+  //
+  // AN OBSERVER ALONE IS NOT ENOUGH, and the effect twenty lines above this one already says why:
+  // Chrome suspends IntersectionObserver delivery while a document is hidden, so a page restored
+  // into a background tab and then focused can sit with no callback ever arriving. That effect
+  // answers it with a synchronous rect read plus a timed valve; this one had neither, and the
+  // failure mode is not a cosmetic offset but a slider that never plays at all. Measured on the
+  // live site 2026-08-31: a fresh observer with these exact options, on this exact element, fully
+  // in view, delivered nothing in three seconds - and `play()` was therefore never called once.
+  //
+  // So the rect is the source of truth and the observer is the cheap fast path. `measure` is
+  // idempotent and costs one layout read; it runs on mount, on scroll and on resize, throttled to
+  // one frame, which is what the observer was avoiding and is affordable for one element.
   useEffect(() => {
     const el = box.current;
     if (!el) return;
-    const io = new IntersectionObserver(
-      (entries) => setInView(entries.some((e) => e.isIntersecting)),
-      { threshold: 0.4 },
-    );
+    let frame = 0;
+    const measure = () => {
+      frame = 0;
+      const r = el.getBoundingClientRect();
+      const visible = Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0);
+      setInView(visible > 0 && visible / Math.max(r.height, 1) >= 0.4);
+    };
+    const schedule = () => {
+      if (!frame) frame = window.requestAnimationFrame(measure);
+    };
+    measure();
+
+    const io = new IntersectionObserver(schedule, { threshold: [0, 0.4, 1] });
     io.observe(el);
-    return () => io.disconnect();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule, { passive: true });
+    document.addEventListener("visibilitychange", schedule);
+    return () => {
+      io.disconnect();
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+      document.removeEventListener("visibilitychange", schedule);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
   }, []);
 
   useEffect(() => {
@@ -92,7 +122,13 @@ function Film() {
         return;
       }
       if (reduced || !inView) v.pause();
-      else void v.play().catch(() => undefined); // a refused autoplay is not an error worth throwing
+      // A refused autoplay is not worth throwing, but swallowing it outright makes "the browser
+      // said no" look exactly like "it is playing" - the shape this project keeps finding. The
+      // element is left showing its poster, and the refusal is recorded where a reader can see it.
+      else
+        void v.play().catch((e: unknown) => {
+          v.dataset.autoplayRefused = e instanceof Error ? e.name : "unknown";
+        });
     });
   }, [i, reduced, inView]);
 
