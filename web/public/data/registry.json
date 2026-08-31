@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-30T03:43:01.899538+00:00",
+  "generated_at": "2026-08-31T02:39:04.146084+00:00",
   "disclaimer": "The score measures AUTONOMY. It does not measure reliability, decision quality, profitability, or the presence of an accountable party. An absent projection is not a zero.",
   "count": 10,
   "subjects": [
@@ -9,7 +9,7 @@
       "projection": null,
       "projection_absent_reason": "unreadable",
       "protocol_version": "1.0.0",
-      "valid_until": "2026-09-29T03:43:01.899538+00:00",
+      "valid_until": "2026-09-30T02:39:04.146084+00:00",
       "passport_ref": "https://provek.dev/data/passports/git_whiteknightonhorse_AI-Property-Sales-Platform.json",
       "verifier_affiliation": "same_owner"
     },
@@ -19,7 +19,7 @@
       "projection": null,
       "projection_absent_reason": "check_did_not_run",
       "protocol_version": "1.0.0",
-      "valid_until": "2026-09-29T03:43:01.899538+00:00",
+      "valid_until": "2026-09-30T02:39:04.146084+00:00",
       "passport_ref": "https://provek.dev/data/passports/git_whiteknightonhorse_AIpush.json",
       "verifier_affiliation": "same_owner"
     },
@@ -29,7 +29,7 @@
       "projection": 80,
       "projection_absent_reason": null,
       "protocol_version": "1.0.0",
-      "valid_until": "2026-09-29T03:43:01.899538+00:00",
+      "valid_until": "2026-09-30T02:39:04.146084+00:00",
       "passport_ref": "https://provek.dev/data/passports/git_whiteknightonhorse_APIbase.json",
       "verifier_affiliation": "same_owner"
     },
@@ -39,7 +39,7 @@
       "projection": null,
       "projection_absent_reason": "unreadable",
       "protocol_version": "1.0.0",
-      "valid_until": "2026-09-29T03:43:01.899538+00:00",
+      "valid_until": "2026-09-30T02:39:04.146084+00:00",
       "passport_ref": "https://provek.dev/data/passports/git_whiteknightonhorse_audiobook-shorts-series.json",
       "verifier_affiliation": "same_owner"
     },
@@ -49,7 +49,7 @@
       "projection": null,
       "projection_absent_reason": "unreadable",
       "protocol_version": "1.0.0",
-      "valid_until": "2026-09-29T03:43:01.899538+00:00",
+      "valid_until": "2026-09-30T02:39:04.146084+00:00",
       "passport_ref": "https://provek.dev/data/passports/git_whiteknightonhorse_cryptocardhub-defycard.json",
       "verifier_affiliation": "same_owner"
     },
@@ -59,7 +59,7 @@
       "projection": 40,
       "projection_absent_reason": null,
       "protocol_version": "1.0.0",
-      "valid_until": "2026-09-29T03:43:01.899538+00:00",
+      "valid_until": "2026-09-30T02:39:04.146084+00:00",
       "passport_ref": "https://provek.dev/data/passports/git_whiteknightonhorse_cryptocardhub-public.json",
       "verifier_affiliation": "independent"
     },
@@ -69,7 +69,7 @@
       "projection": null,
       "projection_absent_reason": "unreadable",
       "protocol_version": "1.0.0",
-      "valid_until": "2026-09-29T03:43:01.899538+00:00",
+      "valid_until": "2026-09-30T02:39:04.146084+00:00",
       "passport_ref": "https://provek.dev/data/passports/git_whiteknightonhorse_gov-auction-report.json",
       "verifier_affiliation": "same_owner"
     },
@@ -79,7 +79,7 @@
       "projection": null,
       "projection_absent_reason": "check_did_not_run",
       "protocol_version": "1.0.0",
-      "valid_until": "2026-09-29T03:43:01.899538+00:00",
+      "valid_until": "2026-09-30T02:39:04.146084+00:00",
       "passport_ref": "https://provek.dev/data/passports/git_whiteknightonhorse_mcp-protocol-tester.json",
       "verifier_affiliation": "same_owner"
     },
@@ -89,7 +89,7 @@
       "projection": 60,
       "projection_absent_reason": null,
       "protocol_version": "1.0.0",
-      "valid_until": "2026-09-29T03:43:01.899538+00:00",
+      "valid_until": "2026-09-30T02:39:04.146084+00:00",
       "passport_ref": "https://provek.dev/data/passports/git_whiteknightonhorse_provek.json",
       "verifier_affiliation": "same_owner"
     },
@@ -99,7 +99,7 @@
       "projection": 40,
       "projection_absent_reason": null,
       "protocol_version": "1.0.0",
-      "valid_until": "2026-09-29T03:43:01.899538+00:00",
+      "valid_until": "2026-09-30T02:39:04.146084+00:00",
       "passport_ref": "https://provek.dev/data/passports/git_whiteknightonhorse_provek-method.json",
       "verifier_affiliation": "same_owner"
     }

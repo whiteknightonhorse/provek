@@ -10,6 +10,7 @@ would read as INDEPENDENT verifications.
 """
 import json
 import os
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -334,3 +335,61 @@ for src in sorted((out / "passports").glob("*.json")):
     mirrored += 1
 (served / "registry.json").write_bytes((out / "registry" / "registry.json").read_bytes())
 print(f"mirrored to served tree: registry.json + {mirrored} passport(s)")
+
+# THE README FRAGMENT IS EMITTED, NOT PASTED - the same defect as the mirror above, one artefact
+# further out. `public/passports/<name>.json` had THREE homes: the emitted file, the served tree
+# (fixed above), and a fenced block in README.md that a human re-copied by hand. On 2026-08-25 the
+# nightly re-measure raised APIbase from L2 to L4 and nobody re-copied, so
+# `test_readme_fragment_is_verbatim` went red - correctly - and `scripts/push.sh` refused under
+# `set -euo pipefail`. The chain `cohort && commit && push && deploy` stopped at step three, which
+# is exactly what a gate is for. The cost was that FIVE DAYS of nightly re-measures never reached
+# the site: the live registry served `generated_at: 2026-08-25` while the tree held 2026-08-30, and
+# nothing said so.
+#
+# Writing `L4` into README by hand would fix today and rearm the trap for the next time a passport
+# moves. The gate is right; the hand-copy is the defect. So the block is emitted here, from the
+# passport THE README ITSELF NAMES, and the test stays exactly as it is - it now judges this
+# writer instead of a human's memory.
+#
+# The section and the link are located with the SAME rules the test applies (heading to next `## `,
+# the one `/data/passports/<name>.json` link, the first ```json fence). Deliberately no new
+# `<!-- BEGIN -->` markers: a second way of finding the same block is a second thing to keep in
+# sync, and the whole point here is that one place decides.
+readme = Path(__file__).resolve().parents[1] / "README.md"
+_HEADING = "## What a verdict looks like"
+_text = readme.read_text(encoding="utf-8")
+_start = _text.find(_HEADING)
+if _start == -1:
+    # Loud, not silent. A renamed section means this writer stopped writing anything, and a silent
+    # no-op here would put us back to a hand-copied block with a gate nobody notices passing.
+    raise SystemExit(f"cohort: README has no {_HEADING!r} section - the fragment writer has no target")
+_end = _text.find("\n## ", _start + len(_HEADING))
+_end = len(_text) if _end == -1 else _end
+_section = _text[_start:_end]
+
+_names = re.findall(r"/data/passports/([A-Za-z0-9_.-]+\.json)", _section)
+if len(set(_names)) != 1:
+    raise SystemExit(f"cohort: the {_HEADING!r} section names {sorted(set(_names))} passports, "
+                     "so which one the block quotes is ambiguous - the fragment is not written")
+_src = out / "passports" / _names[0]
+if not _src.is_file():
+    raise SystemExit(f"cohort: README attributes the fragment to {_names[0]}, which this run did "
+                     "not emit - the cohort changed and the link was not repointed")
+
+_ops = json.loads(_src.read_text(encoding="utf-8"))["passport"]["verified"]["operations"]
+# `json.dumps(..., indent=2)` with its default ensure_ascii, because that is the exact call the
+# canonical-rendering test makes. Two spellings of "canonical" would be the same divergence again.
+_canonical = json.dumps(_ops, indent=2)
+
+_fence = re.search(r"```json\n(.*?)\n```", _section, re.DOTALL)
+if _fence is None:
+    raise SystemExit(f"cohort: no fenced json block follows {_HEADING!r} - nothing to write into")
+
+if _fence.group(1) == _canonical:
+    print("README fragment: already the operations array of %s" % _names[0])
+else:
+    _new_section = _section[:_fence.start(1)] + _canonical + _section[_fence.end(1):]
+    _tmp = readme.with_suffix(".md.tmp")
+    _tmp.write_text(_text[:_start] + _new_section + _text[_end:], encoding="utf-8")
+    os.replace(_tmp, readme)          # an interrupted write must not leave a truncated README
+    print("README fragment: re-emitted from %s (%d operation(s))" % (_names[0], len(_ops)))
