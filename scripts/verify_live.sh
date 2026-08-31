@@ -55,6 +55,19 @@ CHECKS=(
   # machinery to emit it, and nothing measured that, because no gate here read the address (L-25).
   "/method/notes/:200"
   "/method/notes/not-measured-is-not-zero/:200"
+  # T-H1's own lesson, applied to task 7's badge and brief page: both are Cloudflare Pages
+  # Functions under web/functions/badge/ and web/functions/p/[id]/, and `wrangler pages deploy`
+  # only ships Functions it finds under the working directory's `functions/` - exactly the defect
+  # that left /api/apply answering 404 through four confirmed deployments while the repository
+  # held the handler. A deploy that shipped web/dist without web/functions/ would answer these
+  # two addresses with a static 404 from Cloudflare Pages' own SPA fallback (or the real 404.html,
+  # since that fallback was switched off the same day this file was written) while every static
+  # page above it still reads 200 - a probe that only reads /apply/, /registry/ and the rest is
+  # blind to exactly this failure, which is the whole reason T-H1 exists. Pinned to
+  # `git:whiteknightonhorse/provek`'s own passport, the one subject guaranteed to exist for as
+  # long as this project publishes anything at all.
+  "/badge/git_whiteknightonhorse_provek.svg:200"
+  "/p/git_whiteknightonhorse_provek/brief:200"
 )
 
 # A NUMBER IS NOT A REASON (L-23), and this is where the refusal of the instrument would otherwise
@@ -105,6 +118,15 @@ for entry in "${CHECKS[@]}"; do
     echo "                 succeed on any input. Deploy from web/ so that web/functions/ is"
     echo "                 in wrangler's working directory."
   fi
+  case "$path" in
+    /badge/*|/p/*/brief)
+      if [ "$code" = "404" ]; then
+        echo "               ^ same failure as /api/apply, a different Function: this deployment"
+        echo "                 did not ship web/functions/badge/ or web/functions/p/[id]/, so the"
+        echo "                 embeddable badge and the short client-facing page cannot be reached."
+      fi
+      ;;
+  esac
   failed=$((failed + 1))
 done
 

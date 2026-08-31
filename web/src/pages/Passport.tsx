@@ -5,10 +5,13 @@
  * year from now - which is why provenance and protocol version are ON the page rather than in
  * metadata. */
 
+import { useState } from "react";
 import { Facts, Page, Strip } from "../components/Chrome";
 import { AbsentMark, LevelRail, Projection } from "../components/Measured";
-import { daysUntil, effectiveStatus } from "../types";
+import { daysUntil, effectiveStatus, slug } from "../types";
 import type { Fact, Passport as P } from "../types";
+
+const SITE = "https://provek.dev";
 
 const OBS_LABEL: Record<string, string> = {
   signed_commit_share: "Share of commits with a verified signature",
@@ -78,6 +81,65 @@ function AccFact({ f, yes, no }: { f: Fact; yes?: string; no?: string }) {
   );
 }
 
+/** Task 7's two buttons: copy a link, copy a badge snippet. Both name the SAME destination -
+ * `/p/<slug>/brief`, never this page - because a due-diligence document is not what a company's
+ * own client is asked to open, and a badge whose link led here would hand that reader the control
+ * map and the raw observations instead of the three facts they actually came for.
+ *
+ * `Clipboard.writeText` is the only path attempted (no `execCommand` fallback): it needs a secure
+ * context, which `https://provek.dev` always is, and every browser this site otherwise supports
+ * ships it. A failed write says so rather than pretending, since a silent failure here is a
+ * visitor who pastes nothing and assumes the button is broken. */
+function ShareActions({ subjectId }: { subjectId: string }) {
+  const [copied, setCopied] = useState<"link" | "badge" | "error" | null>(null);
+  const s = slug(subjectId);
+  const briefUrl = `${SITE}/p/${s}/brief`;
+  const badgeUrl = `${SITE}/badge/${s}.svg`;
+  const badgeSnippet =
+    `<a href="${briefUrl}"><img src="${badgeUrl}" width="280" height="60" ` +
+    `alt="Provek verification badge for ${subjectId}"></a>`;
+
+  const copy = (text: string, which: "link" | "badge") => {
+    navigator.clipboard
+      ?.writeText(text)
+      .then(() => setCopied(which), () => setCopied("error"));
+  };
+
+  const label = (which: "link" | "badge", idle: string) =>
+    copied === which ? "Copied" : copied === "error" ? "Copy failed - select and copy manually" : idle;
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2">
+      <button
+        type="button"
+        onClick={() => copy(briefUrl, "link")}
+        className="text-xs border border-[var(--color-line-2)] px-2.5 py-1.5 min-h-8 inline-flex items-center hover:bg-[var(--color-paper-2)]"
+      >
+        {label("link", "Copy link")}
+      </button>
+      <button
+        type="button"
+        onClick={() => copy(badgeSnippet, "badge")}
+        className="text-xs border border-[var(--color-line-2)] px-2.5 py-1.5 min-h-8 inline-flex items-center hover:bg-[var(--color-paper-2)]"
+      >
+        {label("badge", "Copy badge code")}
+      </button>
+      <span className="text-xs text-[var(--color-ink-3)]">
+        &mdash; both point to the short summary at <code className="font-mono">/brief</code>, built
+        for your own clients rather than for due diligence.
+      </span>
+      {/* A visible label change is a sighted-only confirmation; the action still needs one for a
+          screen reader, which is what an aria-live region is for (Chrome.tsx's masthead uses the
+          same sr-only device for the same reason). */}
+      <span aria-live="polite" className="sr-only">
+        {copied === "link" && "Link copied to clipboard."}
+        {copied === "badge" && "Badge code copied to clipboard."}
+        {copied === "error" && "Copy failed. Select the text and copy it manually."}
+      </span>
+    </div>
+  );
+}
+
 export default function Passport({ p }: { p: P }) {
   const v = p.verified;
   const affiliated = p.verifier_affiliation === "same_owner";
@@ -103,6 +165,18 @@ export default function Passport({ p }: { p: P }) {
         &nbsp;|&nbsp; profile {p.provenance.profile_version} &nbsp;|&nbsp; evidence window{" "}
         {p.provenance.evidence_window_days} days
       </p>
+
+      {/* Share actions. What a company holding this passport can DO with it (task 7 of the
+          approved plan): put a badge on its own site and point its own clients at a page shorter
+          than this one.
+
+          BOTH TARGETS ARE THE BRIEF PAGE, NOT THIS ONE. This page is built for a due-diligence
+          reader who wants the control map and the raw observations; a company's OWN clients want
+          three things - who, the vector across operations, and until when - which is what
+          `/p/<slug>/brief` gives them without the rest. "Copy link" therefore copies the brief
+          page's address, and the badge's own `<a href>` points at the same place, so the two
+          buttons hand out one destination rather than two. */}
+      <ShareActions subjectId={p.subject_id} />
 
       {/* THE SHARED THESIS, M's reading of it: coverage as a sentence, not a chart. A bar that
           restates a number beside it is decoration; a count of what was measured is the fact. */}

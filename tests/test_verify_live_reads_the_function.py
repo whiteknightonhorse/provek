@@ -220,6 +220,8 @@ REQUIRED = {
     "/api/apply": 405,                                   # T-H1: the half of the site that is code
     "/method/notes/": 200,                               # T-C4: the note index
     "/method/notes/not-measured-is-not-zero/": 200,      # T-C4: the first published capture
+    "/badge/git_whiteknightonhorse_provek.svg": 200,     # task 7: the embeddable badge Function
+    "/p/git_whiteknightonhorse_provek/brief": 200,       # task 7: the short client-facing page
 }
 
 
