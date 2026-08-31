@@ -34,14 +34,19 @@ export function passportIdsFromDir(passportsDir) {
     .sort();
 }
 
+/** The one collapse of a `subject_id` into a filesystem-safe slug - shared by every generator
+ *  that needs it (`prerender.mjs`, `markdown.mjs`), so there is exactly one place that knows how a
+ *  slug is built rather than three copies of one regular expression drifting apart (LAW #ONE-PLACE).
+ *  Not invertible in general, which is why `passportEntries` below joins it against the registry
+ *  instead of guessing `subject_id` back out of a slug found on disk. */
+export const slugOf = (id) => id.replace(/[:/]/g, "_");
+
 /** `{slug, subjectId}` pairs, slug-sorted - the one place a filesystem slug and the registry's own
- *  `subject_id` are joined. Guessing `subject_id` back out of the slug (undoing the `:`/`/` -> `_`
- *  collapse `prerender.mjs` applies) is not attempted: it is not invertible in general, and a
- *  passport title is exactly the kind of thing this project's own doctrine says must come from a
- *  measurement, not a guess. */
+ *  `subject_id` are joined. Guessing `subject_id` back out of the slug (undoing the `slugOf`
+ *  collapse) is not attempted: it is not invertible in general, and a passport title is exactly
+ *  the kind of thing this project's own doctrine says must come from a measurement, not a guess. */
 export function passportEntries(registry, passportsDir) {
-  const bySlug = new Map(
-    registry.subjects.map((s) => [s.subject_id.replace(/[:/]/g, "_"), s.subject_id]));
+  const bySlug = new Map(registry.subjects.map((s) => [slugOf(s.subject_id), s.subject_id]));
   return passportIdsFromDir(passportsDir).map((slug) => ({
     slug,
     subjectId: bySlug.get(slug) ?? slug,   // falls back to the slug itself rather than throw: a
