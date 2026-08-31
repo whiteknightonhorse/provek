@@ -83,9 +83,14 @@ function Film() {
   // that was written up as an observer-delivery defect. It was not one: the measuring tab was
   // `document.visibilityState === "hidden"` the whole time, and a hidden tab suspends observer
   // delivery AND requestAnimationFrame AND autoplay by design. The world was never stated, so the
-  // reading meant nothing. Autoplay behaviour here remains UNVERIFIED from that environment rather
-  // than verified-good; what is verified is everything that does not need a visible tab - the
-  // markup, the transcript, the media delivery, and the labels.
+  // reading meant nothing.
+  //
+  // CLOSED 2026-08-31 by the one instrument that environment could not supply: the operator opened
+  // provek.dev in a real, visible tab and reported that the first clip starts on its own and hands
+  // over to the second by itself. Autoplay and advance-on-`ended` are confirmed working. Everything
+  // that never needed a visible tab - markup, transcript, media delivery, labels - was already
+  // measured here; this is the half that a hidden tab is structurally unable to answer, and it was
+  // answered by a person looking at the page rather than by a greener-looking check.
   useEffect(() => {
     const el = box.current;
     if (!el) return;
