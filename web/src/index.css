@@ -250,3 +250,22 @@ code, .font-mono { overflow-wrap: anywhere; font-variant-ligatures: none; }
     color: var(--color-ink-3);
   }
 }
+
+/* THE POINTER CURSOR, AND WHY IT IS ONE RULE RATHER THAN THREE CLASSES.
+ *
+ * Browsers give <button> `cursor: default` and Tailwind's preflight does not override it, so
+ * every button on this site looked unclickable on hover - reported by the operator on the
+ * passport's copy buttons, and true of all three buttons the site has, the intake form's Submit
+ * among them. That one is worse than a cosmetic miss: a stranger filling in the apply form gets
+ * no hover feedback on the only control that submits their request.
+ *
+ * A class on each button would fix today's three and miss the fourth. The rule belongs where
+ * every button already passes.
+ *
+ * THE DISABLED HALF IS NOT DECORATION. /apply/ keeps Submit disabled until the updates box is
+ * ticked. A pointer cursor there would say "clickable" about a control that refuses - the same
+ * silent-refusal shape the tick gate was built to avoid, arriving through the cursor instead of
+ * through the handler. `not-allowed` says the opposite out loud, and it agrees with the line
+ * printed under the button: tick the box to enable this. */
+button:not(:disabled) { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
