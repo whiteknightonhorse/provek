@@ -119,7 +119,6 @@ function page(p, slug) {
   const status = effectiveStatus(p.status, p.valid_until, now);
   const projection = p.verified && typeof p.verified.projection === "number" ? p.verified.projection : null;
   const left = daysUntil(p.valid_until, now);
-  const fullUrl = `${SITE}/p/${slug}/`;
   const title = `${p.subject_id} - summary - Provek`;
   const ops = (p.verified?.operations ?? []).map(opRow).join("\n    ");
 

@@ -31,7 +31,14 @@ PAGE = ROOT / "web" / "src" / "pages" / "Apply.tsx"
 VERSION = re.compile(r'CONSENT_VERSION\s*=\s*"([^"]+)"')
 # Both files write the sentence as adjacent double-quoted string literals joined by `+`, so the
 # pieces are collected and concatenated rather than matched as one literal.
-TEXT = re.compile(r'CONSENT_TEXT\s*=\s*((?:\s*"(?:[^"\\]|\\.)*"\s*\+?)+)\s*;')
+# ReDoS (CodeQL py/redos, alert #55): the previous shape was
+#   ((?:\s*"..."\s*\+?)+)
+# - an unbounded outer `+` over a group padded by OPTIONAL whitespace on both sides and an
+# OPTIONAL `+`. On input that starts to match and then fails, the engine can distribute the same
+# run of whitespace between the trailing `\s*` of one repetition and the leading `\s*` of the next
+# in exponentially many ways. Rewritten so the concatenation is unambiguous: one literal, then zero
+# or more `+ "literal"` groups, with each space belonging to exactly one place it can be.
+TEXT = re.compile(r'CONSENT_TEXT\s*=\s*("(?:[^"\\]|\\.)*"(?:\s*\+\s*"(?:[^"\\]|\\.)*")*)\s*;')
 
 
 def _version(p: Path) -> str:
