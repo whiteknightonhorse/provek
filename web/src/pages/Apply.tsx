@@ -42,6 +42,16 @@
  * this has committed to one, so the page may not invent it. */
 
 import { useState } from "react";
+
+// THE SAME TWO CONSTANTS THE ENDPOINT HOLDS (functions/api/apply.js), and the endpoint is the one
+// that decides: it stores ITS copy into the record, never the one a client submits. This copy
+// exists to be READ BY A PERSON, because the words somebody agrees to have to be on the screen
+// where they agree. Two copies of one sentence is a rule written twice, so
+// tests/test_consent_text_is_one_sentence.py goes red the moment they drift.
+const CONSENT_VERSION = "updates-1.0.0";
+const CONSENT_TEXT =
+  "I agree to receive product updates about Provek at this address: new features, and changes to " +
+  "how verification works. Not shared with anyone else, and you can ask us to stop at any time.";
 import { Page, Strip } from "../components/Chrome";
 
 type Sent =
@@ -72,6 +82,7 @@ const DECISION_LOG =
 
 export default function Apply() {
   const [sent, setSent] = useState<Sent>({ state: "idle" });
+  const [agreed, setAgreed] = useState(false);
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -90,6 +101,10 @@ export default function Apply() {
           contact: form.get("contact"),
           mandate: asked,
           website: form.get("website"),
+          // The version, not the wording: the endpoint quotes its own text into the record, so
+          // this says only WHICH wording was on screen - and it refuses if that is not today's.
+          consent: true,
+          consent_version: CONSENT_VERSION,
         }),
       });
       const d = await r.json().catch(() => ({}));
@@ -285,13 +300,37 @@ export default function Apply() {
             </label>
           </fieldset>
 
+          {/* THE TICK GATES THE BUTTON, AND THE REFUSAL IS VISIBLE.
+              A disabled button with no explanation is a form that looks broken, so the line under
+              it names the action still owed. Browser validation is untouched: once the box is
+              ticked the button is live, and an empty required field then produces the browser's
+              own message rather than silence - the failure that cost a sibling project a day of
+              green-looking dead form. */}
+          <div className="border-t border-[var(--color-line)] pt-4">
+            <label htmlFor="updates" className="flex gap-2.5 items-start cursor-pointer">
+              <input
+                id="updates" name="updates" type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.currentTarget.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--color-ink)]"
+              />
+              <span className="text-sm text-[var(--color-ink-2)]">{CONSENT_TEXT}</span>
+            </label>
+          </div>
+
           <button
             type="submit"
-            disabled={sent.state === "sending"}
+            disabled={sent.state === "sending" || !agreed}
             className="border border-[var(--color-ink)] bg-[var(--color-ink)] text-[var(--color-paper)] px-4 py-2 text-sm disabled:opacity-60"
           >
             {sent.state === "sending" ? "Sending…" : "Submit request"}
           </button>
+          {!agreed && (
+            <p className="text-xs text-[var(--color-ink-3)]" role="status">
+              Tick the box above to enable this button. We ask because we would rather hold your
+              address with permission than without it.
+            </p>
+          )}
           <p className="text-xs text-[var(--color-ink-3)]">
             Nothing is charged. There is no payment step anywhere on this site, in this phase or any
             later one &mdash; money does not pass through us by design.
@@ -314,10 +353,22 @@ export default function Apply() {
               <li>
                 <strong className="text-[var(--color-ink-2)]">Stored:</strong> the repository URL,
                 your address, the time, and the two-letter country your request arrived from —
-                plus four fields about the record rather than about you: a random identifier, which
-                mandate you asked for, which one we applied (always the read-only one), and whether
-                our notification to the operator went through. Nothing further, and this form sets
-                no cookie of its own.
+                and the browser string your request arrived with &mdash; plus four fields about the
+                record rather than about you: a random identifier, which mandate you asked for,
+                which one we applied (always the read-only one), and whether our notification to
+                the operator went through. Nothing further, and this form sets no cookie of its own.
+              </li>
+              <li>
+                {/* THE COUNT ABOVE WENT FROM EIGHT TO THIRTEEN, so this entry exists rather than a
+                    quiet edit of a number. The comment opening this list has already been earned
+                    once: a list corrected and then left behind by the next change is the same
+                    false sentence again, on the site whose product is catching those. */}
+                <strong className="text-[var(--color-ink-2)]">Your consent, as evidence:</strong>{" "}
+                if you tick the updates box we store the tick, the moment you ticked it, the version
+                of the wording, and the wording itself, word for word. The words are stored because
+                a consent record is worth what it can later prove, and &ldquo;they agreed&rdquo;
+                proves nothing without what they agreed to. Nothing is being sent yet: there is no
+                mail sender in this project, so today these records only wait for the day a sender exists.
               </li>
               <li>
                 <strong className="text-[var(--color-ink-2)]">Where:</strong> Cloudflare key-value

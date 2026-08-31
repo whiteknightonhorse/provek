@@ -30,6 +30,27 @@ function clean(v) {
   return typeof v === "string" ? v.trim().slice(0, MAX) : "";
 }
 
+// THE CONSENT TEXT LIVES HERE AND NOWHERE ELSE THAT DECIDES.
+//
+// A record of consent is worth exactly what it can later prove: WHO agreed, WHEN, and TO WHAT
+// WORDS. The third is the one systems lose. So the wording is a constant on the server and the
+// stored record quotes THIS string - never the one in the request body. A client that could name
+// its own consent text could manufacture a record of somebody agreeing to something they never
+// saw, and the record would look identical to a real one.
+//
+// The page shows the same sentence to the visitor, because the words someone agrees to have to be
+// on the screen where they agree. Two copies of one sentence is a rule written twice, so
+// tests/test_consent_text_is_one_sentence.py compares them and goes red on drift - the same gate
+// shape the README fragment uses, for the same reason.
+//
+// The version is bumped whenever the WORDING changes, because a stored `updates-1.0.0` has to keep
+// meaning one specific paragraph forever. Old records keep their old version and stay readable;
+// they are not migrated, since what somebody agreed to cannot be edited afterwards.
+export const CONSENT_VERSION = "updates-1.0.0";
+export const CONSENT_TEXT =
+  "I agree to receive product updates about Provek at this address: new features, and changes to " +
+  "how verification works. Not shared with anyone else, and you can ask us to stop at any time.";
+
 export async function onRequestPost({ request, env }) {
   let body;
   try {
@@ -79,6 +100,22 @@ export async function onRequestPost({ request, env }) {
   if (!/^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(contact))
     return bad("That does not look like an address we could reply to.");
 
+  // CONSENT IS CHECKED HERE, NOT ONLY ON THE FORM - the same boundary D-21 drew for the mandate,
+  // and for the same reason it gave: the form is not the security boundary. A greyed-out button is
+  // a courtesy to a person using the page; a curl POST walks straight past it. Without this line
+  // the stored record would assert that somebody consented because a button happened to be enabled
+  // in a browser we never saw.
+  if (body.consent !== true)
+    return bad("The updates consent box was not ticked, so nothing was recorded. We do not store " +
+               "an address for updates without the tick that asks for them.");
+  // The version is the applicant's claim about WHICH wording was on screen, and a mismatch means
+  // they were shown a page older than the one we serve. Refused rather than accepted-and-
+  // relabelled: silently recording agreement to today's words for somebody who read yesterday's is
+  // the precise defect this field exists to prevent.
+  if (clean(body.consent_version) !== CONSENT_VERSION)
+    return bad("This page is out of date - please reload it and submit again. (The consent wording " +
+               "has changed, and we will not record agreement to words you were not shown.)");
+
   const id = crypto.randomUUID();
   const received_at = new Date().toISOString();
   const record = {
@@ -86,6 +123,16 @@ export async function onRequestPost({ request, env }) {
     // Recorded because it is a fact about the submission, and because a verifier that keeps no
     // provenance for its own intake is asking for a trust it does not extend.
     source_country: request.headers.get("cf-ipcountry") || null,
+    // WHAT MAKES THIS EVIDENCE RATHER THAN A FLAG. `consent_text` is the server constant, so the
+    // record carries the words themselves and stays readable after the wording changes.
+    // `user_agent` and the country above are the "from where" half; `consent_at` is deliberately
+    // its own timestamp rather than a reuse of `received_at`, because they are different claims
+    // even when they are one second apart.
+    consent: true,
+    consent_at: new Date().toISOString(),
+    consent_version: CONSENT_VERSION,
+    consent_text: CONSENT_TEXT,
+    user_agent: request.headers.get("user-agent") || null,
   };
 
   if (!env.INTAKE) return bad("Intake storage is not configured on this deployment.", 503);

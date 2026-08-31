@@ -26,6 +26,13 @@ const SUBMISSION = {
   repo: "https://github.com/example-org/example-repo",
   contact: "applicant@example.com",
   mandate: "passive",
+  // The endpoint refuses a submission with no consent, and refuses one naming a wording it does
+  // not serve - the same boundary D-21 drew for the mandate, since a hand-built POST walks past
+  // the form's disabled button. This probe measures the ORDINARY path, so it sends what an
+  // ordinary browser sends. The refusals themselves are judged by
+  // tests/test_consent_text_is_one_sentence.py and by a live check against the deployed site.
+  consent: true,
+  consent_version: "updates-1.0.0",
 };
 
 /**
