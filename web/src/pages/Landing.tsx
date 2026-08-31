@@ -2,8 +2,8 @@
  * those are part of the pitch, not a caveat to bury. */
 
 import { useEffect, useRef, useState } from "react";
-import { Page, Strip } from "../components/Chrome";
-import { AbsentMark } from "../components/Measured";
+import { Page } from "../components/Chrome";
+import { AbsentMark, REASON_TEXT } from "../components/Measured";
 import { slug } from "../types";
 import type { Registry as R } from "../types";
 
@@ -262,7 +262,13 @@ export default function Landing({ reg }: { reg: R | null }) {
       window.clearTimeout(valve);
     };
   }, []);
-  const preview = reg?.subjects.slice(0, 4) ?? [];
+  // ALL of them, not the first four. The empty half-column below this rail was never a layout
+  // hole to decorate: six records existed and were not drawn. Measured 2026-08-31 on the live page.
+  const preview = reg?.subjects ?? [];
+  // One date governs every row today, so it is stated once under the table rather than repeated
+  // ten times down it (ABI-15-5: a fact needs a place to expire, and the place has to be visible).
+  const expiries = [...new Set((reg?.subjects ?? []).map((x) => x.valid_until.slice(0, 10)))];
+  const absentCount = (reg?.subjects ?? []).filter((x) => x.projection === null).length;
   return (
     <Page>
       <div className="grid gap-10 lg:grid-cols-[minmax(0,42rem)_minmax(0,1fr)] lg:gap-14">
@@ -318,7 +324,24 @@ export default function Landing({ reg }: { reg: R | null }) {
                   </a>
                   <span className="shrink-0 text-sm tabular-nums">
                     {s2.projection === null ? (
-                      <AbsentMark reason={s2.projection_absent_reason} />
+                      // THE REASON WAS NEVER MISSING - `AbsentMark` puts it in `title` and in an
+                      // sr-only span, so a mouse and a screen reader get it and a reader looking at
+                      // the page does not. Its own comment calls the reason "the substance of this
+                      // state, not a hint about it"; on screen it was a hint. Same words, same
+                      // source constant, now in the ink the eye reads.
+                      <span className="flex flex-col items-end gap-0.5">
+                        <AbsentMark reason={s2.projection_absent_reason} />
+                        {s2.projection_absent_reason ? (
+                          // aria-hidden because `AbsentMark` ALREADY announces this exact sentence
+                          // in its sr-only span. Without it a screen reader hears the reason twice
+                          // - the visible line is a rendering of what is already announced, not a
+                          // second fact. Measured on the built page: each reason appeared 2x per
+                          // row before this.
+                          <span aria-hidden="true" className="text-xs font-normal text-[var(--color-ink-3)]">
+                            {REASON_TEXT[s2.projection_absent_reason] ?? s2.projection_absent_reason}
+                          </span>
+                        ) : null}
+                      </span>
                     ) : (
                       <>
                         {s2.projection}
@@ -345,30 +368,64 @@ export default function Landing({ reg }: { reg: R | null }) {
               </a>
               .
             </p>
+            <p className="mt-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-xs text-[var(--color-ink-3)]">
+              <span>
+                {absentCount} of {count} carry no score. The reason sits beside each one, in its own
+                words.
+              </span>
+              <span className="font-mono">
+                {expiries.length === 1
+                  ? `all valid until ${expiries[0]}`
+                  : `earliest expiry ${expiries.slice().sort()[0]}`}
+              </span>
+            </p>
           </>
         )}
       </aside>
       </div>
 
-      <section className="mt-14 max-w-[46rem]">
+      {/* THREE ANSWERS TO THREE DIFFERENT QUESTIONS. As three equal-weight strips they read as a
+          list of reasons of one kind, which is what made the section feel like padding: nothing
+          told the reader that "who is it for", "why now" and "what does it cost" are not variations
+          on one another. The question each answers is now on the face of it. */}
+      <section className="mt-14 max-w-[62rem]">
         <h2 className="text-lg font-semibold">Why this is worth your time today</h2>
-        <div className="mt-4 space-y-3">
-          <Strip tone="pass">
-            <strong>It is an artefact for your customers, not for ours.</strong> Your buyers already
-            ask how much of your product is really automated. A verified passport is the one answer a
-            competitor running an AI theatre cannot copy &mdash; copying it requires actually being
-            autonomous.
-          </Strip>
-          <Strip tone="pass">
-            <strong>A regulatory dossier you will need anyway.</strong> At some point your counsel
-            has to argue about who controls what. A control map is evidence input for that argument,
-            built beforehand, by a third party, with a timestamp.
-          </Strip>
-          <Strip tone="info">
-            <strong>It costs nothing right now.</strong> Early passports are free. That is not a
-            favour: a registry with no entries is worth nothing, and we need the first ones as much
-            as you do. Saying so is cheaper than pretending otherwise.
-          </Strip>
+        <p className="mt-2 text-sm text-[var(--color-ink-3)]">
+          Three different questions, three different answers.
+        </p>
+        <div className="mt-6 grid gap-8 md:grid-cols-3">
+          <div>
+            <h3 className="border-b border-[var(--color-line-2)] pb-2 text-xs uppercase tracking-wide text-[var(--color-ink-3)]">
+              Who is it for
+            </h3>
+            <p className="mt-3 text-sm font-semibold">Your customers, not us.</p>
+            <p className="mt-1.5 text-sm leading-relaxed text-[var(--color-ink-2)]">
+              Your buyers already ask how much of your product is really automated. A verified
+              passport is the one answer a competitor running an AI theatre cannot copy &mdash;
+              copying it requires actually being autonomous.
+            </p>
+          </div>
+          <div>
+            <h3 className="border-b border-[var(--color-line-2)] pb-2 text-xs uppercase tracking-wide text-[var(--color-ink-3)]">
+              Why now
+            </h3>
+            <p className="mt-3 text-sm font-semibold">A dossier you will need anyway.</p>
+            <p className="mt-1.5 text-sm leading-relaxed text-[var(--color-ink-2)]">
+              At some point your counsel has to argue about who controls what. A control map is
+              evidence input for that argument, built beforehand, by a third party, with a timestamp.
+            </p>
+          </div>
+          <div>
+            <h3 className="border-b border-[var(--color-line-2)] pb-2 text-xs uppercase tracking-wide text-[var(--color-ink-3)]">
+              What it costs
+            </h3>
+            <p className="mt-3 text-sm font-semibold">Nothing, right now.</p>
+            <p className="mt-1.5 text-sm leading-relaxed text-[var(--color-ink-2)]">
+              Early passports are free. That is not a favour: a registry with no entries is worth
+              nothing, and we need the first ones as much as you do. Saying so is cheaper than
+              pretending otherwise.
+            </p>
+          </div>
         </div>
       </section>
 

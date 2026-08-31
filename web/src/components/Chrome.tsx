@@ -70,51 +70,78 @@ export function Masthead({ route }: { route: string }) {
 }
 
 export function Footer() {
+  /* TWO KINDS OF THING, TWO PLACES. This was four paragraphs at one weight in one column, so a
+     limit the product states about itself and a link to another page looked like the same kind of
+     thing, and the bare domain hung off the GitHub link by an em dash saying what neither was.
+     The limits keep full reading size on the left - they are the product's honesty, not fine print
+     - and each is labelled by its own subject, words taken from the sentence itself so the label
+     asserts nothing the copy did not. The domain sits on the identity rule at the bottom, where a
+     domain belongs. The GitHub link still carries no description: the notes link earned one, that
+     one never had one, and writing it here would be copy rather than structure. */
   return (
     <footer className="mt-16 border-t border-[var(--color-line)] bg-[var(--color-paper)]">
-      <div className="mx-auto max-w-[1180px] px-5 py-8 text-xs text-[var(--color-ink-3)] space-y-2">
-        <p>
-          The score measures <strong className="text-[var(--color-ink-2)]">autonomy</strong>. It does
-          not measure reliability, decision quality, profitability, or the presence of an accountable
-          party.
-        </p>
-        <p>
-          Methodology is published in full. A verdict is reproducible by a third party from the same
-          inputs &mdash; if it were not, this would be a brand rather than a standard.
-        </p>
-        {/* The notes were live at /method/notes/ and reachable from nowhere: nothing on the site
-            linked to them, so a reader arrived only by typing the address and a crawler only by
-            the sitemap. A footer link appears on every page, which is what gives the section any
-            standing at all. The anchor text is the target page's own heading rather than "here":
-            the words in the link are what describe the destination to both readers and crawlers. */}
-        <p>
-          <a
-            href="/method/notes/"
-            className="underline underline-offset-2 hover:text-[var(--color-ink)]"
-          >
-            Notes on the method
-          </a>{" "}
-          &mdash; the method, one topic at a time.
-        </p>
-        <p>
-          <a
-            href="https://github.com/whiteknightonhorse/provek"
-            aria-label="GitHub: provek repository"
-            className="inline-flex items-center gap-1 text-[var(--color-ink-3)] hover:text-[var(--color-accent)] underline underline-offset-2 focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-[var(--color-accent)]"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" />
-            </svg>
-            GitHub
-          </a>{" "}
-          &mdash; provek.dev
-        </p>
+      <div className="mx-auto max-w-[1180px] px-5 py-8">
+        <div className="grid gap-10 md:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] md:gap-16">
+          <div className="grid gap-8 sm:grid-cols-2">
+            <div>
+              <h2 className="border-b border-[var(--color-line)] pb-1.5 text-xs uppercase tracking-wide text-[var(--color-ink-3)]">
+                The score
+              </h2>
+              <p className="mt-2.5 text-xs leading-relaxed text-[var(--color-ink-3)]">
+                The score measures{" "}
+                <strong className="font-semibold text-[var(--color-ink)]">autonomy</strong>. It does
+                not measure reliability, decision quality, profitability, or the presence of an
+                accountable party.
+              </p>
+            </div>
+            <div>
+              <h2 className="border-b border-[var(--color-line)] pb-1.5 text-xs uppercase tracking-wide text-[var(--color-ink-3)]">
+                The method
+              </h2>
+              <p className="mt-2.5 text-xs leading-relaxed text-[var(--color-ink-3)]">
+                Methodology is published in full. A verdict is reproducible by a third party from the
+                same inputs &mdash; if it were not, this would be a brand rather than a standard.
+              </p>
+            </div>
+          </div>
+          <div>
+            <h2 className="border-b border-[var(--color-line)] pb-1.5 text-xs uppercase tracking-wide text-[var(--color-ink-3)]">
+              Read further
+            </h2>
+            <div className="mt-2.5 flex flex-col gap-3">
+              {/* The notes were live at /method/notes/ and reachable from nowhere. A footer link
+                  appears on every page, which is what gives the section any standing at all. The
+                  anchor text is the target page's own heading rather than "here". */}
+              <div>
+                <a
+                  href="/method/notes/"
+                  className="text-sm text-[var(--color-accent)] underline underline-offset-2 hover:text-[var(--color-ink)]"
+                >
+                  Notes on the method
+                </a>
+                <div className="mt-0.5 text-xs text-[var(--color-ink-3)]">
+                  the method, one topic at a time
+                </div>
+              </div>
+              <div>
+                <a
+                  href="https://github.com/whiteknightonhorse/provek"
+                  aria-label="GitHub: provek repository"
+                  className="inline-flex items-center gap-1.5 text-sm text-[var(--color-accent)] underline underline-offset-2 hover:text-[var(--color-ink)] focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-[var(--color-accent)]"
+                >
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" />
+                  </svg>
+                  GitHub
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="mt-7 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-[var(--color-line)] pt-3.5 text-xs text-[var(--color-ink-3)]">
+          <span>Provek &mdash; evidence, not claims</span>
+          <span className="font-mono">provek.dev</span>
+        </div>
       </div>
     </footer>
   );

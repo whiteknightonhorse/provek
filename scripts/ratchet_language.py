@@ -51,6 +51,12 @@ BINARY_MAGIC = {
     ".jpeg": (b"\xff\xd8\xff",),
     ".webp": (b"RIFF",),
     ".woff2": (b"wOF2",),
+    # An ISO base-media file (`.mp4`) carries its `ftyp` box TYPE at offset 4 - the first four bytes
+    # are the box SIZE and differ from file to file - so this one cannot be matched at the head like
+    # the others. Rather than loosen the match to "contains", the entry states WHERE to look, and
+    # the matcher below reads a magic as (offset, bytes). Admission stays by the file's own bytes:
+    # a `.mp4` whose bytes are not an ISO box is still UNREADABLE and still refuses the push.
+    ".mp4": ((4, b"ftyp"),),
 }
 
 
@@ -63,7 +69,11 @@ def proven_binary(path: pathlib.Path) -> bool:
         head = path.open("rb").read(16)
     except OSError:
         return False
-    return any(head.startswith(m) for m in magics)
+    for m in magics:
+        offset, sig = m if isinstance(m, tuple) else (0, m)
+        if head[offset:offset + len(sig)] == sig:
+            return True
+    return False
 
 
 def tracked_files() -> list[str]:

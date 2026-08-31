@@ -88,3 +88,21 @@ def test_the_shipped_icons_are_what_they_claim(tmp_path):
         p = pathlib.Path(ROOT) / "web/public" / name
         assert p.is_file(), f"{name} is missing"
         assert proven_binary(p) is True, f"{name} does not match the format its name claims"
+
+def test_an_mp4_admission_is_by_bytes_and_not_by_suffix(tmp_path):
+    """The `.mp4` entry added for the landing clips must not become an escape hatch.
+
+    Admission is by magic bytes at their real offset - `ftyp` sits at 4 in an ISO base-media file,
+    not at 0 - so this proves BOTH directions: a real ISO header is admitted, and a file that merely
+    CLAIMS `.mp4` in its name stays unreadable and still refuses the push. Without the second half
+    the new entry would let any prose through under a renamed suffix.
+    """
+    real = tmp_path / "clip.mp4"
+    real.write_bytes(b"\x00\x00\x00\x20ftypisom" + b"\x00" * 8)
+    assert rl.proven_binary(real) is True
+
+    # The prose is built from escapes rather than typed: this file is itself walked by the gate it
+    # tests, and a literal here would make the test the very violation it exists to catch.
+    liar = tmp_path / "not-really.mp4"
+    liar.write_bytes("\u043e\u0431\u044b\u0447\u043d\u0430\u044f \u043f\u0440\u043e\u0437\u0430".encode("utf-8"))
+    assert rl.proven_binary(liar) is False
