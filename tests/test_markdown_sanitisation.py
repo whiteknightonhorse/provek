@@ -61,7 +61,21 @@ def test_escaped_img_from_a_subject_declaration_stays_escaped(out):
     assert "&lt;img" in md and "&gt;" in md, md
 
 
+def test_a_tag_reconstructed_across_strip_categories_does_not_survive(out):
+    """D-43, code-scanning alerts #76/#77. `strip()` chains four DIFFERENT regexes (comment,
+    script/style/template, svg, sr-only) inside one loop rather than four separate ones, because
+    they interact: removing `<script>y</script>` from `x<!<script>y</script>--z-->w` turns
+    `<!` + `--z-->` into a freshly reconstructed `<!--z-->` - a comment the comment regex, having
+    already run earlier in the SAME pass, will not see again until the loop repeats. Verified by
+    hand: a copy of this chain with the surrounding loop deleted returns `<!--z-->w` for this input;
+    the shipped, looped `strip()` returns `w`."""
+    md = out["cross_category_reconstruction"]
+    assert "<!--" not in md, md
+    assert "<script" not in md.lower(), md
+
+
 def test_the_probe_still_carries_the_words_around_the_attack(out):
     """THE CONTROL. A converter that answered "" to everything would pass every test above."""
     assert "before" in out["reconstructed"] and "after" in out["reconstructed"]
     assert "x" in out["nested_svg"] and "y" in out["nested_svg"]
+    assert "x" in out["cross_category_reconstruction"] and "w" in out["cross_category_reconstruction"]

@@ -2633,3 +2633,98 @@ rendered file this ratchet cannot see with nothing yet committed to inspect; the
 owed to whatever gate runs at generation time, not silently assumed covered - a ratchet that
 claimed more than it measures would be exactly the false-green this project has already paid for
 twice (D-15, and the truncated-law defect in D-38).
+
+## D-43. The derived-markdown converter's input became partly untrusted, and where the boundary now stands
+
+**Decision.** `web/html_to_markdown.mjs` reads output that already mixes our own markup with a
+subject's declared text, and has since 2026-08-31: the accountability block renders four fields
+read from a SUBJECT'S OWN `provek.json`, React escapes them into the prerendered page, and this
+converter is what reads that page. Before that date its only input was our own site markup and a
+single-pass tag strip was merely fragile; since, it is a question a stranger gets to ask. Five
+things are ratified here rather than left standing only as comments in two `.mjs` files and one
+`.py` file - a rule that lives only in a comment is not armed by anything that runs.
+
+**1. Strip before decode, and the order is not to be reversed.** Stripping runs on the page's
+markup; decoding runs after it (`NEVER_UNESCAPED` in `web/html_to_markdown.mjs`, holding `<`/`>`
+escaped regardless of which spelling - named, decimal, hex - asked for them). Reversing the order
+would let an honestly ESCAPED sequence like `&amp;lt;div&amp;gt;` be decoded into a live tag and
+then silently eaten by the strip that follows - a loss of a stranger's text nobody attacked, and
+the opposite failure from the one this boundary exists to prevent. **Any future patch that
+decodes before stripping is a regression of this decision, not a refactor of it.**
+
+**2. `js/incomplete-multi-character-sanitization` (code-scanning alerts #68-74): closed by
+measurement, not by argument.** The prior commit wrapped every tag-strip loop in a generic
+`untilStable(text, rewrite, limit)` helper. CodeQL's own re-scan of that commit still reported
+seven instances of this rule against the individual `.replace()` calls inside the wrapper, because
+its static analysis does not follow a rewrite function passed as a parameter through to prove the
+loop around it reaches a fixed point. The rule's documented recommendation is a literal
+`do {...} while (input !== previous)` around one `.replace()`; `web/html_to_markdown.mjs` now
+carries exactly that shape in two functions - `stripTags(s)`, called from the five places that used
+to each wrap their own loop, and `strip(html)`'s own second and last loop around its four-regex
+chain. Re-scanned on the commit that made this change: **all seven of #68-74 are `fixed`.**
+Evidence: `evidence/GREEN-007-seven-alerts-fixed-two-opened-by-the-fix.txt` — the alert states and
+their `most_recent_instance.commit_sha` were read directly from the GitHub code-scanning API
+before and after, not assumed from the diff.
+
+**3. Two NEW instances of the same rule (#76, #77) were opened by the literal-loop commit itself,
+and are DISMISSED, per the fallback this ruling named in advance of seeing the scan.** `strip()`
+chains four different regexes (comment, script/style/template, svg, sr-only span) inside one loop
+rather than four separate ones, because they interact across regex boundaries within a single
+pass - removing `<script>y</script>` from `x<!<script>y</script>--z-->w` reconstructs `<!--z-->`
+from characters the comment regex, having already run earlier in the same pass, will not see again
+until the loop repeats. CodeQL flagged this exact interaction at the two regexes nearest the front
+of the chain. The dismissal rests on three things, not on the alert being wrong:
+   - **(a) A mutation-sensitive control exists and passes against the shipped code.**
+     `tests/sanitisation_probe.mjs`'s `cross_category_reconstruction` case
+     (`x<!<script>y</script>--z-->w`) is verified BY HAND to return `<!--z-->w` from a copy of
+     `strip()`'s chain with the surrounding loop deleted, and returns `w` from the shipped,
+     looped `strip()` - `tests/test_markdown_sanitisation.py::
+     test_a_tag_reconstructed_across_strip_categories_does_not_survive` holds the shipped answer.
+   - **(b) The shape is the rule's own documented fix.** CodeQL's help text for this rule
+     recommends "applying the regular expression replacement repeatedly until no more replacements
+     can be performed" via a `do {...} while (input !== previous)` loop - `strip()`'s loop is that
+     shape, wrapped around the one place in this file where four such replacements must converge
+     together rather than in isolation (running each regex to its OWN fixed point in sequence,
+     the alternative that stays legible to the analyser, is weaker: it cannot catch a construct
+     that regex 4 exposes for regex 1 after regex 1 has already finished converging).
+   - **(c) Conditions of reopening, stated here rather than left implicit.** This dismissal is void
+     - and #76/#77 (or their successors) are to be treated as open again - the moment any of: a new
+     `.replace()` that strips tag-like markup is added to `web/html_to_markdown.mjs` outside
+     `stripTags` or `strip`'s own loop; `strip`'s iteration ceiling changes from 20; or the CodeQL
+     JavaScript query pack is upgraded and re-flags this shape. No one of those is presumed to have
+     happened; each is a fact to check before relying on this entry again.
+
+**4. The remaining gap is markdown syntax, not angle brackets, and it sits in a DIFFERENT
+assembler.** `web/markdown.mjs:buildPassportMarkdown` writes `/p/<slug>/index.md` directly from
+passport data and does not go through `web/html_to_markdown.mjs` at all - no `stripTags`, no
+`NEVER_UNESCAPED`. It does not read `passport.accountability` today (a drift against D-10: the HTML
+passport shows the block, its markdown sibling silently does not), so a value like
+`[urgent: verify here](https://evil.example)` - no angle bracket at all, markdown's own link syntax
+- has nothing to reach through YET. Two things now stand between that value and a published
+artefact: `src/collector/declaration.py`'s `_bounded_str` refuses `[`, `]` and a backtick in any
+declared string at the source, invalidating the whole declaration exactly as it already does for
+`FIELD_MAX_CHARS` (parentheses alone stay legal - this module's own `_join` already writes
+`f"({contact})"`, and parentheses form no markdown construct without a preceding `[...]`); and
+`tests/passport_accountability_probe.mjs` + `tests/test_passport_markdown_accountability.py` arm a
+tripwire that is vacuously true today (nothing reads the field) and starts exercising a real
+interpolation - and failing in the gate, not in production - the day someone adds one without
+routing it through an escaping step. Two paths were also checked and found not to need either
+fix today: `Fact.unreadable()` takes no note text and `DeclarationResult.notes` is discarded by
+`apply_declaration` before reaching any passport field, so a malformed subject document's error
+text does not currently reach a published artefact; `web/functions/api/apply.js` sends its
+Telegram notice with no `parse_mode`, so Telegram renders applicant-supplied `repo`/`contact` as
+literal text rather than interpreting any markup in it.
+
+**5. Comments in the two `.mjs` files reference this entry rather than re-narrate it** (LAW
+#ONE-PLACE) - a comment corrected the record once already: `web/html_to_markdown.mjs`'s security
+comment used to name `/p/<subject>/index.md` as the artefact a live tag was measured on, which is
+built by `web/markdown.mjs` and does not read a declaration at all. What was actually run was
+`tests/sanitisation_probe.mjs` against the converter directly; the comment now says that, and
+points here for the rest.
+
+**Why a decision record rather than a new law.** No armed rule was missing - `LAW #ONE-PLACE` and
+`LAW #ALLOWLIST-WHAT-YOU-INSPECT` already exist and are cited above where they apply. What was
+missing was a place for "decode never runs before strip" and the seven-alert verdict to live at
+ratified strength instead of only in code comments a future edit could quietly narrow. The gate for
+all of it is the test suite named throughout this entry, run at the door on every push; this record
+is what a future editor reads before deciding a comment disagrees with it.

@@ -1,0 +1,56 @@
+GREEN-007. The literal-loop rewrite closed all seven js/incomplete-multi-character-sanitization
+alerts CodeQL had reopened against the previous commit's generic `untilStable` wrapper, and opened
+two new instances of the same rule elsewhere in the same file - dismissed in DECISIONS.md D-43.
+
+Read directly from `gh api repos/whiteknightonhorse/provek/code-scanning/alerts/<n>` for each
+alert number, before and after the commit that replaced `untilStable(text, rewrite, limit)` with
+`stripTags(s)` and `strip(html)`'s own literal `do {...} while` loops.
+
+BEFORE (commit d138052 - the untilStable commit; alerts first surfaced on this commit's own scan,
+since the code had never been pushed before):
+
+  #68  open  rule=js/incomplete-multi-character-sanitization  loc=web/html_to_markdown.mjs:89
+  #69  open  rule=js/incomplete-multi-character-sanitization  loc=web/html_to_markdown.mjs:89
+  #70  open  rule=js/incomplete-multi-character-sanitization  loc=web/html_to_markdown.mjs:113
+  #71  open  rule=js/incomplete-multi-character-sanitization  loc=web/html_to_markdown.mjs:116
+  #72  open  rule=js/incomplete-multi-character-sanitization  loc=web/html_to_markdown.mjs:117
+  #73  open  rule=js/incomplete-multi-character-sanitization  loc=web/html_to_markdown.mjs:118
+  #74  open  rule=js/incomplete-multi-character-sanitization  loc=web/html_to_markdown.mjs:119
+  created_at (68, 74 sampled) = 2026-09-01T05:46:30Z
+  most_recent_instance.commit_sha (68, 74 sampled) = d138052a7b82b563a0d42f095a0386123f0257d9
+
+AFTER (commit 7208b4b - the literal-loop commit; scan completed 2026-09-01T06:49:57Z):
+
+  #68  fixed  fixed_at=2026-09-01T06:49:57Z  most_recent_instance.commit_sha=784464950e4f8ef7f83690134d82c6cf06336ebc
+  #69  fixed  fixed_at=2026-09-01T06:49:57Z  most_recent_instance.commit_sha=784464950e4f8ef7f83690134d82c6cf06336ebc
+  #70  fixed  fixed_at=2026-09-01T06:49:57Z  most_recent_instance.commit_sha=784464950e4f8ef7f83690134d82c6cf06336ebc
+  #71  fixed  fixed_at=2026-09-01T06:49:57Z  most_recent_instance.commit_sha=784464950e4f8ef7f83690134d82c6cf06336ebc
+  #72  fixed  fixed_at=2026-09-01T06:49:57Z  most_recent_instance.commit_sha=784464950e4f8ef7f83690134d82c6cf06336ebc
+  #73  fixed  fixed_at=2026-09-01T06:49:57Z  most_recent_instance.commit_sha=784464950e4f8ef7f83690134d82c6cf06336ebc
+  #74  fixed  fixed_at=2026-09-01T06:49:57Z  most_recent_instance.commit_sha=784464950e4f8ef7f83690134d82c6cf06336ebc
+
+  (784464950e4f8ef7f83690134d82c6cf06336ebc = 7844649, the commit immediately BEFORE 7208b4b -
+  "most_recent_instance" records the last commit on which the alert was still present, which is
+  exactly the commit the literal-loop change was applied on top of.)
+
+NEW, same scan (2026-09-01T06:49:57Z), same commit (7208b4b):
+
+  #76  open  rule=js/incomplete-multi-character-sanitization
+       loc=web/html_to_markdown.mjs:117-119  msg="This string may still contain <script"
+  #77  open  rule=js/incomplete-multi-character-sanitization
+       loc=web/html_to_markdown.mjs:117-118  msg="This string may still contain <!--"
+
+  Both point at strip()'s own do/while loop, which chains four different regexes (comment,
+  script/style/template, svg, sr-only) in one pass per iteration. Empirically verified (see
+  DECISIONS.md D-43 point 3 and tests/sanitisation_probe.mjs's `cross_category_reconstruction`
+  case) that the loop IS necessary - a single pass through the same four-regex chain leaves
+  `<!--z-->` behind for input `x<!<script>y</script>--z-->w`, where the shipped, looped version
+  returns `w`. Dismissed per D-43(3) rather than restructured further, with named reopening
+  conditions.
+
+Also opened, same scan, unrelated rule (fixed the same day, see the dependabot-auto-merge.yml
+commit that followed this one): #75 TokenPermissionsID (OpenSSF Scorecard, not CodeQL) on
+.github/workflows/dependabot-auto-merge.yml - workflow-level `permissions: contents: write` moved
+to job level. #78 js/regex/duplicate-in-character-class on web/html_to_markdown.mjs:211 - a
+genuine authoring slip in this same rewrite (a literal ASCII space typed twice instead of the
+non-breaking-space character in a whitespace-collapsing regex), fixed in the same follow-up commit.

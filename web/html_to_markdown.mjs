@@ -208,7 +208,7 @@ export function htmlToMarkdown(html) {
   // markdown and drops the remaining markup WITHOUT dropping the text it wrapped.
   s = inline(s);
 
-  const lines = s.split("\n").map((l) => l.replace(/[ \t ]+/g, " ").replace(/ · $/, "").trim());
+  const lines = s.split("\n").map((l) => l.replace(/[ \t ]+/g, " ").replace(/ · $/, "").trim());
   const out = [];
   for (const l of lines) {
     if (!l) { if (out.length && out[out.length - 1] !== "") out.push(""); continue; }

@@ -32,14 +32,19 @@ on:
   pull_request_target:
     types: [opened, synchronize, reopened]
 
-permissions:
-  contents: write
-  pull-requests: write
+# NARROWED TO THE ONE JOB THAT USES IT (OpenSSF Scorecard's Token-Permissions check, alert #75).
+# A `permissions:` block at workflow level grants it to every job the file will ever gain; this
+# file has exactly one, so the workflow-level default (read-only) stands and the job below states
+# what it actually needs - same pattern `scorecard.yml` already uses for its own single job.
+permissions: {}
 
 jobs:
   auto-merge:
     if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: dependabot metadata
         id: metadata
