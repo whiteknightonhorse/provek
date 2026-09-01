@@ -55,6 +55,24 @@ one-line dispute-resolution clause; a document that needs more than that per fie
 plausibly describing one of these four facts, and treating it as one would let a subject smuggle
 an essay - or an attack payload - into a field the UI renders as a short label."""
 
+FORBIDDEN_CHARS = re.compile(r"[\[\]`]")
+"""D-43. Angle brackets are not this boundary's problem - `NEVER_UNESCAPED` in
+`web/html_to_markdown.mjs` already keeps `<`/`>` escaped wherever a declaration's text reaches a
+rendered page. But markdown has its OWN injection surface that brackets do not touch: a value of
+`[urgent: verify here](https://evil)` carries no angle bracket at all and still becomes a live link
+the moment it is written into a `.md` file, because a markdown READER, not this converter, is what
+turns `[text](url)` into a hyperlink. `web/markdown.mjs` writes `/p/<slug>/index.md` by interpolating
+passport fields directly into template strings with no escaping step of its own (Fable's ruling,
+D-43) - the one place in this project where our own markdown and a subject's declared text are
+already mixed by the time anything downstream could tell them apart.
+
+So this boundary - the only place ALL FOUR declared string fields already pass through, by the same
+mechanism that enforces `FIELD_MAX_CHARS` - refuses `[`, `]` and a backtick outright, with the same
+consequence as an oversized field: the WHOLE declaration is invalid, never silently stripped of the
+offending character. A legal name, a postal address or a one-line dispute clause has no honest use
+for any of the three; a document that needs one is not plausibly describing one of these four
+facts."""
+
 CLAIMS_ADDRESSEE_TYPES = {"legal_entity", "natural_person", "none"}
 DISPUTE_PATH_TYPES = {"contact", "arbitration", "courts"}
 
@@ -128,14 +146,17 @@ def _fetch_raw(full_name: str, ref: str) -> tuple[int, str]:
 
 
 def _bounded_str(v: object) -> str | None:
-    """A string within `FIELD_MAX_CHARS`, `None` if the key was absent or blank, or raises - the
-    raise is the signal that turns the WHOLE declaration invalid, per the ratified boundary above.
-    A blank string is treated the same as an omitted key rather than as a malformed one: it is not
-    a shape violation, only an empty answer, and the schema check exists to catch the former."""
+    """A string within `FIELD_MAX_CHARS` and free of `[`, `]` and a backtick (D-43), `None` if the
+    key was absent or blank, or raises - the raise is the signal that turns the WHOLE declaration
+    invalid, per the ratified boundary above. A blank string is treated the same as an omitted key
+    rather than as a malformed one: it is not a shape violation, only an empty answer, and the
+    schema check exists to catch the former."""
     if v is None:
         return None
     if not isinstance(v, str) or len(v) > FIELD_MAX_CHARS:
         raise ValueError("field is not a string within the length ceiling")
+    if FORBIDDEN_CHARS.search(v):
+        raise ValueError("field contains a character reserved for markdown syntax ([, ], `)")
     return v.strip() or None
 
 

@@ -190,6 +190,37 @@ def test_oversized_field_invalidates_the_whole_declaration_not_just_the_field(mo
     assert result.accountability.insurance.reason is NotMeasured.UNREADABLE
 
 
+@pytest.mark.parametrize("payload", [
+    "[urgent: verify here](https://evil.example)",
+    "legitimate name `rm -rf /`",
+    "closing bracket only ]",
+])
+def test_markdown_syntax_characters_invalidate_the_whole_declaration(monkeypatch, payload):
+    """D-43. `[`, `]` and a backtick are not this project's angle-bracket problem
+    (`NEVER_UNESCAPED` in `web/html_to_markdown.mjs` already holds those) - they are markdown's OWN
+    injection surface, and `web/markdown.mjs` writes a passport's `.md` sibling by interpolating
+    fields directly with no escaping step. `[urgent: verify here](https://evil.example)` carries no
+    angle bracket at all and would still become a live hyperlink on `provek.dev` the moment a
+    markdown reader opened the file - the exact live payload this test asserts never gets far
+    enough to be interpolated anywhere, by failing the whole declaration at the boundary all four
+    fields already pass through for `FIELD_MAX_CHARS`."""
+    doc = {"provek_declaration": "1.0.0",
+          "accountability": {"claims_addressee": {"type": "legal_entity", "name": payload}}}
+    _stub(monkeypatch, 200, json.dumps(doc))
+    result = decl.collect_declaration(FULL, "deadbeef")
+    assert result.accountability.claims_addressee.reason is NotMeasured.UNREADABLE
+    # whole-declaration invalidation, same as the oversized-field case above.
+    assert result.accountability.insurance.reason is NotMeasured.UNREADABLE
+
+
+def test_parentheses_alone_do_not_invalidate_a_declaration():
+    """THE CONTROL. `_join` in this module already writes parenthesised contact details itself
+    (`f"({contact})"`), so banning `(`/`)` would make the collector's OWN honest formatting
+    indistinguishable from an attack. Only `[`, `]` and a backtick are markdown's link/code-span
+    syntax; parentheses alone form no markdown construct without a preceding `[...]`."""
+    assert decl._bounded_str("Example Ltd (legal)") == "Example Ltd (legal)"
+
+
 # --------------------------------------------------------------------------------------------
 # HEAD_SHA IS NEVER RE-MEASURED HERE.
 # --------------------------------------------------------------------------------------------

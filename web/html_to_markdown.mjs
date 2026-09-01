@@ -25,27 +25,35 @@
  *  which is visibly wrong to a reader rather than silently dropped. */
 const ENTITIES = {
   amp: "&", lt: "<", gt: ">", quot: '"', "#39": "'", apos: "'", nbsp: " ",
-  mdash: "\u2014", ndash: "\u2013", hellip: "\u2026", rsquo: "\u2019", lsquo: "\u2018",
-  ldquo: "\u201c", rdquo: "\u201d", middot: "\u00b7", times: "\u00d7", divide: "\u00f7",
-  thinsp: "\u2009", check: "\u2713",
+  mdash: "—", ndash: "–", hellip: "…", rsquo: "’", lsquo: "‘",
+  ldquo: "“", rdquo: "”", middot: "·", times: "×", divide: "÷",
+  thinsp: " ", check: "✓",
 };
 
-/** DECODING MAY NOT MANUFACTURE A TAG.
+/** DECISIONS.md D-43. This converter's input became PARTLY UNTRUSTED on 2026-08-31, when the
+ *  accountability block began rendering fields read from a SUBJECT'S OWN `provek.json`. Two rules
+ *  hold the boundary; both live here in code, not only in D-43's prose, because a rule that lives
+ *  only in a decision record is not armed by anything that runs.
  *
- *  Stripping runs on the page's markup; decoding runs after it. So an angle bracket that arrives
- *  ESCAPED is never seen by the strip and becomes a live bracket in the published document. That
- *  is not hypothetical here: since 2026-08-31 the accountability block renders four fields read
- *  from a SUBJECT'S OWN `provek.json`. React escapes them into the page correctly - and this
- *  converter used to hand them straight back. Measured before the fix: a declaration field holding
- *  `<script>alert(1)</script>` produced exactly that, live, in `/p/<subject>/index.md`.
+ *  DECODING MAY NOT MANUFACTURE A TAG. Stripping runs on the page's markup; decoding runs after it
+ *  (ratified in D-43; reversing the order is forbidden - decoding first would let an honestly
+ *  ESCAPED sequence like `&amp;lt;div&amp;gt;` be turned into a live tag by decoding and then eaten
+ *  by the strip that follows, a silent loss of text nobody attacked). An angle bracket that arrives
+ *  escaped is therefore never seen by `stripTags`/`strip`, and `<`/`>` stay escaped here regardless
+ *  of which spelling asked for them - named (`&lt;`), decimal (`&#60;`) or hex (`&#x3c;`). A
+ *  markdown reader still SEES the bracket; no reader can be made to execute it.
  *
- *  So `<` and `>` stay escaped, whichever spelling asked for them - named (`&lt;`), decimal
- *  (`&#60;`) or hex (`&#x3c;`). A markdown reader still SEES the bracket; no reader can be made to
- *  execute it. Nothing else changes: every other entity decodes as before.
- *
- *  Measured 2026-09-01: zero passports currently carry a declaration, so this closes the path
- *  before it ever carried a stranger's text rather than after.
- */
+ *  WHAT WAS ACTUALLY MEASURED, stated at the strength the artefact supports (D-43 corrects an
+ *  earlier overclaim here: this file's own docstring once named `/p/<subject>/index.md` as the
+ *  artefact affected, but that file is built by `web/markdown.mjs`, which does not read a
+ *  declaration at all - the claim named the wrong assembler). What was actually run is
+ *  `tests/sanitisation_probe.mjs` against THIS converter directly: before this constant existed, a
+ *  declaration field holding `<script>alert(1)</script>`, fed through `htmlToMarkdown` the way a
+ *  future accountability-rendering page would present it, decoded back into a live tag in the
+ *  function's own return value. `web/markdown.mjs` interpolates passport fields with no escaping
+ *  step of its own and is a SEPARATE open gap (D-43), guarded by `src/collector/declaration.py`
+ *  refusing `[`, `]` and a backtick in any declared string - markdown's link/code-span syntax,
+ *  which no angle-bracket rule touches. */
 const NEVER_UNESCAPED = new Set(["<", ">"]);
 
 function decode(s) {
@@ -61,43 +69,66 @@ function decode(s) {
   });
 }
 
-/** Repeat a rewrite until it stops changing the string.
+/** Remove every HTML tag, to a fixed point. D-43. A SINGLE pass is not removal: deleting
+ *  `<script>` from `<scr<script>ipt>` leaves `<script>` exposed - the pass RECONSTRUCTS the very
+ *  tag it just took out, which is the whole of CodeQL's "incomplete multi-character sanitization".
  *
- *  A SINGLE pass is not removal. Deleting `<script>` from `<scr<script>ipt>` leaves `<script>`:
- *  the pass RECONSTRUCTS the very tag it just took out. That is what CodeQL means by "incomplete
- *  multi-character sanitization", and it stopped being theoretical here on 2026-08-31, when the
- *  accountability block began rendering fields read from a SUBJECT'S OWN `provek.json`. This
- *  converter's input is no longer only our own prerendered markup.
+ *  WRITTEN AS A LITERAL do/while ON PURPOSE, not behind a generic higher-order helper. An earlier
+ *  version wrapped every loop in `untilStable(text, rewrite, limit)`, and CodeQL's static analysis
+ *  did not credit it: `js/incomplete-multi-character-sanitization` still fired seven times against
+ *  the individual `.replace()` calls inside that wrapper, on the very commit that introduced it,
+ *  because the analyzer has no way to see through a rewrite function passed as a parameter to know
+ *  the loop around it reaches a fixed point. The rule's own documentation recommends exactly this
+ *  shape - a `do {...} while (input !== previous)` around ONE `.replace()` - so the fix is the
+ *  literal form the tool already asks for, not a cleverer abstraction of it.
  *
- *  The iteration is bounded. An unbounded loop over hostile input is the other half of the same
- *  class of bug - this repository has already shipped one measured ReDoS - and 20 passes is far
- *  past anything nesting in real markup produces.
- */
-function untilStable(text, rewrite, limit = 20) {
-  for (let i = 0; i < limit; i += 1) {
-    const next = rewrite(text);
-    if (next === text) return text;
-    text = next;
-  }
-  return text;
+ *  ONE-PLACE, closing a gap the wrapper had opened rather than closed: `y.replace(/<[^>]+>/g, "")`
+ *  used to appear five times across `inline()` below - the href-text extractor, strong, em, code,
+ *  and the final catch-all - each wrapped in its own separate `untilStable` call. One rule, five
+ *  copies, found in the same review that asked for the literal loop.
+ *
+ *  Bounded at 20 iterations: an unbounded loop over hostile input is the other half of the same bug
+ *  class - this repository has already shipped one measured ReDoS - and 20 passes is far past
+ *  anything nesting in real markup produces. */
+function stripTags(s) {
+  let prev;
+  let i = 0;
+  do {
+    prev = s;
+    s = s.replace(/<[^>]+>/g, "");
+    i += 1;
+  } while (s !== prev && i < 20);
+  return s;
 }
 
 /** Everything a reader never sees is removed BEFORE any text is taken: scripts, styles, and the
  *  `sr-only` spans that exist so a screen reader hears what the eye reads. Keeping the latter would
- *  print every reason twice — the exact doubling the visible/announced pair is designed to avoid. */
+ *  print every reason twice — the exact doubling the visible/announced pair is designed to avoid.
+ *
+ *  ITS OWN LITERAL LOOP - the second and last manual fixed-point in this file (D-43); `stripTags`
+ *  above is the first. Kept separate rather than merged into one bigger loop because the two strip
+ *  DIFFERENT things for different reasons: this one removes whole elements a reader must never see
+ *  any part of, `stripTags` removes bare markup around text a reader DOES see. */
 function strip(html) {
-  return untilStable(html, (t) => t
-    .replace(/<!--[\s\S]*?-->/g, "")
-    .replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1>/gi, "")
-    // DECLARED LOSS: inline SVG. Two method notes draw charts whose axis labels are `<text>` nodes
-    // — subject names and level codes. Read in document order they are a word salad, not prose:
-    // "cryptocardhub-defycard 257 L2 gov-auction-report" says nothing a reader can use, and a
-    // markdown document that prints it would be claiming to convey a figure it cannot. Measured
-    // 2026-09-01: 26 words across the two notes, all of them chart labels. The loss is named here
-    // and excluded on BOTH sides of the fidelity gate, so the gate measures what this converter
-    // actually promises rather than being quietly widened until it passes.
-    .replace(/<svg\b[^>]*>[\s\S]*?<\/svg>/gi, "")
-    .replace(/<span[^>]*\bclass="[^"]*\bsr-only\b[^"]*"[^>]*>[\s\S]*?<\/span>/gi, ""));
+  let prev;
+  let i = 0;
+  do {
+    prev = html;
+    html = html
+      .replace(/<!--[\s\S]*?-->/g, "")
+      .replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1>/gi, "")
+      // DECLARED LOSS: inline SVG. Two method notes draw charts whose axis labels are `<text>` nodes
+      // — subject names and level codes. Read in document order they are a word salad, not prose:
+      // "cryptocardhub-defycard 257 L2 gov-auction-report" says nothing a reader can use, and a
+      // markdown document that prints it would be claiming to convey a figure it cannot. Measured
+      // 2026-09-01: 26 words across the two notes, all of them chart labels. The loss is named here
+      // and excluded on BOTH sides of the fidelity gate, so the gate measures what this converter
+      // actually promises rather than being quietly widened until it passes.
+      .replace(/<svg\b[^>]*>[\s\S]*?<\/svg>/gi, "")
+      .replace(/<span[^>]*\bclass="[^"]*\bsr-only\b[^"]*"[^>]*>[\s\S]*?<\/span>/gi, "");
+    i += 1;
+  } while (html !== prev && i < 20);
+  return html;
 }
 
 function inline(html) {
@@ -106,18 +137,28 @@ function inline(html) {
   // "recipientenforced" — measured on `/phase-2/`, where a word-level fidelity check then reported
   // "recipient" as LOST when in truth it was merged. The text was never dropped; it stopped being
   // readable, which for a document meant for machines is the same defect wearing a better mask.
-  return decode(untilStable(html
+  //
+  // MARKDOWN-FORMING REPLACEMENTS RUN ONCE, IN ONE PASS. None of the six below can reconstruct a
+  // match of its own pattern the way a bare tag-strip can - each consumes a specific, named element
+  // and emits markdown syntax, never HTML - so this half of `inline()` carries no loop. Whatever
+  // markup they leave behind (their own children's tags, and anything unrecognised) is bare `<...>`
+  // markup with nothing left to reconstruct it, which is exactly what `stripTags` removes below.
+  html = html
     .replace(/<\/(span|a|strong|em|b|i|code)>\s*<(span|a|strong|em|b|i|code)\b/gi, "</$1> <$2")
     .replace(/<a\b[^>]*\bhref="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi,
       (m, href, text) => {
-        const t = decode(untilStable(text, (x) => x.replace(/<[^>]+>/g, ""))).trim();
+        const t = decode(stripTags(text)).trim();
         return t ? `[${t}](${href})` : "";
       })
-    .replace(/<(strong|b)\b[^>]*>([\s\S]*?)<\/\1>/gi, (m, _t, x) => `**${untilStable(x, (y) => y.replace(/<[^>]+>/g, "")).trim()}**`)
-    .replace(/<(em|i)\b[^>]*>([\s\S]*?)<\/\1>/gi, (m, _t, x) => `*${untilStable(x, (y) => y.replace(/<[^>]+>/g, "")).trim()}*`)
-    .replace(/<code\b[^>]*>([\s\S]*?)<\/code>/gi, (m, x) => "`" + untilStable(x, (y) => y.replace(/<[^>]+>/g, "")).trim() + "`")
-    .replace(/<br\s*\/?>/gi, "\n"), (t) => t.replace(/<[^>]+>/g, "")))
-    .replace(/[ \t\u00a0]+/g, " ")
+    .replace(/<(strong|b)\b[^>]*>([\s\S]*?)<\/\1>/gi, (m, _t, x) => `**${stripTags(x).trim()}**`)
+    .replace(/<(em|i)\b[^>]*>([\s\S]*?)<\/\1>/gi, (m, _t, x) => `*${stripTags(x).trim()}*`)
+    .replace(/<code\b[^>]*>([\s\S]*?)<\/code>/gi, (m, x) => "`" + stripTags(x).trim() + "`")
+    .replace(/<br\s*\/?>/gi, "\n");
+
+  // Whatever tags remain are inline or unknown; `stripTags` drops the markup WITHOUT dropping the
+  // text it wrapped, then `decode` resolves entities last (D-43: never before the strip above).
+  return decode(stripTags(html))
+    .replace(/[ \t ]+/g, " ")
     .trim();
 }
 
@@ -167,7 +208,7 @@ export function htmlToMarkdown(html) {
   // markdown and drops the remaining markup WITHOUT dropping the text it wrapped.
   s = inline(s);
 
-  const lines = s.split("\n").map((l) => l.replace(/[ \t ]+/g, " ").replace(/ · $/, "").trim());
+  const lines = s.split("\n").map((l) => l.replace(/[ \t ]+/g, " ").replace(/ · $/, "").trim());
   const out = [];
   for (const l of lines) {
     if (!l) { if (out.length && out[out.length - 1] !== "") out.push(""); continue; }
