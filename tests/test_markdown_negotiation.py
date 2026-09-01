@@ -204,7 +204,9 @@ def test_a_derived_sibling_loses_no_visible_word():
     mechanism (LAW #ALLOWLIST-WHAT-YOU-INSPECT: a checker that skips what it does not recognise
     reports success on what it cannot handle)."""
     import re
-    strip = lambda h: re.sub(r"<svg\b[^>]*>.*?</svg>", " ",
+
+    def strip(h):
+        return re.sub(r"<svg\b[^>]*>.*?</svg>", " ",
                      re.sub(r'<span[^>]*\bsr-only\b[^>]*>.*?</span>', " ",
                      re.sub(r"<(script|style)\b[^>]*>.*?</\1>", " ", h, flags=re.S|re.I),
                      flags=re.S | re.I), flags=re.S | re.I)
@@ -212,9 +214,10 @@ def test_a_derived_sibling_loses_no_visible_word():
     # without this `&quot;` tokenises to the word "quot", which the markdown (holding a real quote
     # character) does not contain, and the gate reports a loss that never happened. Two instruments
     # measuring the same thing must agree on their world before either verdict means anything.
-    words = lambda t: set(re.findall(
-        r"[a-z0-9]{2,}",
-        re.sub(r"&[a-z#0-9]+;", " ", re.sub(r"<[^>]+>", " ", t), flags=re.I).lower()))
+    def words(t):
+        return set(re.findall(
+            r"[a-z0-9]{2,}",
+            re.sub(r"&[a-z#0-9]+;", " ", re.sub(r"<[^>]+>", " ", t), flags=re.I).lower()))
     for rel, d in _derived_routes():
         html = (d / "index.html").read_text(encoding="utf-8")
         main = re.search(r"<main\b[^>]*>(.*?)</main>", html, re.S | re.I)
