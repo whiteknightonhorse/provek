@@ -3,7 +3,7 @@
  *  hand-edited or produced by something other than the converter. Kept beside the tests rather than
  *  inside them so the recomputation runs the REAL module, not a python paraphrase of it. */
 import { readFileSync } from "node:fs";
-import { join, basename } from "node:path";
+import { join } from "node:path";
 import { pageMarkdown } from "../web/html_to_markdown.mjs";
 import { SITE } from "../web/discovery.mjs";
 

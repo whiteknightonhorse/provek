@@ -20,7 +20,6 @@
  * as its text rather than dropped, because losing a sentence silently is the failure that matters.
  */
 
-const BLOCK = /^(p|div|section|article|header|footer|main|nav|ul|ol|li|h[1-6]|table|tr|details|summary|figure|blockquote)$/i;
 
 /** Entities our own pages actually emit. Not a full table: an unknown entity stays as written,
  *  which is visibly wrong to a reader rather than silently dropped. */
@@ -31,21 +30,63 @@ const ENTITIES = {
   thinsp: "\u2009", check: "\u2713",
 };
 
+/** DECODING MAY NOT MANUFACTURE A TAG.
+ *
+ *  Stripping runs on the page's markup; decoding runs after it. So an angle bracket that arrives
+ *  ESCAPED is never seen by the strip and becomes a live bracket in the published document. That
+ *  is not hypothetical here: since 2026-08-31 the accountability block renders four fields read
+ *  from a SUBJECT'S OWN `provek.json`. React escapes them into the page correctly - and this
+ *  converter used to hand them straight back. Measured before the fix: a declaration field holding
+ *  `<script>alert(1)</script>` produced exactly that, live, in `/p/<subject>/index.md`.
+ *
+ *  So `<` and `>` stay escaped, whichever spelling asked for them - named (`&lt;`), decimal
+ *  (`&#60;`) or hex (`&#x3c;`). A markdown reader still SEES the bracket; no reader can be made to
+ *  execute it. Nothing else changes: every other entity decodes as before.
+ *
+ *  Measured 2026-09-01: zero passports currently carry a declaration, so this closes the path
+ *  before it ever carried a stranger's text rather than after.
+ */
+const NEVER_UNESCAPED = new Set(["<", ">"]);
+
 function decode(s) {
   return s.replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (m, e) => {
     if (e[0] === "#") {
       const n = e[1] === "x" || e[1] === "X" ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10);
-      return Number.isFinite(n) ? String.fromCodePoint(n) : m;
+      if (!Number.isFinite(n)) return m;
+      const ch = String.fromCodePoint(n);
+      return NEVER_UNESCAPED.has(ch) ? m : ch;
     }
-    return Object.prototype.hasOwnProperty.call(ENTITIES, e) ? ENTITIES[e] : m;
+    if (!Object.prototype.hasOwnProperty.call(ENTITIES, e)) return m;
+    return NEVER_UNESCAPED.has(ENTITIES[e]) ? m : ENTITIES[e];
   });
+}
+
+/** Repeat a rewrite until it stops changing the string.
+ *
+ *  A SINGLE pass is not removal. Deleting `<script>` from `<scr<script>ipt>` leaves `<script>`:
+ *  the pass RECONSTRUCTS the very tag it just took out. That is what CodeQL means by "incomplete
+ *  multi-character sanitization", and it stopped being theoretical here on 2026-08-31, when the
+ *  accountability block began rendering fields read from a SUBJECT'S OWN `provek.json`. This
+ *  converter's input is no longer only our own prerendered markup.
+ *
+ *  The iteration is bounded. An unbounded loop over hostile input is the other half of the same
+ *  class of bug - this repository has already shipped one measured ReDoS - and 20 passes is far
+ *  past anything nesting in real markup produces.
+ */
+function untilStable(text, rewrite, limit = 20) {
+  for (let i = 0; i < limit; i += 1) {
+    const next = rewrite(text);
+    if (next === text) return text;
+    text = next;
+  }
+  return text;
 }
 
 /** Everything a reader never sees is removed BEFORE any text is taken: scripts, styles, and the
  *  `sr-only` spans that exist so a screen reader hears what the eye reads. Keeping the latter would
  *  print every reason twice — the exact doubling the visible/announced pair is designed to avoid. */
 function strip(html) {
-  return html
+  return untilStable(html, (t) => t
     .replace(/<!--[\s\S]*?-->/g, "")
     .replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1>/gi, "")
     // DECLARED LOSS: inline SVG. Two method notes draw charts whose axis labels are `<text>` nodes
@@ -56,7 +97,7 @@ function strip(html) {
     // and excluded on BOTH sides of the fidelity gate, so the gate measures what this converter
     // actually promises rather than being quietly widened until it passes.
     .replace(/<svg\b[^>]*>[\s\S]*?<\/svg>/gi, "")
-    .replace(/<span[^>]*\bclass="[^"]*\bsr-only\b[^"]*"[^>]*>[\s\S]*?<\/span>/gi, "");
+    .replace(/<span[^>]*\bclass="[^"]*\bsr-only\b[^"]*"[^>]*>[\s\S]*?<\/span>/gi, ""));
 }
 
 function inline(html) {
@@ -65,18 +106,17 @@ function inline(html) {
   // "recipientenforced" — measured on `/phase-2/`, where a word-level fidelity check then reported
   // "recipient" as LOST when in truth it was merged. The text was never dropped; it stopped being
   // readable, which for a document meant for machines is the same defect wearing a better mask.
-  return decode(html
+  return decode(untilStable(html
     .replace(/<\/(span|a|strong|em|b|i|code)>\s*<(span|a|strong|em|b|i|code)\b/gi, "</$1> <$2")
     .replace(/<a\b[^>]*\bhref="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi,
       (m, href, text) => {
-        const t = decode(text.replace(/<[^>]+>/g, "")).trim();
+        const t = decode(untilStable(text, (x) => x.replace(/<[^>]+>/g, ""))).trim();
         return t ? `[${t}](${href})` : "";
       })
-    .replace(/<(strong|b)\b[^>]*>([\s\S]*?)<\/\1>/gi, (m, _t, x) => `**${x.replace(/<[^>]+>/g, "").trim()}**`)
-    .replace(/<(em|i)\b[^>]*>([\s\S]*?)<\/\1>/gi, (m, _t, x) => `*${x.replace(/<[^>]+>/g, "").trim()}*`)
-    .replace(/<code\b[^>]*>([\s\S]*?)<\/code>/gi, (m, x) => "`" + x.replace(/<[^>]+>/g, "").trim() + "`")
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<[^>]+>/g, ""))
+    .replace(/<(strong|b)\b[^>]*>([\s\S]*?)<\/\1>/gi, (m, _t, x) => `**${untilStable(x, (y) => y.replace(/<[^>]+>/g, "")).trim()}**`)
+    .replace(/<(em|i)\b[^>]*>([\s\S]*?)<\/\1>/gi, (m, _t, x) => `*${untilStable(x, (y) => y.replace(/<[^>]+>/g, "")).trim()}*`)
+    .replace(/<code\b[^>]*>([\s\S]*?)<\/code>/gi, (m, x) => "`" + untilStable(x, (y) => y.replace(/<[^>]+>/g, "")).trim() + "`")
+    .replace(/<br\s*\/?>/gi, "\n"), (t) => t.replace(/<[^>]+>/g, "")))
     .replace(/[ \t\u00a0]+/g, " ")
     .trim();
 }

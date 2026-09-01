@@ -416,14 +416,23 @@ function derivedMarkdownSweep() {
   const derived = [];
   for (const dir of pages) {
     const md = join(dir, "index.md");
-    if (existsSync(md)) continue;                 // a purpose-built sibling always wins
     const html = readFileSync(join(dir, "index.html"), "utf8");
     const route = "/" + (dir === DIST ? "" : `${dir.slice(DIST.length + 1)}/`);
     const title = (html.match(/<title>([\s\S]*?)<\/title>/i) || [, route])[1]
       .replace(/\s*[-–—]\s*Provek\s*$/, "").trim();
     const description = (html.match(/<meta name="description" content="([^"]*)"/i) || [, ""])[1];
-    writeFileSync(md, pageMarkdown(html, { title, description, site: SITE, route }));
-    derived.push(route);
+    // "wx" makes the check and the write ONE atomic filesystem call. A separate `existsSync(md)`
+    // before this write leaves a window between the check and the write for another process (or
+    // another route sharing this directory) to create the sibling first — CodeQL's file-system
+    // race — and whichever write lands second would silently overwrite a purpose-built sibling,
+    // the exact outcome "a purpose-built sibling always wins" promises against. EEXIST means the
+    // race was already decided in the sibling's favour, so it is swallowed, not surfaced.
+    try {
+      writeFileSync(md, pageMarkdown(html, { title, description, site: SITE, route }), { flag: "wx" });
+      derived.push(route);
+    } catch (err) {
+      if (err.code !== "EEXIST") throw err;
+    }
   }
 
   const missing = pages

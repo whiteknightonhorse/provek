@@ -10,7 +10,6 @@ from src.abs_profile.identity import Binding, BindingKind
 from src.collector import declaration as decl
 from src.collector.declaration import github_full_name
 from src.collector.divergence import Divergence
-from src.pipeline import verify
 from src.registry.public_registry import PublicRegistry
 from src.transport.file_transport import FileTransport
 
@@ -40,8 +39,9 @@ def _repo(tmp: Path) -> Path:
 def test_end_to_end_produces_passport_and_publishes_it():
     with tempfile.TemporaryDirectory() as d:
         p = Path(d)
-        res = verify(str(_repo(p)), Binding(BindingKind.GIT, "a/b"),
-                     FileTransport(p / "out"), PublicRegistry(p / "reg"))
+        res = pipeline_module.verify(
+            str(_repo(p)), Binding(BindingKind.GIT, "a/b"),
+            FileTransport(p / "out"), PublicRegistry(p / "reg"))
         assert Path(res.published_ref).exists()
         m = res.passport.to_machine()
         assert m["subject_id"] == "git:a/b"
@@ -52,8 +52,9 @@ def test_unpresented_runtime_is_NOT_a_violation():
     """The core honesty: we do not accuse a subject of what we failed to measure."""
     with tempfile.TemporaryDirectory() as d:
         p = Path(d)
-        res = verify(str(_repo(p)), Binding(BindingKind.GIT, "a/b"),
-                     FileTransport(p / "o"), PublicRegistry(p / "r"))
+        res = pipeline_module.verify(
+            str(_repo(p)), Binding(BindingKind.GIT, "a/b"),
+            FileTransport(p / "o"), PublicRegistry(p / "r"))
         assert res.divergence is Divergence.NOT_MEASURED
         assert any("not a violation" in f for f in res.findings)
 
@@ -61,8 +62,9 @@ def test_unpresented_runtime_is_NOT_a_violation():
 def test_unmeasured_operations_are_reported_as_unmeasured_not_L0():
     with tempfile.TemporaryDirectory() as d:
         p = Path(d)
-        res = verify(str(_repo(p)), Binding(BindingKind.GIT, "a/b"),
-                     FileTransport(p / "o"), PublicRegistry(p / "r"))
+        res = pipeline_module.verify(
+            str(_repo(p)), Binding(BindingKind.GIT, "a/b"),
+            FileTransport(p / "o"), PublicRegistry(p / "r"))
         ops = {o["operation"]: o for o in res.passport.to_machine()["verified"]["operations"]}
         assert ops["treasury_control"]["measured"] is False
         assert ops["treasury_control"]["level"] != "L0"
@@ -71,9 +73,10 @@ def test_unmeasured_operations_are_reported_as_unmeasured_not_L0():
 def test_divergence_is_detected_when_deployed_differs():
     with tempfile.TemporaryDirectory() as d:
         p = Path(d)
-        res = verify(str(_repo(p)), Binding(BindingKind.GIT, "a/b"),
-                     FileTransport(p / "o"), PublicRegistry(p / "r"),
-                     deployed_digest="deadbeef")
+        res = pipeline_module.verify(
+            str(_repo(p)), Binding(BindingKind.GIT, "a/b"),
+            FileTransport(p / "o"), PublicRegistry(p / "r"),
+            deployed_digest="deadbeef")
         assert res.divergence is Divergence.DIVERGED
         assert any("DIVERGENCE" in f for f in res.findings)
 
@@ -82,8 +85,9 @@ def test_unreachable_subject_still_yields_an_honest_passport():
     """An unreachable subject neither crashes the pipeline nor turns into zeros."""
     with tempfile.TemporaryDirectory() as d:
         p = Path(d)
-        res = verify("/nope/x.git", Binding(BindingKind.DNS, "x.com"),
-                     FileTransport(p / "o"), PublicRegistry(p / "r"))
+        res = pipeline_module.verify(
+            "/nope/x.git", Binding(BindingKind.DNS, "x.com"),
+            FileTransport(p / "o"), PublicRegistry(p / "r"))
         m = res.passport.to_machine()
         assert m["verified"]["projection"] is None
         assert m["verified"]["projection_absent_reason"] is not None
@@ -96,8 +100,9 @@ def test_a_local_or_non_github_remote_skips_the_declaration_read_entirely():
     returns `None` for a local path, so none of them ever attempt the fetch this file stubs anyway."""
     with tempfile.TemporaryDirectory() as d:
         p = Path(d)
-        res = verify(str(_repo(p)), Binding(BindingKind.GIT, "a/b"),
-                     FileTransport(p / "o"), PublicRegistry(p / "r"))
+        res = pipeline_module.verify(
+            str(_repo(p)), Binding(BindingKind.GIT, "a/b"),
+            FileTransport(p / "o"), PublicRegistry(p / "r"))
         acc = res.passport.to_machine()["accountability"]
         assert all(f["measured"] is False and f["reason"] == "check_did_not_run"
                   for f in acc.values())
@@ -135,8 +140,9 @@ def test_a_github_remote_DOES_reach_the_declaration_mapper(monkeypatch):
 
     with tempfile.TemporaryDirectory() as d:
         p = Path(d)
-        verify("https://github.com/whiteknightonhorse/apibase",
-              Binding(BindingKind.GIT, "whiteknightonhorse/apibase"),
-              FileTransport(p / "o"), PublicRegistry(p / "r"))
+        pipeline_module.verify(
+            "https://github.com/whiteknightonhorse/apibase",
+            Binding(BindingKind.GIT, "whiteknightonhorse/apibase"),
+            FileTransport(p / "o"), PublicRegistry(p / "r"))
 
     assert seen == {"full_name": "whiteknightonhorse/apibase", "ref": "cafebabe"}
