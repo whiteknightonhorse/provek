@@ -2728,3 +2728,86 @@ missing was a place for "decode never runs before strip" and the seven-alert ver
 ratified strength instead of only in code comments a future edit could quietly narrow. The gate for
 all of it is the test suite named throughout this entry, run at the door on every push; this record
 is what a future editor reads before deciding a comment disagrees with it.
+
+
+## D-44. `whiteknightonhorse/APIbase` had no `provek.json`, so accountability read empty - that emptiness was correct, and a declaration now exists
+
+**Decision.** The operator opened `/p/git_whiteknightonhorse_APIbase/` and saw all four
+accountability fields as NOT MEASURED. Measured before anything else: the mechanism was not
+broken. `src/collector/declaration.py` reached `raw.githubusercontent.com` for that subject,
+pinned the read to a real `head_sha`, and got back HTTP 404 for `provek.json` - a repository that
+genuinely carried no declaration document. `_not_declared` folded that into
+`NotMeasured.NOT_DECLARED` on all four fields exactly as designed (world 3 of the four-world
+contract this module's own docstring lays out). An empty accountability block is not a defect in
+the collector; it is what "the subject said nothing" is supposed to look like. Fixing this meant
+publishing a declaration, not patching code.
+
+**1. Accountability does not move the score, so publishing our own declaration is not
+self-dealing.** `src/passport/passport.py` states plainly that `Accountability` "does NOT affect
+the score", and `declaration.py`'s own docstring repeats it: the block enters neither `verified`
+nor the projection, by construction. Every field the render shows carries `confidence="assumed"`,
+never `"measured"`, and is labelled self-declared on the page. Filing `provek.json` for our own
+repositories therefore cannot inflate a number this project publishes about itself - the objection
+"we are an interested party" does not apply to a channel the ladder was built to ignore.
+
+**2. What `whiteknightonhorse/APIbase` now declares, and what it does not.** `provek.json` at
+that repository's root (merged to `main`, pinned SHA `5ef9826000d41079d12cbe52b81ff1b562da6afd`)
+states: `emergency_stop` exists, held by the operator, mechanism "ssh + service stop halts all
+paid calls" - true of every repository on this operator's Hetzner box, and stated in the paid-call
+terms specific to APIbase's own business model; `insurance` does NOT exist - a stated absence,
+which the render distinguishes from silence as "none - stated, not omitted"; `claims_addressee` is
+`api@apibase.pro`, the mailbox the operator already uses for provider registrations; `dispute_path`
+is `type: "contact"`, the only path that becomes honest once a real addressee is on record.
+`operations.treasury_control` was deliberately OMITTED - the operator chose "declare nothing" over
+inventing a level, and an omitted key reads as `NOT_DECLARED`, never as a zero or a level nobody
+asserted. Inventing an insurance policy or a treasury level neither field carries would have been
+exactly the fraud LAW-NOT-MEASURED and this whole project exist to make uneconomical; a declared
+`false` is stronger evidence than silence, and was preferred to it here on purpose.
+
+**3. The rollout to the rest of the registry carried only the fields with a confirmed answer.**
+Nine other subjects in this operator's cohort (`AI-Property-Sales-Platform`, `AIpush`,
+`audiobook-shorts-series`, `cryptocardhub-defycard`, `cryptocardhub-public`, `gov-auction-report`,
+`mcp-protocol-tester`, `provek`, `provek-method`) now carry `provek.json` declaring
+`emergency_stop` (same ssh/service-stop mechanism, worded for automated activity rather than paid
+calls where the subject is not one) and `insurance: false` - both generically true of every
+repository this operator runs. `claims_addressee` and `dispute_path` were NOT copied across:
+`api@apibase.pro` is the mailbox for APIbase's own provider registrations, and asserting it as the
+claims address for an unrelated project would have been the fabrication this decision's own second
+point refuses, not a rollout. Those two fields stay `NOT_DECLARED` on every subject but APIbase
+until a real answer for each is on record. Four subjects (`AI-Property-Sales-Platform`,
+`audiobook-shorts-series`, `gov-auction-report`, `cryptocardhub-defycard`) are private repositories
+that an anonymous collector already read as `unreadable`/`not_declared` before this work and still
+does after it - `raw.githubusercontent.com` answers a private repo's file with the same 404 an
+absent file gets, so a declaration pushed there cannot be read by this pipeline without a
+credential the anonymous collector does not carry by design (Q-M2 refuses a token at the point of
+publication, not only at the point of reading). This is a pre-existing property of the collector,
+not something this decision introduces or was asked to change.
+
+**4. "the check did not run" on Deployment and Treasury control is a true sentence, not a
+softened one.** Both operations show `level: check_did_not_run` in every passport, APIbase's
+included. That is `NotMeasured.CHECK_DID_NOT_RUN`, and it is the honest reason because no collector
+for either operation exists anywhere in this codebase: `src/verify/control_map.py` names the
+reasons as facts about what THIS CODEBASE has built - `DEPLOYMENT_NOT_COLLECTED = "collector not
+implemented"`, `TREASURY_OUT_OF_SCOPE = "outside MVP scope"` - not facts about any one subject.
+`APPARATUS_ABSENT` was ruled out on purpose: that reason means the check RAN and read a genuine
+structural zero (a subject with zero workflow runs, ever), which requires an apparatus that reads
+the subject to exist in the first place. For deployment and treasury there is no such apparatus at
+all, for any subject, so the check was never dispatched - `CHECK_DID_NOT_RUN` is the only one of
+the six reasons in `src/abs_profile/measured.py` that describes "we have not built this yet", and
+using it here says exactly that, to every reader, including a stranger who has never read this
+file.
+
+**5. No seventh reason, no reopening.** A "the operation is out of scope for what we sell" reason
+was considered and rejected again today, for the same argument already on record: `deployment` and
+`treasury` are real operations a subject can run, out of reach only because this collector has not
+been built for them, not because the operation is somehow outside what accountability could ever
+mean. Adding a reason here would re-litigate a boundary this project has already drawn, on no new
+fact - the four private subjects reading `unreadable`/`not_declared` above are the closest thing to
+new evidence this session produced, and they are explained by point 3, not by a missing sixth
+world.
+
+**Why a decision record rather than a new law or gate.** No rule was missing - `LAW-NOT-MEASURED`
+and the four-world contract in `src/collector/declaration.py` already say everything points 1-4
+depend on; nothing here needed rearming. What was missing was a `provek.json` this project's own
+subjects could be measured from, and a place recording why the emptiness that preceded it was a
+correct reading rather than a bug report waiting to be filed again.
