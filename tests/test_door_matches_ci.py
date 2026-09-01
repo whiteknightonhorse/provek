@@ -173,11 +173,12 @@ DECLARED_WORKFLOWS = {
                   "is not installable here, and its findings go to the Security tab by design.",
     "scorecard.yml": "third-party analysis, same reasoning. Its own header records a run that died "
                      "in setup on an unresolvable ref - a red on main the door cannot see.",
-    "dependabot-auto-merge.yml": "does not judge `main` at all - it only requests auto-merge on a "
-                     "Dependabot PR, and GitHub's own required-status-checks (set on the branch "
-                     "the same day this workflow was added) decide whether that merge ever happens. "
-                     "Declared here because it is a fourth file in this directory, not because it "
-                     "can turn `main` red.",
+    "dependabot-auto-merge.yml": "does not judge `main` at all - it merges a Dependabot PR after "
+                     "watching that PR's own checks with `gh pr checks --watch` (branch-protection "
+                     "required checks were tried and reverted the same day: they also gate the "
+                     "direct push scripts/push.sh makes, which has no check-run yet on a commit "
+                     "that has never been pushed). Declared here because it is a fourth file in "
+                     "this directory, not because it can turn `main` red.",
 }
 
 

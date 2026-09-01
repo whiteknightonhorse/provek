@@ -61,22 +61,27 @@ this repository has not adopted; a low true number is worth more than a high tun
 
 ## `dependabot-auto-merge.yml` — the human step this file used to require, automated
 
-Requests auto-merge on a Dependabot pull request; it does not merge anything itself and it never
-touches `main`'s status. `dependabot/fetch-metadata` reports whether the bump is patch, minor or
-major, and only patch/minor call `gh pr merge --auto --squash` — a major version is left open for a
-human, on purpose, because "act without asking" was never "stop looking at major bumps".
+Merges a Dependabot pull request itself once its own checks are green; a major bump is left open
+for a human, on purpose, because "act without asking" was never "stop looking at major bumps".
+`dependabot/fetch-metadata` reports whether the bump is patch, minor or major.
 
-`--auto` defers to `main`'s branch protection, which now names the required status checks
-(`secret scan`, `ratchets`, `tests and coverage`, `lint and types`, `the shipped site`, `CodeQL`,
-`analyze (python)`, `analyze (javascript-typescript)`) with `enforce_admins: true` — so a red
-required check blocks this repository's own token exactly as it blocks anyone else. The instrument
-being trusted is unchanged; only who waits on its verdict is automated.
+**Branch-protection required status checks were tried first and reverted the same day.** They
+would have let `gh pr merge --auto` defer the wait to GitHub itself, but required checks apply to
+every update to `main` — including the direct `git push` this project's own door
+(`scripts/push.sh`) makes after running the same seven gates locally — and `gates.yml` only reports
+a check for a commit on `main` on its `push` trigger, AFTER that commit has already landed. A
+commit that has never been pushed has no check-run yet to be "required", so the very first push
+after protection was turned on was rejected with "8 of 8 required status checks are expected".
+That is not a workflow this repository is changing, so protection went back to exactly what it was
+(`enforce_admins` and `required_linear_history`, nothing else) and this workflow watches the PR's
+own checks directly instead: `gh pr checks --watch` blocks until they complete and exits non-zero
+on the first red one, which stops the job before the `gh pr merge` line ever runs. Same measurement
+this task did for the eight PRs above by hand, at the door the branch itself does not have.
 
 Two Dependabot PRs on 2026-09-01 (`codeql-action/init` and `codeql-action/analyze`, bumped in
-separate PRs to the same target version) are the reason this table exists: merging either alone
-breaks CodeQL with "Loaded a configuration file for version '4.37.9', but running version
-'4.37.8'" — a required check that this workflow's auto-merge would simply never see turn green,
-which is the correct outcome, not a gap to route around.
+separate PRs to the same target version) are the worked example: merging either alone breaks
+CodeQL with "Loaded a configuration file for version '4.37.9', but running version '4.37.8'" — a
+check this workflow would watch turn red and never merge past.
 
 ## Every action is pinned to a commit, and so is every pip install
 

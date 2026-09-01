@@ -6,19 +6,22 @@ name: dependabot auto-merge
 # their head SHA and were merged after that measurement; two bumped one half of a paired GitHub
 # Action reference (codeql-action/init, codeql-action/analyze) and were left open because
 # `analyze (python)` and `analyze (javascript-typescript)` failed with "Loaded a configuration file
-# for version '4.37.9', but running version '4.37.8'" — the two pins must move together, which
-# `--auto` below cannot fix and does not try to: a red required check simply never merges.
+# for version '4.37.9', but running version '4.37.8'" — the two pins must move together, which this
+# workflow cannot fix and does not try to: `gh pr checks --watch` below reports a red check and the
+# job stops before the merge line ever runs.
 #
-# THIS WORKFLOW ONLY REQUESTS auto-merge; it does not merge anything itself. `gh pr merge --auto`
-# tells GitHub "merge this once its required status checks pass", and `main`'s branch protection
-# (set the same day this workflow was added) now NAMES those checks — `secret scan`, `ratchets`,
-# `tests and coverage`, `lint and types`, `the shipped site`, `CodeQL`, `analyze (python)`,
-# `analyze (javascript-typescript)` — with `enforce_admins: true`, so even this repository's own
-# token cannot merge past a red one. The door judged in `scripts/push.sh` is unchanged; only who
-# waits on its verdict is automated.
+# WHY NOT BRANCH-PROTECTION REQUIRED CHECKS + `gh pr merge --auto`. That was tried first and
+# reverted the same day: `main`'s branch protection ALSO applies to the direct `git push` this
+# repository's own door (`scripts/push.sh`) uses after running the same seven gates locally, and
+# `gates.yml` only reports a check for a commit on `main` on the `push` trigger — AFTER it already
+# landed, never before. Requiring status checks to already exist for a commit that has never yet
+# been pushed makes every direct push fail with "required status checks are expected", which is
+# exactly what happened here and is not a workflow this repository is changing. So this workflow
+# watches the checks ITSELF instead of asking GitHub's auto-merge to gate on required ones — the
+# same wait this task just did for the eight PRs above, by hand, with `check-runs` on the head SHA.
 #
-# MAJOR NEVER AUTO-MERGES, ON PURPOSE. `dependabot/fetch-metadata` reports `update-type`; the step
-# below only fires for `semver-patch` and `semver-minor`. A major bump is left open and unmerged —
+# MAJOR NEVER AUTO-MERGES, ON PURPOSE. `dependabot/fetch-metadata` reports `update-type`; the merge
+# step only fires for `semver-patch` and `semver-minor`. A major bump is left open and unmerged —
 # "full access" was granted as the right to act without asking, not the right to stop looking, and
 # a major version is exactly the class of change this project's own operator drew that line at.
 #
@@ -44,9 +47,16 @@ jobs:
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
 
-      - name: enable auto-merge for patch and minor updates
+      # `gh pr checks --watch` blocks until every check on the PR's OWN head SHA has completed and
+      # exits non-zero the moment one is red - the default shell for a `run:` step on GitHub-hosted
+      # runners already carries `-e`, so that non-zero exit stops the step here and `gh pr merge`
+      # on the next line never executes. This is the measurement this task's boundary asked for
+      # ("never merge past the checks"), taken by the workflow instead of by a person.
+      - name: wait for checks, then merge patch and minor updates
         if: steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor'
-        run: gh pr merge --auto --squash "$PR_URL"
+        run: |
+          gh pr checks "$PR_URL" --watch
+          gh pr merge --squash --delete-branch "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
