@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-08-31T04:40:13.761093+00:00",
-    "valid_until": "2026-09-30T04:40:13.761093+00:00",
+    "issued_at": "2026-09-01T03:43:01.752064+00:00",
+    "valid_until": "2026-10-01T03:43:01.752064+00:00",
     "status": "unverified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -20,7 +20,7 @@
       "operations": [
         {
           "operation": "development_initiation",
-          "level": "nothing_qualified",
+          "level": "no_evidence_in_window",
           "measured": false,
           "confidence": null,
           "limiters_applied": []
@@ -41,25 +41,25 @@
         }
       ],
       "projection": null,
-      "projection_absent_reason": "check_did_not_run",
+      "projection_absent_reason": "no_evidence_in_window",
       "observations": {
         "signed_commit_share": {
           "value": null,
           "measured": false,
-          "absent_reason": "nothing_qualified"
+          "absent_reason": "no_evidence_in_window"
         },
         "distinct_authors": {
           "value": null,
           "measured": false,
-          "absent_reason": "nothing_qualified"
+          "absent_reason": "no_evidence_in_window"
         },
         "bot_author_share": {
           "value": null,
           "measured": false,
-          "absent_reason": "nothing_qualified"
+          "absent_reason": "no_evidence_in_window"
         },
         "workflow_runs": {
-          "value": 80,
+          "value": 81,
           "measured": true,
           "absent_reason": null
         },

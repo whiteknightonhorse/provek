@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-08-31T04:40:13.761093+00:00",
-    "valid_until": "2026-09-30T04:40:13.761093+00:00",
+    "issued_at": "2026-09-01T03:43:01.752064+00:00",
+    "valid_until": "2026-10-01T03:43:01.752064+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -61,7 +61,7 @@
           "absent_reason": null
         },
         "workflow_runs": {
-          "value": 1047,
+          "value": 1061,
           "measured": true,
           "absent_reason": null
         },
@@ -80,7 +80,7 @@
           "measured": true,
           "absent_reason": null
         },
-        "head_sha": "d6faaadadc55831004bf5546df7dff9f296cdf31"
+        "head_sha": "86633782f871342a0e44cbf47abf3d203ad07018"
       },
       "control_map_valid": true,
       "control_map_cap": 5,

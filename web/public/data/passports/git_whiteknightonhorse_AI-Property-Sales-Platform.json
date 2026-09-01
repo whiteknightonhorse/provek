@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-08-31T04:40:13.761093+00:00",
-    "valid_until": "2026-09-30T04:40:13.761093+00:00",
+    "issued_at": "2026-09-01T03:43:01.752064+00:00",
+    "valid_until": "2026-10-01T03:43:01.752064+00:00",
     "status": "unverified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -85,11 +85,11 @@
       "coverage": {
         "inspected": [],
         "out_of_reach": {
-          "github": "the repository did not answer a reader holding no credential",
           "deployment": "collector not implemented",
           "server": "runtime not presented by the subject",
           "treasury": "outside MVP scope",
-          "database": "no access through the chosen channel"
+          "database": "no access through the chosen channel",
+          "github": "the repository did not answer a reader holding no credential"
         },
         "unknown_shape": "privileged access through a CI secret or account recovery",
         "valid": false
