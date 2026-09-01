@@ -1,6 +1,6 @@
 {
   "subject_id": "git:whiteknightonhorse/AIpush",
-  "projection": null,
+  "projection": 40,
   "passport": {
     "schema_version": "2.0.0",
     "subject_id": "git:whiteknightonhorse/AIpush",
@@ -8,9 +8,9 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-09-01T09:13:38.131767+00:00",
-    "valid_until": "2026-10-01T09:13:38.131767+00:00",
-    "status": "unverified",
+    "issued_at": "2026-09-01T09:32:46.828549+00:00",
+    "valid_until": "2026-10-01T09:32:46.828549+00:00",
+    "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
       "profile_version": "1.1.0",
@@ -20,10 +20,12 @@
       "operations": [
         {
           "operation": "development_initiation",
-          "level": "no_evidence_in_window",
-          "measured": false,
-          "confidence": null,
-          "limiters_applied": []
+          "level": "L2",
+          "measured": true,
+          "confidence": "inferred",
+          "limiters_applied": [
+            "O1:mixed_classes->inferred"
+          ]
         },
         {
           "operation": "deployment",
@@ -40,23 +42,23 @@
           "limiters_applied": []
         }
       ],
-      "projection": null,
-      "projection_absent_reason": "no_evidence_in_window",
+      "projection": 40,
+      "projection_absent_reason": null,
       "observations": {
         "signed_commit_share": {
-          "value": null,
-          "measured": false,
-          "absent_reason": "no_evidence_in_window"
+          "value": 0.0,
+          "measured": true,
+          "absent_reason": null
         },
         "distinct_authors": {
-          "value": null,
-          "measured": false,
-          "absent_reason": "no_evidence_in_window"
+          "value": 0,
+          "measured": true,
+          "absent_reason": null
         },
         "bot_author_share": {
-          "value": null,
-          "measured": false,
-          "absent_reason": "no_evidence_in_window"
+          "value": 0.0,
+          "measured": true,
+          "absent_reason": null
         },
         "workflow_runs": {
           "value": null,
@@ -64,52 +66,53 @@
           "absent_reason": "apparatus_absent"
         },
         "identity_window_closed": {
-          "value": null,
-          "measured": false,
-          "absent_reason": "unreadable"
+          "value": false,
+          "measured": true,
+          "absent_reason": null
         },
         "unlinked_commit_share": {
-          "value": null,
-          "measured": false,
-          "absent_reason": "unreadable"
+          "value": 1.0,
+          "measured": true,
+          "absent_reason": null
         },
         "unlinked_key_count": {
-          "value": null,
-          "measured": false,
-          "absent_reason": "unreadable"
+          "value": 1,
+          "measured": true,
+          "absent_reason": null
         },
-        "head_sha": null
+        "head_sha": "eff903069ef9315a210be6e7a45055ac51aea0c3"
       },
-      "control_map_valid": false,
-      "control_map_cap": null,
+      "control_map_valid": true,
+      "control_map_cap": 5,
       "coverage": {
-        "inspected": [],
+        "inspected": [
+          "github"
+        ],
         "out_of_reach": {
           "deployment": "collector not implemented",
           "server": "runtime not presented by the subject",
           "treasury": "outside MVP scope",
-          "database": "no access through the chosen channel",
-          "github": "the repository answered, but the reads this verdict rests on did not complete, so nothing here was inspected end to end"
+          "database": "no access through the chosen channel"
         },
         "unknown_shape": "privileged access through a CI secret or account recovery",
-        "valid": false
+        "valid": true
       }
     },
     "self_reported": {
       "source": "github",
       "private": false,
       "declaration": {
-        "present": false,
-        "pinned_sha": null,
-        "schema_version": null
+        "present": true,
+        "pinned_sha": "eff903069ef9315a210be6e7a45055ac51aea0c3",
+        "schema_version": "1.0.0"
       }
     },
     "accountability": {
       "emergency_stop": {
-        "value": null,
-        "measured": false,
-        "reason": "not_declared",
-        "confidence": null
+        "value": "operator — ssh + service stop halts all automated activity for this repository",
+        "measured": true,
+        "reason": null,
+        "confidence": "assumed"
       },
       "claims_addressee": {
         "value": null,
@@ -119,9 +122,9 @@
       },
       "insurance": {
         "value": null,
-        "measured": false,
-        "reason": "not_declared",
-        "confidence": null
+        "measured": true,
+        "reason": null,
+        "confidence": "assumed"
       },
       "dispute_path": {
         "value": null,

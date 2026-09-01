@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-09-01T09:13:38.131767+00:00",
-    "valid_until": "2026-10-01T09:13:38.131767+00:00",
+    "issued_at": "2026-09-01T09:32:46.828549+00:00",
+    "valid_until": "2026-10-01T09:32:46.828549+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -71,16 +71,16 @@
           "absent_reason": null
         },
         "unlinked_commit_share": {
-          "value": 0.0,
+          "value": 0.5,
           "measured": true,
           "absent_reason": null
         },
         "unlinked_key_count": {
-          "value": 0,
+          "value": 1,
           "measured": true,
           "absent_reason": null
         },
-        "head_sha": "253587cbce346b19574c34a78311b2db6dedc7c4"
+        "head_sha": "d641e76d09448eee988ce8ee39cbae8254b09c95"
       },
       "control_map_valid": true,
       "control_map_cap": 5,
@@ -102,17 +102,17 @@
       "source": "github",
       "private": false,
       "declaration": {
-        "present": false,
-        "pinned_sha": "253587cbce346b19574c34a78311b2db6dedc7c4",
-        "schema_version": null
+        "present": true,
+        "pinned_sha": "d641e76d09448eee988ce8ee39cbae8254b09c95",
+        "schema_version": "1.0.0"
       }
     },
     "accountability": {
       "emergency_stop": {
-        "value": null,
-        "measured": false,
-        "reason": "not_declared",
-        "confidence": null
+        "value": "operator — ssh + service stop halts all automated activity for this repository",
+        "measured": true,
+        "reason": null,
+        "confidence": "assumed"
       },
       "claims_addressee": {
         "value": null,
@@ -122,9 +122,9 @@
       },
       "insurance": {
         "value": null,
-        "measured": false,
-        "reason": "not_declared",
-        "confidence": null
+        "measured": true,
+        "reason": null,
+        "confidence": "assumed"
       },
       "dispute_path": {
         "value": null,
