@@ -1,6 +1,6 @@
 {
   "subject_id": "git:whiteknightonhorse/APIbase",
-  "projection": 60,
+  "projection": 40,
   "passport": {
     "schema_version": "2.0.0",
     "subject_id": "git:whiteknightonhorse/APIbase",
@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-09-01T09:13:38.131767+00:00",
-    "valid_until": "2026-10-01T09:13:38.131767+00:00",
+    "issued_at": "2026-09-01T09:25:04.388821+00:00",
+    "valid_until": "2026-10-01T09:25:04.388821+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -20,7 +20,7 @@
       "operations": [
         {
           "operation": "development_initiation",
-          "level": "L3",
+          "level": "L2",
           "measured": true,
           "confidence": "inferred",
           "limiters_applied": [
@@ -42,7 +42,7 @@
           "limiters_applied": []
         }
       ],
-      "projection": 60,
+      "projection": 40,
       "projection_absent_reason": null,
       "observations": {
         "signed_commit_share": {
@@ -61,26 +61,26 @@
           "absent_reason": null
         },
         "workflow_runs": {
-          "value": 1065,
+          "value": 1072,
           "measured": true,
           "absent_reason": null
         },
         "identity_window_closed": {
-          "value": true,
+          "value": false,
           "measured": true,
           "absent_reason": null
         },
         "unlinked_commit_share": {
-          "value": 0.0,
+          "value": 0.009,
           "measured": true,
           "absent_reason": null
         },
         "unlinked_key_count": {
-          "value": 0,
+          "value": 1,
           "measured": true,
           "absent_reason": null
         },
-        "head_sha": "1eeeccb38e35164775e53931732b2b24c3820ad0"
+        "head_sha": "5ef9826000d41079d12cbe52b81ff1b562da6afd"
       },
       "control_map_valid": true,
       "control_map_cap": 5,
@@ -102,35 +102,35 @@
       "source": "github",
       "private": false,
       "declaration": {
-        "present": false,
-        "pinned_sha": "1eeeccb38e35164775e53931732b2b24c3820ad0",
-        "schema_version": null
+        "present": true,
+        "pinned_sha": "5ef9826000d41079d12cbe52b81ff1b562da6afd",
+        "schema_version": "1.0.0"
       }
     },
     "accountability": {
       "emergency_stop": {
-        "value": null,
-        "measured": false,
-        "reason": "not_declared",
-        "confidence": null
+        "value": "operator — ssh + service stop halts all paid calls",
+        "measured": true,
+        "reason": null,
+        "confidence": "assumed"
       },
       "claims_addressee": {
-        "value": null,
-        "measured": false,
-        "reason": "not_declared",
-        "confidence": null
+        "value": "legal entity — (api@apibase.pro)",
+        "measured": true,
+        "reason": null,
+        "confidence": "assumed"
       },
       "insurance": {
         "value": null,
-        "measured": false,
-        "reason": "not_declared",
-        "confidence": null
+        "measured": true,
+        "reason": null,
+        "confidence": "assumed"
       },
       "dispute_path": {
-        "value": null,
-        "measured": false,
-        "reason": "not_declared",
-        "confidence": null
+        "value": "contact",
+        "measured": true,
+        "reason": null,
+        "confidence": "assumed"
       }
     },
     "mandate_ref": "self-mandate-0001",

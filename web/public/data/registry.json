@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-01T09:13:38.131767+00:00",
+  "generated_at": "2026-09-01T09:25:04.388821+00:00",
   "disclaimer": "The score measures AUTONOMY. It does not measure reliability, decision quality, profitability, or the presence of an accountable party. An absent projection is not a zero.",
   "count": 10,
   "subjects": [
@@ -26,10 +26,10 @@
     {
       "subject_id": "git:whiteknightonhorse/APIbase",
       "status": "verified",
-      "projection": 60,
+      "projection": 40,
       "projection_absent_reason": null,
       "protocol_version": "1.0.0",
-      "valid_until": "2026-10-01T09:13:38.131767+00:00",
+      "valid_until": "2026-10-01T09:25:04.388821+00:00",
       "passport_ref": "https://provek.dev/data/passports/git_whiteknightonhorse_APIbase.json",
       "verifier_affiliation": "same_owner"
     },
