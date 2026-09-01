@@ -106,6 +106,23 @@ def _rate_limit_exhausted(token: str | None) -> bool:
     return core.get("remaining") == 0
 
 
+class RateLimited(RuntimeError):
+    """OUR budget ran out. This is never a fact about the subject.
+
+    Raised rather than returned, because the only honest thing to do with a read that did not
+    happen is to publish no document about it. A caller catches this per subject, writes NO
+    passport, and leaves the previously published row standing: stale and true beats fresh and
+    invented.
+
+    `NotMeasured.UNREADABLE` is FORBIDDEN for this case. It asserts that a source was asked and
+    did not answer; here the source was never asked. On 2026-08-31 a rate-exhausted run wrote
+    exactly that lie into live passports.
+    """
+
+
+_RATE_LIMIT_PATH = "/rate_limit"
+
+
 def _api(path: str, token: str | None = None) -> tuple[int, object]:
     """ANONYMOUS BY DEFAULT (2026-08-20).
 
@@ -137,10 +154,28 @@ def _api(path: str, token: str | None = None) -> tuple[int, object]:
     if len(raw) != 2:
         return 0, None
     body, code = raw
+    status = int(code) if code.isdigit() else 0
+
+    # OUR BUDGET, NOT THEIR SILENCE - AND CHECKED ON EVERY READ, NOT JUST THE FIRST.
+    # Until 2026-09-01 this guard stood in `collect_github`, on `/repos`: the first of three reads.
+    # Exhaustion arriving MID-WINDOW - on the commits page, or on the runs page - fell through to
+    # the generic "not 200" branch and was published as `unreadable`, printing our spent budget in
+    # the subject's passport as a fact about their source. `_api` is the single door every read
+    # goes through, so the rule lives here and covers reads nobody has written yet.
+    # `/rate_limit` is exempt: it is how this very question gets asked, and guarding it recurses.
+    if path != _RATE_LIMIT_PATH and (status == 429 or (status == 403 and _rate_limit_exhausted(token))):
+        # A 403 ALONE IS NOT OURS. GitHub returns it for DMCA-blocked and access-blocked
+        # repositories too, and treating those as our exhaustion would abort a subject while
+        # announcing a fact about us when the truth was one subject refusing - misattribution in
+        # the opposite direction from the one this guard exists to prevent.
+        raise RateLimited(
+            f"GitHub rate limit reached reading {path} (HTTP {status}). Anonymous access allows "
+            "60 requests an hour. Wait for the window to reset, or set PROVEK_GITHUB_TOKEN - the "
+            "token changes the budget, never the evidence.")
     try:
-        return int(code), json.loads(body)
+        return status, json.loads(body)
     except Exception:
-        return int(code) if code.isdigit() else 0, None
+        return status, None
 
 
 EVIDENCE_WINDOW_DAYS = 30
@@ -232,20 +267,9 @@ def collect_github(full_name: str, token: str | None = None) -> GitHubEvidence:
 
 
     code, repo = _api(f"/repos/{full_name}", token)
-    # NEW-4 (Fable): GitHub also returns 403 for DMCA-blocked and access-blocked repositories.
-    # Treating every 403 as our exhausted budget would abort the whole cohort announcing a fact
-    # about us when the truth was one subject refusing - misattribution in the opposite direction
-    # from the one this guard exists to prevent. Only a 403 that comes with an exhausted rate-limit
-    # header is ours; any other 403 is the subject's refusal and yields `unreadable` below.
-    if code == 429 or (code == 403 and _rate_limit_exhausted(token)):
-        # Exhausting a rate limit is OUR budget running out, not the subject's source refusing to
-        # answer. Emitting evidence here would publish a fact about us as a fact about them.
-        raise SystemExit(
-            f"GitHub rate limit reached while reading {full_name} (HTTP {code}).\n"
-            "Anonymous access allows 60 requests an hour and this cohort costs three per subject.\n"
-            "Wait for the window to reset, or set PROVEK_GITHUB_TOKEN to widen the limit - the\n"
-            "token changes the budget, never the evidence."
-        )
+    # The rate-limit guard used to stand HERE, and only here - which is why exhaustion that
+    # arrived after this line was published as the subject's silence. It now lives in `_api`,
+    # where every read passes (LAW #ONE-PLACE, Fable, 2026-09-01).
     if code != 200 or not isinstance(repo, dict):
         notes.append(redact(f"repository not read, HTTP {code}"))
         # `private` was hardcoded False here (Fable, B2). For a repository that answered 404 to

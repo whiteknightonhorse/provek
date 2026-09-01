@@ -25,11 +25,19 @@ from src.abs_profile.identity import Binding, BindingKind
 from src.abs_profile.ladder import SIGNED_SHARE_FOR_L4, SMALL_TEAM_FOR_L3, SOLE_AUTHOR, L
 from src.abs_profile.measured import NotMeasured
 from src.collector.declaration import apply_declaration
-from src.collector.github import EVIDENCE_WINDOW_DAYS, access_channel, collect_github
+from src.collector.github import EVIDENCE_WINDOW_DAYS, RateLimited, access_channel, collect_github
 from src.passport.passport import PROFILE_VERSION, PROTOCOL_VERSION, Provenance, build
 from src.registry.public_registry import PublicRegistry, Row
 from src.transport.file_transport import FileTransport
-from src.verify.control_map import Capability, ControlMap, ControlPath, Surface, build_coverage
+from src.verify.control_map import (
+    GITHUB_DID_NOT_ANSWER,
+    GITHUB_PARTIAL_READ,
+    Capability,
+    ControlMap,
+    ControlPath,
+    Surface,
+    build_coverage,
+)
 from src.verify.scorer import Confidence, OperationScore, projection, score_operation
 
 
@@ -128,21 +136,56 @@ out = Path(__file__).resolve().parents[1] / "public"
 transport = FileTransport(out / "passports")
 registry = PublicRegistry(out / "registry")
 
-if ONLY:
-    # Carry forward what is already published, so a one-subject run does not erase the rest.
-    # Reconstructed from the emitted artefact, which is the only record of those verdicts.
+def previous_rows() -> dict:
+    """The registry as it was last PUBLISHED - the only record of those verdicts.
+
+    Read unconditionally now, because TWO callers need it: a one-subject run, which must not
+    erase the rest, and a subject whose re-measure was cut short by our own exhausted budget,
+    whose old row must stand rather than vanish.
+    """
     from src.registry.public_registry import Status
-    _prev = out / "registry" / "registry.json"
-    if _prev.is_file():
-        for _r in json.loads(_prev.read_text(encoding="utf-8"))["subjects"]:
-            if _r["subject_id"].removeprefix("git:") in ONLY:
-                continue                      # about to be re-measured; do not carry the old row
-            registry.upsert(Row(
-                _r["subject_id"], Status(_r["status"]), _r["projection"],
-                _r["projection_absent_reason"], _r["protocol_version"],
-                datetime.fromisoformat(_r["valid_until"]), _r["passport_ref"],
-                verifier_affiliation=_r["verifier_affiliation"]))
-        print(f"carried forward: {len(registry._rows)} already-published row(s)")
+    prev = out / "registry" / "registry.json"
+    if not prev.is_file():
+        return {}
+    rows = {}
+    for _r in json.loads(prev.read_text(encoding="utf-8"))["subjects"]:
+        rows[_r["subject_id"]] = Row(
+            _r["subject_id"], Status(_r["status"]), _r["projection"],
+            _r["projection_absent_reason"], _r["protocol_version"],
+            datetime.fromisoformat(_r["valid_until"]), _r["passport_ref"],
+            verifier_affiliation=_r["verifier_affiliation"])
+    return rows
+
+
+PREVIOUS = previous_rows()
+RATE_LIMITED: list[str] = []
+
+
+def skip_rate_limited(subject_id: str, why: Exception) -> None:
+    """Our budget ran out mid-subject. Publish NOTHING new about them.
+
+    The previously published row is carried forward unchanged: it is stale, and it is TRUE. A row
+    DELETED because we could not re-read it would report a measured subject as never measured; a
+    row REBUILT from the partial read would report our spent budget as their silence. Both are
+    worse than yesterday's answer.
+
+    Staleness is not hidden by this. The row keeps its own `valid_until`, and the nightly
+    re-measure fails its expiry invariant on a row that stops being refreshed - which is exactly
+    the alarm that should fire if the budget stays exhausted.
+    """
+    print(f"{subject_id:<42} RATE-LIMITED - no passport issued: {why}")
+    RATE_LIMITED.append(subject_id)
+    prev = PREVIOUS.get(subject_id)
+    if prev is not None:
+        registry.upsert(prev)
+
+
+if ONLY:
+    for _sid, _row in PREVIOUS.items():
+        if _sid.removeprefix("git:") in ONLY:
+            continue                          # about to be re-measured; do not carry the old row
+        registry.upsert(_row)
+    print(f"carried forward: {len(registry._rows)} already-published row(s)")
 now = datetime.now(timezone.utc)
 # PROFILE 1.1.0: the evidence window became the window that was published, and identity
 # resolution became the platform's job rather than ours. A passport must say which ruleset read
@@ -237,11 +280,34 @@ def publishable_source(ev) -> bool:
     """
     return bool(ev.read) and ev.private is not True
 
+
+def reads_completed(ev) -> bool:
+    """Did the reads THIS VERDICT RESTS ON actually finish?
+
+    Deliberately not `publishable_source`, which answers a different question - may this evidence
+    enter a published verdict. A subject can pass that while the reads feeding the level never
+    landed: the repository answers 200, the commits page does not, and the passport then prints
+    "Inspected: github" three sections away from three measurements saying the source was never
+    read. Both claims sit on one page and only one can be true.
+
+    Coverage reports the READING. Scoring keeps its own rule, and this function does not touch it:
+    `Coverage` feeds no ceiling and no level (measured 2026-09-01 - zero references to coverage in
+    the scorer). Saying so matters because we are a subject in our own registry, and a change that
+    moved our own number would need a different kind of scrutiny than one that cannot.
+    """
+    return publishable_source(ev) and not any(
+        m.absent is NotMeasured.UNREADABLE
+        for m in (ev.distinct_authors, ev.signed_commit_share, ev.identity_window_closed))
+
 print("%-42s %-7s %-9s %-6s %s" % ("subject", "level", "projection", "CI", "limiters"))
 print("-" * 96)
 
 for full in COHORT:
-    ev = collect_github(full, tok)
+    try:
+        ev = collect_github(full, tok)
+    except RateLimited as e:
+        skip_rate_limited(f"git:{full}", e)
+        continue
     binding = Binding(BindingKind.GIT, full)
 
     # THE MAP REPORTS WHAT WAS ACTUALLY INSPECTED (Fable, B2). It used to stamp the same coverage
@@ -254,7 +320,9 @@ for full in COHORT:
     # each carried their own copy of "deployment": "collector not implemented", drifted in wording
     # and, in two of the four call sites, missing the `deployment` key outright.
     publishable = publishable_source(ev)
-    coverage = build_coverage(github_inspected=publishable)
+    coverage = build_coverage(
+        github_inspected=reads_completed(ev),
+        github_absent_reason=(GITHUB_DID_NOT_ANSWER if not publishable else GITHUB_PARTIAL_READ))
     paths = [ControlPath(Surface.GITHUB, Capability.IMPROVE_OR_FIX, recorded=True)] if publishable else []
     cmap = ControlMap(paths=paths, coverage=coverage)
 
@@ -300,7 +368,13 @@ for full in COHORT:
     # `api.github.com` budget, so this runs for every subject regardless of `publishable` - the
     # four-world mapper already turns an unreachable or absent declaration into an honest state.
     base_claims = {"source": "github", "private": ev.private} if ev.read else {"source": "github"}
-    accountability, claims = apply_declaration(full, ev.head_sha, base_claims)
+    try:
+        accountability, claims = apply_declaration(full, ev.head_sha, base_claims)
+    except RateLimited as e:
+        # Nothing is written before this point in the loop body - the passport is emitted below
+        # and the row upserted after it - so `continue` here leaves no half-issued document.
+        skip_rate_limited(f"git:{full}", e)
+        continue
     p = build(binding, scores, cmap, proj, PROV, accountability,
               # A self-reported block states what the SUBJECT said. When the source never
               # answered, the subject said nothing, and an omitted key is the honest rendering of
@@ -425,3 +499,16 @@ else:
     _tmp.write_text(_text[:_start] + _new_section + _text[_end:], encoding="utf-8")
     os.replace(_tmp, readme)          # an interrupted write must not leave a truncated README
     print("README fragment: re-emitted from %s (%d operation(s))" % (_names[0], len(_ops)))
+
+
+# A RATE-LIMITED COHORT IS AN ALARM, NOT A FOOTNOTE.
+# The nightly re-measure invokes this as `cohort.py || fail`, so a non-zero exit stops the run
+# BEFORE it commits, pushes or deploys, and sends the operator a message. Deliberate: a run that
+# could not read part of the cohort must not publish as though it had. Artefacts for the subjects
+# that WERE read stay in the working tree for the next successful run to carry.
+if RATE_LIMITED:
+    raise SystemExit(
+        "rate_limited: " + ", ".join(RATE_LIMITED) + "\n"
+        "Our budget ran out mid-cohort. No passport was issued for these subjects, and their "
+        "previously published rows were carried forward unchanged. Nothing here is a finding "
+        "about them.")

@@ -42,7 +42,7 @@ import subprocess
 from dataclasses import dataclass, field
 
 from src.abs_profile.measured import NotMeasured
-from src.collector.github import redact
+from src.collector.github import RateLimited, redact
 from src.passport.passport import Accountability, Fact
 
 RAW_HOST = "https://raw.githubusercontent.com"
@@ -194,7 +194,8 @@ _FIELDS = ("claims_addressee", "emergency_stop", "insurance", "dispute_path")
 def collect_declaration(full_name: str, head_sha: str | None) -> DeclarationResult:
     """Read `provek.json` from `full_name` ('owner/repo'), pinned to `head_sha` when the base
     collector measured one - reading the default branch (`HEAD`) and marking it not pinned
-    otherwise. Never raises: every failure mode folds into one of the four worlds above.
+    otherwise. Every failure mode folds into one of the four worlds above, with ONE exception: a rate limit
+    is not a world here, it is our budget, and it raises `RateLimited` (see below).
     """
     ref = head_sha if head_sha is not None else "HEAD"
     try:
@@ -204,6 +205,14 @@ def collect_declaration(full_name: str, head_sha: str | None) -> DeclarationResu
 
     if code == 404:
         return _not_declared(head_sha)
+    # ONE-PLACE with `src/collector/github.py`: budget exhaustion is never `unreadable`. This
+    # reader talks to raw.githubusercontent.com rather than the API, so it has its own budget - but
+    # the distinction it must preserve is identical. Folding a 429 into world 4 would print OUR
+    # throttling as the subject having no declaration to read.
+    if code == 429:
+        raise RateLimited(
+            f"raw.githubusercontent.com rate limit reached reading the declaration for "
+            f"{full_name} (HTTP {code})")
     if code != 200:
         return _unreadable(head_sha, redact(f"declaration fetch HTTP {code}"))
 

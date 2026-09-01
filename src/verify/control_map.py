@@ -97,7 +97,16 @@ DATABASE_NO_CHANNEL_ACCESS = "no access through the chosen channel"
 STANDARD_UNKNOWN_SHAPE = "privileged access through a CI secret or account recovery"
 
 
-def build_coverage(*, github_inspected: bool) -> Coverage:
+GITHUB_DID_NOT_ANSWER = "the repository did not answer a reader holding no credential"
+GITHUB_PARTIAL_READ = ("the repository answered, but the reads this verdict rests on did not "
+                       "complete, so nothing here was inspected end to end")
+"""TWO WORLDS, TWO SENTENCES. `inspected: []` used to carry one reason for both of them, and a
+subject whose repository answered 200 while its commits page failed would have been described as
+a repository that did not answer - the opposite of what happened."""
+
+
+def build_coverage(*, github_inspected: bool,
+                   github_absent_reason: str = GITHUB_DID_NOT_ANSWER) -> Coverage:
     """The one coverage map every emitter in this tree publishes.
 
     Parameterized by the single thing that genuinely differs from subject to subject: whether
@@ -118,6 +127,6 @@ def build_coverage(*, github_inspected: bool) -> Coverage:
         # surfaces with the reason (Fable, B2): a map that still claimed "Inspected: github" after
         # a 404 asserted an inspection that never happened.
         inspected = []
-        out_of_reach["github"] = "the repository did not answer a reader holding no credential"
+        out_of_reach["github"] = github_absent_reason
     return Coverage(inspected=inspected, out_of_reach=out_of_reach,
                     unknown_shape=STANDARD_UNKNOWN_SHAPE)
