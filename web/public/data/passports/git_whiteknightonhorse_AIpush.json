@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-09-01T04:24:08.696271+00:00",
-    "valid_until": "2026-10-01T04:24:08.696271+00:00",
+    "issued_at": "2026-09-01T09:13:38.131767+00:00",
+    "valid_until": "2026-10-01T09:13:38.131767+00:00",
     "status": "unverified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -80,20 +80,19 @@
         },
         "head_sha": null
       },
-      "control_map_valid": true,
-      "control_map_cap": 5,
+      "control_map_valid": false,
+      "control_map_cap": null,
       "coverage": {
-        "inspected": [
-          "github"
-        ],
+        "inspected": [],
         "out_of_reach": {
           "deployment": "collector not implemented",
           "server": "runtime not presented by the subject",
           "treasury": "outside MVP scope",
-          "database": "no access through the chosen channel"
+          "database": "no access through the chosen channel",
+          "github": "the repository answered, but the reads this verdict rests on did not complete, so nothing here was inspected end to end"
         },
         "unknown_shape": "privileged access through a CI secret or account recovery",
-        "valid": true
+        "valid": false
       }
     },
     "self_reported": {
