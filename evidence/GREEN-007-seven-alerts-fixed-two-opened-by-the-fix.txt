@@ -1,3 +1,5 @@
+tree: ac102c36a8c4707f92ea43e6ed730faa93b45b5a (dirty)
+
 GREEN-007. The literal-loop rewrite closed all seven js/incomplete-multi-character-sanitization
 alerts CodeQL had reopened against the previous commit's generic `untilStable` wrapper, and opened
 two new instances of the same rule elsewhere in the same file - dismissed in DECISIONS.md D-43.
