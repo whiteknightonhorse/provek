@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-09-01T03:49:09.775001+00:00",
-    "valid_until": "2026-10-01T03:49:09.775001+00:00",
+    "issued_at": "2026-09-01T04:24:08.696271+00:00",
+    "valid_until": "2026-10-01T04:24:08.696271+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -100,31 +100,36 @@
     },
     "self_reported": {
       "source": "github",
-      "private": false
+      "private": false,
+      "declaration": {
+        "present": false,
+        "pinned_sha": "90c96e759dec62c072917eaf514ad5f8a68c9a86",
+        "schema_version": null
+      }
     },
     "accountability": {
       "emergency_stop": {
         "value": null,
         "measured": false,
-        "reason": "check_did_not_run",
+        "reason": "not_declared",
         "confidence": null
       },
       "claims_addressee": {
         "value": null,
         "measured": false,
-        "reason": "check_did_not_run",
+        "reason": "not_declared",
         "confidence": null
       },
       "insurance": {
         "value": null,
         "measured": false,
-        "reason": "check_did_not_run",
+        "reason": "not_declared",
         "confidence": null
       },
       "dispute_path": {
         "value": null,
         "measured": false,
-        "reason": "check_did_not_run",
+        "reason": "not_declared",
         "confidence": null
       }
     },
