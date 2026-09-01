@@ -67,6 +67,65 @@ ${rows}
 `;
 }
 
+/** `/` as markdown. The scanner that asks for `Accept: text/markdown` asks the ROOT first, and the
+ *  root was the one page route with no sibling — eleven pages negotiated correctly and the site
+ *  still measured as "does not support Markdown for Agents" because the address anyone tries was
+ *  the address that had none.
+ *
+ *  WHAT THIS DOES NOT DO, and why. It is not a transcription of the landing page's prose. That
+ *  prose lives in `src/pages/Landing.tsx` and nowhere else; rendering it here would make this file
+ *  the second place that states the product's claims, and the first divergence would publish two
+ *  different Proveks (LAW #ONE-PLACE — the same rule `registrySentence` exists to satisfy). So this
+ *  renders only what is already single-sourced: the description `prerender.mjs` puts in the meta
+ *  tag, the registry's own sentence, the live rows, and the machine-readable forms. An agent asking
+ *  for markdown wants the state and the entry points; a reader wanting the argument has the HTML.
+ */
+export function buildLandingMarkdown(registry, description, site = SITE) {
+  const scored = registry.subjects.filter((s) => s.projection !== null);
+  const rows = registry.subjects.map((s) => {
+    const slug = slugOf(s.subject_id);
+    const projection = s.projection === null
+      ? `not measured (${s.projection_absent_reason})`
+      : `${s.projection}/100`;
+    return `| [${s.subject_id}](${site}/p/${slug}/) | ${projection} | ${s.verifier_affiliation} |`;
+  }).join("\n");
+  // One date governs every row today; when that stops being true the line says so rather than
+  // printing the first one it found and calling it the rule.
+  const expiries = [...new Set(registry.subjects.map((s) => String(s.valid_until).slice(0, 10)))];
+  const expiry = expiries.length === 1
+    ? `Every record above is valid until ${expiries[0]}.`
+    : `Earliest expiry among these records: ${expiries.sort()[0]}.`;
+
+  return `# Provek
+
+${description}
+
+${registrySentence(registry)}
+
+${registry.disclaimer}
+
+## The registry, right now
+
+| Subject | Projection | Verifier |
+| --- | --- | --- |
+${rows}
+
+${scored.length} of ${registry.count} carry a projection; the rest carry the reason none was taken.
+${expiry}
+
+## Machine-readable forms
+
+- [registry.json](${site}/data/registry.json) — every record, with the reason behind each absence
+- [/registry/](${site}/registry/) — the same rows, also available as markdown
+- [llms.txt](${site}/llms.txt) and [llms-full.txt](${site}/llms-full.txt)
+- [/.well-known/api-catalog](${site}/.well-known/api-catalog)
+- Each passport at \`/p/<slug>/\` answers markdown, and its JSON sits at
+  \`/data/passports/<slug>.json\`
+
+Generated ${registry.generated_at}.
+`;
+}
+
 /** One passport as markdown. Every field printed here is read straight off the passport object -
  *  the same one `web/prerender.mjs:ldPassport` turns into JSON-LD and `web/functions/badge/[id].js`
  *  reads for the badge - so there is one place that knows what a passport contains, not three that

@@ -14,11 +14,13 @@
  * unmeasured operation is emitted as a named PropertyValue with the string `not_measured` and its
  * reason: no schema has a slot for absence, and inventing a zero would be the founding defect.
  */
-import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { loadNotes, noteArticle, notesIndexArticle, noteLd } from "./notes/emit.mjs";
 import { slugOf } from "./discovery.mjs";
-import { buildRegistryMarkdown, buildPassportMarkdown } from "./markdown.mjs";
+import { buildRegistryMarkdown, buildPassportMarkdown, buildLandingMarkdown }
+  from "./markdown.mjs";
+import { pageMarkdown } from "./html_to_markdown.mjs";
 
 const DIST = "dist";
 const SITE = "https://provek.dev";
@@ -248,9 +250,12 @@ function write(route, html) {
 }
 
 const written = [];
-written.push(write("/", page("/", TITLES["/"],
-  "Per business operation, how much of a company runs without a human in the loop - with the evidence behind every number, including what could not be measured.",
-  ldOrganization())));
+// One sentence, one place: the meta description and the markdown sibling read the SAME constant,
+// so the two renderings of the landing cannot drift into describing different products.
+const LANDING_DESCRIPTION = "Per business operation, how much of a company runs without a human in "
+  + "the loop - with the evidence behind every number, including what could not be measured.";
+written.push(write("/", page("/", TITLES["/"], LANDING_DESCRIPTION, ldOrganization())));
+writeFileSync(join(DIST, "index.md"), buildLandingMarkdown(registry, LANDING_DESCRIPTION, SITE));
 written.push(write("/registry/", page("/registry/", TITLES["/registry/"],
   REGISTRY_SENTENCE,
   ldRegistry())));
@@ -378,6 +383,64 @@ writeFileSync(join(DIST, "sitemap.xml"),
 // very defect - a second spelling that wins whenever the first is unavailable.
 const robotsSource = readFileSync("public/robots.txt", "utf8").trimEnd();  // same relative form as registry.json above
 writeFileSync(join(DIST, "robots.txt"), `${robotsSource}\n\nSitemap: ${SITE}/sitemap.xml\n`);
+
+
+// EVERY PAGE ROUTE ANSWERS MARKDOWN, INCLUDING THE ONES NOBODY WROTE A BUILDER FOR.
+//
+// `_middleware.js` negotiates by SHAPE and needs no route list; the gap was always here, on the
+// producing side, where only the registry and the passports had a builder. Measured 2026-09-01:
+// eleven of nineteen routes had a sibling, and the eight without included `/` — the first address
+// any scanner tries, which is why a site that DOES support markdown was scored as one that does
+// not.
+//
+// This sweep runs LAST and touches only what is missing, so the two hand-written builders keep
+// their richer renderings (they say things a conversion cannot — the reason behind every absence)
+// and everything else is DERIVED from the page it serves. A route added tomorrow gets its markdown
+// without anyone remembering, and the two renderings cannot drift because one is computed from the
+// other.
+//
+// THE GATE IS THE POINT, not the convenience: after the sweep, a page route with no sibling is a
+// build failure. Without it this file would be one more thing to remember, and the defect it fixes
+// was born exactly there.
+function derivedMarkdownSweep() {
+  const pages = [];
+  const walk = (dir) => {
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, e.name);
+      if (e.isDirectory()) walk(full);
+      else if (e.name === "index.html") pages.push(dir);
+    }
+  };
+  walk(DIST);
+
+  const derived = [];
+  for (const dir of pages) {
+    const md = join(dir, "index.md");
+    if (existsSync(md)) continue;                 // a purpose-built sibling always wins
+    const html = readFileSync(join(dir, "index.html"), "utf8");
+    const route = "/" + (dir === DIST ? "" : `${dir.slice(DIST.length + 1)}/`);
+    const title = (html.match(/<title>([\s\S]*?)<\/title>/i) || [, route])[1]
+      .replace(/\s*[-–—]\s*Provek\s*$/, "").trim();
+    const description = (html.match(/<meta name="description" content="([^"]*)"/i) || [, ""])[1];
+    writeFileSync(md, pageMarkdown(html, { title, description, site: SITE, route }));
+    derived.push(route);
+  }
+
+  const missing = pages
+    .filter((dir) => !existsSync(join(dir, "index.md")))
+    .map((dir) => "/" + (dir === DIST ? "" : `${dir.slice(DIST.length + 1)}/`));
+  if (missing.length) {
+    throw new Error(
+      `markdown sibling missing for ${missing.length} page route(s): ${missing.join(", ")} — every `
+      + "page route answers Accept: text/markdown, and a route that cannot is the defect this "
+      + "sweep exists to make impossible");
+  }
+  return derived;
+}
+
+const derivedMd = derivedMarkdownSweep();
+console.log(`markdown siblings: ${derivedMd.length} derived, all page routes covered`);
+for (const r of derivedMd) console.log("    md", r);
 
 console.log(`prerendered ${written.length} routes + 404 + sitemap`);
 for (const r of written) console.log("   ", r);

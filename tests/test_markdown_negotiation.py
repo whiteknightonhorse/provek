@@ -136,15 +136,93 @@ def test_dist_carries_a_markdown_sibling_for_every_passport_page(live_markdown):
     assert not mismatched, f"built markdown sibling disagrees with the generator for: {mismatched}"
 
 
+#: Routes whose markdown is BUILT FROM DATA, not derived from the rendered page. Everything else
+#: gets its sibling from `html_to_markdown.mjs`, so this list is the whole of the exception.
+DATA_BUILT = ("", "registry")
+
+#: Losses this converter DECLARES rather than hides: the page chrome outside `<main>`, the sr-only
+#: spans that duplicate what the eye reads, and inline SVG (two method notes draw charts whose axis
+#: labels read as a word salad in prose order). Named here as well as in the converter because a
+#: gate that widens silently until it passes measures nothing.
+DECLARED_LOSSES = ("outside <main>", "sr-only spans", "inline <svg>")
+
+
+def _derived_routes():
+    for html in sorted(DIST.rglob("index.html")):
+        rel = str(html.parent.relative_to(DIST)).replace(".", "")
+        if rel in DATA_BUILT or rel.startswith("p/"):
+            continue
+        yield rel, html.parent
+
+
 @pytestmark_dist
-def test_dist_does_not_grow_a_markdown_sibling_for_hand_authored_pages():
-    """`/`, `/method/`, `/apply/` and `/phase-2/` are prose in TSX, not a rendering of registry or
-    passport data - a sibling appearing for one of them would mean this generator started reading
-    an input the ruling did not name, which is the second-copy risk this whole feature is about."""
-    for route in ("index.md", "method/index.md", "apply/index.md", "phase-2/index.md"):
-        assert not (DIST / route).exists(), (
-            f"web/dist/{route} exists - this page's content is not derived from registry+passport "
-            "data and must not get a generated markdown sibling"
+def test_every_page_route_has_a_markdown_sibling():
+    """No page route may answer `Accept: text/markdown` with HTML.
+
+    Ruling 2026-08-31, AMENDED 2026-09-01. The original rule forbade a sibling for the prose pages
+    (`/`, `/method/`, `/apply/`, `/phase-2/`) because a generated one would have been a SECOND COPY
+    of prose that only lives in TSX, and a second copy drifts. That objection dissolved when the
+    sibling stopped being written and started being COMPUTED from the page's own rendered HTML: a
+    projection cannot drift from its source, only a copy can. What stays forbidden is a hand-written
+    builder for a prose route - held by `test_a_derived_sibling_is_exactly_what_the_converter_emits`
+    below, which recomputes each one and compares bytes."""
+    missing = [rel for rel, d in _derived_routes() if not (d / "index.md").exists()]
+    assert not missing, (
+        f"{len(missing)} page route(s) have no markdown sibling: {missing} - the scanner that "
+        "measured this site as 'does not support Markdown for Agents' asked the ONE address that "
+        "had none"
+    )
+
+
+@pytestmark_dist
+def test_a_derived_sibling_is_exactly_what_the_converter_emits():
+    """A derived sibling is a projection of its page, and this proves it byte for byte.
+
+    This is what replaced "no sibling exists". Hand-editing one, or slipping a data-built renderer
+    in for a prose route, changes the bytes and fails here - which is the second-copy risk the
+    original rule was written against, now caught by measurement rather than by absence."""
+    recompute = ROOT / "tests" / "recompute_derived_md.mjs"
+    assert recompute.is_file(), f"{recompute} is missing - the instrument this gate reads through"
+    for rel, d in _derived_routes():
+        done = subprocess.run(["node", str(recompute), str(d)],
+                              capture_output=True, text=True, timeout=30)
+        assert done.returncode == 0, f"recompute failed for /{rel}/: {done.stderr}"
+        assert done.stdout == (d / "index.md").read_text(encoding="utf-8"), (
+            f"/{rel}/index.md is not what html_to_markdown.mjs produces from its own index.html - "
+            "a derived sibling that was edited, or built by something else, is exactly the second "
+            "copy this rule exists against"
+        )
+
+
+@pytestmark_dist
+def test_a_derived_sibling_loses_no_visible_word():
+    """FIDELITY. The converter's header promises it keeps what it does not recognise; this counts.
+
+    Its first version selected `h*|p|li|summary|td|th` and dropped the rest while the header said
+    the opposite - `/apply/` lost 76 visible words, the `<label>` and `<button>` text that says HOW
+    to apply, which is that page's entire content for an agent. A promise in a comment is not a
+    mechanism (LAW #ALLOWLIST-WHAT-YOU-INSPECT: a checker that skips what it does not recognise
+    reports success on what it cannot handle)."""
+    import re
+    strip = lambda h: re.sub(r"<svg\b[^>]*>.*?</svg>", " ",
+                     re.sub(r'<span[^>]*\bsr-only\b[^>]*>.*?</span>', " ",
+                     re.sub(r"<(script|style)\b[^>]*>.*?</\1>", " ", h, flags=re.S|re.I),
+                     flags=re.S | re.I), flags=re.S | re.I)
+    # Entities are stripped BEFORE tokenising, exactly as the converter's `decode` resolves them:
+    # without this `&quot;` tokenises to the word "quot", which the markdown (holding a real quote
+    # character) does not contain, and the gate reports a loss that never happened. Two instruments
+    # measuring the same thing must agree on their world before either verdict means anything.
+    words = lambda t: set(re.findall(
+        r"[a-z0-9]{2,}",
+        re.sub(r"&[a-z#0-9]+;", " ", re.sub(r"<[^>]+>", " ", t), flags=re.I).lower()))
+    for rel, d in _derived_routes():
+        html = (d / "index.html").read_text(encoding="utf-8")
+        main = re.search(r"<main\b[^>]*>(.*?)</main>", html, re.S | re.I)
+        source = words(strip(main.group(1) if main else html))
+        lost = sorted(source - words((d / "index.md").read_text(encoding="utf-8")))
+        assert not lost, (
+            f"/{rel}/ drops {len(lost)} visible word(s) from its own page: {lost[:12]} - the only "
+            f"losses this converter is allowed are the declared ones ({', '.join(DECLARED_LOSSES)})"
         )
 
 

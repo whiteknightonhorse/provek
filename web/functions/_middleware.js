@@ -74,10 +74,17 @@ export async function onRequest(context) {
     // ordinary HTML is the honest answer: this file has nothing else to offer for this request.
     return next();
   }
-  // No sibling was ever generated for this route (every prose page: `/`, `/method/`, `/apply/`,
-  // `/phase-2/`, the method notes). HTML stays the default for it, exactly as it was before this
-  // file existed - a 404 shown to a markdown-reading client here would be a false "this page does
-  // not exist" about a page that plainly does.
+  // Since 2026-09-01 every page route HAS a sibling: `web/prerender.mjs` writes the two
+  // purpose-built ones and derives the rest from the rendered page, and refuses the build if any
+  // route is left without. This branch is therefore not the ordinary path any more - it is the
+  // honest answer for a request whose sibling is genuinely absent (an asset published outside that
+  // sweep, or a partial deploy). HTML stays the default for it: a 404 shown to a markdown-reading
+  // client would be a false "this page does not exist" about a page that plainly does.
+  //
+  // The previous version of this comment listed `/`, `/method/`, `/apply/`, `/phase-2/` and the
+  // notes as prose pages with no sibling. That was true when written and became false the moment
+  // the sweep landed - a comment naming a state rather than a rule is a claim that expires without
+  // anyone noticing, which is why it is corrected in the same commit as the code that dated it.
   if (!asset.ok) return next();
 
   return new Response(asset.body, {
