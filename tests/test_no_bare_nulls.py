@@ -37,6 +37,22 @@ WHITELIST: dict[str, str] = {
         "mandate reference it failed to read - if one ever does, this field needs the wrapper. "
         "Flagged to Fable as the same species as the accountability fields, not yet acute."
     ),
+    # Phase 2 - `src/collector/declaration.py` stamps the declaration's own provenance into
+    # `self_reported["declaration"]`, and each of its three keys carries exactly one null meaning.
+    "/self_reported/declaration/present": (
+        "the declaration read attempt itself failed - network error, a non-404 status, broken "
+        "JSON, or a document that does not match the schema - so whether provek.json exists at "
+        "all is genuinely unknown. A stated true or false means the read completed either way."
+    ),
+    "/self_reported/declaration/pinned_sha": (
+        "the base collector (src.collector.github or src.collector.repo) had not measured a "
+        "head_sha for this subject when the declaration was read. src.collector.declaration never "
+        "queries /commits a second time to find one; it only ever reports what was already on hand."
+    ),
+    "/self_reported/declaration/schema_version": (
+        "no declaration document was read as valid: either provek.json does not exist at this "
+        "ref, or the read failed outright - see the sibling 'present' key for which of the two."
+    ),
 }
 
 PROV = Provenance("1.0.0", "1.0.0", 30)
@@ -81,6 +97,19 @@ def _passport(**kw):
 ])
 def test_no_bare_nulls_in_the_emitted_artefact(accountability):
     machine = _passport(accountability=accountability).to_machine()
+    assert _bare_nulls(machine) == []
+
+
+@pytest.mark.parametrize("claims", [
+    {"declaration": {"present": None, "pinned_sha": None, "schema_version": None}},
+    # world 4 - the read itself failed, nothing pinned either
+    {"declaration": {"present": False, "pinned_sha": "deadbeef", "schema_version": None}},
+    # world 3 - a real 404, pinned to a measured head_sha
+    {"declaration": {"present": True, "pinned_sha": None, "schema_version": "1.0.0"}},
+    # world 1/2 - read successfully, but never pinned (no head_sha was measured upstream)
+])
+def test_no_bare_nulls_with_a_phase_2_declaration_present(claims):
+    machine = _passport(claims=claims).to_machine()
     assert _bare_nulls(machine) == []
 
 

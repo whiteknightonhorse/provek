@@ -17,6 +17,9 @@ src/collector/__init__.py:        [ABI-5-1]
 src/collector/repo.py:            [ABI-5-1, ABI-5-2, ABI-4-3]
 src/collector/divergence.py:      [ABI-16-5, ABI-3-2]
 
+# Phase 2 accountability - the subject's own provek.json declaration (spec 2.6)
+src/collector/declaration.py:     [ABI-5-1, ABI-14-2]
+
 # T-2.5 control map / T-2.6 scoring
 src/verify/__init__.py:           [ABI-13-1]
 src/verify/control_map.py:        [ABI-7-1, ABI-7-2, ABI-7-3, ABI-7-4, ABI-7-5]

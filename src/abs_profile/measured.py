@@ -4,16 +4,19 @@ This is the most frequent defect class in the operator's production systems - se
 A twelve-week source outage hid in exactly this shape: "no news" and "the source is dead"
 returned the same value.
 
-Five absences that MUST NOT collapse into a zero:
+Six absences that MUST NOT collapse into a zero:
   NOTHING_QUALIFIED    - the check ran, nothing matched;
   CHECK_DID_NOT_RUN    - the check never ran;
   UNREADABLE           - the check ran, the source refused to answer;
   NO_EVIDENCE_IN_WINDOW - the check ran, the apparatus exists, but the evidence window held no
                           evidence of this class (Fable, 2026-09-01);
   APPARATUS_ABSENT     - the check ran and successfully read an empty result: the subject has no
-                          apparatus of this platform AT ALL (Fable, 2026-09-01).
+                          apparatus of this platform AT ALL (Fable, 2026-09-01);
+  NOT_DECLARED         - the channel WAS read (a self-declaration document, or a specific field
+                          inside one) and the subject simply said nothing there (Fable, phase 2,
+                          2026-09-01).
 
-THE LAST TWO WERE ADDED BECAUSE THE FIRST THREE WERE MADE TO LIE. The live registry stated
+THE FIRST FIVE WERE ADDED BECAUSE EARLIER REASONS WERE MADE TO LIE. The live registry stated
 `check_did_not_run` for two subjects (AIpush, mcp-protocol-tester) whose GitHub history WAS read -
 the collector ran, answered 200, and paged the full evidence window - and simply found no commits
 inside it. `check_did_not_run` asserts nobody looked; that assertion was false, published on the
@@ -27,6 +30,14 @@ NOTHING_QUALIFIED, which stays reserved for "the check ran across candidates and
 a different shape again, and the one Fable already barred from presence fields (see `Fact` in
 `src/passport/passport.py`) because for a presence question that shape IS the measurement, not its
 absence.
+
+NOT_DECLARED is the accountability block's own species of the same defect, and collapsing it into
+CHECK_DID_NOT_RUN would repeat the exact lie this enum exists to forbid: `src/collector/declaration.py`
+DOES read `provek.json` (or answer a real 404 for it), so "the check never ran" would be false. What
+is true is narrower - the subject's own document is silent on this field, or does not exist at all.
+NOT_DECLARED must never appear on a `Measurement` that feeds `observations` or a score: it is a
+statement about a CLAIM, never about a quantity, and the accountability block it belongs to sits
+outside the ladder by construction (see `Accountability` in `src/passport/passport.py`).
 
 Consequence for gates (ABI-33-4): a missing measurement is NOT a violation. "The subject failed"
 and "we could not measure the subject" demand different responses.
@@ -43,6 +54,7 @@ class NotMeasured(str, Enum):
     UNREADABLE = "unreadable"
     NO_EVIDENCE_IN_WINDOW = "no_evidence_in_window"
     APPARATUS_ABSENT = "apparatus_absent"
+    NOT_DECLARED = "not_declared"
 
 
 @dataclass(frozen=True)

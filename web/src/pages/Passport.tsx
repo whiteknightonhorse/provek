@@ -106,6 +106,39 @@ function AccFact({ f, yes, no }: { f: Fact; yes?: string; no?: string }) {
   );
 }
 
+/** The subject's own treasury-control claim, phase 2's `self_reported["treasury_control"]`.
+ *
+ * `self_reported` is `Record<string, unknown>` (D-10: it mirrors the machine record exactly, so a
+ * key this reader has never seen still passes through rather than being asserted into a stronger
+ * shape). This is the one narrow place that shape is checked, immediately before rendering it -
+ * an absent or malformed key returns `null` and the caller renders nothing, never a crash.
+ */
+function treasuryClaim(sr: Record<string, unknown>): { claimed_level: string; statement?: string } | null {
+  const tc = sr.treasury_control;
+  if (tc && typeof tc === "object" && typeof (tc as Record<string, unknown>).claimed_level === "string") {
+    return tc as { claimed_level: string; statement?: string };
+  }
+  return null;
+}
+
+/** One self-reported value, whatever shape the subject's declaration gave it.
+ *
+ * Every value in this branch used to be a primitive, so `String(val)` was enough. Phase 2 adds
+ * `declaration` and `treasury_control`, the first OBJECT-valued keys here - `String({...})` would
+ * render the literal text "[object Object]", which is worse than the value it replaces. This is
+ * generic on purpose: it does not name either key, so the next object-valued self-report renders
+ * instead of silently breaking the same way.
+ */
+function SelfReportedValue({ val }: { val: unknown }) {
+  if (val === null) return <span className="text-[var(--color-ink-2)]">none</span>;
+  if (typeof val === "object") {
+    const entries = Object.entries(val as Record<string, unknown>)
+      .map(([k, v]) => `${k}: ${v === null ? "none" : String(v)}`);
+    return <span className="break-words">{entries.join(", ")}</span>;
+  }
+  return <span className="break-words">{String(val)}</span>;
+}
+
 /** Task 7's two buttons: copy a link, copy a badge snippet. Both name the SAME destination -
  * `/p/<slug>/brief`, never this page - because a due-diligence document is not what a company's
  * own client is asked to open, and a badge whose link led here would hand that reader the control
@@ -423,6 +456,25 @@ export default function Passport({ p }: { p: P }) {
                         Reason: {REASON_TEXT[o.level] ?? o.level}.
                       </p>
                     )}
+                    {/* PHASE 2. The subject may declare its own treasury-control claim in
+                        `provek.json`; it never enters the score above (that stays `not_measured`
+                        by construction - see `Accountability`'s docstring), and is rendered here,
+                        beside the operation it describes, marked exactly as self-declared and
+                        unverified so a reader cannot mistake it for a finding. */}
+                    {o.operation === "treasury_control" && treasuryClaim(p.self_reported) && (
+                      <p className="mt-0.5 text-xs text-[var(--color-ink-2)]">
+                        Subject declares {treasuryClaim(p.self_reported)!.claimed_level}
+                        {treasuryClaim(p.self_reported)!.statement
+                          ? ` — ${treasuryClaim(p.self_reported)!.statement}`
+                          : ""}
+                        <span
+                          className="evidence-class ml-2"
+                          title="Taken from the subject's own declaration; not independently verified."
+                        >
+                          assumed, unverified
+                        </span>
+                      </p>
+                    )}
                     {o.limiters_applied.length > 0 && (
                       <ul className="mt-1.5 space-y-0.5">
                         {o.limiters_applied.map((lim) => (
@@ -632,7 +684,7 @@ export default function Passport({ p }: { p: P }) {
           <Facts
             rows={Object.entries(p.self_reported).map(([k, val]) => [
               k,
-              <span className="break-words">{String(val)}</span>,
+              <SelfReportedValue val={val} />,
             ])}
           />
         </div>

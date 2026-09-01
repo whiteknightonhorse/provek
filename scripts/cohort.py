@@ -24,8 +24,9 @@ from src.abs_profile.evidence import EvidenceClass
 from src.abs_profile.identity import Binding, BindingKind
 from src.abs_profile.ladder import SIGNED_SHARE_FOR_L4, SMALL_TEAM_FOR_L3, SOLE_AUTHOR, L
 from src.abs_profile.measured import NotMeasured
+from src.collector.declaration import apply_declaration
 from src.collector.github import EVIDENCE_WINDOW_DAYS, access_channel, collect_github
-from src.passport.passport import PROFILE_VERSION, PROTOCOL_VERSION, Accountability, Provenance, build
+from src.passport.passport import PROFILE_VERSION, PROTOCOL_VERSION, Provenance, build
 from src.registry.public_registry import PublicRegistry, Row
 from src.transport.file_transport import FileTransport
 from src.verify.control_map import Capability, ControlMap, ControlPath, Surface, build_coverage
@@ -294,13 +295,18 @@ for full in COHORT:
               score_operation("deployment", None, ()),
               score_operation("treasury_control", None, ())]
     proj = projection(scores)
-    p = build(binding, scores, cmap, proj, PROV, Accountability(),
+    # PHASE 2 - the subject's own `provek.json`, pinned to `ev.head_sha` (already measured above;
+    # never a second `/commits` call). Reads through `raw.githubusercontent.com`, which spends no
+    # `api.github.com` budget, so this runs for every subject regardless of `publishable` - the
+    # four-world mapper already turns an unreachable or absent declaration into an honest state.
+    base_claims = {"source": "github", "private": ev.private} if ev.read else {"source": "github"}
+    accountability, claims = apply_declaration(full, ev.head_sha, base_claims)
+    p = build(binding, scores, cmap, proj, PROV, accountability,
               # A self-reported block states what the SUBJECT said. When the source never
               # answered, the subject said nothing, and an omitted key is the honest rendering of
               # that - a `false` here was the template speaking in the subject's name.
               now=now,
-              claims=({"source": "github", "private": ev.private} if ev.read
-                      else {"source": "github"}),
+              claims=claims,
               observations=observations(ev),
               # PER SUBJECT. `same_owner` on an applicant's passport would claim the verifier and
               # the subject are the same person, which is false and understates their verdict; the

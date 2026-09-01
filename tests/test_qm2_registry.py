@@ -24,6 +24,7 @@ from src.abs_profile.identity import Binding, BindingKind
 from src.abs_profile.measured import Measurement
 from src.collector import github as gh
 from src.collector.github import GitHubEvidence
+from src.passport.passport import Accountability
 from src.registry.public_registry import PublicRegistry
 from src.verify.control_map import Capability, ControlMap, ControlPath, Coverage, Surface
 
@@ -52,7 +53,7 @@ def _built_passport():
               qm2measure.score_operation("deployment", None, ()),
               qm2measure.score_operation("treasury_control", None, ())]
     p = qm2measure.build(b, scores, CMAP, qm2measure.projection(scores), qm2measure.PROV,
-                         qm2measure.Accountability(), verifier_affiliation="same_owner")
+                         Accountability(), verifier_affiliation="same_owner")
     return b, p
 
 

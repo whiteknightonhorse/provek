@@ -28,10 +28,10 @@ from src.abs_profile.identity import Binding, BindingKind
 from src.abs_profile.ladder import L
 from src.abs_profile.measured import NotMeasured
 from src.collector import github as gh
+from src.collector.declaration import apply_declaration
 from src.passport.passport import (
     PROFILE_VERSION,
     PROTOCOL_VERSION,
-    Accountability,
     Passport,
     Provenance,
     build,
@@ -160,8 +160,11 @@ if __name__ == "__main__":
         scores = [score_subject(ev, cmap),
                   score_operation("deployment", None, ()),
                   score_operation("treasury_control", None, ())]
-        p = build(b, scores, cmap, projection(scores), PROV, Accountability(),
-                  verifier_affiliation="same_owner")
+        # PHASE 2 - same mapper as `src/pipeline.py` and `scripts/cohort.py` (LAW #ONE-PLACE),
+        # pinned to `ev.head_sha` already measured above.
+        accountability, claims = apply_declaration(full, ev.head_sha, None)
+        p = build(b, scores, cmap, projection(scores), PROV, accountability,
+                  claims=claims, verifier_affiliation="same_owner")
         ref = transport.publish(b.as_subject_id(), p.to_machine(),
                                 p.to_machine()["verified"]["projection"])
         # A REAL PASS PUBLISHES TO THE REGISTRY, NOT ONLY THE PASSPORT (T-S10). Building a passport

@@ -14,6 +14,10 @@ export const REASON_TEXT: Record<string, string> = {
   unreadable: "the source could not be read",
   no_evidence_in_window: "the check ran and found no evidence in the window",
   apparatus_absent: "the check ran and found the subject has no such apparatus at all",
+  // Phase 2 - the accountability block's own species: the subject's own declaration was read
+  // (or does not exist) and simply says nothing here, which is a different claim from
+  // `check_did_not_run` (see `src/abs_profile/measured.py`'s `NotMeasured.NOT_DECLARED`).
+  not_declared: "the subject's own declaration does not state this",
 };
 
 export function AbsentMark({ reason }: { reason: string | null }) {

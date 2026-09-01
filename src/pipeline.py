@@ -24,6 +24,7 @@ from src.abs_profile.ladder import (
     L,
 )
 from src.abs_profile.measured import Measurement
+from src.collector.declaration import apply_declaration, github_full_name
 from src.collector.divergence import Divergence, compare
 from src.collector.repo import collect
 from src.passport.passport import (
@@ -102,11 +103,20 @@ def verify(remote: str, binding: Binding, transport, registry: PublicRegistry,
         score_operation("treasury_control", None, ()),  # outside MVP scope -> not_measured
     ]
 
+    # PHASE 2 - the subject's own `provek.json`, if `remote` names a GitHub repository. Pinned to
+    # `ev.head_sha`, which `collect()` above already measured - never a second lookup for it.
+    # `github_full_name` returns `None` for anything that is not a GitHub remote (a local path in
+    # this module's own tests included), and the accountability block then stays at its default -
+    # the check genuinely did not run for a subject this collector cannot name a declaration
+    # location for.
+    accountability, claims = Accountability(), dict(claims or {})
+    full_name = github_full_name(remote)
+    if full_name is not None:
+        accountability, claims = apply_declaration(full_name, ev.head_sha, claims)
+
     p = build(binding, scores, cmap, projection(scores),
               Provenance(PROTOCOL_VERSION, PROFILE_VERSION, 30),
-              # Nothing here inspects accountability, so every field states that plainly.
-              # Under schema 1.0.0 this same call emitted "we checked and found none".
-              Accountability(),
+              accountability,
               now=now, claims=claims, mandate_ref=mandate_ref,
               verifier_affiliation=verifier_affiliation)
 
