@@ -4,7 +4,12 @@
  * machine reads, so the page can never drift from the record we ask people to trust. If a field is
  * missing here, it is missing in the artefact - we do not synthesise it for display. */
 
-export type AbsentReason = "nothing_qualified" | "check_did_not_run" | "unreadable";
+export type AbsentReason =
+  | "nothing_qualified"
+  | "check_did_not_run"
+  | "unreadable"
+  | "no_evidence_in_window"
+  | "apparatus_absent";
 
 export interface Operation {
   operation: string;

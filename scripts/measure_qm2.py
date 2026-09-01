@@ -28,10 +28,17 @@ from src.abs_profile.identity import Binding, BindingKind
 from src.abs_profile.ladder import L
 from src.abs_profile.measured import NotMeasured
 from src.collector import github as gh
-from src.passport.passport import Accountability, Passport, Provenance, build
+from src.passport.passport import (
+    PROFILE_VERSION,
+    PROTOCOL_VERSION,
+    Accountability,
+    Passport,
+    Provenance,
+    build,
+)
 from src.registry.public_registry import PublicRegistry, Row
 from src.transport.file_transport import FileTransport
-from src.verify.control_map import Capability, ControlMap, ControlPath, Coverage, Surface
+from src.verify.control_map import Capability, ControlMap, ControlPath, Surface, build_coverage
 from src.verify.scorer import Confidence, OperationScore, projection, score_operation
 
 SUBJECTS = ["whiteknightonhorse/gov-auction-report",
@@ -97,8 +104,12 @@ def optional_token() -> str | None:
     return os.environ.get("PROVEK_GITHUB_TOKEN", "").strip() or None
 
 
-PROV = Provenance("1.0.0", "1.0.0", 30)
-COV = Coverage([Surface.GITHUB], {"server": "runtime not presented"}, "CI secret")
+# PROTOCOL_VERSION and PROFILE_VERSION imported, not written as literals (LAW #ONE-PLACE, Fable,
+# 2026-09-01) - this line stamped "1.0.0" / "1.0.0" on every passport this script emits, a stale
+# value: `scripts/cohort.py` had already moved to profile 1.1.0. `src/passport/passport.py` is the
+# canonical source now, and all three emitters read from it.
+PROV = Provenance(PROTOCOL_VERSION, PROFILE_VERSION, 30)
+COV = build_coverage(github_inspected=True)
 
 def score_subject(ev: gh.GitHubEvidence, cmap: ControlMap) -> OperationScore:
     """The `development_initiation` score for one subject's evidence.

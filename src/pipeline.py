@@ -26,13 +26,23 @@ from src.abs_profile.ladder import (
 from src.abs_profile.measured import Measurement
 from src.collector.divergence import Divergence, compare
 from src.collector.repo import collect
-from src.passport.passport import Accountability, Passport, Provenance, build
+from src.passport.passport import (
+    PROFILE_VERSION,
+    PROTOCOL_VERSION,
+    Accountability,
+    Passport,
+    Provenance,
+    build,
+)
 from src.registry.public_registry import PublicRegistry, Row
-from src.verify.control_map import ControlMap, Coverage, Surface
+from src.verify.control_map import ControlMap, build_coverage
 from src.verify.scorer import OperationScore, projection, score_operation
 
-PROTOCOL_VERSION = "1.0.0"
-PROFILE_VERSION = "1.0.0"
+# PROTOCOL_VERSION and PROFILE_VERSION are imported, not declared here (LAW #ONE-PLACE, Fable,
+# 2026-09-01). This module used to carry its own "1.0.0" / "1.0.0" - a second and third literal
+# beside `scripts/cohort.py`'s `Provenance("1.0.0", "1.1.0", ...)`, disagreeing about which
+# methodology version is live. `src/passport/passport.py` is the canonical source; see its
+# docstring for why 1.1.0 is the correct value.
 
 
 @dataclass(frozen=True)
@@ -80,12 +90,7 @@ def verify(remote: str, binding: Binding, transport, registry: PublicRegistry,
         findings.append("deployed artefact was not presented - the comparison WAS NOT PERFORMED, "
                         "and that is not a violation by the subject")
 
-    cmap = control_map or ControlMap(
-        paths=[],
-        coverage=Coverage(inspected=[Surface.GITHUB],
-                          out_of_reach={"treasury": "outside MVP scope",
-                                        "server": "runtime not presented"},
-                          unknown_shape="privileged access through a CI secret or account recovery"))
+    cmap = control_map or ControlMap(paths=[], coverage=build_coverage(github_inspected=True))
     cap = cmap.implied_level_cap() if cmap.is_valid() else None
 
     scores: list[OperationScore] = [

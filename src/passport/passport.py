@@ -29,6 +29,24 @@ from src.verify.scorer import OperationScore
 
 SCHEMA_VERSION = "2.0.0"
 
+PROTOCOL_VERSION = "1.0.0"
+PROFILE_VERSION = "1.1.0"
+"""LAW #ONE-PLACE (Fable, 2026-09-01). Until this fix the profile version was THREE literals with
+THREE different values: `"1.0.0"` in `src/pipeline.py`, `"1.1.0"` in `scripts/cohort.py`'s
+`Provenance(...)` call, and `"1.0.0"` again in `scripts/measure_qm2.py` - one fact about which
+methodology read a passport, disagreeing with itself depending on which emitter you asked.
+
+`1.1.0` is canonical because it is what is actually published: the time-windowed (not count-
+windowed) evidence read and the platform-closure rule for author counts, both ratified 2026-08-25.
+Every emitter constructs its `Provenance` from these two names, never from its own string, so the
+three copies cannot drift again - enforced by an AST test (`tests/test_profile_version_one_place.py`)
+that fails if a second literal profile-version string reappears at a `Provenance(...)` call site.
+
+A corrected PROFILE_VERSION does not retroactively change a passport already issued (module
+docstring, requirement 3): `Provenance` is stamped onto each passport at issue time and travels
+with it, so historical passports keep reading whichever version actually measured them.
+"""
+
 # Status is imported, not redefined. Until 2026-08-20 this module declared its OWN `Status` enum
 # with identical members - so `passport.Status.VERIFIED is lifecycle.Status.VERIFIED` was FALSE
 # while `==` was true, because both subclass `str`. Every comparison across the boundary between

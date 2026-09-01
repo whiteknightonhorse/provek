@@ -305,13 +305,15 @@ def collect_github(full_name: str, token: str | None = None) -> GitHubEvidence:
         # statement about US wearing a statement about THEM. The read succeeded; there was simply
         # nothing inside the thirty days.
         #
-        # `nothing_qualified` is the declared reason closest to this - the check ran and nothing
-        # matched. It is not exact: the window was empty rather than full of things that failed to
-        # count, and LAW-NOT-MEASURED enumerates three reasons with no fourth for "no evidence in
-        # the window". Recorded here as a known imprecision rather than left for a reader to
-        # discover, and put to the judge separately; it changes no published number, because both
-        # readings withhold the projection.
-        signed = authors = bots = Measurement(value=None, absent=NotMeasured.NOTHING_QUALIFIED)
+        # NO_EVIDENCE_IN_WINDOW (Fable, 2026-09-01 - the fourth reason this docstring used to say
+        # LAW-NOT-MEASURED had no room for). `nothing_qualified` was filed here as "the declared
+        # reason closest to this" and it was closest, not correct: it reads as "the check ran and
+        # examined candidates, none of which qualified", while what happened here is that the
+        # window itself was empty. Two subjects (AIpush, mcp-protocol-tester) published the
+        # imprecise reading all the way to the live registry, where `projection()`'s precedence
+        # then picked `check_did_not_run` from their two always-unattempted operations over this
+        # one - so a check that ran ended up reported as one that never did. Fixed at the source.
+        signed = authors = bots = Measurement(value=None, absent=NotMeasured.NO_EVIDENCE_IN_WINDOW)
         head = None
         notes.append(f"no commits inside the {EVIDENCE_WINDOW_DAYS}-day evidence window")
     else:
@@ -336,7 +338,18 @@ def collect_github(full_name: str, token: str | None = None) -> GitHubEvidence:
 
     code, runs = _api(f"/repos/{full_name}/actions/runs?per_page=1", token)
     if code == 200 and isinstance(runs, dict):
-        wf = Measurement(value=int(runs.get("total_count", 0)))
+        total_runs = int(runs.get("total_count", 0))
+        if total_runs:
+            wf = Measurement(value=total_runs)
+        else:
+            # APPARATUS_ABSENT (Fable, 2026-09-01). This endpoint carries no `since` filter - it
+            # is not a windowed read - so `total_count: 0` is not "none in the last thirty days",
+            # it is "none have ever existed". Measured on `cryptocardhub-public`. Publishing that
+            # as a measured `value: 0` would let a structural fact about the subject's platform
+            # choice (no CI configured at all) travel through the same slot as a genuine zero-run
+            # count, exactly the "zero conflated with absence" shape LAW-NOT-MEASURED exists to
+            # forbid. The trait "how many CI runs" does not apply to a subject with no apparatus.
+            wf = Measurement(absent=NotMeasured.APPARATUS_ABSENT)
     else:
         wf = unread()
         notes.append(f"CI runs not read, HTTP {code}")

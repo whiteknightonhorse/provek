@@ -79,3 +79,45 @@ class ControlMap:
         if not limiting:
             return 5
         return 4 if all(p.recorded for p in limiting) else 3
+
+
+# ---------------------------------------------------------------------------------- LAW #ONE-PLACE
+# The reasons below are facts about what THIS CODEBASE has built - no pipeline here has ever
+# implemented a deployment collector, a treasury collector, or a database channel - identical for
+# every subject regardless of which of the three emitters (src/pipeline.py, scripts/cohort.py,
+# scripts/measure_qm2.py) is doing the measuring. Until this fix each emitter hand-rolled its own
+# `out_of_reach` dict: the wording for "server" drifted ("runtime not presented" vs "runtime not
+# presented by the subject"), and two of the four call sites omitted the `deployment` key from
+# `out_of_reach` altogether while still marking `deployment` not_measured in the score - a map
+# silently under-reporting what it could not see (Fable, 2026-09-01).
+DEPLOYMENT_NOT_COLLECTED = "collector not implemented"
+TREASURY_OUT_OF_SCOPE = "outside MVP scope"
+SERVER_RUNTIME_NOT_PRESENTED = "runtime not presented by the subject"
+DATABASE_NO_CHANNEL_ACCESS = "no access through the chosen channel"
+STANDARD_UNKNOWN_SHAPE = "privileged access through a CI secret or account recovery"
+
+
+def build_coverage(*, github_inspected: bool) -> Coverage:
+    """The one coverage map every emitter in this tree publishes.
+
+    Parameterized by the single thing that genuinely differs from subject to subject: whether
+    GitHub itself answered this reader. Everything else in the map is a fact about the
+    methodology, not the subject, so it is built here once rather than copied into every caller
+    that constructs a `Coverage`.
+    """
+    out_of_reach = {
+        "deployment": DEPLOYMENT_NOT_COLLECTED,
+        "server": SERVER_RUNTIME_NOT_PRESENTED,
+        "treasury": TREASURY_OUT_OF_SCOPE,
+        "database": DATABASE_NO_CHANNEL_ACCESS,
+    }
+    if github_inspected:
+        inspected = [Surface.GITHUB]
+    else:
+        # Nothing was read, so nothing was inspected, and github itself joins the unreachable
+        # surfaces with the reason (Fable, B2): a map that still claimed "Inspected: github" after
+        # a 404 asserted an inspection that never happened.
+        inspected = []
+        out_of_reach["github"] = "the repository did not answer a reader holding no credential"
+    return Coverage(inspected=inspected, out_of_reach=out_of_reach,
+                    unknown_shape=STANDARD_UNKNOWN_SHAPE)

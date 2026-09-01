@@ -25,10 +25,10 @@ from src.abs_profile.identity import Binding, BindingKind
 from src.abs_profile.ladder import SIGNED_SHARE_FOR_L4, SMALL_TEAM_FOR_L3, SOLE_AUTHOR, L
 from src.abs_profile.measured import NotMeasured
 from src.collector.github import EVIDENCE_WINDOW_DAYS, access_channel, collect_github
-from src.passport.passport import Accountability, Provenance, build
+from src.passport.passport import PROFILE_VERSION, PROTOCOL_VERSION, Accountability, Provenance, build
 from src.registry.public_registry import PublicRegistry, Row
 from src.transport.file_transport import FileTransport
-from src.verify.control_map import Capability, ControlMap, ControlPath, Coverage, Surface
+from src.verify.control_map import Capability, ControlMap, ControlPath, Surface, build_coverage
 from src.verify.scorer import Confidence, OperationScore, projection, score_operation
 
 
@@ -146,7 +146,11 @@ now = datetime.now(timezone.utc)
 # PROFILE 1.1.0: the evidence window became the window that was published, and identity
 # resolution became the platform's job rather than ours. A passport must say which ruleset read
 # it, or a corrected document is indistinguishable from a changed subject.
-PROV = Provenance("1.0.0", "1.1.0", EVIDENCE_WINDOW_DAYS)
+#
+# PROTOCOL_VERSION and PROFILE_VERSION imported, not written here as literals (LAW #ONE-PLACE,
+# Fable, 2026-09-01) - this line used to be the one place that had the right value, while
+# `src/pipeline.py` and `scripts/measure_qm2.py` each carried a different, stale one.
+PROV = Provenance(PROTOCOL_VERSION, PROFILE_VERSION, EVIDENCE_WINDOW_DAYS)
 SITE = "https://provek.dev"
 
 
@@ -244,28 +248,13 @@ for full in COHORT:
     # github" and carried a control-map ceiling of L5 - two claims about one source, on one page,
     # in direct contradiction, three sections apart.
     #
-    # When nothing was read, nothing was inspected, and github moves to out_of_reach with the
-    # reason. The map is then INVALID by its own rule, which is correct: a map without coverage
-    # claims more than it knows, and the passport cannot stand on it.
-    if publishable_source(ev):
-        coverage = Coverage(
-            inspected=[Surface.GITHUB],
-            out_of_reach={"deployment": "collector not implemented",
-                          "server": "runtime not presented by the subject",
-                          "treasury": "outside MVP scope",
-                          "database": "no access through the chosen channel"},
-            unknown_shape="privileged access through a CI secret or account recovery")
-        paths = [ControlPath(Surface.GITHUB, Capability.IMPROVE_OR_FIX, recorded=True)]
-    else:
-        coverage = Coverage(
-            inspected=[],
-            out_of_reach={"github": "the repository did not answer a reader holding no credential",
-                          "deployment": "collector not implemented",
-                          "server": "runtime not presented by the subject",
-                          "treasury": "outside MVP scope",
-                          "database": "no access through the chosen channel"},
-            unknown_shape="privileged access through a CI secret or account recovery")
-        paths = []
+    # `build_coverage` (LAW #ONE-PLACE, Fable, 2026-09-01) replaces the coverage dict this used to
+    # hand-roll per branch: it and `scripts/measure_qm2.py`'s COV and `src/pipeline.py`'s default
+    # each carried their own copy of "deployment": "collector not implemented", drifted in wording
+    # and, in two of the four call sites, missing the `deployment` key outright.
+    publishable = publishable_source(ev)
+    coverage = build_coverage(github_inspected=publishable)
+    paths = [ControlPath(Surface.GITHUB, Capability.IMPROVE_OR_FIX, recorded=True)] if publishable else []
     cmap = ControlMap(paths=paths, coverage=coverage)
 
     lvl = cohort_development_initiation_level(
@@ -284,10 +273,21 @@ for full in COHORT:
     # subject is therefore unreadable FOR SCORING regardless of what we hold. The collector still
     # records honestly that it read - that is a fact about us - and the cohort refuses to publish
     # what only a credential could see, which is a fact about the verdict.
-    publishable = publishable_source(ev)
+    # `publishable` was already computed above, for `build_coverage` - same finding, one call.
     observed = (EvidenceClass.PLATFORM_OBSERVED,) if publishable else ()
+    # `absent_reason=ev.distinct_authors.absent` (Fable, 2026-09-01): `lvl` is None exactly when
+    # `ev.distinct_authors` is unmeasured (see `cohort_development_initiation_level` above), and
+    # the collector already knows WHY - `no_evidence_in_window` for an empty thirty-day read,
+    # `unreadable` if the commit history itself refused to answer even though the repository did
+    # not. `score_operation` cannot see the collector's Measurement, only the boolean fact that the
+    # level came back None, and its own guess (`nothing_qualified`) was publishing the wrong one:
+    # AIpush and mcp-protocol-tester were genuinely read with an empty evidence window, and the
+    # guess let `check_did_not_run` from the two always-unattempted operations below win the
+    # registry's headline reason instead. Harmless when `lvl` is a real level - the scorer only
+    # consults this in the branch where the level is absent.
     dev = (score_operation("development_initiation", lvl, observed, cmap.implied_level_cap(),
-                           weak_mixed_signal=True, runtime_trace=ev.has_runtime_trace)
+                           weak_mixed_signal=True, runtime_trace=ev.has_runtime_trace,
+                           absent_reason=ev.distinct_authors.absent)
            if publishable else
            OperationScore("development_initiation", NotMeasured.UNREADABLE, (), Confidence.MEASURED))
     scores = [dev,

@@ -12,6 +12,8 @@ export const REASON_TEXT: Record<string, string> = {
   nothing_qualified: "the check ran and nothing qualified",
   check_did_not_run: "the check did not run",
   unreadable: "the source could not be read",
+  no_evidence_in_window: "the check ran and found no evidence in the window",
+  apparatus_absent: "the check ran and found the subject has no such apparatus at all",
 };
 
 export function AbsentMark({ reason }: { reason: string | null }) {
