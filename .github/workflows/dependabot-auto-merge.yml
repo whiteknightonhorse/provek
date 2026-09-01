@@ -1,0 +1,52 @@
+name: dependabot auto-merge
+
+# THE MANUAL STEP THIS TASK JUST DID BY HAND, MADE UNNECESSARY.
+#
+# Eight Dependabot PRs landed on 2026-09-01. Six were patch/minor bumps with every gate green at
+# their head SHA and were merged after that measurement; two bumped one half of a paired GitHub
+# Action reference (codeql-action/init, codeql-action/analyze) and were left open because
+# `analyze (python)` and `analyze (javascript-typescript)` failed with "Loaded a configuration file
+# for version '4.37.9', but running version '4.37.8'" — the two pins must move together, which
+# `--auto` below cannot fix and does not try to: a red required check simply never merges.
+#
+# THIS WORKFLOW ONLY REQUESTS auto-merge; it does not merge anything itself. `gh pr merge --auto`
+# tells GitHub "merge this once its required status checks pass", and `main`'s branch protection
+# (set the same day this workflow was added) now NAMES those checks — `secret scan`, `ratchets`,
+# `tests and coverage`, `lint and types`, `the shipped site`, `CodeQL`, `analyze (python)`,
+# `analyze (javascript-typescript)` — with `enforce_admins: true`, so even this repository's own
+# token cannot merge past a red one. The door judged in `scripts/push.sh` is unchanged; only who
+# waits on its verdict is automated.
+#
+# MAJOR NEVER AUTO-MERGES, ON PURPOSE. `dependabot/fetch-metadata` reports `update-type`; the step
+# below only fires for `semver-patch` and `semver-minor`. A major bump is left open and unmerged —
+# "full access" was granted as the right to act without asking, not the right to stop looking, and
+# a major version is exactly the class of change this project's own operator drew that line at.
+#
+# WHY `pull_request_target`. Dependabot's branches live in THIS repository (never a fork), so the
+# elevated-token risk that trigger exists to warn about does not apply here, and it is the trigger
+# that actually carries write permission to call `gh pr merge`.
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98  # v3.1.0
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: enable auto-merge for patch and minor updates
+        if: steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor'
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

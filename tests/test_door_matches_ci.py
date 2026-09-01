@@ -165,14 +165,19 @@ BENIGN_ACTIONS = ("actions/checkout", "actions/setup-python", "actions/setup-nod
 #
 # The honest scope is narrower and is now what the law says: OUR suite is mirrored at the door;
 # third-party analyses are not, because the door cannot run them and pretending otherwise would be
-# the same defect again. What this table buys is that a FOURTH workflow cannot appear unnoticed -
-# the README's "three workflows" was prose that nothing counted.
+# the same defect again. What this table buys is that an UNDECLARED workflow cannot appear
+# unnoticed - the README's own workflow count is prose that nothing counted until this test did.
 DECLARED_WORKFLOWS = {
     "gates.yml": "ours: every step is compared against the door, above",
     "codeql.yml": "third-party analysis. It can fail on main and the door does NOT run it - CodeQL "
                   "is not installable here, and its findings go to the Security tab by design.",
     "scorecard.yml": "third-party analysis, same reasoning. Its own header records a run that died "
                      "in setup on an unresolvable ref - a red on main the door cannot see.",
+    "dependabot-auto-merge.yml": "does not judge `main` at all - it only requests auto-merge on a "
+                     "Dependabot PR, and GitHub's own required-status-checks (set on the branch "
+                     "the same day this workflow was added) decide whether that merge ever happens. "
+                     "Declared here because it is a fourth file in this directory, not because it "
+                     "can turn `main` red.",
 }
 
 

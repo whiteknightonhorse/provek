@@ -1,6 +1,6 @@
 # CI workflows
 
-Three workflows. One is ours judging ourselves; two are third parties judging us.
+Four workflows. One is ours judging ourselves, two are third parties judging us, and one automates a merge decision rather than judging anything.
 
 ## `gates.yml` — our own suite, taken out of the pusher's hands
 
@@ -58,6 +58,25 @@ setting: it sends the result to the OpenSSF, so the badge in the root `README.md
 
 Expect the score to be middling and expect that to be accurate. Several checks describe practices
 this repository has not adopted; a low true number is worth more than a high tuned one.
+
+## `dependabot-auto-merge.yml` — the human step this file used to require, automated
+
+Requests auto-merge on a Dependabot pull request; it does not merge anything itself and it never
+touches `main`'s status. `dependabot/fetch-metadata` reports whether the bump is patch, minor or
+major, and only patch/minor call `gh pr merge --auto --squash` — a major version is left open for a
+human, on purpose, because "act without asking" was never "stop looking at major bumps".
+
+`--auto` defers to `main`'s branch protection, which now names the required status checks
+(`secret scan`, `ratchets`, `tests and coverage`, `lint and types`, `the shipped site`, `CodeQL`,
+`analyze (python)`, `analyze (javascript-typescript)`) with `enforce_admins: true` — so a red
+required check blocks this repository's own token exactly as it blocks anyone else. The instrument
+being trusted is unchanged; only who waits on its verdict is automated.
+
+Two Dependabot PRs on 2026-09-01 (`codeql-action/init` and `codeql-action/analyze`, bumped in
+separate PRs to the same target version) are the reason this table exists: merging either alone
+breaks CodeQL with "Loaded a configuration file for version '4.37.9', but running version
+'4.37.8'" — a required check that this workflow's auto-merge would simply never see turn green,
+which is the correct outcome, not a gap to route around.
 
 ## Every action is pinned to a commit, and so is every pip install
 
