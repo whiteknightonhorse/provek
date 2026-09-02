@@ -3199,3 +3199,48 @@ by the mandatory mutation tests in D-46/D-50) and is not something this session 
 
 **Numbers.** 1048 tests pass (0 red, 1 pre-existing skip), ruff clean, `npm run build` + prerender
 clean (20 routes, 0 `/w/` pages - none published yet).
+
+## D-52. WitnessRecord v0: Fable's design-circle ruling on D-50/D-51, and the two defects it found fixed before any real record runs
+
+**Fable's ruling on the two decisions D-50 flagged, quoted for the record.** (1) "v0 ships WITHOUT
+[the command-execution criterion], and this is final for v0 ... likely impossible to do honestly
+within the 1-core / 1.5 GB / concurrency-1 budget this host imposes. Do not treat its absence as
+blocking done for point 4." (2) "The operator-run CLI IS the accepted v0 realisation of joint
+request ... a public form with fake authentication would be worse than the CLI: it would launder
+A-9 rather than satisfy it," with one condition: the private request record must also carry HOW
+jointness was established, not only who the two parties were.
+
+**Two real defects found, both fixed in this commit, neither live-exploitable while zero real
+WitnessRecords exist (both were caught before the first one was ever run):**
+
+1. **The private request file leaked to the public GitHub repository.** `publish_record` wrote
+   `customer_contact`/`subject_contact` to `public/witness/_requests/<id>.json` - a path INSIDE
+   `~/incubator`, the tree `push.sh` pushes to a public remote. "Never mirrored, never read by the
+   site" was true and beside the point: the first real record would either block every subsequent
+   push under the clean-tree gate or get committed and published. Fixed: `scripts/witness.py`'s
+   `private_request_root()` now defaults to `$HOME/.provek_witness_requests`, a sibling of
+   `~/incubator`, never a descendant of it - outside the tree entirely, the stronger guarantee
+   Fable named over a `.gitignore` entry inside the weaker location. Per the condition on ruling
+   (2) above, the private record now also carries `joint_intent_evidence`, a required CLI
+   argument.
+2. **`fetch_artifact`'s size cap did not bound a chunked response.** curl's `--max-filesize`
+   refuses mid-transfer only when the server declares `Content-Length`; a chunked response (none
+   declared) passes straight through it - measured: a 5 MB chunked body through a 2 MB cap, exit
+   0. Fixed: `fetch_artifact` now also checks `os.path.getsize` on the downloaded file before
+   reading it into memory, raising `ArtifactTooLarge` on the second path when the first one missed
+   it. The `ArtifactTooLarge` docstring, which had asserted a guarantee ("never read fully into
+   memory first") the code did not actually hold, is corrected to describe both enforcement paths.
+
+**Controls added**, per Fable's own findings, not invented independently:
+`test_MANDATORY_CONTROL_private_request_root_is_never_inside_a_git_tree` (writes against a
+`public_root` carrying a real `.git` marker and asserts the private path never lands under it, for
+any `private_root`), `test_MANDATORY_CONTROL_default_private_root_is_outside_the_repository`
+(the same check against the REAL default, no override), and
+`test_MANDATORY_CONTROL_chunked_response_over_the_cap_is_still_caught` (fakes curl reporting
+success while writing an oversized body - the exact bypass Fable measured live - and proves the
+second enforcement path catches it, and that the witness checker turns it into a real FAIL rather
+than a crash).
+
+**Numbers.** 1051 tests pass (0 red, 1 pre-existing skip), ruff clean. No real WitnessRecord has
+been run yet, so nothing published today is affected by either defect - both were caught and
+fixed before the mechanism's first live use.

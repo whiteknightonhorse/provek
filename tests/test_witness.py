@@ -150,6 +150,35 @@ def test_no_credential_in_the_underlying_request(monkeypatch):
         "would not be repeatable by an anonymous third party")
 
 
+def test_MANDATORY_CONTROL_chunked_response_over_the_cap_is_still_caught(monkeypatch):
+    """Fable's Defect 2 (design circle, 2026-09-02): curl's `--max-filesize` does not bound a
+    response with no `Content-Length` (a chunked transfer) - measured live, a 5 MB chunked body
+    passed a 2 MB `--max-filesize` with exit 0. This fakes exactly that: curl reports success
+    (returncode 0, as it genuinely does for a chunked transfer it never refused) while writing a
+    body larger than `MAX_ARTIFACT_BYTES` to the `-o` path - the second enforcement path
+    (`os.path.getsize` after the transfer) must catch what the first one missed."""
+    oversized = b"x" * (reach.MAX_ARTIFACT_BYTES + 1)
+
+    def _chunked_bypass(cmd, **kwargs):
+        out_path = cmd[cmd.index("-o") + 1]
+        with open(out_path, "wb") as f:
+            f.write(oversized)
+        class R:
+            returncode = 0    # curl did NOT refuse - this is the bypass being simulated
+            stdout = "200\n"
+            stderr = ""
+        return R()
+
+    monkeypatch.setattr(reach.subprocess, "run", _chunked_bypass)
+    with pytest.raises(reach.ArtifactTooLarge):
+        reach.fetch_artifact("https://example.com/big")
+    # And through the witness checker, this is a FAIL, not a crash - the same "a machine-checkable
+    # criterion that could not be verified is a real FAIL" rule the SSRF/unreachable path holds.
+    rec = run_witness("git:example/repo", {
+        "type": "artifact_hash", "url": "https://example.com/big", "sha256": "a" * 64})
+    assert rec.result == "FAIL"
+
+
 def test_witness_record_to_machine_is_exactly_the_published_schema():
     rec = witness.WitnessRecord(
         witness_id="w1", subject_id="git:example/repo",

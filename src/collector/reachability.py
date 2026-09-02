@@ -197,8 +197,15 @@ class ArtifactUnreachable(Exception):
 
 
 class ArtifactTooLarge(Exception):
-    """The response body exceeded `MAX_ARTIFACT_BYTES` - refused mid-transfer via curl's own
-    `--max-filesize`, never read fully into memory first."""
+    """The response body exceeded `MAX_ARTIFACT_BYTES`.
+
+    TWO ENFORCEMENT PATHS, NOT ONE (Fable's review, 2026-09-02). curl's `--max-filesize` refuses
+    mid-transfer, but ONLY when the server sends a `Content-Length` curl can check against as
+    bytes arrive - a chunked response (no `Content-Length` at all) is not bounded by that flag,
+    measured live: a 5 MB chunked body passed straight through a 2 MB `--max-filesize` with exit
+    0. So `fetch_artifact` also checks the DOWNLOADED FILE'S SIZE on disk after the transfer
+    completes, before reading it into memory - the first path stops an honest large response
+    early over the wire, the second catches a chunked one that lied about not having a size."""
 
 
 def _one_hop_capture(url: str, *, timeout: float, out_path: str) -> tuple[int, str | None]:
@@ -256,6 +263,13 @@ def fetch_artifact(url: str, *, timeout: float = TIMEOUT_SECONDS,
                 continue
             if not (HTTP_OK_LOW <= status < HTTP_OK_HIGH):
                 raise ArtifactUnreachable(f"{url}: final status {status}")
+            # THE SECOND ENFORCEMENT PATH (see `ArtifactTooLarge`'s docstring): `--max-filesize`
+            # above does not bound a chunked response, so the file actually written to disk is
+            # checked before it is ever read into memory.
+            size = os.path.getsize(tmp)
+            if size > MAX_ARTIFACT_BYTES:
+                raise ArtifactTooLarge(f"{url}: downloaded {size} bytes, over the "
+                                       f"{MAX_ARTIFACT_BYTES}-byte cap (chunked response)")
             with open(tmp, "rb") as f:
                 return f.read()
         finally:
