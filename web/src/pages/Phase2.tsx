@@ -1,18 +1,26 @@
-/** Phase two, announced as SPECIFIED and never as available.
+/** Phase three (funding tasks), announced as SPECIFIED and never as available - and phase two
+ * (the Provider Catalog), stated here as what it now is: LIVE.
  *
- * WHY THIS PAGE IS ALLOWED TO EXIST, AND WHAT IT MAY NOT BECOME. D-05 reserves space for phase 2
- * in the layout and forbids announcing a feature that does not exist. That boundary still holds
- * everywhere it was drawn: the registry's trailing column is still empty, the passport's task
- * history is still absent, the corpus nav slot is still disabled. What changed is narrower, and it
- * is recorded as D-16: the phase is DESCRIBED once, on a page of its own, because a specification
- * that constrains what we may build is a fact about the product today, whereas a "commission work"
- * control on a registry row would be an offer.
+ * RENUMBERED, specification revision 1.4 (D-46, D-47). Every sentence below this page's own
+ * banner used to describe "phase 2". None of it changed - the funding-task norms did not move -
+ * only the number did: phase 2 is now the Provider Catalog, and it ships (the registry's trailing
+ * column, the landing page's registry rail, the passport's Service section and Order link). This
+ * page keeps its original address, `/phase-2/`, so no existing link or bookmark breaks, but its
+ * content now covers BOTH phases: what runs today, and what is specified and does not.
+ *
+ * WHY THIS PAGE IS ALLOWED TO EXIST, AND WHAT IT MAY NOT BECOME, for phase three. D-05 reserved
+ * space for the phase that follows the registry and forbade announcing a feature that does not
+ * exist. That boundary still holds everywhere it was drawn: the passport's task-history slot
+ * stays empty until phase 5 (WitnessRecord), the corpus nav slot is still disabled. What changed
+ * is narrower, and it is recorded as D-16: the phase is DESCRIBED once, on a page of its own,
+ * because a specification that constrains what we may build is a fact about the product today,
+ * whereas a "commission work" control on a registry row would be an offer.
  *
  * The difference between a description and an offer has to survive a screenshot, because a
  * screenshot is how this page will be quoted. Hence the refusal at the top, the refusal at the
  * bottom, no control anywhere on the page that could be pressed, and no date anywhere in it.
  *
- * Every statement here is taken from SPEC.md section 4.1, "Phase 2 - what it is, and what it is
+ * Every statement about funding tasks here is taken from SPEC.md section 4, "Phase 3 - what it
  * not", which in turn takes it from the project specification. Nothing is added. This is the one
  * page where an invented capability would be indistinguishable from the marketing this product
  * exists to detect, so the rule is stricter here than anywhere else: if a sentence cannot be traced
@@ -65,20 +73,42 @@ export default function Phase2() {
   return (
     <Page>
       <div className="max-w-[46rem]">
-        <h1 className="text-2xl font-semibold tracking-tight">Phase two: funding tasks</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Phase two, live; phase three, funding tasks</h1>
         <p className="mt-2 text-sm text-[var(--color-ink-2)]">
-          Specified. Not built. Not open. Everything below describes what the specification requires
-          of phase 2 &mdash; it is not a description of anything that runs.
+          Phase two is live. Phase three is specified, not built, and not open &mdash; everything
+          below the next section describes what the specification requires of phase 3, and it is
+          not a description of anything that runs.
         </p>
 
-        <div className="mt-5 space-y-3">
+        {/* NEW, specification revision 1.4. This is the one section on the page describing
+            something that RUNS, and it is stated as plainly as the refusals below it are - the
+            same discipline this page has always held, applied to a fact that is now true instead
+            of one that is not. */}
+        <div className="mt-5">
+          <Strip tone="pass">
+            <strong>Phase two is live: the Provider Catalog.</strong> A subject holding a current{" "}
+            <span className="font-mono text-xs">verified</span> passport may declare its own
+            order-intake channel and get an outward &ldquo;Order&rdquo; link on the{" "}
+            <a href="/registry/" className="text-[var(--color-accent)] hover:underline">registry</a>,
+            the landing page and its own passport. The incubator is not a party to the order, never
+            holds funds, and never routes anything &mdash; see{" "}
+            <a href="/method/#the-order-link" className="text-[var(--color-accent)] hover:underline">
+              exactly what the link asserts and what it does not
+            </a>
+            . This is not a marketplace: there is no escrow, no bidding, no order board, and the
+            commission-on-transfers exclusion below applies here too, permanently.
+          </Strip>
+        </div>
+
+        <h2 className="mt-9 text-lg font-semibold">Phase three: funding tasks</h2>
+        <div className="mt-3 space-y-3">
           <Strip tone="warn">
-            <strong>Nothing on this page is in service.</strong> No funding task can be created, no
-            work can be commissioned through us, and no application for one is being taken. Phase 2
-            is deferred by decision A-10 &mdash; projects first &mdash; because a registry is useful
-            without the second side, and the second side is not useful without a registry. Deferred
-            is not cancelled: the specification defines phase 2 so that it will not have to be
-            designed twice.
+            <strong>Nothing below this point is in service.</strong> No funding task can be created,
+            no work can be commissioned through us, and no application for one is being taken. Phase
+            3 is deferred by decision A-10 &mdash; projects first &mdash; because a registry is
+            useful without a second side, and the second side is not useful without a registry.
+            Deferred is not cancelled: the specification defines phase 3 so that it will not have to
+            be designed twice.
           </Strip>
           <Strip tone="info">
             <strong>There is no date here, and there will not be one.</strong> Nothing and nobody has
@@ -102,14 +132,14 @@ export default function Phase2() {
           </li>
           <li className="border-l border-[var(--color-line-2)] pl-3.5">
             <strong className="text-[var(--color-ink)]">
-              In phase 2, a funding task can be addressed to a subject.
+              In phase 3, a funding task can be addressed to a subject.
             </strong>{" "}
             A customer commissions work, the agent performs it, and the incubator witnesses the fact
             of performance. <strong className="text-[var(--color-ink)]">This part does not exist.</strong>
           </li>
         </ol>
         <p className="mt-3 text-sm text-[var(--color-ink-2)]">
-          The order is a dependency, not a sales funnel. Phase 2 stands on the registry, which is
+          The order is a dependency, not a sales funnel. Phase 3 stands on the registry, which is
           what decision A-10 means when it says the registry is useful without the second side while
           the reverse is false.
         </p>
@@ -126,10 +156,10 @@ export default function Phase2() {
               ["the funder", "is a customer, and takes delivery of the result"],
               ["a share of revenue", "excluded permanently — not deferred, excluded"],
               // The scope qualifier is load-bearing and was missing here in the first draft. The
-              // row above it is permanent (A-3); this one is normative for phase 2.0 only, and the
+              // row above it is permanent (A-3); this one is normative for phase 3.0 only, and the
               // specification marks the difference deliberately. A table that flattens the two
               // would make this page retroactively false the day 2.1 relaxes the norm.
-              ["one task, in phase 2.0", "has exactly one principal"],
+              ["one task, in phase 3.0", "has exactly one principal"],
             ]}
           />
         </div>
@@ -146,7 +176,7 @@ export default function Phase2() {
         <p className="mt-2 text-sm text-[var(--color-ink-2)]">
           Decision A-6, and it is permanent rather than deferred &mdash; which is why there is no
           payment step anywhere on this site, not in this phase and not in a later one. We hold and
-          route no funds: no escrow, no treasury, no keys. In phase 2 a customer pays the agent
+          route no funds: no escrow, no treasury, no keys. In phase 3 a customer pays the agent
           directly. A commission on transfers is excluded forever.
         </p>
         <p className="mt-3 text-sm text-[var(--color-ink-2)]">
@@ -215,7 +245,7 @@ export default function Phase2() {
           A draft that does not carry acceptance criteria, failure criteria, a timeout, milestones
           and a ceiling never becomes a task &mdash; the policy gate refuses it, and{" "}
           <span className="font-mono text-xs">rejected</span> is where the refusal lands. That is a
-          condition of creation, not a recommendation. In phase 2.0, financing a task out of the
+          condition of creation, not a recommendation. In phase 3.0, financing a task out of the
           pooled funds of an agent acting for several principals is forbidden, and the check follows
           the chain from the funder through the delegation to the principal rather than stopping at
           the funder.
@@ -237,7 +267,7 @@ export default function Phase2() {
           <li className="border-l border-[var(--color-line-2)] pl-3.5">
             <strong className="text-[var(--color-ink)]">Witnessing creates exposure.</strong> A party
             relies on our statement at the moment money moves. The specification marks this, and the
-            milestone-contract template, as requiring a lawyer&rsquo;s review before phase 2 &mdash;
+            milestone-contract template, as requiring a lawyer&rsquo;s review before phase 3 &mdash;
             marked, and not yet resolved.
           </li>
           <li className="border-l border-[var(--color-line-2)] pl-3.5">
@@ -246,18 +276,19 @@ export default function Phase2() {
               reasonable cost.
             </strong>{" "}
             It may be published as a probabilistic signal and never as a verdict. That rule is not
-            waiting for phase 2; it binds every signal we publish now.
+            waiting for phase 3; it binds every signal we publish now.
           </li>
         </ul>
 
         <div className="mt-9">
           <Strip tone="info">
-            <strong>Nothing on this page is an offer.</strong> The only thing open today is
-            verification, and it is a different thing:{" "}
+            <strong>Nothing on this page is an offer for phase 3.</strong> What is open today is
+            verification, and the registry&rsquo;s Order links it can unlock &mdash; the section
+            above states exactly that, and neither is a funding task:{" "}
             <a href="/apply/" className="text-[var(--color-accent)] hover:underline">
               request verification
             </a>
-            . To check this page against its source rather than taking it from us, the phase-2
+            . To check this page against its source rather than taking it from us, the phase 3
             section is in{" "}
             <a href={SPEC} className="text-[var(--color-accent)] hover:underline">
               SPEC.md

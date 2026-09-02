@@ -274,7 +274,7 @@ written.push(write("/apply/", page("/apply/", TITLES["/apply/"],
 // verified agent" would travel into search results and social cards with the capability intact and
 // the refusal left behind on the page - and the summary is what most readers will ever see.
 written.push(write("/phase-2/", page("/phase-2/", TITLES["/phase-2/"],
-  "Funding tasks are specified and NOT in service: none can be created, none commissioned, no application taken, and no date is given. What the specification requires of phase 2.",
+  "Phase two (the Provider Catalog) is live. Phase three (funding tasks) is specified and NOT in service: none can be created, none commissioned, no application taken, and no date is given.",
   ldOrganization())));
 
 // METHOD NOTES. Descriptive notes on the published methodology (SPEC 3.6, D-18) - never teaching,

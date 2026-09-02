@@ -1,11 +1,37 @@
-"""The phase-2 page announces a specification, never a capability.
+"""The `/phase-2/` page announces a specification, never a capability - for phase THREE now.
 
 D-16 narrows D-05's boundary - "nothing announces a feature that does not exist" - to permit ONE
-page that describes phase 2. A narrowing defended in prose and left unarmed is the shape this
-project has already paid for twice (L-7): the weak-signal limiters were a docstring note until they
-became code, and the accountability defaults were a schema comment until a gate read the emitted
-document. So the four rules of SPEC 3.5 are checked here, and they are checked over the EMITTED
-HTML, because what a reader receives is the thing that has to hold (L-3).
+page that describes what is specified and not built. A narrowing defended in prose and left
+unarmed is the shape this project has already paid for twice (L-7): the weak-signal limiters were
+a docstring note until they became code, and the accountability defaults were a schema comment
+until a gate read the emitted document. So the four rules of SPEC 3.5 are checked here, and they
+are checked over the EMITTED HTML, because what a reader receives is the thing that has to hold
+(L-3).
+
+CONSCIOUSLY EDITED, not deleted, for specification revision 1.4 (D-46, D-47): funding tasks moved
+from "phase 2" to phase 3, and the Provider Catalog (the real "phase 2" now) ships and is LIVE.
+`/phase-2/` keeps its address so no link or bookmark breaks, but its content changed from a page
+that refuses everything to a page that STATES one live fact (phase two is live, with two real
+links into it) before refusing everything about phase three - which is why every constant and
+threshold below that assumed the whole page was one unbroken refusal is re-measured against the
+actual emitted HTML rather than left to rot quietly correct-looking:
+  - `REFUSAL_AT_THE_TOP` changes text: "Nothing on this page is in service" was true when the WHOLE
+    page was refusal; it is FALSE now that the page's own first section truthfully says the
+    Provider Catalog is live, so publishing the old sentence unchanged would itself be the
+    stronger-than-the-artefact claim this project exists to catch, in the other direction. The
+    scoped replacement, "Nothing below this point is in service", is honest about what starts
+    where.
+  - Its position threshold widens from 700 to 1000 characters: the new leading section is real
+    content, not padding, and measured at 799 on the live build - still comfortably early, not
+    "four screens down" (the D-02 argument this test itself invokes).
+  - `PERMITTED_LINKS` gains `/registry/` and `/method/#the-order-link` - both links out of the NEW
+    live-catalog paragraph, to features that actually ship. Rule 3 ("nothing on the page leads to
+    a payment [or a phase-3 capability]") is unaffected: neither target sells or commissions
+    anything, and the CONTROL two hyphens or so below (`test_these_gates_would_fire`'s
+    `assert not (PERMITTED_LINKS >= {"/checkout/"})`) still proves the allowlist would refuse a
+    payment route if one were added.
+The remaining rules (2: no date, 3: no control, 4: enforced/evidenced published correctly) are
+unaffected - none of the added text carries a date, a form, or a constraint whose status changed.
 
 The source-level half runs everywhere, including a checkout with no build. A gate that can only run
 where `web/dist` happens to exist would be green on CI while the page said anything at all.
@@ -23,14 +49,18 @@ SRC = ROOT / "web" / "src" / "pages" / "Phase2.tsx"
 APP = ROOT / "web" / "src" / "App.tsx"
 PRERENDER = ROOT / "web" / "prerender.mjs"
 
-REFUSAL_AT_THE_TOP = "Nothing on this page is in service"
+REFUSAL_AT_THE_TOP = "Nothing below this point is in service"
 REFUSAL_AT_THE_FOOT = "Nothing on this page is an offer"
 NO_INTAKE = "no application for one is being taken"
 
-#: The one link the page is allowed to offer, plus the address of its own source. Anything else is
-#: a route out of a page whose entire content is a refusal.
+#: Links the page is allowed to offer, plus the address of its own source. `/registry/` and
+#: `/method/#the-order-link` were added for phase two's live section (D-47) - both point at
+#: features that already ship, neither sells or commissions anything. Everything else is still a
+#: route out of a page whose phase-3 content is entirely a refusal.
 PERMITTED_LINKS = {
     "/apply/",
+    "/registry/",
+    "/method/#the-order-link",
     "https://github.com/whiteknightonhorse/provek/blob/main/SPEC.md",
 }
 
@@ -98,7 +128,10 @@ def test_the_page_refuses_at_the_top_and_again_at_the_foot():
     assert REFUSAL_AT_THE_FOOT in text, "the page never repeats the refusal at its foot"
     # A refusal four screens down is a refusal that was not given (the D-02 argument, applied to a
     # different claim). 700 characters is roughly the first screenful of this page's prose.
-    assert text.index(REFUSAL_AT_THE_TOP) < 700, (
+    # Widened from 700 (D-47): the page now leads with a real, true statement that phase two is
+    # live (measured at 799 on the current build) before its phase-3 refusal - still the first
+    # screenful, not "four screens down".
+    assert text.index(REFUSAL_AT_THE_TOP) < 1000, (
         f"the refusal starts {text.index(REFUSAL_AT_THE_TOP)} characters in")
     assert text.index(REFUSAL_AT_THE_FOOT) > len(text) - 900, "the closing refusal has drifted up"
 

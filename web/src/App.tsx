@@ -162,7 +162,10 @@ export const TITLES: Record<string, string> = {
   "/apply/": "Request verification - Provek",
   // Named for what it is. A title reading "Funding tasks - Provek" would put a capability in the
   // browser tab, the bookmark and the search result, where the page's own refusal does not reach.
-  "/phase-2/": "Phase two: funding tasks, not in service - Provek",
+  // RENUMBERED (specification revision 1.4): funding tasks are phase THREE now, and this route
+  // - kept at its original address so no existing link or bookmark breaks - covers both: phase
+  // two (the Provider Catalog) is stated as live, phase three stays specified and not in service.
+  "/phase-2/": "Phase three: funding tasks, not in service - Provek",
 };
 
 /** The one place that decides what a route renders — shared by the browser and by the build-time
