@@ -29,6 +29,7 @@ from src.abs_profile.ladder import L
 from src.abs_profile.measured import NotMeasured
 from src.collector import github as gh
 from src.collector.declaration import apply_declaration
+from src.collector.reachability import probe_service_endpoint
 from src.passport.passport import (
     PROFILE_VERSION,
     PROTOCOL_VERSION,
@@ -138,13 +139,22 @@ def registry_row(subject_id: str, p: Passport, ref: str) -> Row:
     """The registry row one measured subject would produce - pulled out of the loop for the same
     reason `score_subject` was (T-S8): a test can check it against a built passport with no
     network call, instead of only being exercisable by running the whole script live.
+
+    `service_url`/`service_reachable` are read back OFF THE PASSPORT'S OWN MACHINE FORM rather
+    than threaded through as extra parameters - `p` already carries `service`/`service_endpoint`
+    (LAW #ONE-PLACE with `src/pipeline.py`'s and `scripts/cohort.py`'s own Row construction), so a
+    second copy of "how to read a declared order_url out of a passport" is not needed here.
     """
     m = p.to_machine()
     return Row(subject_id=subject_id, status=p.status,
               projection=m["verified"]["projection"],
               absent_reason=m["verified"]["projection_absent_reason"],
               protocol_version=PROV.protocol_version, valid_until=p.valid_until,
-              passport_ref=ref, verifier_affiliation="same_owner")
+              passport_ref=ref, verifier_affiliation="same_owner",
+              service_url=(m["service"]["order_url"]["value"]
+                          if m["service"]["order_url"]["measured"] else None),
+              service_reachable=(m["service_endpoint"]["value"]
+                                 if m["service_endpoint"]["measured"] else None))
 
 
 if __name__ == "__main__":
@@ -162,9 +172,14 @@ if __name__ == "__main__":
                   score_operation("treasury_control", None, ())]
         # PHASE 2 - same mapper as `src/pipeline.py` and `scripts/cohort.py` (LAW #ONE-PLACE),
         # pinned to `ev.head_sha` already measured above.
-        accountability, claims = apply_declaration(full, ev.head_sha, None)
+        accountability, service, claims = apply_declaration(full, ev.head_sha, None)
+        # ONE anonymous GET per re-measure (spec 4.2-bis point 2) - this loop runs once per
+        # subject per Q-M2 pass, and the whole point of this script is to cost every call a real
+        # pass makes (T-S10), this one included.
+        service_endpoint = probe_service_endpoint(service.order_url)
         p = build(b, scores, cmap, projection(scores), PROV, accountability,
-                  claims=claims, verifier_affiliation="same_owner")
+                  claims=claims, verifier_affiliation="same_owner",
+                  service=service, service_endpoint=service_endpoint)
         ref = transport.publish(b.as_subject_id(), p.to_machine(),
                                 p.to_machine()["verified"]["projection"])
         # A REAL PASS PUBLISHES TO THE REGISTRY, NOT ONLY THE PASSPORT (T-S10). Building a passport

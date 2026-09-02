@@ -40,10 +40,12 @@ import json
 import re
 import subprocess
 from dataclasses import dataclass, field
+from urllib.parse import urlparse
 
 from src.abs_profile.measured import NotMeasured
 from src.collector.github import RateLimited, redact
-from src.passport.passport import Accountability, Fact
+from src.collector.reachability import SSRFRefused, resolve_public_ip
+from src.passport.passport import Accountability, Fact, Service
 
 RAW_HOST = "https://raw.githubusercontent.com"
 
@@ -84,6 +86,10 @@ class DeclarationResult:
     (`self_reported["declaration"]`) does not need to be reverse-engineered out of four `Fact`s.
     """
     accountability: Accountability
+    service: Service
+    """Phase 2 - the subject's self-declared order-intake channel (spec 4.2-bis point 1). SAME
+    kind of block as `accountability`: self-declared, `assumed`, never enters `verified` or the
+    projection - see `Service`'s own docstring in `src/passport/passport.py`."""
     present: bool | None
     """Did `provek.json` exist and parse as a valid declaration? `None` only when the read attempt
     itself failed (world 4) - existence is then genuinely unknown, not a `False` masquerading as a
@@ -105,14 +111,15 @@ class DeclarationResult:
 
 def _unreadable(pinned_sha: str | None, note: str) -> DeclarationResult:
     u = Fact.unreadable()
-    return DeclarationResult(Accountability(u, u, u, u), present=None, pinned_sha=pinned_sha,
-                             schema_version=None, treasury_claimed_level=None,
-                             treasury_statement=None, notes=[note])
+    return DeclarationResult(Accountability(u, u, u, u), Service(u, u, u, u), present=None,
+                             pinned_sha=pinned_sha, schema_version=None,
+                             treasury_claimed_level=None, treasury_statement=None, notes=[note])
 
 
 def _not_declared(pinned_sha: str | None) -> DeclarationResult:
     absent = Fact(measured=False, reason=NotMeasured.NOT_DECLARED)
-    return DeclarationResult(Accountability(absent, absent, absent, absent), present=False,
+    return DeclarationResult(Accountability(absent, absent, absent, absent),
+                             Service(absent, absent, absent, absent), present=False,
                              pinned_sha=pinned_sha, schema_version=None,
                              treasury_claimed_level=None, treasury_statement=None)
 
@@ -212,6 +219,55 @@ def _fact_from_field(block: object, kind: str) -> Fact:
 _FIELDS = ("claims_addressee", "emergency_stop", "insurance", "dispute_path")
 
 
+def _https_url(v: object, *, required: bool) -> Fact:
+    """One URL-shaped `service` field (spec 4.2-bis point 1). Raises `ValueError` - turning the
+    WHOLE declaration invalid via the caller's `except`, same as every other malformed field in
+    this module - if `required` and the field is missing or blank, or if a present value is not a
+    syntactically valid https URL, or resolves (right now, at declaration time) to a private or
+    reserved address (LAW #ONE-PLACE with `src/collector/reachability.py`'s own re-check at
+    probe time: one resolve-and-classify routine, so the private-address rule cannot drift between
+    "this declaration is invalid" and "this URL is unreachable").
+
+    `pricing_url` and `terms_url` are optional and share the exact same shape as `order_url` - the
+    specification names only `order_url` as https-and-required, but a URL field that were allowed
+    to be `http://` or a bare string would be a second, weaker gate sitting beside the one the
+    other two already pass, which is the inconsistency L-2 exists to forbid.
+    """
+    s = _bounded_str(v)
+    if s is None:
+        if required:
+            raise ValueError("a required URL field is missing or blank")
+        return Fact(measured=False, reason=NotMeasured.NOT_DECLARED)
+    parsed = urlparse(s)
+    if parsed.scheme != "https" or not parsed.hostname:
+        raise ValueError("field is not a valid https URL")
+    try:
+        resolve_public_ip(parsed.hostname)
+    except SSRFRefused as e:
+        raise ValueError(f"field resolves to a disallowed address: {e}") from e
+    return Fact.of(redact(s))
+
+
+def _service_from_block(block: object) -> Service:
+    """`service` (schema 1.1.0, spec 4.2-bis point 1). Absent block -> every field `not_declared`,
+    exactly the shape `_not_declared()` already gives `accountability` for a 404 - `service` is a
+    sibling block subject to the identical four worlds, not a special case."""
+    if block is None:
+        absent = Fact(measured=False, reason=NotMeasured.NOT_DECLARED)
+        return Service(absent, absent, absent, absent)
+    if not isinstance(block, dict):
+        raise ValueError("service is not an object")
+    order_url = _https_url(block.get("order_url"), required=True)
+    offering_raw = _bounded_str(block.get("offering"))
+    offering = (Fact.of(redact(offering_raw)) if offering_raw is not None
+               else Fact(measured=False, reason=NotMeasured.NOT_DECLARED))
+    pricing_url = _https_url(block.get("pricing_url"), required=False)
+    terms_url = _https_url(block.get("terms_url"), required=False)
+    return Service(order_url=order_url, offering=offering, pricing_url=pricing_url,
+                   terms_url=terms_url)
+
+
+
 def collect_declaration(full_name: str, head_sha: str | None) -> DeclarationResult:
     """Read `provek.json` from `full_name` ('owner/repo'), pinned to `head_sha` when the base
     collector measured one - reading the default branch (`HEAD`) and marking it not pinned
@@ -251,8 +307,11 @@ def collect_declaration(full_name: str, head_sha: str | None) -> DeclarationResu
         return _unreadable(head_sha, "accountability is not an object")
     acc_block = acc_block or {}
 
+    service_block = doc.get("service")
+
     try:
         facts = {k: _fact_from_field(acc_block.get(k), k) for k in _FIELDS}
+        service = _service_from_block(service_block)
     except ValueError as e:
         return _unreadable(head_sha, redact(f"invalid declaration schema: {e}"))
 
@@ -281,19 +340,24 @@ def collect_declaration(full_name: str, head_sha: str | None) -> DeclarationResu
                       claims_addressee=facts["claims_addressee"],
                       insurance=facts["insurance"],
                       dispute_path=facts["dispute_path"]),
+        service,
         present=True, pinned_sha=head_sha, schema_version=schema_version,
         treasury_claimed_level=treasury_level, treasury_statement=treasury_statement)
 
 
-def apply_declaration(full_name: str, head_sha: str | None, claims: dict | None) -> tuple[Accountability, dict]:
-    """Read the declaration and fold it into a passport's accountability block and self-reported
-    branch in one call - the shape all THREE emitters (`src/pipeline.py`, `scripts/cohort.py`,
-    `scripts/measure_qm2.py`) use, so the mapping cannot drift between them (LAW #ONE-PLACE).
+def apply_declaration(full_name: str, head_sha: str | None,
+                      claims: dict | None) -> tuple[Accountability, Service, dict]:
+    """Read the declaration and fold it into a passport's accountability block, service block and
+    self-reported branch in one call - the shape all THREE emitters (`src/pipeline.py`,
+    `scripts/cohort.py`, `scripts/measure_qm2.py`) use, so the mapping cannot drift between them
+    (LAW #ONE-PLACE).
 
     Never mutates `claims`; returns a new dict. The treasury claim is added ONLY when the subject
     actually declared a level - an omitted key is the honest rendering of "said nothing", never a
     placeholder (`claimed_level` never enters `verified` or the projection; see the module and
-    `Accountability` docstrings for why).
+    `Accountability` docstrings for why). `service` is returned separately, exactly like
+    `accountability` - it is a `Passport`-level field, not something folded into `claims`
+    (self_reported).
     """
     result = collect_declaration(full_name, head_sha)
     merged = dict(claims or {})
@@ -303,4 +367,4 @@ def apply_declaration(full_name: str, head_sha: str | None, claims: dict | None)
         if result.treasury_statement is not None:
             treasury["statement"] = result.treasury_statement
         merged["treasury_control"] = treasury
-    return result.accountability, merged
+    return result.accountability, result.service, merged

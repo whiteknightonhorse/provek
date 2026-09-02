@@ -167,6 +167,59 @@ class Accountability:
 
 
 @dataclass(frozen=True)
+class Service:
+    """Phase 2 - the subject's OWN order-intake channel (spec 4.2-bis point 1), ratified design.
+
+    SAME GUARANTEE AS `Accountability`, by the same construction: entirely self-declared, every
+    field carries `confidence="assumed"` and NEVER `"measured"`, and this block sits OUTSIDE
+    `operations` and the projection - it cannot raise a ladder level and does not enter the score
+    (Fable's ruling on phase 2: reachability and declaration never move the score or the
+    projection, on pain of reopening the exact overstatement `Accountability` was built to close).
+
+    `order_url` is the only field a subject is required to declare for this block to exist at all;
+    `offering`, `pricing_url` and `terms_url` are optional. All four default to `not_checked`
+    for a subject this collector never asked (no GitHub remote, or a declaration that could not be
+    read at all) - the same "weakest claim by default" rule `Accountability` documents.
+    """
+    order_url: Fact = field(default_factory=Fact)
+    offering: Fact = field(default_factory=Fact)
+    pricing_url: Fact = field(default_factory=Fact)
+    terms_url: Fact = field(default_factory=Fact)
+
+    def to_machine(self) -> dict:
+        return {k: getattr(self, k).to_machine()
+                for k in ("order_url", "offering", "pricing_url", "terms_url")}
+
+
+@dataclass(frozen=True)
+class ServiceEndpoint:
+    """Phase 2 - PLATFORM_OBSERVED reachability of the declared `order_url` (spec 4.2-bis point 2).
+
+    NOT a fourth Fact wrapped the same way as `Service`'s fields: `declared` is a plain bool because
+    it answers "did this collector even attempt the read", which stays `False` for a subject with no
+    declared `order_url` at all, and `checked_at` is a plain timestamp rather than a value carried
+    inside `reachable` because a timestamp is a property of the ATTEMPT, not of what the attempt
+    found. `reachable` reuses `Fact` for exactly the same four-world discipline `Accountability` and
+    `Service` already carry: `not_checked` (no attempt), `Fact.of(True/False, confidence="measured")`
+    (the GET ran and returned an answer - "measured" because this collector performed the
+    observation itself, unlike every self-declared field above), or `Fact.unreadable()` (the attempt
+    itself failed for a reason other than a plain non-2xx or refused connection).
+
+    OUTSIDE THE SCORE, same guarantee as `Service` and `Accountability` - see both docstrings.
+    """
+    declared: bool = False
+    reachable: Fact = field(default_factory=lambda: Fact(measured=False,
+                                                          reason=NotMeasured.NOT_DECLARED))
+    checked_at: str | None = None
+
+    def to_machine(self) -> dict:
+        d = self.reachable.to_machine()
+        d["declared"] = self.declared
+        d["checked_at"] = self.checked_at
+        return d
+
+
+@dataclass(frozen=True)
 class Provenance:
     protocol_version: str
     profile_version: str
@@ -183,6 +236,12 @@ class Passport:
     verified: dict = field(default_factory=dict)        # the MEASURED branch
     self_reported: dict = field(default_factory=dict)   # the SUBJECT-CLAIMED branch
     accountability: Accountability = field(default_factory=Accountability)
+    service: Service = field(default_factory=Service)
+    """Self-declared order-intake channel (spec 4.2-bis). OUTSIDE `verified`, exactly like
+    `accountability` - see `Service`'s own docstring for why it cannot move the score."""
+    service_endpoint: ServiceEndpoint = field(default_factory=ServiceEndpoint)
+    """PLATFORM_OBSERVED reachability of `service.order_url` (spec 4.2-bis point 2). Also OUTSIDE
+    `verified` - see `ServiceEndpoint`'s own docstring."""
     access_channel: str = "anonymous"
     """WHICH CHANNEL the evidence came through, published rather than assumed (Fable, NEW-3).
 
@@ -227,6 +286,8 @@ class Passport:
             "verified": self.verified,
             "self_reported": self.self_reported,
             "accountability": self.accountability.to_machine(),
+            "service": self.service.to_machine(),
+            "service_endpoint": self.service_endpoint.to_machine(),
             "mandate_ref": self.mandate_ref,
             "verifier_affiliation": self.verifier_affiliation,
             "access_channel": self.access_channel,
@@ -269,7 +330,9 @@ def build(binding: Binding, scores: list[OperationScore], control_map: ControlMa
           observations: dict | None = None,
           mandate_ref: str | None = None,
           verifier_affiliation: str = "independent",
-          access_channel: str = "anonymous") -> Passport:
+          access_channel: str = "anonymous",
+          service: Service | None = None,
+          service_endpoint: ServiceEndpoint | None = None) -> Passport:
     """Assemble a passport. An invalid control map CANNOT yield `verified`.
 
     A map without coverage claims more than it knows (ABI-7-5), and a passport cannot stand on it.
@@ -332,6 +395,8 @@ def build(binding: Binding, scores: list[OperationScore], control_map: ControlMa
         verified=verified,
         self_reported=dict(claims or {}),
         accountability=accountability,
+        service=service if service is not None else Service(),
+        service_endpoint=service_endpoint if service_endpoint is not None else ServiceEndpoint(),
         access_channel=access_channel,
         mandate_ref=mandate_ref,
         verifier_affiliation=verifier_affiliation,

@@ -26,6 +26,7 @@ from src.abs_profile.ladder import (
 from src.abs_profile.measured import Measurement
 from src.collector.declaration import apply_declaration, github_full_name
 from src.collector.divergence import Divergence, compare
+from src.collector.reachability import probe_service_endpoint
 from src.collector.repo import collect
 from src.passport.passport import (
     PROFILE_VERSION,
@@ -33,6 +34,7 @@ from src.passport.passport import (
     Accountability,
     Passport,
     Provenance,
+    Service,
     build,
 )
 from src.registry.public_registry import PublicRegistry, Row
@@ -109,16 +111,22 @@ def verify(remote: str, binding: Binding, transport, registry: PublicRegistry,
     # this module's own tests included), and the accountability block then stays at its default -
     # the check genuinely did not run for a subject this collector cannot name a declaration
     # location for.
-    accountability, claims = Accountability(), dict(claims or {})
+    accountability, service, claims = Accountability(), Service(), dict(claims or {})
     full_name = github_full_name(remote)
     if full_name is not None:
-        accountability, claims = apply_declaration(full_name, ev.head_sha, claims)
+        accountability, service, claims = apply_declaration(full_name, ev.head_sha, claims)
+
+    # ONE anonymous GET per re-measure (spec 4.2-bis point 2) - `verify()` already runs once per
+    # subject per re-measure cycle, so calling this here, exactly once, IS the "one GET" rule; no
+    # separate throttle is needed on top of it.
+    service_endpoint = probe_service_endpoint(service.order_url, now=now)
 
     p = build(binding, scores, cmap, projection(scores),
               Provenance(PROTOCOL_VERSION, PROFILE_VERSION, 30),
               accountability,
               now=now, claims=claims, mandate_ref=mandate_ref,
-              verifier_affiliation=verifier_affiliation)
+              verifier_affiliation=verifier_affiliation,
+              service=service, service_endpoint=service_endpoint)
 
     machine = p.to_machine()
     ref = transport.publish(binding.as_subject_id(), machine,
@@ -128,5 +136,9 @@ def verify(remote: str, binding: Binding, transport, registry: PublicRegistry,
                         projection=machine["verified"]["projection"],
                         absent_reason=machine["verified"]["projection_absent_reason"],
                         protocol_version=PROTOCOL_VERSION,
-                        valid_until=p.valid_until, passport_ref=ref))
+                        valid_until=p.valid_until, passport_ref=ref,
+                        service_url=(service.order_url.value if service.order_url.measured
+                                    else None),
+                        service_reachable=(service_endpoint.reachable.value
+                                           if service_endpoint.reachable.measured else None)))
     return Result(p, ref, div, findings)

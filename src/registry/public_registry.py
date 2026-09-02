@@ -42,6 +42,15 @@ class Row:
     rows; false and silent on the day a genuine independent subject lands, which would have libelled
     it as affiliated. D-12 required the disclosure to be on the face of the record - it was on the
     face of the template instead."""
+    service_url: str | None = None
+    """Phase 2 - the subject's self-declared `order_url` (spec 4.2-bis), or `None` if never
+    declared. Carried here so the registry row - the shop window - can show it without a reader
+    opening the passport first; the passport's own `service` block remains the source of truth
+    and carries the full self-declared/assumed provenance this single string does not."""
+    service_reachable: bool | None = None
+    """The LATEST anonymous GET result against `service_url` (spec 4.2-bis point 2), or `None` when
+    no URL was declared or the check has never run. Never a proxy for the score - see
+    `ServiceEndpoint` in `src/passport/passport.py`."""
 
 
 class PublicRegistry:
@@ -68,6 +77,8 @@ class PublicRegistry:
                 "valid_until": r.valid_until.isoformat(),
                 "passport_ref": r.passport_ref,
                 "verifier_affiliation": r.verifier_affiliation,
+                "service_url": r.service_url,
+                "service_reachable": r.service_reachable,
             })
         return {"generated_at": now.isoformat(), "disclaimer": DISCLAIMER,
                 "count": len(out), "subjects": sorted(out, key=lambda x: x["subject_id"])}

@@ -26,6 +26,7 @@ from src.abs_profile.ladder import SIGNED_SHARE_FOR_L4, SMALL_TEAM_FOR_L3, SOLE_
 from src.abs_profile.measured import NotMeasured
 from src.collector.declaration import apply_declaration
 from src.collector.github import EVIDENCE_WINDOW_DAYS, RateLimited, access_channel, collect_github
+from src.collector.reachability import probe_service_endpoint
 from src.passport.passport import PROFILE_VERSION, PROTOCOL_VERSION, Provenance, build
 from src.registry.public_registry import PublicRegistry, Row
 from src.transport.file_transport import FileTransport
@@ -369,13 +370,17 @@ for full in COHORT:
     # four-world mapper already turns an unreachable or absent declaration into an honest state.
     base_claims = {"source": "github", "private": ev.private} if ev.read else {"source": "github"}
     try:
-        accountability, claims = apply_declaration(full, ev.head_sha, base_claims)
+        accountability, service, claims = apply_declaration(full, ev.head_sha, base_claims)
     except RateLimited as e:
         # Nothing is written before this point in the loop body - the passport is emitted below
         # and the row upserted after it - so `continue` here leaves no half-issued document.
         skip_rate_limited(f"git:{full}", e)
         continue
+    # ONE anonymous GET per re-measure (spec 4.2-bis point 2) - this loop body runs once per
+    # subject per cohort re-measure, so this call site IS the re-measure event.
+    service_endpoint = probe_service_endpoint(service.order_url, now=now)
     p = build(binding, scores, cmap, proj, PROV, accountability,
+              service=service, service_endpoint=service_endpoint,
               # A self-reported block states what the SUBJECT said. When the source never
               # answered, the subject said nothing, and an omitted key is the honest rendering of
               # that - a `false` here was the template speaking in the subject's name.
@@ -417,7 +422,11 @@ for full in COHORT:
                         m["verified"]["projection"], m["verified"]["projection_absent_reason"],
                         PROV.protocol_version, p.valid_until,
                         f"{SITE}/data/passports/{slug}.json",
-                        verifier_affiliation=p.verifier_affiliation))
+                        verifier_affiliation=p.verifier_affiliation,
+                        service_url=(service.order_url.value if service.order_url.measured
+                                    else None),
+                        service_reachable=(service_endpoint.reachable.value
+                                           if service_endpoint.reachable.measured else None)))
 
     op = m["verified"]["operations"][0]
     lim = ",".join(scores[0].limiters_applied) or "-"

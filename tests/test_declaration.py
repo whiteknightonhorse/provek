@@ -309,12 +309,12 @@ def test_a_maximal_declaration_and_no_declaration_yield_IDENTICAL_projection_and
     binding = Binding(BindingKind.GIT, FULL)
 
     _stub(monkeypatch, 404, "404: Not Found")
-    empty_acc, empty_claims = decl.apply_declaration(FULL, "deadbeef", None)
+    empty_acc, _empty_service, empty_claims = decl.apply_declaration(FULL, "deadbeef", None)
     empty = build(binding, _scores(), ControlMap([], COV), projection(_scores()), PROV,
                  empty_acc, claims=empty_claims).to_machine()
 
     _stub(monkeypatch, 200, json.dumps(FULL_DECLARATION))
-    full_acc, full_claims = decl.apply_declaration(FULL, "deadbeef", None)
+    full_acc, _full_service, full_claims = decl.apply_declaration(FULL, "deadbeef", None)
     full = build(binding, _scores(), ControlMap([], COV), projection(_scores()), PROV,
                 full_acc, claims=full_claims).to_machine()
 
@@ -333,7 +333,7 @@ def test_a_maximal_declaration_and_no_declaration_yield_IDENTICAL_projection_and
 def test_treasury_claim_never_reaches_verified_or_self_reported_confidence_measured(monkeypatch):
     _stub(monkeypatch, 200, json.dumps(FULL_DECLARATION))
     binding = Binding(BindingKind.GIT, FULL)
-    acc, claims = decl.apply_declaration(FULL, "deadbeef", None)
+    acc, _service, claims = decl.apply_declaration(FULL, "deadbeef", None)
     m = build(binding, _scores(), ControlMap([], COV), projection(_scores()), PROV,
              acc, claims=claims).to_machine()
 
@@ -360,7 +360,7 @@ def _find_literal(node: object, needle: str) -> bool:
 def test_not_declared_never_appears_in_observations(monkeypatch):
     _stub(monkeypatch, 404, "404: Not Found")
     binding = Binding(BindingKind.GIT, FULL)
-    acc, claims = decl.apply_declaration(FULL, "deadbeef", None)
+    acc, _service, claims = decl.apply_declaration(FULL, "deadbeef", None)
     m = build(binding, _scores(), ControlMap([], COV), projection(_scores()), PROV,
              acc, claims=claims,
              observations={"signed_commit_share": {"value": 1.0, "measured": True,

@@ -2874,3 +2874,74 @@ erratum are facts about the specification, which a decision record is for; the r
 needs a gate that runs on every push, not a paragraph a future editor might not read. Recording the
 first without arming the second would leave exactly the gap D-37 already found once in a different
 file — a rule believed synced because nothing had yet proven otherwise.
+
+
+## D-46. Schema 1.1.0 lands: `service` and `service_endpoint`, mirroring `Accountability` exactly, outside the score
+
+**Decision.** Phase 2's Provider Catalog (specification 4.2-bis, points 1-2) needs a subject's
+self-declared order-intake channel and its anonymous reachability, published on the same terms
+`Accountability` already set: self-declared content is `assumed`, never `measured`; a
+platform-observed check is `measured` because this collector performed it; and NEITHER block can
+move a ladder level or the projection - built as a sibling, not a special case.
+
+**1. `Service` and `ServiceEndpoint` are new `Passport`-level fields, outside `verified`.** Same
+shape as `Accountability`: four `Fact`-wrapped fields (`order_url`, `offering`, `pricing_url`,
+`terms_url`) for `Service`, and `declared`/`reachable`/`checked_at` for `ServiceEndpoint`. `build()`
+takes both as optional keyword arguments, defaulting to the empty/not-declared shape when a subject
+has no GitHub remote to read a declaration from at all.
+
+**2. `order_url` is required and https-or-invalidate-the-whole-declaration, same boundary as D-43.**
+`src/collector/declaration.py`'s `_https_url` extends `_bounded_str`'s existing FIELD_MAX_CHARS/
+bracket rule with a scheme+host check; a missing, non-https, or malformed `order_url` invalidates
+the entire declaration (accountability included), never a silent per-field drop. `pricing_url` and
+`terms_url` are optional but held to the identical https rule when present - a weaker gate on two
+of three URL fields would be the inconsistency LAW #ONE-PLACE forbids.
+
+**3. The SSRF boundary is checked TWICE, by ONE routine, for two different reasons.**
+`src/collector/reachability.py:resolve_public_ip` resolves a hostname and refuses a private,
+loopback, link-local, reserved, multicast, unspecified, or IPv4-mapped-private address - checked
+AFTER resolution, never against the hostname string, which a DNS-rebinding attack or a hostname
+that simply answers privately would defeat. `declaration.py` calls it at DECLARATION PARSE TIME
+(a private `order_url` invalidates the whole document, the operator's mandatory control); the same
+routine is called again at PROBE TIME inside `_one_hop`, for every hop of a redirect chain, because
+DNS can change between when a declaration is accepted and when it is next re-measured, and because
+a redirect is exactly as capable of naming a private address as the original URL. One routine, two
+callers, so the rule cannot drift between "this declaration is invalid" and "this URL is
+unreachable now" - LAW #ONE-PLACE, applied before the second copy could exist rather than after.
+
+**4. The address CHECKED is the address CONNECTED TO.** `curl --resolve host:port:ip` pins the
+GET to the exact IP `resolve_public_ip` validated, closing the check-then-use gap a second,
+independent resolution at connect time would reopen. Redirects are followed by this module's own
+loop, at most `MAX_REDIRECTS` (2) hops, each fully re-validated from scratch - curl's own `-L`
+would follow a hop without ever calling back into this file's checks, which is why it is never
+used here. GET only; a bounded timeout.
+
+**5. Two mandatory controls, both run live rather than only argued.**
+`tests/test_phase2_service.py::test_MANDATORY_CONTROL_private_address_in_order_url_invalidates_whole_declaration`
+mocks a private resolution result and proves the WHOLE declaration - not merely `service_endpoint`
+- comes back invalid.
+`tests/test_MANDATORY_CONTROL_a_scorer_that_read_service_would_be_CAUGHT` wraps `build()` for the
+duration of one test with a deliberate defect (a declared, reachable `order_url` bumps the
+projection by one) and proves the projection-invariance assertion that guards `service` would
+actually go red against it - the same discipline this project's ratchet mutation tests already
+hold themselves to, applied here to a domain invariant rather than a ratchet.
+`test_MANDATORY_CONTROL_positive_a_plain_https_order_url_is_accepted` is the control-positive: an
+ordinary declaration is not swept up by either boundary.
+
+**6. `registry.json` carries `service_url`/`service_reachable` per subject** (`src/registry/
+public_registry.py:Row`), read back off the passport's own machine form rather than re-derived a
+second way in each of the three emitters (`src/pipeline.py`, `scripts/cohort.py`,
+`scripts/measure_qm2.py`) - `scripts/measure_qm2.py:registry_row` in particular derives both
+fields from `p.to_machine()` rather than taking them as extra parameters, so "how to read a
+declared order_url out of a passport" has exactly one implementation.
+
+**7. `apply_declaration` now returns a 3-tuple** (`accountability, service, claims`), not 2 - every
+call site (`src/pipeline.py`, `scripts/cohort.py`, `scripts/measure_qm2.py`, and this project's own
+tests) updated in this commit. No UI reads any of this yet (the operator's phase-2 plan builds
+the pages in its own next step); this decision covers the backend and collector only.
+
+**What is explicitly NOT done here, per Fable's standing prohibition.** `service` and
+`service_endpoint` are never read by `src/verify/scorer.py` or folded into `operations` or
+`projection` - the mutation control in point 5 exists specifically to keep that true under future
+edits, not merely today. Putting reachability in `operations` or the score was ruled out in
+advance and is not reopened by anything in this entry.

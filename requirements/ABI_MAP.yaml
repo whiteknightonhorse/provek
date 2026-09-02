@@ -20,6 +20,7 @@ src/collector/divergence.py:      [ABI-16-5, ABI-3-2]
 
 # Phase 2 accountability - the subject's own provek.json declaration (spec 2.6)
 src/collector/declaration.py:     [ABI-5-1, ABI-14-2]
+src/collector/reachability.py:   [ABI-5-1, ABI-14-2]
 
 # T-2.5 control map / T-2.6 scoring
 src/verify/__init__.py:           [ABI-13-1]
