@@ -7,10 +7,12 @@
 
 import { useState } from "react";
 import { Facts, Page, Strip } from "../components/Chrome";
+import { InfoDot } from "../components/InfoDot";
 import { AbsentMark, LevelRail, Projection, REASON_TEXT } from "../components/Measured";
 import { daysUntil, effectiveStatus, orderLinkUrl, slug } from "../types";
 import type { Fact, Passport as P } from "../types";
 import { formatObservationValue } from "../formatObservation";
+import { FIELD_HELP, SECTION_HELP } from "../help";
 
 const SITE = "https://provek.dev";
 
@@ -86,8 +88,12 @@ function AccFact({ f, yes, no }: { f: Fact; yes?: string; no?: string }) {
   // "we checked" - which the previous copy, "established, not assumed", got exactly backwards.
   const register =
     f.confidence === "assumed" ? (
-      <span className="evidence-class ml-2" title="Taken from the subject's own declaration; not independently verified.">
+      <span className="evidence-class ml-2 inline-flex items-center">
         self-declared
+        <InfoDot label="What self-declared means">
+          Taken from the subject&rsquo;s own declaration; not independently verified, and never
+          entering the score.
+        </InfoDot>
       </span>
     ) : f.confidence ? (
       <span className="evidence-class ml-2">{f.confidence}</span>
@@ -331,6 +337,28 @@ export default function Passport({ p }: { p: P }) {
         &nbsp;|&nbsp; evidence window {p.provenance.evidence_window_days} days
       </p>
 
+      {/* "How to read this passport" - Passport clarity task. Three sentences, describing the
+          SCHEMA this document uses on every subject, never a fact about THIS one - the same
+          separation `SECTION_HELP`/`FIELD_HELP` hold themselves to. Collapsed by default: a
+          returning reader who already knows the schema should not have to scroll past it again,
+          and `<details>` makes that a free, keyboard- and touch-operable choice rather than
+          something this page decides for them. */}
+      <details className="mt-4">
+        <summary className="cursor-pointer text-xs text-[var(--color-ink-2)]">
+          How to read this passport
+        </summary>
+        <p className="mt-2 max-w-[46rem] text-xs leading-relaxed text-[var(--color-ink-3)]">
+          Three branches never mix: <strong className="text-[var(--color-ink-2)]">verified</strong>{" "}
+          is what this project measured, <strong className="text-[var(--color-ink-2)]">
+          self-reported</strong> is what the subject told us and is marked as such, and{" "}
+          <strong className="text-[var(--color-ink-2)]">accountability</strong> is who answers if
+          something goes wrong &mdash; none of the three raises another. A blank field is never a
+          zero: every value states what was found, or the specific reason nothing could be. The
+          number under Autonomy projection measures how much of this business runs without a
+          human in the loop &mdash; not whether it is reliable, profitable, or well run.
+        </p>
+      </details>
+
       {/* Share actions. What a company holding this passport can DO with it (task 7 of the
           approved plan): put a badge on its own site and point its own clients at a page shorter
           than this one.
@@ -351,15 +379,13 @@ export default function Passport({ p }: { p: P }) {
           knowing that the identity under it is revocable. Fable upgraded this from taste to
           requirement, and he is right: a weak binding changes how everything below it reads. */}
       <p className="mt-3 text-sm">
-        <span
-          className="evidence-class"
-          title={
-            p.binding_strength === "strong"
-              ? "The identity is bound by something that cannot be quietly reassigned."
-              : "A domain expires and can be resold; a signing key rotates."
-          }
-        >
+        <span className="evidence-class inline-flex items-center">
           {p.binding_strength} identity binding
+          <InfoDot label="What binding strength means">
+            {p.binding_strength === "strong"
+              ? "The identity is bound by something that cannot be quietly reassigned."
+              : "A domain expires and can be resold; a signing key rotates."}
+          </InfoDot>
         </span>
         <span className="mx-2 text-[var(--color-line-2)]">·</span>
         {/* THE DOCUMENT'S OWN STATUS, which this page never stated (Fable). A reader who clicked
@@ -466,7 +492,13 @@ export default function Passport({ p }: { p: P }) {
                           (Fable, R3). A published number stronger than the measured one is the
                           overstatement this product exists to prevent. */}
                       {o.measured && o.confidence === "inferred" && (
-                        <span className="evidence-class" title="">inferred</span>
+                        <span className="evidence-class inline-flex items-center">
+                          inferred
+                          <InfoDot label="What inferred means">
+                            Computed from evidence that carries a forgery cost lower than a
+                            cryptographic signature - weaker than measured, stronger than assumed.
+                          </InfoDot>
+                        </span>
                       )}
                       {!o.measured && <AbsentMark reason={o.level} />}
                     </div>
@@ -498,11 +530,13 @@ export default function Passport({ p }: { p: P }) {
                         {treasuryClaim(p.self_reported)!.statement
                           ? ` — ${treasuryClaim(p.self_reported)!.statement}`
                           : ""}
-                        <span
-                          className="evidence-class ml-2"
-                          title="Taken from the subject's own declaration; not independently verified."
-                        >
+                        <span className="evidence-class ml-2 inline-flex items-center">
                           assumed, unverified
+                          <InfoDot label="What assumed, unverified means">
+                            Taken from the subject&rsquo;s own declaration; not independently
+                            verified, and this operation stays not_measured regardless of what is
+                            claimed here.
+                          </InfoDot>
                         </span>
                       </p>
                     )}
@@ -548,7 +582,10 @@ export default function Passport({ p }: { p: P }) {
 
       {/* Accountability - adjacent to the score, visibly NOT part of it (decision D-03 sibling). */}
       <section className="mt-6">
-        <h2 className="text-sm font-semibold">Accountability</h2>
+        <h2 className="text-sm font-semibold inline-flex items-center">
+          Accountability
+          <InfoDot label="What accountability means">{SECTION_HELP.accountability}</InfoDot>
+        </h2>
         <p className="mt-1 text-xs text-[var(--color-ink-3)] max-w-[46rem]">
           Deliberately outside the score. The ladder measures how little a human is required; it says
           nothing about who answers when something goes wrong, so an empty control map can yield
@@ -591,7 +628,10 @@ export default function Passport({ p }: { p: P }) {
           `tests/test_phase2_service.py`, not on this page, because a page cannot prove an
           invariant about code it does not run. */}
       <section className="mt-6">
-        <h2 className="text-sm font-semibold">Service</h2>
+        <h2 className="text-sm font-semibold inline-flex items-center">
+          Service
+          <InfoDot label="What this service section means">{SECTION_HELP.service}</InfoDot>
+        </h2>
         <p className="mt-1 text-xs text-[var(--color-ink-3)] max-w-[46rem]">
           The subject&rsquo;s own order-intake channel, exactly as declared and never independently
           verified beyond the reachability check below.
@@ -711,7 +751,10 @@ export default function Passport({ p }: { p: P }) {
 
       {/* Identity binding strength - D-11. */}
       <section className="mt-6">
-        <h2 className="text-sm font-semibold">Identity binding</h2>
+        <h2 className="text-sm font-semibold inline-flex items-center">
+          Identity binding
+          <InfoDot label="What identity binding means">{SECTION_HELP.binding}</InfoDot>
+        </h2>
         <div className="mt-3 bg-[var(--color-paper)] border border-[var(--color-line)] px-5 py-1">
           <Facts
             rows={[
@@ -719,7 +762,17 @@ export default function Passport({ p }: { p: P }) {
               ["Strength", p.binding_strength === "strong"
                 ? <span style={{ color: "var(--color-pass)" }}>strong</span>
                 : <span style={{ color: "var(--color-warn)" }}>weak</span>],
-              ["Properties", p.binding_flags.join(", ") || "—"],
+              ["Properties", p.binding_flags.length === 0 ? "—" : (
+                <span className="inline-flex flex-wrap items-center gap-x-1">
+                  {p.binding_flags.map((flag, i) => (
+                    <span key={flag} className="inline-flex items-center">
+                      {i > 0 && ", "}
+                      {flag}
+                      {FIELD_HELP[flag] && <InfoDot label={`What ${flag} means`}>{FIELD_HELP[flag]}</InfoDot>}
+                    </span>
+                  ))}
+                </span>
+              )],
               ["Why it matters", <span className="text-[var(--color-ink-2)]">
                 A domain expires and can be resold; a signing key rotates. Equating either with
                 ownership of a token would overstate what the binding guarantees.
@@ -731,7 +784,10 @@ export default function Passport({ p }: { p: P }) {
 
       {/* Control map coverage - the map proves a path exists, never that none was missed. */}
       <section className="mt-6">
-        <h2 className="text-sm font-semibold">Human control map &mdash; coverage</h2>
+        <h2 className="text-sm font-semibold inline-flex items-center">
+          Human control map &mdash; coverage
+          <InfoDot label="What coverage means">{SECTION_HELP.coverage}</InfoDot>
+        </h2>
         <p className="mt-1 text-xs text-[var(--color-ink-3)] max-w-[46rem]">
           This map can prove that a control path <em>exists</em>. It can never prove that no
           undiscovered path exists &mdash; that is impossible in principle, so the map publishes what
@@ -740,12 +796,25 @@ export default function Passport({ p }: { p: P }) {
         <div className="mt-3 bg-[var(--color-paper)] border border-[var(--color-line)] px-5 py-1">
           <Facts
             rows={[
-              ["Inspected", v.coverage.inspected.join(", ") || "—"],
+              ["Inspected", v.coverage.inspected.length === 0 ? "—" : (
+                <span className="inline-flex flex-wrap items-center gap-x-1">
+                  {v.coverage.inspected.map((surface, i) => (
+                    <span key={surface} className="inline-flex items-center">
+                      {i > 0 && ", "}
+                      {surface}
+                      {FIELD_HELP[surface] && <InfoDot label={`What ${surface} means`}>{FIELD_HELP[surface]}</InfoDot>}
+                    </span>
+                  ))}
+                </span>
+              )],
               ["Out of reach", Object.entries(v.coverage.out_of_reach).length === 0 ? "—" : (
                 <ul className="space-y-0.5">
                   {Object.entries(v.coverage.out_of_reach).map(([k, why]) => (
                     <li key={k}>
-                      <span className="font-mono text-xs">{k}</span>
+                      <span className="font-mono text-xs inline-flex items-center">
+                        {k}
+                        {FIELD_HELP[k] && <InfoDot label={`What ${k} means`}>{FIELD_HELP[k]}</InfoDot>}
+                      </span>
                       <span className="text-[var(--color-ink-3)]"> &mdash; {why}</span>
                     </li>
                   ))}
@@ -776,13 +845,19 @@ export default function Passport({ p }: { p: P }) {
 
       {/* Self-reported lives in its own branch, visually and structurally (D-02 sibling, ABI-14-2). */}
       <section className="mt-6">
-        <h2 className="text-sm font-semibold">
-          Self-reported <span className="font-normal text-[var(--color-ink-3)]">&mdash; claimed by the subject, not verified by us</span>
+        <h2 className="text-sm font-semibold inline-flex items-center">
+          Self-reported <span className="font-normal text-[var(--color-ink-3)] ml-1">&mdash; claimed by the subject, not verified by us</span>
+          <InfoDot label="What self-reported means">{SECTION_HELP.self_reported}</InfoDot>
         </h2>
         <div className="mt-3 border border-dashed border-[var(--color-line-2)] bg-[var(--color-paper-2)] px-5 py-1">
           <Facts
             rows={Object.entries(p.self_reported).map(([k, val]) => [
-              k,
+              // DATA-ORIENTED: a key with no FIELD_HELP entry renders raw, no dot - the same rule
+              // OBS_LABEL/OP_LABEL already hold themselves to elsewhere on this page.
+              <span key={k} className="inline-flex items-center">
+                {k}
+                {FIELD_HELP[k] && <InfoDot label={`What ${k} means`}>{FIELD_HELP[k]}</InfoDot>}
+              </span>,
               <SelfReportedValue val={val} />,
             ])}
           />

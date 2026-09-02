@@ -3056,3 +3056,57 @@ three are actually wired, not only that the page renders correctly in isolation.
 **Numbers.** 1006 tests pass (0 red, 1 pre-existing skip, 7 new: 1 in `test_phase2_service.py` for
 the CGNAT case, 6 in `test_registry_corrections.py`), ruff clean, `npm run build` + prerender clean
 (20 routes, up from 19).
+
+
+## D-49. Passport clarity: `InfoDot` replaces bare `title=`, `SECTION_HELP`/`FIELD_HELP` caption every raw key the pipeline emits today
+
+**Decision.** The passport's least legible defect was structural, not a wording problem: several
+badges (self-declared, assumed/unverified, binding strength, inferred) carried their only
+explanation in a `title=` attribute, which a keyboard user never focuses and a phone never hovers -
+and one of the four (`inferred`) carried an EMPTY `title=""`, explaining nothing to anyone. Several
+raw machine keys (`self_reported`'s top-level keys, `binding_flags` values, `coverage` surface
+names) rendered with no caption at all.
+
+**1. `web/src/components/InfoDot.tsx`** is a native `<details>`/`<summary>` disclosure, not a
+tooltip library or a hover-only affordance. The HTML specification already makes `<summary>` a
+focusable, Enter/Space-operable widget and gives every touch device a working tap target - both
+guarantees this project does not have to build or test itself, only avoid defeating (no
+`onMouseOver`, no `role="presentation"`). The content unfolds inline rather than as a floating
+popover, so it can never be clipped by a scrolling or `overflow:hidden` ancestor - the same reason
+`Landing.tsx`'s video transcript already uses a plain `<details>`.
+
+**2. `web/src/help.ts`: `SECTION_HELP` and `FIELD_HELP`, data-oriented.** Every entry describes the
+SCHEMA - what a key or section means on every passport alike - never the subject in front of it. A
+key with no entry renders raw (its own name, no dot), the same "least-effort path makes the weakest
+claim" rule `OBS_LABEL`/`OP_LABEL` already held themselves to. `FIELD_HELP` covers exactly the keys
+this codebase's own collectors ever write: `source`/`private`/`declaration`/`treasury_control`
+(`self_reported`'s only top-level keys, per `src/collector/declaration.py` and `scripts/cohort.py`),
+`transferable`/`expirable`/`revocable` (the only three `binding_flags` values,
+`src/abs_profile/identity.py`), and `github`/`deployment`/`server`/`treasury`/`database` (the only
+five coverage surfaces any emitter in this tree produces, `src/verify/control_map.py:
+build_coverage`).
+
+**3. `web/src/components/Chrome.tsx:Facts` widened from `[string, ReactNode]` to `[ReactNode,
+ReactNode]` rows**, keyed by array position rather than by the label - backward compatible (every
+existing caller already passes a plain string, a subtype of `ReactNode`), and the one change needed
+to let a raw key carry its own `InfoDot` as a table label rather than as a caption bolted on beside
+the value.
+
+**4. "How to read this passport"** - three sentences, collapsed by default behind a `<details>`,
+placed after the provenance line. Describes the three non-mixing branches (verified/self-reported/
+accountability), that a blank field is never a zero, and what the projection measures - properties
+of the SCHEMA, stated once, not a fact about the subject the reader happens to be looking at.
+
+**5. The mandatory control measures the LIVE artefact, never an invented list.**
+`tests/test_passport_help_covers_live_keys.py` reads every committed passport under
+`public/passports/`, unions the actual `self_reported` keys / `binding_flags` / coverage surfaces
+found across all ten, and asserts each has a `FIELD_HELP` entry - a ninth key a future collector
+starts emitting fails this test rather than shipping as a silently raw row. A companion check holds
+`public/passports/` and the served `web/public/data/passports/` to the same keys, and
+`tests/test_infodot_accessible.py` checks `InfoDot` is genuinely built on `<details>`/`<summary>`
+(not a hover-only look-alike), that all four named badges no longer sit behind a bare `title=`, and
+that a live passport page renders at least five real `<details>` disclosures.
+
+**Numbers.** 1020 tests pass (0 red, 1 pre-existing skip, 14 new across the two test files), ruff
+clean, `npm run build` + prerender clean. A claude-in-chrome pass over all ten live passports
+follows this commit, per the operator's own instruction for this task.

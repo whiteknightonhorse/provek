@@ -179,11 +179,16 @@ export function Strip({
 }
 
 /** Dense two-column label/value table. Sub-detail goes inside the cell, never in a nested card. */
-export function Facts({ rows }: { rows: Array<[string, React.ReactNode]> }) {
+export function Facts({ rows }: { rows: Array<[React.ReactNode, React.ReactNode]> }) {
+  // KEYED BY POSITION, NOT BY THE LABEL (Passport clarity task). The label widened from `string`
+  // to `React.ReactNode` so a raw machine key can carry an `InfoDot` beside it - a plain string is
+  // no longer guaranteed, so a stable React key has to come from somewhere else. Every caller
+  // passes a fixed-length, fixed-order array built fresh per render, never reordered by the user,
+  // so the index is exactly as stable as the label string it replaces.
   return (
     <dl className="divide-y divide-[var(--color-line)] border-y border-[var(--color-line)]">
-      {rows.map(([k, v]) => (
-        <div key={k} className="grid grid-cols-1 gap-1 py-2 sm:grid-cols-[minmax(9rem,14rem)_1fr] sm:gap-4">
+      {rows.map(([k, v], i) => (
+        <div key={i} className="grid grid-cols-1 gap-1 py-2 sm:grid-cols-[minmax(9rem,14rem)_1fr] sm:gap-4">
           <dt className="text-sm text-[var(--color-ink-2)]">{k}</dt>
           <dd className="text-sm">{v}</dd>
         </div>
