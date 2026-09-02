@@ -28,6 +28,9 @@ export const SECTION_HELP: Record<string, string> = {
     + "a control path exists; it can never prove that no undiscovered path exists.",
   binding: "How the subject's identity is anchored to this record, and how strong that anchor is "
     + "- a domain can be resold, a signing key can rotate.",
+  task_history: "Machine-checkable acceptance criteria this project has run, by joint request of "
+    + "a customer and this subject. Never on our own initiative, and never entering the score "
+    + "above - a fixed-fee witnessing event is not evidence of autonomy.",
 };
 
 export const FIELD_HELP: Record<string, string> = {

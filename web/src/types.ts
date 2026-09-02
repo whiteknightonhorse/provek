@@ -76,6 +76,13 @@ export interface Passport {
    *  check never had anything to check, or could not run), `confidence` is "measured" here (this
    *  collector performed the observation itself), never "assumed". */
   service_endpoint: Fact & { declared: boolean; checked_at: string | null };
+  /** Phase 2 - WitnessRecord v0 entries for this subject (specification 4.2-bis point 4, the
+   *  D-05 slot), in the order they were run. Outside `verified` for the same reason `service` is:
+   *  a fixed-fee witnessing event is not evidence of autonomy. Each entry is DISPLAY-ORIENTED -
+   *  the full record (criterion, evidence_digest) lives only at its own `url`, never duplicated
+   *  in full here. Empty for a subject nobody has jointly asked to witness yet - not a missing
+   *  field, an honest empty history. */
+  task_history: TaskHistoryEntry[];
   mandate_ref: string | null;
   verifier_affiliation: string;
   disclaimer: string;
@@ -121,6 +128,18 @@ export interface Fact {
    *  who answers a claim is not observable from outside, so a completed check establishes what
    *  the subject SAYS, never what we verified. */
   confidence: "measured" | "inferred" | "assumed" | null;
+}
+
+/** Phase 2 - WitnessRecord v0's projection onto a passport (specification 4.2-bis point 4). The
+ *  full record - `criterion`, `evidence_digest` - lives only at `url`; this is deliberately not
+ *  the whole schema, the same "one canonical document per fact" reasoning `mandate_ref` already
+ *  follows by pointing at a document rather than embedding it. */
+export interface TaskHistoryEntry {
+  witness_id: string;
+  criterion_type: string;
+  result: "PASS" | "FAIL";
+  checked_at: string;
+  url: string;
 }
 
 /** The pipeline's slug, and deliberately the same derivation.

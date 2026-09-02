@@ -864,14 +864,33 @@ export default function Passport({ p }: { p: P }) {
         </div>
       </section>
 
-      {/* PHASE 2 SLOT: task history. Hidden while empty rather than absent from the layout. */}
-      {/* PHASE 2 (task history) has no reserved element here on purpose. A `{false && ...}`
-          placeholder used to sit in this spot with a comment claiming the section was "hidden
-          while empty" - it was absent from the layout entirely, so the comment described
-          something that did not exist (Fable, I5). Reserving vertical space for a feature that
-          may never ship would also push the control map further from the score that constrains
-          it. When task history ships it takes its place in the block order, which is a decision
-          to be recorded then. */}
+      {/* PHASE 2 SLOT (D-05, filled - spec 4.2-bis point 4, D-50): WitnessRecord v0 entries.
+          Genuinely absent from the layout when empty (`p.task_history.length === 0`), the same
+          discipline the prior placeholder comment here CLAIMED but did not implement (Fable, I5) -
+          this time the emptiness is real, not a comment describing a `{false && ...}` that never
+          rendered anything either way. */}
+      {p.task_history.length > 0 && (
+        <section className="mt-6">
+          <h2 className="text-sm font-semibold inline-flex items-center">
+            Task history
+            <InfoDot label="What task history means">{SECTION_HELP.task_history}</InfoDot>
+          </h2>
+          <div className="mt-3 border border-[var(--color-line-2)] divide-y divide-[var(--color-line)]">
+            {p.task_history.map((t) => (
+              <a key={t.witness_id} href={t.url}
+                className="flex items-center justify-between gap-4 px-4 py-2 text-sm hover:bg-[var(--color-paper-2)]">
+                <span>
+                  {t.criterion_type} <span className="text-[var(--color-ink-3)]">&mdash; checked {t.checked_at.slice(0, 10)}</span>
+                </span>
+                <span style={{ color: t.result === "PASS" ? "var(--color-pass)" : "var(--color-warn)" }}
+                     className="font-semibold">
+                  {t.result}
+                </span>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
     </Page>
   );
 }

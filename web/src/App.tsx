@@ -69,6 +69,11 @@ function useRoute(initial: string) {
       // hand the route to a router that has never heard of it and paint "No such page" over a
       // document the server serves perfectly well.
       if (href.startsWith("/method/notes/")) return;
+      // WitnessRecord pages (spec 4.2-bis point 4, D-50) are the same shape: static documents
+      // emitted outside this component set (`web/prerender.mjs`'s `staticPage`, not `page`), with
+      // no client route registered for them in `Body` below. Intercepting a click from a
+      // passport's task-history link here would paint "No such page" over a document that exists.
+      if (href.startsWith("/w/")) return;
       e.preventDefault();
       history.pushState(null, "", href);
       setRoute(norm(href));

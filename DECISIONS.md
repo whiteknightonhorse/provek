@@ -3175,3 +3175,27 @@ the passport page's task-history section, `types.ts`/`help.ts`) ships in a follo
 the same branch. `scripts/cohort.py` now calls `load_task_history` on every re-measure, so the
 passport JSON already carries `task_history` (empty for every subject today, correctly - no real
 WitnessRecord has been run yet); the site has nothing to render from it until the web commit lands.
+
+## D-51. WitnessRecord v0, web half: `/w/<id>/` static pages, passport task-history section
+
+**What shipped.** `web/prerender.mjs` emits one static page per published `public/data/witness/
+<id>.json` via `staticPage()` - the same mechanism method notes already use, not the dynamic
+client-fetch treatment passports get, because a WitnessRecord is immutable once published (a check
+ran against the world at one moment) and never needs a re-fetch/loading state the way a re-measured
+passport does. Zero records today emits zero pages - the honest v0 state, the same one `service`
+shipped in after phase 1 with every subject `not_declared`. `web/src/pages/Passport.tsx`'s "PHASE 2
+SLOT: task history" placeholder (D-05, named absent-not-hidden by Fable's I5 finding) is now a
+real, conditionally-rendered section - genuinely absent when `task_history` is empty, not a
+`{false && ...}` that was never true either way. `web/src/App.tsx`'s click handler hands `/w/`
+links to a normal navigation, the same construction it already used for `/method/notes/` - a link
+intercepted by the SPA router into an unregistered route would otherwise paint "No such page" over
+a document the server serves correctly (`tests/test_witness_route_handoff.py`).
+
+**The corpus was re-measured** (`scripts/cohort.py`) so all ten live passports carry the new
+`task_history: []` field - the same step phase 1 took for `service`/`service_endpoint`. Provek's own
+projection moved 60 -> 40 in this run; this is ordinary time-window drift in the live evidence
+window (unrelated to this session's code - `task_history`/`service` are proven outside the score
+by the mandatory mutation tests in D-46/D-50) and is not something this session engineered.
+
+**Numbers.** 1048 tests pass (0 red, 1 pre-existing skip), ruff clean, `npm run build` + prerender
+clean (20 routes, 0 `/w/` pages - none published yet).

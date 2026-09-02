@@ -329,6 +329,68 @@ for (const row of registry.subjects) {
   writeFileSync(join(DIST, "p", s, "index.md"), buildPassportMarkdown(p, SITE));
 }
 
+// Phase 2 - WitnessRecord v0 (spec 4.2-bis point 4, D-50, the D-05 slot). Emitted as STATIC pages
+// via `staticPage()` - the same mechanism method notes use - rather than the dynamic client-fetch
+// treatment passports get: a WitnessRecord is immutable once published (a check ran against the
+// world at one moment), so it never needs a loading/re-fetch state the way a re-measured passport
+// does. Zero records is the honest v0 state until the first joint request happens - the loop below
+// simply emits nothing, the same way `notes.length` guards the notes index above.
+const witnessDir = "public/data/witness";
+const witnessRecords = existsSync(witnessDir)
+  ? readdirSync(witnessDir)
+      .filter((f) => f.endsWith(".json"))
+      .map((f) => JSON.parse(readFileSync(join(witnessDir, f), "utf8")).witness)
+  : [];
+
+function ldWitness(w) {
+  return {
+    "@context": "https://schema.org", "@type": "Claim",
+    url: `${SITE}/w/${w.witness_id}/`,
+    datePublished: w.checked_at,
+    claimReviewed: `${w.criterion.type} for ${w.subject_id}`,
+    author: { "@type": "Organization", name: "Provek" },
+    itemReviewed: { "@type": "SoftwareSourceCode", name: w.subject_id },
+  };
+}
+
+/** No React component behind this one - the record is seven flat fields, and a hand-built table
+ * is smaller than adding a client route, an SSR data prop and a loading state for a document that
+ * never changes after it is published (see the module comment above). */
+function witnessArticle(w) {
+  const passportSlug = slug(w.subject_id);
+  const subjectCell = passports[passportSlug]
+    ? `<a href="/p/${passportSlug}/">${esc(w.subject_id)}</a>` : esc(w.subject_id);
+  const criterionRows = Object.entries(w.criterion)
+    .filter(([k]) => k !== "type")
+    .map(([k, v]) => `<tr><td>${esc(k)}</td><td><code>${esc(String(v))}</code></td></tr>`)
+    .join("\n        ");
+  const color = w.result === "PASS" ? "var(--color-pass)" : "var(--color-warn)";
+  return `
+    <h1>Witness record</h1>
+    <p>A machine-checkable acceptance criterion (<code>${esc(w.criterion.type)}</code>), run once
+    by joint request of a customer and the subject named below &mdash; never on Provek's own
+    initiative. Free in this phase, stated explicitly:
+    <code>witnessed_fee_paid: ${w.witnessed_fee_paid}</code>.</p>
+    <table>
+      <tbody>
+        <tr><td>Subject</td><td>${subjectCell}</td></tr>
+        <tr><td>Result</td><td><strong style="color:${color}">${esc(w.result)}</strong></td></tr>
+        <tr><td>Checked at</td><td>${esc(w.checked_at)}</td></tr>
+        <tr><td>Evidence digest</td><td><code>${esc(w.evidence_digest)}</code></td></tr>
+        ${criterionRows}
+      </tbody>
+    </table>
+    <p><a href="/data/witness/${w.witness_id}.json">Machine record (JSON)</a></p>
+  `;
+}
+
+for (const w of witnessRecords) {
+  const route = `/w/${w.witness_id}/`;
+  written.push(write(route, staticPage(route, `Witness record ${w.witness_id} - Provek`,
+    `${w.criterion.type} for ${w.subject_id}: ${w.result}, checked ${w.checked_at.slice(0, 10)}.`,
+    ldWitness(w), witnessArticle(w))));
+}
+
 // A REAL 404. Its presence switches off Cloudflare Pages' SPA fallback, which until now answered
 // 200 with the app shell for every nonexistent path - including /sitemap.xml. A positive answer
 // where the truthful answer is absence is this product's own thesis inverted.
@@ -361,6 +423,12 @@ const lastmodFor = (route) => {
   if (note) return note;                                   // manifest: moves with the body hash
   if (route.startsWith("/p/")) {                           // the passport was issued on a date
     return passports[route.slice(3, -1)]?.issued_at?.slice(0, 10) ?? null;
+  }
+  // A WitnessRecord never changes after it is checked, so its own `checked_at` IS its lastmod -
+  // never the build clock, which would tell every crawler the record changed on every rebuild.
+  if (route.startsWith("/w/")) {
+    const w = witnessRecords.find((r) => `/w/${r.witness_id}/` === route);
+    return w?.checked_at?.slice(0, 10) ?? null;
   }
   // The landing and the registry ARE renderings of `registry.json` - their content moves when it
   // does, so its generation stamp is a measurement of them and not a guess.

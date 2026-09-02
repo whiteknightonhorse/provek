@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-09-02T03:43:01.772878+00:00",
-    "valid_until": "2026-10-02T03:43:01.772878+00:00",
+    "issued_at": "2026-09-02T04:40:41.656161+00:00",
+    "valid_until": "2026-10-02T04:40:41.656161+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -61,7 +61,7 @@
           "absent_reason": null
         },
         "workflow_runs": {
-          "value": 97,
+          "value": 105,
           "measured": true,
           "absent_reason": null
         },
@@ -80,7 +80,7 @@
           "measured": true,
           "absent_reason": null
         },
-        "head_sha": "c6cf6cbf524ceefff8fe2dab74dc1239e101e312"
+        "head_sha": "62f4bbec936a96a072a7de266ced8357bebf957c"
       },
       "control_map_valid": true,
       "control_map_cap": 5,
@@ -103,7 +103,7 @@
       "private": false,
       "declaration": {
         "present": true,
-        "pinned_sha": "c6cf6cbf524ceefff8fe2dab74dc1239e101e312",
+        "pinned_sha": "62f4bbec936a96a072a7de266ced8357bebf957c",
         "schema_version": "1.0.0"
       }
     },
@@ -167,6 +167,7 @@
       "declared": false,
       "checked_at": null
     },
+    "task_history": [],
     "mandate_ref": "self-mandate-0001",
     "verifier_affiliation": "same_owner",
     "access_channel": "anonymous",

@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-09-02T03:43:01.772878+00:00",
-    "valid_until": "2026-10-02T03:43:01.772878+00:00",
+    "issued_at": "2026-09-02T04:40:41.656161+00:00",
+    "valid_until": "2026-10-02T04:40:41.656161+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -167,6 +167,7 @@
       "declared": false,
       "checked_at": null
     },
+    "task_history": [],
     "mandate_ref": null,
     "verifier_affiliation": "independent",
     "access_channel": "anonymous",
