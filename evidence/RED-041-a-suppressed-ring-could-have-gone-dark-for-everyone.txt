@@ -1,0 +1,162 @@
+RED-041 - a suppressed ring could have gone dark for everyone
+
+tree: 4133b08e0531519eded6371f9ed9c6401c06f3fd (dirty)
+DATE (UTC): 2026-09-02
+SUBJECT   : web/src/index.css, web/src/App.tsx, judged by tests/test_focus_ring_hides_tap_not_keyboard.py
+TASK      : T-30-mobile-blue-bars
+
+--- `python -m pytest tests/test_focus_ring_hides_tap_not_keyboard.py -q` before anything is touched ---
+
+......                                                                   [100%]
+6 passed in 0.03s
+
+====================================================================================================
+MUTATION 1 - global :focus-visible rule deleted - keyboard focus goes dark EVERYWHERE
+====================================================================================================
+
+Applied to web/src/index.css:
+
+  - :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; border-radius: 1px; }
+  + (deleted)
+
+Test killed: test_global_focus_visible_rule_still_rings_something (and only that one)
+
+--- verbatim output of `python -m pytest tests/test_focus_ring_hides_tap_not_keyboard.py -q -rf` ---
+
+F.....                                                                   [100%]
+=================================== FAILURES ===================================
+_____________ test_global_focus_visible_rule_still_rings_something _____________
+
+    def test_global_focus_visible_rule_still_rings_something():
+        css = INDEX_CSS.read_text(encoding="utf-8")
+>       assert GLOBAL_RING_RE.search(css), (
+            "no global `:focus-visible { outline: 2px solid ... }` rule in index.css - "
+            "removing it makes keyboard focus invisible EVERYWHERE, not just quiet on #main"
+        )
+E       AssertionError: no global `:focus-visible { outline: 2px solid ... }` rule in index.css - removing it makes keyboard focus invisible EVERYWHERE, not just quiet on #main
+E       assert None
+E        +  where None = <built-in method search of re.Pattern object at 0x55830983c1a0>('@import "tailwindcss";\n\n/* Self-hosted. No external font request: a standards page that phones a CDN on load has a\...ick the box to enable this. */\nbutton:not(:disabled) { cursor: pointer; }\nbutton:disabled { cursor: not-allowed; }\n')
+E        +    where <built-in method search of re.Pattern object at 0x55830983c1a0> = re.compile(':focus-visible\\s*\\{\\s*outline:\\s*2px solid\\b').search
+
+tests/test_focus_ring_hides_tap_not_keyboard.py:58: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_focus_ring_hides_tap_not_keyboard.py::test_global_focus_visible_rule_still_rings_something
+1 failed, 5 passed in 0.04s
+
+====================================================================================================
+MUTATION 2 - #main.no-focus-ring override deleted - the tap-triggered blue bars are back
+====================================================================================================
+
+Applied to web/src/index.css:
+
+  - #main.no-focus-ring:focus-visible { outline: none; }
+  + (deleted)
+
+Test killed: test_main_tap_suppression_rule_still_present (and only that one)
+
+--- verbatim output of `python -m pytest tests/test_focus_ring_hides_tap_not_keyboard.py -q -rf` ---
+
+.F....                                                                   [100%]
+=================================== FAILURES ===================================
+_________________ test_main_tap_suppression_rule_still_present _________________
+
+    def test_main_tap_suppression_rule_still_present():
+        css = INDEX_CSS.read_text(encoding="utf-8")
+>       assert MAIN_OVERRIDE_RE.search(css), (
+            "no `#main.no-focus-ring:focus-visible { outline: none; }` rule in index.css - "
+            "without it the tap-triggered blue bars the operator saw on an iPhone are back"
+        )
+E       AssertionError: no `#main.no-focus-ring:focus-visible { outline: none; }` rule in index.css - without it the tap-triggered blue bars the operator saw on an iPhone are back
+E       assert None
+E        +  where None = <built-in method search of re.Pattern object at 0x5653fe871360>('@import "tailwindcss";\n\n/* Self-hosted. No external font request: a standards page that phones a CDN on load has a\...ick the box to enable this. */\nbutton:not(:disabled) { cursor: pointer; }\nbutton:disabled { cursor: not-allowed; }\n')
+E        +    where <built-in method search of re.Pattern object at 0x5653fe871360> = re.compile('#main\\.no-focus-ring:focus-visible\\s*\\{\\s*outline:\\s*none\\s*;?\\s*\\}').search
+
+tests/test_focus_ring_hides_tap_not_keyboard.py:66: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_focus_ring_hides_tap_not_keyboard.py::test_main_tap_suppression_rule_still_present
+1 failed, 5 passed in 0.04s
+
+====================================================================================================
+MUTATION 3 - toggle hard-coded to a constant - always suppresses, blinding keyboard users too
+====================================================================================================
+
+Applied to web/src/App.tsx:
+
+  - top.current?.classList.toggle("no-focus-ring", !usingKeyboard);
+  + top.current?.classList.toggle("no-focus-ring", true);
+
+Test killed: test_suppression_is_gated_on_tracked_modality_not_a_constant (and only that one)
+
+--- verbatim output of `python -m pytest tests/test_focus_ring_hides_tap_not_keyboard.py -q -rf` ---
+
+..F...                                                                   [100%]
+=================================== FAILURES ===================================
+_________ test_suppression_is_gated_on_tracked_modality_not_a_constant _________
+
+    def test_suppression_is_gated_on_tracked_modality_not_a_constant():
+        src = APP_TSX.read_text(encoding="utf-8")
+>       assert 'classList.toggle("no-focus-ring", !usingKeyboard)' in src, (
+            "the no-focus-ring toggle must be driven by tracked input modality (!usingKeyboard), "
+            "not a hard-coded value - a constant would silently blind keyboard users too"
+        )
+E       AssertionError: the no-focus-ring toggle must be driven by tracked input modality (!usingKeyboard), not a hard-coded value - a constant would silently blind keyboard users too
+E       assert 'classList.toggle("no-focus-ring", !usingKeyboard)' in '/** Path routing, hand-rolled, and rendered to static HTML at build time.\n *\n * WHY NOT HASH, ANY MORE. Routing was...route={route} containerRef={top}>\n      <Body route={route} reg={reg} passport={passport} />\n    </Shell>\n  );\n}\n'
+
+tests/test_focus_ring_hides_tap_not_keyboard.py:74: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_focus_ring_hides_tap_not_keyboard.py::test_suppression_is_gated_on_tracked_modality_not_a_constant
+1 failed, 5 passed in 0.04s
+
+====================================================================================================
+MUTATION 4 - skip-link's stale-suppression clearer deleted
+====================================================================================================
+
+Applied to web/src/App.tsx:
+
+  - onFocus={() => document.getElementById("main")?.classList.remove("no-focus-ring")}
+  -         
+  + (deleted)
+
+Test killed: test_skip_link_clears_stale_suppression_on_focus (and only that one)
+
+--- verbatim output of `python -m pytest tests/test_focus_ring_hides_tap_not_keyboard.py -q -rf` ---
+
+...F..                                                                   [100%]
+=================================== FAILURES ===================================
+_______________ test_skip_link_clears_stale_suppression_on_focus _______________
+
+    def test_skip_link_clears_stale_suppression_on_focus():
+        src = APP_TSX.read_text(encoding="utf-8")
+        i = src.find('href="#main"')
+        assert i != -1, "the skip-link target #main has moved or been removed - update this test"
+        window = src[i:i + 600]
+>       assert 'classList.remove("no-focus-ring")' in window, (
+            "the skip-link's onFocus no longer clears a stale no-focus-ring suppression - a tap "
+            "navigation followed by Tab-to-skip-link could be left wrongly silenced"
+        )
+E       AssertionError: the skip-link's onFocus no longer clears a stale no-focus-ring suppression - a tap navigation followed by Tab-to-skip-link could be left wrongly silenced
+E       assert 'classList.remove("no-focus-ring")' in 'href="#main"\n        // `sr-only` positioning means a tap can never reach this link - only Tab or assistive-\n      ...r(--color-paper)] focus:border focus:border-[var(--color-line-2)] focus:px-3 focus:py-2 focus:text-sm"\n      >\n     '
+
+tests/test_focus_ring_hides_tap_not_keyboard.py:96: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_focus_ring_hides_tap_not_keyboard.py::test_skip_link_clears_stale_suppression_on_focus
+1 failed, 5 passed in 0.04s
+
+====================================================================================================
+WHAT NOTHING ABOVE KILLED
+====================================================================================================
+
+4 of 6 collected tests were targeted, each by exactly one mutation.
+  - test_built_css_carries_both_rules
+  - test_the_checks_themselves_can_fail
+
+====================================================================================================
+RESTORE
+====================================================================================================
+
+Both files compared against their own sha256 after every mutation was reverted: unchanged.
+
+--- `python -m pytest tests/test_focus_ring_hides_tap_not_keyboard.py -q` after the restore ---
+
+......                                                                   [100%]
+6 passed in 0.03s
