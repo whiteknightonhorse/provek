@@ -61,6 +61,21 @@ export interface Passport {
     insurance: Fact;
     dispute_path: Fact;
   };
+  /** Phase 2 - the subject's own order-intake channel (specification 4.2-bis point 1). Same
+   *  guarantee as `accountability`: self-declared, `confidence` is always "assumed", and it plays
+   *  no part in `verified` above - reading it can never change the score. */
+  service: {
+    order_url: Fact;
+    offering: Fact;
+    pricing_url: Fact;
+    terms_url: Fact;
+  };
+  /** Phase 2 - PLATFORM_OBSERVED reachability of `service.order_url` (specification 4.2-bis point
+   *  2). `declared` answers "was there a URL to even try"; the rest of the shape is `Fact`'s own
+   *  four worlds for whatever the GET found - `value` is the reachable boolean (or null if the
+   *  check never had anything to check, or could not run), `confidence` is "measured" here (this
+   *  collector performed the observation itself), never "assumed". */
+  service_endpoint: Fact & { declared: boolean; checked_at: string | null };
   mandate_ref: string | null;
   verifier_affiliation: string;
   disclaimer: string;
@@ -77,6 +92,13 @@ export interface RegistryRow {
   /** Read from the artefact, never printed by the template (Fable, R4). The interface used to
    *  assert `affiliated` on every row, which is true for eight rows and libel on the ninth. */
   verifier_affiliation: string;
+  /** Phase 2 (specification 4.2-bis). The subject's declared `order_url`, or `null` if never
+   *  declared - read straight off the row, never re-derived from a passport fetch the registry
+   *  page does not make. */
+  service_url: string | null;
+  /** The LATEST anonymous GET result against `service_url`, or `null` when no URL was declared or
+   *  the check has never run. Never a proxy for the score. */
+  service_reachable: boolean | null;
 }
 
 export interface Registry {
@@ -128,6 +150,49 @@ export function effectiveStatus(status: string, validUntil: string, now: Date = 
 
 export function daysUntil(validUntil: string, now: Date = new Date()): number {
   return Math.ceil((new Date(validUntil).getTime() - now.getTime()) / 86_400_000);
+}
+
+/** THE BUTTON'S PREDICATE, AS CODE - not a page's own opinion, and never redecided per surface.
+ *
+ * `verified (by time) AND service.order_url declared AND service_endpoint.reachable == true`,
+ * within the current validity window - exactly the rule specification 4.2-bis point 3 states, and
+ * the one every surface that can show an "Order" link (`/registry/`, the landing page's registry
+ * rail, the passport page itself) calls, rather than re-deriving it from the same three facts a
+ * second way. Returns the URL to link to, or `null` - the caller never has to re-check `null`
+ * against a separate boolean, because a truthy return already proved the predicate held.
+ *
+ * `stale` and `unverified` (and every other non-`verified` status) return `null` unconditionally,
+ * even if a URL happens to be declared and was once reachable: a lapsed passport is not one this
+ * project stands behind today, and the button's whole point is that continuous verification has
+ * an observable price for the subject. */
+export function orderLinkUrl(
+  status: string,
+  validUntil: string,
+  serviceUrl: string | null,
+  serviceReachable: boolean | null,
+  now: Date = new Date(),
+): string | null {
+  if (effectiveStatus(status, validUntil, now) !== "verified") return null;
+  if (serviceUrl === null) return null;
+  if (serviceReachable !== true) return null;
+  return serviceUrl;
+}
+
+/** The complement of `orderLinkUrl`: why the button is ABSENT, in the same three-way order the
+ *  predicate checks them in. Never called when `orderLinkUrl` returns non-null - a reason and a
+ *  link are never shown together, so this only has to explain a `null`. */
+export function orderAbsentReason(
+  status: string,
+  validUntil: string,
+  serviceUrl: string | null,
+  serviceReachable: boolean | null,
+  now: Date = new Date(),
+): string {
+  const eff = effectiveStatus(status, validUntil, now);
+  if (eff === "stale") return "passport expired";
+  if (eff !== "verified") return "not verified";
+  if (serviceUrl === null) return "order channel not declared";
+  return serviceReachable === null ? "order channel not yet checked" : "order channel not reachable";
 }
 
 export interface Observation {

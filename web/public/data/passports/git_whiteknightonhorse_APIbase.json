@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-09-01T09:25:04.388821+00:00",
-    "valid_until": "2026-10-01T09:25:04.388821+00:00",
+    "issued_at": "2026-09-02T03:00:19.498905+00:00",
+    "valid_until": "2026-10-02T03:00:19.498905+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -61,7 +61,7 @@
           "absent_reason": null
         },
         "workflow_runs": {
-          "value": 1072,
+          "value": 1221,
           "measured": true,
           "absent_reason": null
         },
@@ -71,7 +71,7 @@
           "absent_reason": null
         },
         "unlinked_commit_share": {
-          "value": 0.009,
+          "value": 0.006,
           "measured": true,
           "absent_reason": null
         },
@@ -80,7 +80,7 @@
           "measured": true,
           "absent_reason": null
         },
-        "head_sha": "5ef9826000d41079d12cbe52b81ff1b562da6afd"
+        "head_sha": "cdf6bdd04d7a8a1defea0eda2ca4deb37437424d"
       },
       "control_map_valid": true,
       "control_map_cap": 5,
@@ -103,7 +103,7 @@
       "private": false,
       "declaration": {
         "present": true,
-        "pinned_sha": "5ef9826000d41079d12cbe52b81ff1b562da6afd",
+        "pinned_sha": "cdf6bdd04d7a8a1defea0eda2ca4deb37437424d",
         "schema_version": "1.0.0"
       }
     },
@@ -132,6 +132,40 @@
         "reason": null,
         "confidence": "assumed"
       }
+    },
+    "service": {
+      "order_url": {
+        "value": null,
+        "measured": false,
+        "reason": "not_declared",
+        "confidence": null
+      },
+      "offering": {
+        "value": null,
+        "measured": false,
+        "reason": "not_declared",
+        "confidence": null
+      },
+      "pricing_url": {
+        "value": null,
+        "measured": false,
+        "reason": "not_declared",
+        "confidence": null
+      },
+      "terms_url": {
+        "value": null,
+        "measured": false,
+        "reason": "not_declared",
+        "confidence": null
+      }
+    },
+    "service_endpoint": {
+      "value": null,
+      "measured": false,
+      "reason": "not_declared",
+      "confidence": null,
+      "declared": false,
+      "checked_at": null
     },
     "mandate_ref": "self-mandate-0001",
     "verifier_affiliation": "same_owner",

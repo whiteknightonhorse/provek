@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-09-01T09:32:46.828549+00:00",
-    "valid_until": "2026-10-01T09:32:46.828549+00:00",
+    "issued_at": "2026-09-02T03:00:19.498905+00:00",
+    "valid_until": "2026-10-02T03:00:19.498905+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -132,6 +132,40 @@
         "reason": "not_declared",
         "confidence": null
       }
+    },
+    "service": {
+      "order_url": {
+        "value": null,
+        "measured": false,
+        "reason": "not_declared",
+        "confidence": null
+      },
+      "offering": {
+        "value": null,
+        "measured": false,
+        "reason": "not_declared",
+        "confidence": null
+      },
+      "pricing_url": {
+        "value": null,
+        "measured": false,
+        "reason": "not_declared",
+        "confidence": null
+      },
+      "terms_url": {
+        "value": null,
+        "measured": false,
+        "reason": "not_declared",
+        "confidence": null
+      }
+    },
+    "service_endpoint": {
+      "value": null,
+      "measured": false,
+      "reason": "not_declared",
+      "confidence": null,
+      "declared": false,
+      "checked_at": null
     },
     "mandate_ref": "self-mandate-0001",
     "verifier_affiliation": "same_owner",

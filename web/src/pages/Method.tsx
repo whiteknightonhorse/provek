@@ -186,6 +186,40 @@ export default function Method() {
         </p>
 
 
+        {/* THE PREDICATE, PUBLISHED AS A RULE (specification 4.2-bis point 3) - not a stylistic
+            choice, a boundary Fable stated directly: the "Order" link is a fact about a passport,
+            never an editorial judgement, so what it asserts and what it does not are written down
+            here in the same place the ladder and the projection are. The predicate itself lives in
+            `orderLinkUrl` (`web/src/types.ts`), called identically by the registry, the landing
+            page's registry rail and the passport page - this section describes what running it
+            means, it does not re-implement it. */}
+        <h2 id="the-order-link" className="mt-8 text-lg font-semibold">The Order link</h2>
+        <p className="mt-1 text-sm text-[var(--color-ink-2)]">
+          A subject gets an outward &ldquo;Order&rdquo; link when, at the moment the page was last
+          generated, all three hold at once: the passport is <code>verified</code> (not{" "}
+          <code>stale</code>, not <code>unverified</code>, not <code>in_progress</code>); the
+          subject has declared an <code>https</code> order-intake URL; and the most recent anonymous
+          GET against that URL succeeded. Any one of the three failing removes the link and shows
+          the reason instead &mdash; there is no partial or provisional Order link.
+        </p>
+        <p className="mt-2 text-sm text-[var(--color-ink-2)]">
+          <strong>What it asserts:</strong> that a page exists at the declared address and answered
+          an anonymous reader at last check, and that the passport behind the button had not lapsed
+          when the check ran.
+        </p>
+        <p className="mt-2 text-sm text-[var(--color-ink-2)]">
+          <strong>What it does not assert:</strong> that the subject will fulfil an order, that any
+          price or term shown at that address is accurate, that a transaction there is safe, that
+          the address is reachable at the exact moment you click it rather than at the last
+          re-measure, or that this project is a party to anything that happens after the link is
+          followed. The incubator holds no funds, is not a party to the order, and does not witness
+          its outcome unless both sides later request a{" "}
+          <a href="/phase-2/" className="text-[var(--color-accent)] hover:underline">
+            WitnessRecord
+          </a>
+          .
+        </p>
+
         {/* WHY THIS LIST EXISTS AT ALL (Fable, 2026-08-31). "Declared holds the door, undeclared
             does not" - the L4 defect this page's other additions respond to was exactly an
             undeclared rule change nobody could have caught by reading this page, because the page

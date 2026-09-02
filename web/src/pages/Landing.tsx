@@ -4,7 +4,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Page } from "../components/Chrome";
 import { AbsentMark, REASON_TEXT } from "../components/Measured";
-import { slug } from "../types";
+import { orderLinkUrl, slug } from "../types";
 import type { Registry as R } from "../types";
 
 /** THE THREE CLIPS. D-42 admits them here and nowhere else, which is why the `/media/` paths sit
@@ -316,12 +316,31 @@ export default function Landing({ reg }: { reg: R | null }) {
             <ul className="mt-4 divide-y divide-[var(--color-line)] border-y border-[var(--color-line)]">
               {preview.map((s2) => (
                 <li key={s2.subject_id} className="flex items-baseline justify-between gap-4 py-2.5">
-                  <a
-                    href={`/p/${slug(s2.subject_id)}/`}
-                    className="text-sm text-[var(--color-accent)] hover:underline truncate"
-                  >
-                    {s2.subject_id.split("/").pop()}
-                  </a>
+                  <span className="flex flex-col gap-0.5 min-w-0">
+                    {/* THE FUNNEL: the passport link is the primary target on this line: the
+                        "Order" link, when the predicate holds, sits BELOW it rather than beside
+                        the subject name - the passport is what a reader checks before an order
+                        channel is worth trusting, not an alternative to checking it. */}
+                    <a
+                      href={`/p/${slug(s2.subject_id)}/`}
+                      className="text-sm text-[var(--color-accent)] hover:underline truncate"
+                    >
+                      {s2.subject_id.split("/").pop()}
+                    </a>
+                    {(() => {
+                      const url = orderLinkUrl(s2.status, s2.valid_until, s2.service_url, s2.service_reachable);
+                      return url ? (
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer nofollow"
+                          className="text-xs text-[var(--color-accent)] hover:underline"
+                        >
+                          Order ↗
+                        </a>
+                      ) : null;
+                    })()}
+                  </span>
                   <span className="shrink-0 text-sm tabular-nums">
                     {s2.projection === null ? (
                       // THE REASON WAS NEVER MISSING - `AbsentMark` puts it in `title` and in an

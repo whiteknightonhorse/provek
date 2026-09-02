@@ -7,7 +7,7 @@
 import { useMemo, useState } from "react";
 import { Page, Strip } from "../components/Chrome";
 import { AbsentMark } from "../components/Measured";
-import { effectiveStatus, slug } from "../types";
+import { effectiveStatus, orderAbsentReason, orderLinkUrl, slug } from "../types";
 import type { Registry as R } from "../types";
 
 function shortId(id: string) {
@@ -107,10 +107,10 @@ export default function Registry({ reg }: { reg: R }) {
               <th scope="col" className="px-4 py-2.5 font-semibold">Autonomy</th>
               <th scope="col" className="px-4 py-2.5 font-semibold">Verifier</th>
               <th scope="col" className="px-4 py-2.5 font-semibold">Valid until</th>
-              {/* PHASE 2 SLOT (decision D-05): reserved, empty, unannounced. Retrofitting a column
-                  into a finished table changes widths, breakpoints and scan patterns - that is a
-                  redesign, not an addition. */}
-              <th scope="col" className="px-4 py-2.5" aria-hidden="true" />
+              {/* PHASE 2 SLOT (decision D-05), FILLED: the Provider Catalog's "Order" link
+                  (specification 4.2-bis point 3). The predicate is `orderLinkUrl` - code, not this
+                  page's own opinion - and a row that fails it shows WHY, never an empty cell. */}
+              <th scope="col" className="px-4 py-2.5 font-semibold">Order</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--color-line)]">
@@ -155,7 +155,23 @@ export default function Registry({ reg }: { reg: R }) {
                   )}
                 </td>
                 <td data-label="Valid until" className="px-4 py-2.5 tabular-nums">{s.valid_until.slice(0, 10)}</td>
-                <td className="px-4 py-2.5" />
+                <td data-label="Order" className="px-4 py-2.5">
+                  {(() => {
+                    const url = orderLinkUrl(s.status, s.valid_until, s.service_url, s.service_reachable);
+                    return url ? (
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer nofollow"
+                        className="text-[var(--color-accent)] hover:underline whitespace-nowrap"
+                      >
+                        Order ↗
+                      </a>
+                    ) : (
+                      <AbsentMark reason={orderAbsentReason(s.status, s.valid_until, s.service_url, s.service_reachable)} />
+                    );
+                  })()}
+                </td>
               </tr>
             ))}
             {rows.length === 0 && (

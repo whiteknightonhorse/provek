@@ -201,6 +201,17 @@ export default function Apply() {
           Free at this stage. We verify only what you ask us to verify, and only what you give us
           access to.
         </p>
+        {/* ONE LINE, per the operator's brief - the benefit is real and specific (a verified
+            passport is what the Order link's own predicate checks first, specification 4.2-bis
+            point 3), not a sales pitch dressed as a fact. */}
+        <p className="mt-2 text-sm text-[var(--color-ink-2)]">
+          A current <code>verified</code> passport is what lets you declare your own order-intake
+          channel and show an &ldquo;Order&rdquo; link in the registry &mdash; see{" "}
+          <a href="/method/#the-order-link" className="text-[var(--color-accent)] hover:underline">
+            how that link is decided
+          </a>
+          .
+        </p>
 
         {sent.state === "failed" && (
           <div className="mt-4">

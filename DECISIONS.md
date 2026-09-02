@@ -2945,3 +2945,64 @@ the pages in its own next step); this decision covers the backend and collector 
 `projection` - the mutation control in point 5 exists specifically to keep that true under future
 edits, not merely today. Putting reachability in `operations` or the score was ruled out in
 advance and is not reopened by anything in this entry.
+
+
+## D-47. The Order link ships on the registry, the landing rail and the passport - one predicate, three callers
+
+**Decision.** The Provider Catalog's outward "Order" link (specification 4.2-bis point 3) is
+implemented as CODE in exactly one place - `orderLinkUrl`/`orderAbsentReason` in `web/src/types.ts`
+- and every surface that can show it calls that function rather than re-deriving eligibility from
+`status`/`service_url`/`service_reachable` a second way. The predicate itself is not this
+project's to redesign; it is stated verbatim in the operator's brief
+(`verified (by time) AND declared AND reachable`) and this commit implements it literally, in the
+same order the brief states the three conditions.
+
+**1. `/registry/`'s reserved tail column (decision D-05) is filled**, not replaced: eligible rows
+get `Order ↗` with `rel="noopener noreferrer nofollow"` and `target="_blank"`; every other row
+shows WHY, reusing `AbsentMark` with a plain-English reason string rather than a coded key -
+`AbsentMark`'s own fallback (`REASON_TEXT[reason] ?? reason`) already renders an unrecognised
+string verbatim, so no new dictionary entry was needed to keep its "reason is the substance of
+this state" guarantee (D-03).
+
+**2. The landing page's registry rail funnels passport-before-button.** The Order link, when the
+predicate holds, sits BELOW the passport link in the same list item rather than beside the subject
+name - specification 4.2-bis's own framing is that the button is downstream of a real, current
+passport, not an alternative to reading one.
+
+**3. The passport page gets both a Service section and its own Order link.** The section mirrors
+`Accountability` exactly (self-declared fields, `assumed` register, a `not_checked` empty state)
+and adds one line for `service_endpoint` (PLATFORM_OBSERVED, a different register, rendered apart
+from the four self-declared tiles rather than as a fifth one that would blur the two together). The
+passport - the load-bearing page per D-01 - shows the same Order link a reader who arrived by a
+shared URL rather than through the registry would otherwise never see.
+
+**4. `/method/` publishes the predicate as a rule** - what it asserts (a page answered an
+anonymous GET at last check, behind a passport that had not lapsed) and what it does NOT assert
+(fulfilment, pricing accuracy, safety, reachability at the exact click, or that this project is a
+party to anything downstream) - specification 4.2-bis's own boundary, stated where a reader can
+find it rather than left implicit. `/apply/` gets the one line the brief asked for, linking to it.
+
+**5. The mandatory synthetic-registry control renders the REAL shipped code, not a
+reimplementation.** `tests/test_order_link_predicate.py` imports `renderRoute` from the built
+`web/dist-ssr/entry-server.js` - the same export `web/prerender.mjs` calls for every live page -
+and renders `/registry/` against four synthetic rows (stale, unverified, verified-but-unreachable,
+and the one eligible row), asserting the three ineligible rows carry no link and their reasons
+print, and the eligible row's link and both required `rel`/`target` attributes are present. A
+fourth test performs the operator's named mutation live: `orderLinkUrl` is rewritten to ignore
+status and reachability, the SSR bundle is rebuilt from the mutated source, and the same render is
+asserted to now link ALL THREE previously-ineligible rows - proving the first test is not
+vacuously green. Both the source text and the built bundle are restored to their exact original
+bytes in `finally`.
+
+**6. The real corpus was re-measured, not left stale against the new schema.** `scripts/cohort.py`
+was run in full after D-46 landed (schema 1.1.0); every one of the ten registry rows now carries
+`service_url`/`service_reachable` (all `null`, since no subject has declared a `service` block
+yet) and every passport carries the `service`/`service_endpoint` blocks - without this, the site's
+own prerender crashed reading `undefined.order_url` off passports built under the old schema.
+
+**What is deferred, named rather than silently skipped.** `/phase-2/` is reworked LAST in this
+implementation cycle, after a live check of every button on the deployed site - editing the page
+that announces what is "specified, not built" before confirming what IS built would risk the exact
+claim-stronger-than-artefact defect this project exists to catch. The passport's task-history slot
+stays empty until phase 5 (WitnessRecord), per the operator's own sequencing; nothing here reserves
+or fills it early.

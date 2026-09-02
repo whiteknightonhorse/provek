@@ -8,7 +8,7 @@
 import { useState } from "react";
 import { Facts, Page, Strip } from "../components/Chrome";
 import { AbsentMark, LevelRail, Projection, REASON_TEXT } from "../components/Measured";
-import { daysUntil, effectiveStatus, slug } from "../types";
+import { daysUntil, effectiveStatus, orderLinkUrl, slug } from "../types";
 import type { Fact, Passport as P } from "../types";
 import { formatObservationValue } from "../formatObservation";
 
@@ -244,6 +244,16 @@ export default function Passport({ p }: { p: P }) {
   const affiliated = p.verifier_affiliation === "same_owner";
   const unmeasured = v.operations.filter((o) => !o.measured).length;
   const stale = effectiveStatus(p.status, p.valid_until) === "stale";
+  // THE PREDICATE, COMPUTED ONCE. `orderLinkUrl` is the same function `/registry/` and the
+  // landing page's registry rail call - see its own docstring in `src/types.ts` (specification
+  // 4.2-bis point 3). `service.order_url.value`/`service_endpoint.value` are `Fact`'s own union
+  // type (`string | boolean | null`); the casts below narrow to what each field actually carries,
+  // they do not change what the predicate reads.
+  const orderUrl = orderLinkUrl(
+    p.status, p.valid_until,
+    p.service.order_url.value as string | null,
+    p.service_endpoint.value as boolean | null,
+  );
 
   // THE ARITHMETIC LINE under the projection number (accepted layout, 2026-08-31) - built from
   // the real operations, not hand-typed, so it can never say something the number above it does
@@ -291,6 +301,27 @@ export default function Passport({ p }: { p: P }) {
           ? `valid until ${p.valid_until.slice(0, 10)} — lapsed`
           : `valid until ${p.valid_until.slice(0, 10)} — ${daysUntil(p.valid_until)} days left`}
       </p>
+
+      {/* THE ORDER LINK, GATED BY THE SAME PREDICATE THAT GATES IT EVERYWHERE ELSE
+          (`orderLinkUrl`, specification 4.2-bis point 3) - `/registry/`'s tail column and the
+          landing page's registry rail call the identical function. Absent on `stale` or
+          `unverified` unconditionally, even if a URL was declared and once answered: this is the
+          observable price of letting continuous verification lapse (specification 4.2-bis point
+          3's own stated purpose). No "why not" is repeated here - the Service section below
+          already states which of the three conditions is missing, in the subject's own declared
+          data. */}
+      {orderUrl && (
+        <p className="mt-3">
+          <a
+            href={orderUrl}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            className="inline-block border border-[var(--color-line-2)] px-4 py-2 text-sm font-medium hover:bg-[var(--color-paper-2)]"
+          >
+            Order ↗
+          </a>
+        </p>
+      )}
 
       {/* Provenance is the second thing on the page, as in SSL Labs and Scorecard. Validity now
           lives in the line above, next to the name, so it is not repeated here. */}
@@ -552,6 +583,74 @@ export default function Passport({ p }: { p: P }) {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* Service - the Provider Catalog's order-intake channel (specification 4.2-bis point 1).
+          Same guarantee as Accountability, one section down: self-declared, `assumed`, and it
+          plays no part in the score above - the mutation control for that lives in
+          `tests/test_phase2_service.py`, not on this page, because a page cannot prove an
+          invariant about code it does not run. */}
+      <section className="mt-6">
+        <h2 className="text-sm font-semibold">Service</h2>
+        <p className="mt-1 text-xs text-[var(--color-ink-3)] max-w-[46rem]">
+          The subject&rsquo;s own order-intake channel, exactly as declared and never independently
+          verified beyond the reachability check below.
+          {!p.service.order_url.measured && (
+            <>
+              {" "}
+              <em>Nothing here has been declared. The subject has not named an order channel.</em>
+            </>
+          )}
+        </p>
+        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {(
+            [
+              [
+                "Order channel",
+                p.service.order_url.measured ? (
+                  <a
+                    href={p.service.order_url.value as string}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    className="text-[var(--color-accent)] hover:underline break-all"
+                  >
+                    {p.service.order_url.value as string}
+                  </a>
+                ) : (
+                  <AbsentMark reason={p.service.order_url.reason} />
+                ),
+              ],
+              ["Offering", <AccFact f={p.service.offering} />],
+              ["Pricing", <AccFact f={p.service.pricing_url} />],
+              ["Terms", <AccFact f={p.service.terms_url} />],
+            ] as const
+          ).map(([label, node]) => (
+            <div key={label} className="border border-[var(--color-line)] bg-[var(--color-paper)] px-3 py-2.5">
+              <div className="text-xs text-[var(--color-ink-2)]">{label}</div>
+              <div className="mt-1 text-sm">{node}</div>
+            </div>
+          ))}
+        </div>
+        {/* Reachability is PLATFORM_OBSERVED, not self-declared - a different register from the
+            four tiles above, so it is rendered on its own line rather than as a fifth tile that
+            would blur the two apart. */}
+        <p className="mt-3 text-xs text-[var(--color-ink-3)]">
+          Reachability:{" "}
+          {p.service_endpoint.declared ? (
+            p.service_endpoint.measured ? (
+              <span style={{ color: p.service_endpoint.value ? "var(--color-pass)" : "var(--color-warn)" }}>
+                {p.service_endpoint.value ? "reachable" : "not reachable"}
+              </span>
+            ) : (
+              <AbsentMark reason={p.service_endpoint.reason} />
+            )
+          ) : (
+            "no channel declared"
+          )}
+          {p.service_endpoint.checked_at && (
+            <> &nbsp;|&nbsp; last checked {p.service_endpoint.checked_at.slice(0, 19).replace("T", " ")} UTC</>
+          )}
+        </p>
       </section>
 
       {/* THE OBSERVATIONS. The site claims it publishes the evidence behind every number, and until

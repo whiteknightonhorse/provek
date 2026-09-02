@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-01T09:32:46.828549+00:00",
+  "generated_at": "2026-09-02T03:00:19.498905+00:00",
   "disclaimer": "The score measures AUTONOMY. It does not measure reliability, decision quality, profitability, or the presence of an accountable party. An absent projection is not a zero.",
   "count": 10,
   "subjects": [
@@ -9,9 +9,11 @@
       "projection": null,
       "projection_absent_reason": "unreadable",
       "protocol_version": "1.0.0",
-      "valid_until": "2026-10-01T09:32:46.828549+00:00",
+      "valid_until": "2026-10-02T03:00:19.498905+00:00",
       "passport_ref": "https://provek.dev/data/passports/git_whiteknightonhorse_AI-Property-Sales-Platform.json",
-      "verifier_affiliation": "same_owner"
+      "verifier_affiliation": "same_owner",
+      "service_url": null,
+      "service_reachable": null
     },
     {
       "subject_id": "git:whiteknightonhorse/AIpush",
@@ -19,9 +21,11 @@
       "projection": 40,
       "projection_absent_reason": null,
       "protocol_version": "1.0.0",
-      "valid_until": "2026-10-01T09:32:46.828549+00:00",
+      "valid_until": "2026-10-02T03:00:19.498905+00:00",
       "passport_ref": "https://provek.dev/data/passports/git_whiteknightonhorse_AIpush.json",
-      "verifier_affiliation": "same_owner"
+      "verifier_affiliation": "same_owner",
+      "service_url": null,
+      "service_reachable": null
     },
     {
       "subject_id": "git:whiteknightonhorse/APIbase",
@@ -29,9 +33,11 @@
       "projection": 40,
       "projection_absent_reason": null,
       "protocol_version": "1.0.0",
-      "valid_until": "2026-10-01T09:25:04.388821+00:00",
+      "valid_until": "2026-10-02T03:00:19.498905+00:00",
       "passport_ref": "https://provek.dev/data/passports/git_whiteknightonhorse_APIbase.json",
-      "verifier_affiliation": "same_owner"
+      "verifier_affiliation": "same_owner",
+      "service_url": null,
+      "service_reachable": null
     },
     {
       "subject_id": "git:whiteknightonhorse/audiobook-shorts-series",
@@ -39,9 +45,11 @@
       "projection": null,
       "projection_absent_reason": "unreadable",
       "protocol_version": "1.0.0",
-      "valid_until": "2026-10-01T09:32:46.828549+00:00",
+      "valid_until": "2026-10-02T03:00:19.498905+00:00",
       "passport_ref": "https://provek.dev/data/passports/git_whiteknightonhorse_audiobook-shorts-series.json",
-      "verifier_affiliation": "same_owner"
+      "verifier_affiliation": "same_owner",
+      "service_url": null,
+      "service_reachable": null
     },
     {
       "subject_id": "git:whiteknightonhorse/cryptocardhub-defycard",
@@ -49,9 +57,11 @@
       "projection": null,
       "projection_absent_reason": "unreadable",
       "protocol_version": "1.0.0",
-      "valid_until": "2026-10-01T09:32:46.828549+00:00",
+      "valid_until": "2026-10-02T03:00:19.498905+00:00",
       "passport_ref": "https://provek.dev/data/passports/git_whiteknightonhorse_cryptocardhub-defycard.json",
-      "verifier_affiliation": "same_owner"
+      "verifier_affiliation": "same_owner",
+      "service_url": null,
+      "service_reachable": null
     },
     {
       "subject_id": "git:whiteknightonhorse/cryptocardhub-public",
@@ -59,9 +69,11 @@
       "projection": 40,
       "projection_absent_reason": null,
       "protocol_version": "1.0.0",
-      "valid_until": "2026-10-01T09:32:46.828549+00:00",
+      "valid_until": "2026-10-02T03:00:19.498905+00:00",
       "passport_ref": "https://provek.dev/data/passports/git_whiteknightonhorse_cryptocardhub-public.json",
-      "verifier_affiliation": "independent"
+      "verifier_affiliation": "independent",
+      "service_url": null,
+      "service_reachable": null
     },
     {
       "subject_id": "git:whiteknightonhorse/gov-auction-report",
@@ -69,9 +81,11 @@
       "projection": null,
       "projection_absent_reason": "unreadable",
       "protocol_version": "1.0.0",
-      "valid_until": "2026-10-01T09:32:46.828549+00:00",
+      "valid_until": "2026-10-02T03:00:19.498905+00:00",
       "passport_ref": "https://provek.dev/data/passports/git_whiteknightonhorse_gov-auction-report.json",
-      "verifier_affiliation": "same_owner"
+      "verifier_affiliation": "same_owner",
+      "service_url": null,
+      "service_reachable": null
     },
     {
       "subject_id": "git:whiteknightonhorse/mcp-protocol-tester",
@@ -79,9 +93,11 @@
       "projection": 40,
       "projection_absent_reason": null,
       "protocol_version": "1.0.0",
-      "valid_until": "2026-10-01T09:32:46.828549+00:00",
+      "valid_until": "2026-10-02T03:00:19.498905+00:00",
       "passport_ref": "https://provek.dev/data/passports/git_whiteknightonhorse_mcp-protocol-tester.json",
-      "verifier_affiliation": "same_owner"
+      "verifier_affiliation": "same_owner",
+      "service_url": null,
+      "service_reachable": null
     },
     {
       "subject_id": "git:whiteknightonhorse/provek",
@@ -89,9 +105,11 @@
       "projection": 40,
       "projection_absent_reason": null,
       "protocol_version": "1.0.0",
-      "valid_until": "2026-10-01T09:32:46.828549+00:00",
+      "valid_until": "2026-10-02T03:00:19.498905+00:00",
       "passport_ref": "https://provek.dev/data/passports/git_whiteknightonhorse_provek.json",
-      "verifier_affiliation": "same_owner"
+      "verifier_affiliation": "same_owner",
+      "service_url": null,
+      "service_reachable": null
     },
     {
       "subject_id": "git:whiteknightonhorse/provek-method",
@@ -99,9 +117,11 @@
       "projection": 40,
       "projection_absent_reason": null,
       "protocol_version": "1.0.0",
-      "valid_until": "2026-10-01T09:32:46.828549+00:00",
+      "valid_until": "2026-10-02T03:00:19.498905+00:00",
       "passport_ref": "https://provek.dev/data/passports/git_whiteknightonhorse_provek-method.json",
-      "verifier_affiliation": "same_owner"
+      "verifier_affiliation": "same_owner",
+      "service_url": null,
+      "service_reachable": null
     }
   ]
 }
