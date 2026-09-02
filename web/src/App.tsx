@@ -52,6 +52,21 @@ declare global {
 
 const norm = (p: string) => (p.endsWith("/") ? p : p + "/");
 
+/** `#main` is focused by SCRIPT on every route change (see the effect in `App` below), not by the
+ * reader tabbing to it - so the browser's own `:focus-visible` heuristic cannot tell whether that
+ * focus followed a keyboard interaction or a tap: a `<div>` is not a control a pointer is expected
+ * to focus, so engines default to treating any script-focus of one as visible, regardless of what
+ * caused it. Measured on `provek.dev/registry/` and `/apply/` from an iPhone (2026-09-02): a tap on
+ * a nav link left a full-width `outline` from the same `:focus-visible` rule that legitimately
+ * rings a tabbed-to link, painted around the whole page instead. Tracking modality ourselves is
+ * the only way to keep the ring for a keyboard reader (who benefits from seeing where focus
+ * landed) while dropping it for a tap (who did not ask for one). */
+let usingKeyboard = false;
+if (typeof window !== "undefined") {
+  addEventListener("keydown", (e) => { if (e.key === "Tab") usingKeyboard = true; }, true);
+  addEventListener("pointerdown", () => { usingKeyboard = false; }, true);
+}
+
 function useRoute(initial: string) {
   const [route, setRoute] = useState(initial);
   useEffect(() => {
@@ -262,6 +277,11 @@ export function Shell({
     <div className="min-h-screen flex flex-col">
       <a
         href="#main"
+        // `sr-only` positioning means a tap can never reach this link - only Tab or assistive-
+        // technology navigation can - so any focus this anchor forwards to #main is by
+        // construction keyboard/AT-driven. Clear a stale "no-focus-ring" left by an earlier tap
+        // navigation so the ring this jump produces is never wrongly suppressed.
+        onFocus={() => document.getElementById("main")?.classList.remove("no-focus-ring")}
         className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-10 focus:bg-[var(--color-paper)] focus:border focus:border-[var(--color-line-2)] focus:px-3 focus:py-2 focus:text-sm"
       >
         Skip to content
@@ -342,6 +362,9 @@ export default function App() {
     }
     // preventScroll matters: focusing a container scrolls it into view, which on a short page
     // parks the reader below the masthead on a document they have not started reading.
+    // The ring itself is gated on tracked modality, not on the browser's own :focus-visible
+    // guess - see the comment above `usingKeyboard`.
+    top.current?.classList.toggle("no-focus-ring", !usingKeyboard);
     top.current?.focus({ preventScroll: true });
     window.scrollTo(0, 0);
   }, [route, passportId]);
