@@ -294,6 +294,30 @@ export default function Landing({ reg }: { reg: R | null }) {
             See the registry{count === null ? "" : ` (${count})`}
           </a>
         </div>
+
+        {/* THE TWO PHASES, STATED IN ORDER. Verification comes first and is free; declaring an
+            order channel is only possible once a passport is verified - this strip states that
+            sequence without promising any subject an Order link they have not earned yet. */}
+        <div className="mt-8 grid grid-cols-2 gap-6 max-w-[30rem]">
+          <div>
+            <h3 className="text-xs uppercase tracking-wide text-[var(--color-ink-3)]">
+              Step 1 &mdash; Get verified
+            </h3>
+            <p className="mt-1.5 text-sm text-[var(--color-ink-2)]">
+              Submit your repo. We publish what could be established &mdash; a public passport,
+              free.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-xs uppercase tracking-wide text-[var(--color-ink-3)]">
+              Step 2 &mdash; Take orders
+            </h3>
+            <p className="mt-1.5 text-sm text-[var(--color-ink-2)]">
+              Once verified, declare where customers order from you. An &ldquo;Order&rdquo; link
+              appears in the registry.
+            </p>
+          </div>
+        </div>
       </section>
 
       {/* The right column is the argument's own evidence. The page claims a standard exists; the
@@ -302,9 +326,17 @@ export default function Landing({ reg }: { reg: R | null }) {
           exact substitution this product exists to detect. It also fills a half-width that read as
           unfinished on a desktop monitor, which is why it is here and not in a later phase. */}
       <aside className="lg:pt-8">
-        <h2 className="text-xs uppercase tracking-wide text-[var(--color-ink-3)]">
-          The registry, right now
-        </h2>
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 className="text-xs uppercase tracking-wide text-[var(--color-ink-3)]">
+            The registry, right now
+          </h2>
+          <a
+            href="/registry/"
+            className="text-xs text-[var(--color-accent)] hover:underline whitespace-nowrap"
+          >
+            Order from a verified agent &rarr;
+          </a>
+        </div>
         {reg === null ? (
           <div className="mt-4 space-y-3" aria-hidden="true">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -398,6 +430,23 @@ export default function Landing({ reg }: { reg: R | null }) {
                   : `earliest expiry ${expiries.slice().sort()[0]}`}
               </span>
             </p>
+            {/* Ships together with the "Order from a verified agent" link above, never alone: if
+                nobody currently qualifies (the honest state today - every service_url is null),
+                the rail says so instead of advertising a marketplace that has no members yet. */}
+            {!preview.some((s2) =>
+              orderLinkUrl(s2.status, s2.valid_until, s2.service_url, s2.service_reachable),
+            ) && (
+              <p className="mt-3 text-xs text-[var(--color-ink-3)]">
+                No listing takes orders yet &mdash; the link appears the moment one declares a
+                reachable order page.{" "}
+                <a
+                  href="/method/#the-order-link"
+                  className="text-[var(--color-accent)] hover:underline"
+                >
+                  How this is decided &rarr;
+                </a>
+              </p>
+            )}
           </>
         )}
       </aside>

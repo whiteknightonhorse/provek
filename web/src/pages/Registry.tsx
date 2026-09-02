@@ -31,7 +31,8 @@ export default function Registry({ reg }: { reg: R }) {
             the method, and what the method could establish about each - which is a different and
             truer sentence. */}
         Every business submitted to the method, what could be established about each, and the
-        evidence behind it. Generated{" "}
+        evidence behind it &mdash; and, once verified, where you can order from them. Generated
+        {" "}
         {reg.generated_at.slice(0, 19).replace("T", " ")} UTC.
       </p>
 
@@ -84,7 +85,15 @@ export default function Registry({ reg }: { reg: R }) {
               {/* PHASE 2 SLOT (decision D-05), FILLED: the Provider Catalog's "Order" link
                   (specification 4.2-bis point 3). The predicate is `orderLinkUrl` - code, not this
                   page's own opinion - and a row that fails it shows WHY, never an empty cell. */}
-              <th scope="col" className="px-4 py-2.5 font-semibold">Order</th>
+              <th scope="col" className="px-4 py-2.5 font-semibold">
+                Order{" "}
+                <a
+                  href="/method/#the-order-link"
+                  className="font-normal text-xs text-[var(--color-accent)] hover:underline whitespace-nowrap"
+                >
+                  &mdash; how it is decided
+                </a>
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--color-line)]">
@@ -157,6 +166,32 @@ export default function Registry({ reg }: { reg: R }) {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* THE ONLY FABRICATED CONTENT ON THIS PAGE, FENCED OFF ON PURPOSE (D-04's rule still
+          applies to the real table above - nothing here is a row of it, nothing here is written
+          to registry.json, and neither name belongs to a real subject). Its only job is showing
+          what an earned Order link looks like before anyone has actually earned one; the "Order"
+          mark below is a static span, not a link, so it cannot be crawled or clicked as if it
+          led anywhere real. */}
+      <div className="mt-6 max-w-[46rem] border border-dashed border-[var(--color-line-2)] bg-[var(--color-paper-2)] px-4 py-3">
+        <p className="font-mono text-xs uppercase tracking-wide text-[var(--color-ink-3)]">
+          What an earned listing looks like &mdash; sample, not a real subject
+        </p>
+        <div className="mt-2 flex items-baseline justify-between gap-4 text-sm">
+          <span className="flex min-w-0 flex-col gap-0.5">
+            <span className="text-[var(--color-accent)]">example-agent</span>
+            <span className="font-mono text-xs text-[var(--color-ink-3)]">
+              git:example-org/example-agent
+            </span>
+          </span>
+          <span
+            aria-hidden="true"
+            className="shrink-0 border border-[var(--color-line-2)] px-2.5 py-1 text-xs text-[var(--color-accent)]"
+          >
+            Order &#8599;
+          </span>
+        </div>
       </div>
 
       <p className="mt-4 text-xs text-[var(--color-ink-3)] max-w-[46rem]">{reg.disclaimer}</p>
