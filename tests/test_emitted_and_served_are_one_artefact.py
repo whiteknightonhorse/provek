@@ -40,6 +40,31 @@ def test_every_emitted_passport_is_served_byte_for_byte():
     assert not differing, f"served under the same name but different bytes: {sorted(differing)}"
 
 
+def test_every_emitted_witness_record_is_served_byte_for_byte():
+    """Same law as the passport check above, applied to WitnessRecord v0 (spec 4.2-bis point 4).
+
+    Deliberately does NOT assert non-empty, unlike the passport version: zero published
+    WitnessRecords is the honest v0 state until the first joint request actually happens - the
+    same state `service`/`service_endpoint` shipped in after phase 1, before any subject had declared
+    an `order_url`. What this test guards against is a record existing on one side and not the
+    other, whenever the first one is published.
+    """
+    emitted_dir, served_dir = EMITTED / "witness", SERVED / "witness"
+    emitted = {p.name: _sha(p) for p in emitted_dir.glob("*.json")} if emitted_dir.is_dir() else {}
+    served = {p.name: _sha(p) for p in served_dir.glob("*.json")} if served_dir.is_dir() else {}
+    assert set(emitted) == set(served), (
+        f"only emitted: {sorted(set(emitted) - set(served))}; "
+        f"only served: {sorted(set(served) - set(emitted))}")
+    differing = [n for n in emitted if emitted[n] != served[n]]
+    assert not differing, f"served under the same name but different bytes: {sorted(differing)}"
+    # The private `_requests` directory MUST NEVER exist under the served tree at all - it is not
+    # a matter of which files match, the whole directory must be absent (test_witness_publish.py
+    # holds the writer to this at the unit level; this is the same rule re-checked on whatever the
+    # live tree actually contains).
+    assert not (served_dir / "_requests").exists(), (
+        "private witness-request records leaked into the served tree")
+
+
 def test_the_registry_lists_exactly_the_passports_that_are_served():
     """A row pointing at a document that is not there is worse than a missing row."""
     import json

@@ -22,6 +22,15 @@ src/collector/divergence.py:      [ABI-16-5, ABI-3-2]
 src/collector/declaration.py:     [ABI-5-1, ABI-14-2]
 src/collector/reachability.py:   [ABI-5-1, ABI-14-2]
 
+# T-Phase5: WitnessRecord v0 (spec 4.2-bis point 4). ABI-5-3 because every check resolves through
+# the same anonymous, credential-free GET `reachability.py` already uses for `service_endpoint` -
+# a third party repeating it reaches the same evidence. ABI-16-11 because the load-bearing part is
+# the three-outcome discipline: a non-machine-checkable criterion stays UNSUPPORTED (no record),
+# never collapsed into a FAIL, which would publish a verdict about something no machine evaluated.
+src/witness/__init__.py:          [ABI-5-3]
+src/witness/witness.py:           [ABI-5-1, ABI-5-3, ABI-16-11]
+scripts/witness.py:               [ABI-5-1, ABI-5-3, ABI-16-11]
+
 # T-2.5 control map / T-2.6 scoring
 src/verify/__init__.py:           [ABI-13-1]
 src/verify/control_map.py:        [ABI-7-1, ABI-7-2, ABI-7-3, ABI-7-4, ABI-7-5]

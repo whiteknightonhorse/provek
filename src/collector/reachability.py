@@ -98,9 +98,11 @@ def resolve_public_ip(host: str) -> str:
     return str(parsed[0])
 
 
-def _one_hop(url: str, *, timeout: float) -> tuple[int, str | None]:
-    """One GET, fully re-validated from scratch. Returns (status_code, redirect_location) - status
-    0 means the request never completed (refused, timed out, TLS failure, curl missing)."""
+def _validate_and_resolve(url: str) -> tuple[str, int, str]:
+    """The https-only, host-required, resolve-and-pin checks every hop must pass - factored out of
+    `_one_hop` when `fetch_artifact` needed the identical boundary for a second curl invocation
+    (LAW #ONE-PLACE: the SSRF check itself must exist in exactly one function, not one copy per
+    caller that fetches a body versus one that only reads a status)."""
     parsed = urlparse(url)
     if parsed.scheme != "https":
         raise SSRFRefused(f"{url} is not https")
@@ -109,6 +111,13 @@ def _one_hop(url: str, *, timeout: float) -> tuple[int, str | None]:
         raise SSRFRefused(f"{url} has no host")
     port = parsed.port or 443
     ip = resolve_public_ip(host)
+    return host, port, ip
+
+
+def _one_hop(url: str, *, timeout: float) -> tuple[int, str | None]:
+    """One GET, fully re-validated from scratch. Returns (status_code, redirect_location) - status
+    0 means the request never completed (refused, timed out, TLS failure, curl missing)."""
+    host, port, ip = _validate_and_resolve(url)
     resolve_literal = f"[{ip}]" if ":" in ip else ip
     p = subprocess.run(
         ["curl", "-s", "-o", "/dev/null", "-w", "%{http_code}\n%{redirect_url}",
@@ -172,6 +181,85 @@ def probe_service_endpoint(order_url: Fact, *, now: datetime | None = None) -> S
         return ServiceEndpoint(declared=True, reachable=Fact.unreadable(), checked_at=checked_at)
     return ServiceEndpoint(declared=True, reachable=Fact.of(ok, confidence="measured"),
                            checked_at=checked_at)
+
+
+MAX_ARTIFACT_BYTES = 2_000_000
+"""Phase 2 - WitnessRecord v0's `artifact_hash` criterion (spec 4.2-bis point 4) fetches a whole
+body rather than discarding it like every other check in this module. Bounded so a witness request
+cannot be turned into a bulk anonymous download through this host - 2 MB is generous for a
+checksum manifest or a small build artefact and small enough that one abusive request costs
+nothing worth noticing."""
+
+
+class ArtifactUnreachable(Exception):
+    """A `fetch_artifact` URL - or its final redirect hop - answered, but not with a body worth
+    trusting: a non-2xx final status, or a redirect with nowhere further to go."""
+
+
+class ArtifactTooLarge(Exception):
+    """The response body exceeded `MAX_ARTIFACT_BYTES` - refused mid-transfer via curl's own
+    `--max-filesize`, never read fully into memory first."""
+
+
+def _one_hop_capture(url: str, *, timeout: float, out_path: str) -> tuple[int, str | None]:
+    """Same validated single hop as `_one_hop` - same `_validate_and_resolve` call, so the SSRF
+    boundary cannot drift between the two - but the body is written to `out_path` instead of
+    `/dev/null`."""
+    host, port, ip = _validate_and_resolve(url)
+    resolve_literal = f"[{ip}]" if ":" in ip else ip
+    p = subprocess.run(
+        ["curl", "-s", "-o", out_path, "-w", "%{http_code}\n%{redirect_url}",
+         "--request", "GET",
+         "--max-time", str(timeout), "--max-redirs", "0",
+         "--max-filesize", str(MAX_ARTIFACT_BYTES),
+         "--resolve", f"{host}:{port}:{resolve_literal}",
+         url],
+        capture_output=True, text=True, timeout=timeout + 5)
+    if p.returncode == 63:   # CURLE_FILESIZE_EXCEEDED
+        raise ArtifactTooLarge(f"{url} exceeded {MAX_ARTIFACT_BYTES} bytes")
+    if p.returncode != 0:
+        return 0, None
+    lines = p.stdout.splitlines()
+    status = int(lines[0]) if lines and lines[0].isdigit() else 0
+    location = lines[1] if len(lines) > 1 and lines[1] else None
+    return status, location
+
+
+def fetch_artifact(url: str, *, timeout: float = TIMEOUT_SECONDS,
+                   max_redirects: int = MAX_REDIRECTS) -> bytes:
+    """The body of an anonymous GET at `url` - same redirect/SSRF discipline as `probe_reachable`
+    (every hop independently re-validated, GET only, bounded redirects), returning the FINAL hop's
+    body only on a 2xx status. Raises `SSRFRefused`, `ArtifactTooLarge`, or `ArtifactUnreachable`
+    on anything else - a non-2xx or an exhausted redirect never returns a body silently, because a
+    caller comparing a hash against an empty or partial read would publish a false FAIL, not the
+    "the check could not run" this module already has a word for elsewhere.
+
+    ANONYMOUS AND CREDENTIAL-FREE, same as `probe_reachable` (ABI-5-3): no header carries a token
+    or a secret this collector holds, so any third party fetching the same URL at the same moment
+    reaches the same bytes.
+    """
+    import os
+    import tempfile
+
+    current = url
+    redirects_followed = 0
+    while True:
+        fd, tmp = tempfile.mkstemp(prefix="provek_artifact_")
+        os.close(fd)
+        try:
+            status, location = _one_hop_capture(current, timeout=timeout, out_path=tmp)
+            if HTTP_REDIRECT_LOW <= status < HTTP_REDIRECT_HIGH:
+                if location is None or redirects_followed >= max_redirects:
+                    raise ArtifactUnreachable(f"{url}: redirect with no further hop to follow")
+                current = location
+                redirects_followed += 1
+                continue
+            if not (HTTP_OK_LOW <= status < HTTP_OK_HIGH):
+                raise ArtifactUnreachable(f"{url}: final status {status}")
+            with open(tmp, "rb") as f:
+                return f.read()
+        finally:
+            os.unlink(tmp)
 
 
 def demo() -> None:

@@ -3110,3 +3110,68 @@ that a live passport page renders at least five real `<details>` disclosures.
 **Numbers.** 1020 tests pass (0 red, 1 pre-existing skip, 14 new across the two test files), ruff
 clean, `npm run build` + prerender clean. A claude-in-chrome pass over all ten live passports
 follows this commit, per the operator's own instruction for this task.
+
+## D-50. WitnessRecord v0 backend (spec 4.2-bis point 4, the D-05 slot) - two decisions flagged, not made unilaterally
+
+**What shipped.** `src/witness/witness.py`: `WitnessRecord` (the exact seven published fields the
+specification names - `witness_id, subject_id, criterion, result, evidence_digest, checked_at,
+witnessed_fee_paid`, the last always `False` in v0), `run_witness()`, and `SUPPORTED_CRITERIA =
+{url_reachable, artifact_hash}`. Both criteria resolve through `src.collector.reachability`'s
+existing anonymous, credential-free GET (`probe_reachable`, and a new `fetch_artifact` sharing the
+same SSRF boundary via a factored-out `_validate_and_resolve`, never a second copy of it - LAW
+#ONE-PLACE). `Passport.task_history` (outside `verified`, same guarantee as `service`/
+`accountability`: cannot move the score, armed by a live mutation test the way D-46 armed the
+equivalent for `service`). `scripts/witness.py`: a CLI that runs one check and publishes the
+record to both `public/witness/` and its served mirror, byte-identical (armed in
+`tests/test_emitted_and_served_are_one_artefact.py`, same law as the passport/registry mirror).
+
+**Two decisions this session flagged rather than made:**
+
+1. **Only two of the specification's three named machine-checkable criteria are built.** "A test
+   command with a deterministic exit" is not implemented: running an externally-named command is
+   arbitrary code execution triggered by a request from outside this host, a different order of
+   decision than an SSRF-guarded GET. A criterion of that type is refused the same way any
+   non-machine-checkable one is (`UnsupportedCriterion`, no record) - not a gap silently left, but
+   a boundary this session declined to cross without a ruling on what a safe execution model would
+   even look like.
+
+2. **The "joint request" intake is an operator-run CLI, not a public web form.** The specification
+   requires a check to run only when BOTH the customer and the subject have asked. A public POST
+   endpoint has no way to distinguish "both parties actually asked" from "one party typed two
+   email addresses" - inventing an authentication protocol for that was not specified. `--customer-
+   contact` and `--subject-contact` are required CLI arguments, recorded in a PRIVATE,
+   never-published, never-mirrored file (`public/witness/_requests/<id>.json` - `tests/
+   test_witness_publish.py`'s `test_MANDATORY_CONTROL_contacts_never_reach_the_published_artefact`
+   proves this mechanically, not by convention).
+
+Both are named here, in the code's own module docstrings, and in the session's report to the
+operator - not resolved by this session's own judgment, per standing project discipline.
+
+**Controls run, per the operator's own named list.** A non-machine criterion is refused with no
+record written (`test_MANDATORY_CONTROL_a_non_machine_criterion_is_refused_with_no_record`). A
+forged sha256 against a real fetched artefact publishes as FAIL, never suppressed, checked both at
+the checker level and end-to-end through the CLI's publish step
+(`test_MANDATORY_CONTROL_forged_hash_is_a_real_FAIL_not_suppressed`,
+`test_MANDATORY_CONTROL_forged_hash_end_to_end_is_published_not_hidden`). Reproducibility: the
+identical mocked world run twice yields an identical result and evidence digest, and the
+underlying curl invocation carries no auth header or credential
+(`test_MANDATORY_CONTROL_reproducible_same_world_same_verdict`,
+`test_no_credential_in_the_underlying_request`, mirroring `tests/test_phase2_service.py`'s
+`test_probe_reachable_is_get_only_and_ssrf_pinned`). `task_history` never moves the score, with a
+live mutation proving the invariant test is not vacuous
+(`test_MANDATORY_CONTROL_task_history_never_moves_the_score`,
+`test_MANDATORY_CONTROL_a_scorer_that_read_task_history_would_be_CAUGHT`).
+
+**Also added: a plain pytest ratchet against a pressable payment label anywhere in `web/src`**
+(`tests/test_no_payment_ui.py`) - spec 4.2-bis point 6's own invariant, newly relevant now that
+`witnessed_fee_paid` exists on a published schema. Deliberately NOT a new `push.sh` door step: an
+eighth gate risks the exact door/CI-divergence class of bug `scripts/push.sh`'s own header records
+paying for twice already. It matches a pressable label shape (`>Pay<`, `aria-label="Pay"`), not
+the word in prose, so it does not fire on the site's existing "there is no payment step anywhere on
+this site" or "a customer pays the agent directly" sentences - proven by its own control test.
+
+**Not yet done, named so it is not silently dropped:** the web-facing half (`/w/<id>/` pages,
+the passport page's task-history section, `types.ts`/`help.ts`) ships in a following commit on
+the same branch. `scripts/cohort.py` now calls `load_task_history` on every re-measure, so the
+passport JSON already carries `task_history` (empty for every subject today, correctly - no real
+WitnessRecord has been run yet); the site has nothing to render from it until the web commit lands.

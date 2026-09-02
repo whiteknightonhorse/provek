@@ -242,6 +242,15 @@ class Passport:
     service_endpoint: ServiceEndpoint = field(default_factory=ServiceEndpoint)
     """PLATFORM_OBSERVED reachability of `service.order_url` (spec 4.2-bis point 2). Also OUTSIDE
     `verified` - see `ServiceEndpoint`'s own docstring."""
+    task_history: tuple[dict, ...] = field(default_factory=tuple)
+    """Phase 2 - WitnessRecord v0 entries for this subject (spec 4.2-bis point 4, the D-05 slot),
+    in the order they were run. Each element is a raw published `WitnessRecord.to_machine()` dict
+    (`src.witness.witness`) - immutable facts about a specific check at a specific moment, never
+    recomputed by a re-measure the way `verified` is. OUTSIDE `verified` for the same reason
+    `service`/`accountability` are: a fixed-fee witnessing event is not evidence of AUTONOMY, and
+    admitting it into the score would let a subject buy a higher projection rather than earn one.
+    Empty by default - a subject nobody has jointly asked to witness has an empty history, not a
+    missing one."""
     access_channel: str = "anonymous"
     """WHICH CHANNEL the evidence came through, published rather than assumed (Fable, NEW-3).
 
@@ -288,6 +297,18 @@ class Passport:
             "accountability": self.accountability.to_machine(),
             "service": self.service.to_machine(),
             "service_endpoint": self.service_endpoint.to_machine(),
+            # DISPLAY-ORIENTED, not the full WitnessRecord: `criterion`/`evidence_digest` live at
+            # the record's own `/w/<id>/` page (one canonical document per fact, ABI-4-7's own
+            # provenance-is-mandatory spirit applied here would be defeated by a second, partial
+            # copy embedded in every passport that reads it). `url` is derived, never stored on
+            # the record itself, so the two artefacts cannot disagree about where a fact lives.
+            "task_history": [{
+                "witness_id": w["witness_id"],
+                "criterion_type": w["criterion"].get("type"),
+                "result": w["result"],
+                "checked_at": w["checked_at"],
+                "url": f"/w/{w['witness_id']}/",
+            } for w in self.task_history],
             "mandate_ref": self.mandate_ref,
             "verifier_affiliation": self.verifier_affiliation,
             "access_channel": self.access_channel,
@@ -332,7 +353,8 @@ def build(binding: Binding, scores: list[OperationScore], control_map: ControlMa
           verifier_affiliation: str = "independent",
           access_channel: str = "anonymous",
           service: Service | None = None,
-          service_endpoint: ServiceEndpoint | None = None) -> Passport:
+          service_endpoint: ServiceEndpoint | None = None,
+          task_history: list[dict] | None = None) -> Passport:
     """Assemble a passport. An invalid control map CANNOT yield `verified`.
 
     A map without coverage claims more than it knows (ABI-7-5), and a passport cannot stand on it.
@@ -397,6 +419,7 @@ def build(binding: Binding, scores: list[OperationScore], control_map: ControlMa
         accountability=accountability,
         service=service if service is not None else Service(),
         service_endpoint=service_endpoint if service_endpoint is not None else ServiceEndpoint(),
+        task_history=tuple(task_history or ()),
         access_channel=access_channel,
         mandate_ref=mandate_ref,
         verifier_affiliation=verifier_affiliation,

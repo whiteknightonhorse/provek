@@ -40,6 +40,7 @@ from src.verify.control_map import (
     build_coverage,
 )
 from src.verify.scorer import Confidence, OperationScore, projection, score_operation
+from src.witness.witness import load_task_history
 
 
 def optional_token() -> str | None:
@@ -379,8 +380,13 @@ for full in COHORT:
     # ONE anonymous GET per re-measure (spec 4.2-bis point 2) - this loop body runs once per
     # subject per cohort re-measure, so this call site IS the re-measure event.
     service_endpoint = probe_service_endpoint(service.order_url, now=now)
+    # Phase 2 (spec 4.2-bis point 4, the D-05 slot): every WitnessRecord ever published for this
+    # subject, read from its own append-only index - never recomputed, since a witnessing event is
+    # a fact about one moment, not something this re-measure could re-derive.
+    task_history = load_task_history(binding.as_subject_id(), out / "witness")
     p = build(binding, scores, cmap, proj, PROV, accountability,
               service=service, service_endpoint=service_endpoint,
+              task_history=task_history,
               # A self-reported block states what the SUBJECT said. When the source never
               # answered, the subject said nothing, and an omitted key is the honest rendering of
               # that - a `false` here was the template speaking in the subject's name.
