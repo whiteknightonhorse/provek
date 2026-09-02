@@ -3244,3 +3244,33 @@ than a crash).
 **Numbers.** 1051 tests pass (0 red, 1 pre-existing skip), ruff clean. No real WitnessRecord has
 been run yet, so nothing published today is affected by either defect - both were caught and
 fixed before the mechanism's first live use.
+
+## D-53. Phase 2 (Provider Catalog) implementation plan is EXHAUSTED at phase 5
+
+**Decision, Fable's ruling, quoted.** "Yes. The phase-2 (Provider Catalog) implementation plan is
+EXHAUSTED at phase 5. Record it as a milestone. There is no phase 6, and this session should not
+invent one." Verified at HEAD (`e75b3ff`), not from a summary, on four grounds: (1) `SPEC.md` §4.0
+itself calls the cycle "the operator's own five-step plan" - phase 0 was specification
+ratification, phases 1-5 are the five build steps, so phase 5 is the plan's LAST step by its own
+ratified text, not merely the last one reached; a sweep of `SPEC.md`, `DECISIONS.md`, `DESIGN.md`,
+`PRODUCT.md`, `tasks/` and `docs/` for "phase 6" found nothing. (2) All four constructive points
+of specification §4.2-bis have a commit and a decision record: declaration + reachability
+(`22ca07c`, D-46), the Order predicate (`037e917`/`dcb17bd`, D-47), the corrections log and
+passport clarity (D-48, D-49), WitnessRecord v0 (D-50/D-51/D-52). (3) Phase 5's morning `NOT PASS`
+is superseded, not outstanding - re-verified against the code at HEAD, not the commit's own prose:
+both defects fixed, all three mandatory controls present, full suite green (1051/1051, 1 skip).
+(4) Points 5-7 of §4.2-bis are policy invariants, correctly read as satisfied by construction
+(no-payment-UI is a real test, `service`/`task_history` are proven outside the score by mutation
+tests, A-6/A-9/A-10 respected rather than worked around).
+
+**Caveat, named rather than smoothed over.** The master specification's §4.2-bis lives on the
+operator's laptop and is not tracked in this repository - the ruling is against D-45's ratified
+record of the amendment, the strongest verification this repository can perform. If the operator's
+own copy contains a point the ratification record omitted, only the operator can surface it -
+nothing in any tracked document suggests one exists.
+
+**What this closes, and what it does not.** The "phase 2 = Provider Catalog" implementation cycle
+(specification revision 1.4, §4.2-bis) is DONE. Specification phase 3 (Funding Tasks, §8, 47
+requirements) remains deferred by decision A-10 ("projects first") - unchanged, not reopened by
+this entry. No new work is authorized by this decision; it records that none is owed under the
+current ratified plan.
