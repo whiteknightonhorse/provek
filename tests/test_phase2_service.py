@@ -174,6 +174,8 @@ def test_a_url_that_resolves_publicly_is_not_refused(monkeypatch):
 @pytest.mark.parametrize("ip", [
     "127.0.0.1", "10.1.2.3", "172.16.0.1", "192.168.1.1", "169.254.169.254",
     "::1", "fc00::1", "fe80::1", "::ffff:127.0.0.1",   # IPv4-mapped loopback
+    "100.64.0.1",   # RFC 6598 CGNAT - Fable's review found `is_private` alone misses this range
+                    # on Python 3.10 (folded in only from 3.13); `is_global` catches it on 3.10.
 ])
 def test_disallowed_addresses_are_all_caught(ip):
     assert reach._is_disallowed(ipaddress.ip_address(ip)) is True

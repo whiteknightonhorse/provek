@@ -3006,3 +3006,53 @@ that announces what is "specified, not built" before confirming what IS built wo
 claim-stronger-than-artefact defect this project exists to catch. The passport's task-history slot
 stays empty until phase 5 (WitnessRecord), per the operator's own sequencing; nothing here reserves
 or fills it early.
+
+
+## D-48. The corrections log: both errata move to `/registry/corrections/`, byte-for-byte, and Fable's phase-1 SSRF finding is folded in
+
+**Decision.** Two independent pieces of work landed together, per the operator's instruction that
+Fable's named defect from the phase-2 design-circle review rides in this phase's first commit rather than
+waiting for a phase of its own.
+
+**1. The SSRF boundary gap Fable found in the phase-1 review is closed.** `_is_disallowed` in
+`src/collector/reachability.py` admitted `100.64.0.0/10` (RFC 6598 carrier-grade NAT) on this
+host's Python 3.10: `ip.is_private` folds that range in only from Python 3.13, so a 3.10
+interpreter read a CGNAT literal as "not private" while it is manifestly not a public address
+either. Not exploitable from this host today (no route to that range, verified), but the
+docstring's "private and reserved addresses are refused" was a fact about host luck, not a machine
+guarantee. Fix: `not ip.is_global` added to the disallow list - strictly tightening, since every
+named flag already implies `not is_global`, and `is_global` has existed since Python 3.4 and reads
+correctly on 3.10 (verified live). `100.64.0.1` added to the mandatory private-address control and
+to the module's own `demo()` self-check.
+
+**2. Both registry errata move to a page of their own, byte-for-byte.** `/registry/` carried the
+full text of two corrections as `<Strip>` blocks above the table since 2026-08-25 and 2026-08-31 -
+honest, and increasingly not what a returning reader wants to scroll past. `web/src/pages/
+Corrections.tsx` reproduces both bodies UNCHANGED at `/registry/corrections/`; `/registry/` now
+carries one compact line ("Two corrections are on record for this registry. All corrections (2)
+→"). This is a move, not an edit: `tests/test_registry_corrections.py` holds both bodies to a
+literal fixture captured from the pre-move source, on the emitted HTML AND its auto-derived
+markdown sibling (the page is genuinely "no JS" - a crawler or a text browser gets the same words),
+and separately asserts the full text no longer appears on `/registry/` at all (LAW #ONE-PLACE
+applied to prose: the correction has exactly one address once it has one).
+
+**3. The 2026-08-25 erratum gets a resolution, beside it, never inside it (D-28's rule).** Its
+original text says the registry "is being re-measured" and that corrected verdicts "will be
+re-issued" - true when written, false by the time anyone reads it today: the re-measure completed
+the same day, every live passport has carried profile 1.1.0 (the time-windowed reading) since, and
+the "corrected verdicts" the erratum promised are simply what `/registry/` already shows. The
+original sentence is left exactly as written rather than quietly edited to agree with what
+happened afterward - D-28 already ruled that a stale line is corrected beside the artefact, never
+inside it, for evidence files; this applies the same rule to a correction about the registry
+itself, which is the one place editing history invisibly would matter most.
+
+**4. The new page is wired into every place a route has to be wired.** `web/src/App.tsx` (route +
+title), `web/prerender.mjs` (static emit + JSON-LD + meta description; the markdown sibling and the
+sitemap entry follow automatically from the existing per-route machinery, no separate registration
+needed), and `scripts/verify_live.sh` (the door's own live-address check, so a deploy that shipped
+a 404 here would not read green everywhere else). `tests/test_registry_corrections.py` checks all
+three are actually wired, not only that the page renders correctly in isolation.
+
+**Numbers.** 1006 tests pass (0 red, 1 pre-existing skip, 7 new: 1 in `test_phase2_service.py` for
+the CGNAT case, 6 in `test_registry_corrections.py`), ruff clean, `npm run build` + prerender clean
+(20 routes, up from 19).

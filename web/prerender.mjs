@@ -277,6 +277,13 @@ written.push(write("/phase-2/", page("/phase-2/", TITLES["/phase-2/"],
   "Phase two (the Provider Catalog) is live. Phase three (funding tasks) is specified and NOT in service: none can be created, none commissioned, no application taken, and no date is given.",
   ldOrganization())));
 
+// Corrections log (phase-2 plan): both errata this project has ever published, moved here
+// byte-for-byte from `/registry/`, which now carries a single compact pointer instead of the
+// full text.
+written.push(write("/registry/corrections/", page("/registry/corrections/", TITLES["/registry/corrections/"],
+  "Both corrections this project has published, in full: the 2026-08-25 evidence-window erratum (with its 2026-09-02 resolution) and the 2026-08-31 L4 rule fix.",
+  ldOrganization())));
+
 // METHOD NOTES. Descriptive notes on the published methodology (SPEC 3.6, D-18) - never teaching,
 // which ADR-0009 rules off this surface. `loadNotes()` throws rather than emitting a note whose key
 // the keyword base never returned, whose address resolves to nothing, or that is missing from the

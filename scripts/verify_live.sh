@@ -45,6 +45,7 @@ CHECKS=(
   "/registry/:200"
   "/method/:200"
   "/phase-2/:200"
+  "/registry/corrections/:200"
   "/api/apply:405"
   # The note surface, added when the first capture was published (T-C4). Both addresses are here
   # rather than the index alone: the index is emitted whenever ANY note exists, so on its own it

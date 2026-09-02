@@ -20,6 +20,7 @@ import PassportPage from "./pages/Passport";
 import Apply from "./pages/Apply";
 import Method from "./pages/Method";
 import Phase2 from "./pages/Phase2";
+import Corrections from "./pages/Corrections";
 import type { Passport, Registry as R } from "./types";
 import { isSafeSlug } from "./slug";
 
@@ -166,6 +167,7 @@ export const TITLES: Record<string, string> = {
   // - kept at its original address so no existing link or bookmark breaks - covers both: phase
   // two (the Provider Catalog) is stated as live, phase three stays specified and not in service.
   "/phase-2/": "Phase three: funding tasks, not in service - Provek",
+  "/registry/corrections/": "All corrections - Provek",
 };
 
 /** The one place that decides what a route renders — shared by the browser and by the build-time
@@ -224,6 +226,7 @@ export function Body({
   if (route === "/apply/") return <Apply />;
   if (route === "/method/") return <Method />;
   if (route === "/phase-2/") return <Phase2 />;
+  if (route === "/registry/corrections/") return <Corrections />;
   if (route === "/") return <Landing reg={reg.state === "ready" ? reg.data : null} />;
   return (
     <DeadEnd title="No such page">

@@ -58,9 +58,18 @@ def _is_disallowed(ip: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
     """Every non-public IPv4/IPv6 shape, INCLUDING an IPv4-mapped IPv6 literal (`::ffff:127.0.0.1`)
     whose mapped v4 address is itself private - `IPv6Address.is_loopback`/`is_private` in the
     standard library check the address's OWN bit pattern and do not unwrap the mapping, so a
-    literal that only *carries* a private v4 address inside a v6 wrapper would otherwise pass."""
+    literal that only *carries* a private v4 address inside a v6 wrapper would otherwise pass.
+
+    `not ip.is_global` is the FLOOR (Fable's review of this module, 2026-09-02): `is_private` alone missed
+    100.64.0.0/10 (RFC 6598 carrier-grade NAT) on this host's Python 3.10 - that range is folded
+    into `is_private` only from Python 3.13, so a 3.10 interpreter reading a CGNAT literal answered
+    "not private" while it is manifestly not a public address either. `is_global` has existed
+    since 3.4 and correctly reads False for CGNAT space on 3.10 (verified live), so the named
+    flags below stay as a readable enumeration of WHY, while `is_global` is what actually decides
+    - strictly tightening, never loosening, since every one of the named flags already implies
+    `not is_global`."""
     if (ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved
-            or ip.is_multicast or ip.is_unspecified):
+            or ip.is_multicast or ip.is_unspecified or not ip.is_global):
         return True
     if getattr(ip, "is_site_local", False):          # IPv6-only attribute
         return True
@@ -175,6 +184,7 @@ def demo() -> None:
     assert _is_disallowed(ipaddress.ip_address("10.0.0.5")) is True
     assert _is_disallowed(ipaddress.ip_address("::1")) is True
     assert _is_disallowed(ipaddress.ip_address("::ffff:127.0.0.1")) is True   # mapped loopback
+    assert _is_disallowed(ipaddress.ip_address("100.64.0.1")) is True   # RFC 6598 CGNAT, Fable's review
     assert _is_disallowed(ipaddress.ip_address("8.8.8.8")) is False
     refused = False
     try:
