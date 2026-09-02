@@ -136,6 +136,12 @@ mandate is a legal object and not a checkbox, so the endpoint records `mandate_r
 
 ### 3.5 Phase 2 (`/phase-2/`) — an announcement, and not an offer
 
+⚠️ **Owed, not yet done: specification revision 1.4 renumbered the phase grid (§4, §4.0).** This
+page and section describe what used to be called "phase 2" — Funding Tasks — which is now phase 3.
+The page itself is reworked to the new grid last in the operator's phase-2 implementation cycle,
+after every button on the site has been checked live, so that the rework is not undone by a later
+finding; until then this section is read as describing the page as it stands, not as the target.
+
 One page describes phase 2, and it is the only place on the surface that does. Four rules bind it,
 and each one is a rule because breaking it would manufacture exactly the defect the product exists
 to detect — a claim stronger than the artefact behind it:
@@ -219,25 +225,53 @@ manifest pins each body by hash so a rebuild cannot manufacture freshness. A not
 marked superseded and keeps its URL. Passports are never silently recomputed (PRODUCT.md); prose
 published from the same surface gets the same treatment.
 
-## 4. Phase 2 — deferred by A-10, specified in full
+## 4. Phase 3 — Funding Tasks — deferred by A-10, specified in full
+
+<!-- PHASE3-NOTE-START -->
+Specification revision 1.4 (2026-09-02) renumbered the phase grid: Funding Tasks (specification
+§8 in full) moved from "phase 2" to phase 3, with none of §8's own norms changed — only the
+moment they take effect. "Phase 2" now names the Provider Catalog (§4.0 below, specification
+§4.2-bis), not this section.
+<!-- PHASE3-NOTE-END -->
+
+### 4.0 Phase 2 — Provider Catalog (specification §4.2-bis) — NEW, revision 1.4
+
+The section this heading used to hold — §8, Funding Tasks — is now phase 3 (§4.1 below). The phase
+that actually ships next is the **Provider Catalog**: a subject holding a current `verified`
+passport gets an outward "Order ↗" link to its own order-intake page (specification §4.2-bis).
+The incubator is never a party to the order, never holds funds, and never routes anything — the
+button's predicate (`verified` ∧ declared ∧ reachable) is code, not copy, and is designed and built
+in full in the phase-2 implementation cycle (the operator's own five-step plan for it). This subsection
+exists so §4.1's derivation below is read against the renumbering rather than against the phase
+grid it superseded; the Catalog's own detailed page design is not duplicated here.
 
 ### 4.1 What a funding task is, and what it is not
 
-Taken from specification **v1.3**, §8 and §4.2. This subsection exists because a page now states
+Taken from specification **v1.4**, §8 and §4.2. This subsection exists because a page now states
 these things in public (§3.5), and a public statement whose only address is a document on the
 operator's laptop is a claim the reader cannot check — which is the shape this product exists to
 reject.
 
-⚠️ **The revision is named because nothing can gate the drift.** The source document is not in this
-repository and no test can read it, so a v1.4 that changes §8 would leave this subsection quietly
-wrong and every check green. Saying so is the honest half; the other half is a rule with a human
-behind it rather than a machine — **an edit to specification §8 requires this subsection to be
-re-derived**, and that belongs on the operator's checklist. Naming an unarmed rule as unarmed is
-the practice of `tasks/lessons.md` L-8: a law with a fake anchor is worse than an honest note.
+<!-- PHASE3-NOTE-START -->
+Specification revision 1.4 (2026-09-02) renumbered the phase grid: Funding Tasks (specification
+§8 in full) moved from "phase 2" to phase 3, with none of §8's own norms changed — only the
+moment they take effect. "Phase 2" now names the Provider Catalog (§4.0 below, specification
+§4.2-bis), not this section.
+<!-- PHASE3-NOTE-END -->
+
+⚠️ **Re-derived for revision 1.4, and the same gap remains for whatever comes after it.** The
+source document is not in this repository and no test can read it, so a v1.5 that changes §8 again
+would leave this subsection quietly wrong and every check green — the phase-3-note markers above
+are checked byte-for-byte against each other by `scripts/ratchet_phase3_note.py`, which catches one
+copy going stale against the other, but neither copy is checked against the laptop-only master
+document itself. Saying so is the honest half; the other half is a rule with a human behind it
+rather than a machine — **an edit to specification §8 requires this subsection to be re-derived**,
+and that belongs on the operator's checklist. Naming an unarmed rule as unarmed is the practice of
+`tasks/lessons.md` L-8: a law with a fake anchor is worse than an honest note.
 
 **Deferred, not cancelled.** Decision A-10: projects first, because the registry is useful without
-the second side and the second side is not useful without the registry (§4.2). Specification §8
-defines phase 2 anyway, so that it will not have to be designed twice.
+the second side and the second side is not useful without the registry (§4.2-bis, phase 2).
+Specification §8 defines phase 3 anyway, so that it will not have to be designed twice.
 
 **What it is.** A funding task is a **contract for services — procurement**. Not a grant, not a
 donation, not a pre-payment for a share, not an investment contract (§8.1). The funder is a
@@ -279,12 +313,13 @@ Terminal: `completed`, `settled`, `rejected`. **There is no cancellation by the 
 three exits from `executing` are performed by the contract rather than decided by a person. An
 undefined transition is impossible, not undocumented.
 
-⚠️ **The arrow into `rejected` is a reconstruction, not a quotation, and the seam is named rather
-than smoothed.** §8.3 lists `rejected` as terminal while its diagram shows nothing reaching it, and
-§8.2 says a task missing a condition of creation *is not created at all* — which cannot both be true
-and leave it sitting in a terminal state. The reading taken here: a **draft** is refused at
-`policy_check` and never becomes a funded task, which satisfies both sentences. The durable fix is
-an erratum in specification §8.3, not a public page carrying the ambiguity forward.
+**The arrow into `rejected` is a ratified erratum, not a reconstruction anymore.** Specification
+revision 1.3's §8.3 listed `rejected` as terminal while its diagram showed nothing reaching it, and
+§8.2 says a task missing a condition of creation *is not created at all* — which could not both be
+true and leave it sitting in a terminal state. Revision 1.4 resolves this in the specification
+itself, not only on this page: a **draft** is refused at `policy_check` and never becomes a funded
+task, which satisfies both sentences, and the diagram above now carries the arrow as a norm rather
+than as this page's own interpretation (`DECISIONS.md` D-45).
 
 **Enforced against evidenced** (§8.5) — "the most frequent place where such products lie", and §8.5
 puts the obligation on the interface: UI and documents must show the status of every constraint.
@@ -314,17 +349,23 @@ probabilistic signal, never as a verdict.
 
 ### 4.2 It must fit without a redesign — NEW
 
-The operator's explicit requirement. Phase 2 (Funding Tasks, 47 requirements, specification §8)
-is deferred by decision A-10, not cancelled. The layout must have a place for it from day one:
+The operator's explicit requirement, now satisfied one phase earlier than it was written for.
+Phase 3 (Funding Tasks, 47 requirements, specification §8) is deferred by decision A-10, not
+cancelled; phase 2 (Provider Catalog, specification §4.2-bis) is the phase that fills the slots
+named below, and this section is corrected rather than left to read as if phase 2 still meant
+Funding Tasks:
 
-* the registry row gets a **trailing action column**, empty in phase 1. In phase 2 it holds
-  "commission work" for listed subjects;
-* the passport page gets a **task history section**, hidden while empty rather than absent from
-  the layout;
+* the registry row's **trailing action column**, empty in phase 1, is filled in phase 2 by an
+  "Order ↗" link for `verified`+reachable subjects (§4.2-bis point 3) — not by "commission work",
+  which stays a phase-3 concern and is not designed here;
+* the passport page's **task history section**, hidden while empty rather than absent from the
+  layout, is filled in phase 2 by WitnessRecord entries (§4.2-bis point 4, the D-05 slot), before
+  any phase-3 funding-task history exists to share it;
 * navigation reserves a slot for **corpus access** (revenue stream 3).
 
-**Never, in either phase: a "pay" button.** Money does not flow through us (decision A-6, a
-permanent non-goal). A funder pays the agent directly and the milestone contract is deployed by
+**Never, in any phase: a "pay" button.** Money does not flow through us (decision A-6, a
+permanent non-goal, strengthened rather than loosened by §4.2-bis). A customer pays a provider
+directly; in phase 3, a funder pays the agent directly and the milestone contract is deployed by
 the parties. An interface that implies otherwise would promise what the architecture refuses to do.
 
 ## 5. How the product makes money — and what that means for the layout — NEW

@@ -2811,3 +2811,66 @@ and the four-world contract in `src/collector/declaration.py` already say everyt
 depend on; nothing here needed rearming. What was missing was a `provek.json` this project's own
 subjects could be measured from, and a place recording why the emptiness that preceded it was a
 correct reading rather than a bug report waiting to be filed again.
+
+
+## D-45. Specification revision 1.4 is ratified: the phase grid is renumbered, and the §8.3 erratum becomes a norm
+
+**Decision.** The operator ratified Fable's draft amendment to specification §4 and §8
+(dated 2026-09-02) as specification revision **1.4**, applied to `SPEC_AI_Business_Incubator_v1.md` as a
+dated, non-silent revision — a changelog table in the header, not an edit that leaves no trace of
+what changed or when. Five things land in this one commit, because the brief that ratified them
+named the same coupling this entry keeps: an edit to specification §8 requires this repository's
+own `SPEC.md` §4 to be re-derived in the SAME commit, not a follow-up one, or the two documents
+would disagree about what "phase 2" means for exactly as long as the follow-up takes.
+
+**1. The phase grid is renumbered, and no norm of §8 changed.** "Phase 2" now names the Provider
+Catalog (new specification §4.2-bis: a verified subject's outward "Order ↗" link, the `service`
+declaration block, and WitnessRecord v0). Funding Tasks — all 47 requirements of specification §8
+— move to phase 3 unchanged; only the moment they take effect moved. Decision A-10 (projects
+first) is what ordered them this way, and nothing here revisits that ordering, only the label on
+top of it.
+
+**2. `SPEC.md` §4 is re-derived, not left to read as if phase 2 still meant Funding Tasks.** The
+section is renamed to "Phase 3 — Funding Tasks", a new §4.0 states the Provider Catalog is now
+phase 2 without duplicating its full page design (owed to the phase-2 implementation cycle's own
+design-circle step), and §4.2's layout table is corrected: the registry's trailing action column
+and the passport's task-history slot are filled by the Catalog (Order link, WitnessRecord) in
+phase 2, not by "commission work" that was never phase 2's content in the first place under either
+numbering.
+
+**3. The §8.3 erratum this repository already carried as a reconstruction is now a norm of the
+specification itself.** `SPEC.md` §4.1 has said since before this revision that the `rejected`
+arrow missing from §8.3's diagram was "a reconstruction, not a quotation" — a reading taken here to
+resolve a contradiction between §8.3 calling `rejected` terminal and §8.2 saying a task missing a
+condition of creation is never created at all. Revision 1.4 adds the arrow to the master
+specification's own diagram and states the same reading there, so the reconciliation is no longer
+something only this project's site asserts about the specification; the specification asserts it
+about itself. `SPEC.md` §4.1's hedge is updated to say so and to point here.
+
+**4. A new gate holds the fact stated twice in `SPEC.md` §4 to itself.** The renumbering note
+appears once framing the whole section and once inside §4.1's own re-derivation warning, because a
+reader can land on either half without having read the other — the load-bearing habit LAW #ONE-PLACE
+names, applied here before an editor gets the chance to update one copy and leave the other stale.
+`scripts/ratchet_phase3_note.py` extracts both marked copies and fails the build if fewer than two
+exist or if any two disagree; `tests/test_ratchet_phase3_note.py` mutates the live file and restores
+it, proving the gate actually catches drift rather than merely existing beside it. What this gate
+cannot do, and does not claim to: check either copy against the master specification itself, which
+lives on the operator's laptop and is not tracked by this repository — a limit `SPEC.md` §4.1 has
+named on its own re-derivation duty since before this revision and repeats here.
+
+**5. Nothing else moves.** Specification §8 in full, §11.4's four revenue streams, every A-decision,
+the non-goals of §4.3, and the thresholds of Q-D1 are unchanged — the amendment's own closing
+section says so and this entry does not relitigate it. The operator's five ratified answers to the
+open questions of phase 2 (self-declared order pages rather than a task board; a reason string
+rather than a blank cell for non-eligible rows; the witness free with an explicit label, paid-ness
+excluded pending A-1's trigger; Provek's own self-application through a `service` block; taglines
+deferred to the design circle) are the brief this and the following phases execute against, and are
+recorded here as the boundary of what this phase-0 step was asked to ratify — not as a fresh decision, since the
+operator made them, not this session.
+
+**Why a decision record and a new law together, rather than either alone.** The renumbering and the
+erratum are facts about the specification, which a decision record is for; the risk that the two
+`SPEC.md` copies of the same fact drift apart is a risk about THIS repository's own text, which
+needs a gate that runs on every push, not a paragraph a future editor might not read. Recording the
+first without arming the second would leave exactly the gap D-37 already found once in a different
+file — a rule believed synced because nothing had yet proven otherwise.

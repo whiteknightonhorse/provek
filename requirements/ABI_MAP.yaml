@@ -10,6 +10,7 @@ src/abs_profile/measured.py:      [ABI-13-6, ABI-16-11, ABI-33-4]
 scripts/ratchet_scope.py:         [ABI-21-1, ABI-21-2, ABI-21-3, ABI-21-4]
 scripts/ratchet_decisions.py:     [ABI-16-8, ABI-16-9]
 scripts/ratchet_staged_media.py: [ABI-16-8, ABI-16-9]
+scripts/ratchet_phase3_note.py:   [ABI-16-8, ABI-16-9]
 src/__init__.py:                  [ABI-32-1]
 
 # T-2.3 evidence collection / T-2.4 repository-vs-runtime comparison

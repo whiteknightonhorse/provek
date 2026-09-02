@@ -573,3 +573,13 @@ laws:
     text: "a /media/ asset is referenced only from Landing.tsx, below the first screen, and never from an evidence surface; if referenced, Landing.tsx also carries the staged-scene caption"
     gate: scripts/ratchet_staged_media.py
     test: tests/test_ratchet_staged_media.py
+  # D-45. Specification revision 1.4 renumbered the phase grid: Funding Tasks (specification §8)
+  # moved from "phase 2" to phase 3, and the Provider Catalog (specification §4.2-bis) became
+  # phase 2. SPEC.md §4 states this fact twice, framing two different entry points a reader can
+  # land on; corrupting or deleting either copy independently of the other must fail the build
+  # (LAW #ONE-PLACE), and the operator's own brief for this phase named the mutation to run before
+  # closing it.
+  - id: LAW-PHASE-THREE-NOTE-SYNCED
+    text: "the two marked copies of SPEC.md's phase-renumbering note are byte-identical, and at least two copies exist"
+    gate: scripts/ratchet_phase3_note.py
+    test: tests/test_ratchet_phase3_note.py
