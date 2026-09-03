@@ -591,3 +591,14 @@ laws:
     text: "a subject whose repository the operator owns must carry verifier_affiliation: same_owner, re-checked on every cohort run, never trusted from intake alone"
     gate: scripts/cohort.py
     test: tests/test_subjects_affiliation_matches_owner.py
+  # D-55 (AUD-003, Fable 2026-09-03). `.github/workflows/dependabot-auto-merge.yml` writes to
+  # GitHub's `main` with no human and no visit to this host; `scripts/push.sh` pushes this
+  # server's `main` assuming it already is the tip. The first auto-merged bump made both halves of
+  # that assumption false at once - a non-fast-forward push rejection on the server, and a bump
+  # that never reaches the live site regardless, because the site builds from this tree, not
+  # GitHub's copy. `scripts/sync_main.sh` fetches and fast-forwards (or names a genuine divergence
+  # as a refusal, never a guessed merge) before `cohort.py` reads a single passport.
+  - id: LAW-ORIGIN-SYNCED-BEFORE-MEASURE
+    text: "the nightly re-measure fetches and fast-forwards onto origin/main before cohort.py takes a reading, so an auto-merged Dependabot bump reaches the site and never turns the push non-fast-forward"
+    gate: scripts/sync_main.sh
+    test: tests/test_sync_main_ff.py

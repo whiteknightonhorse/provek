@@ -3367,3 +3367,63 @@ corrections suite green (7/7, extended from 6), `npm run build` + prerender clea
 unchanged count), ruff clean, all ten subjects re-measured and re-issued together (one shared
 `generated_at`), reissue-obligation and watch-obligation tests confirmed green with a real 30-day
 margin.
+
+## D-55. AUD-003: auto-merge and the push door held opposite ownership models of `main`; the door now pulls before it measures
+
+**What was live.** Fable's 2026-09-03 sweep found `.github/workflows/dependabot-auto-merge.yml`
+merging patch/minor Dependabot PRs straight into GitHub's `main` with no human and no visit to
+this host, while `scripts/push.sh` pushes this server's `main` on the unstated assumption that it
+already IS the tip - it never fetched first, and `~/orchestra/nightly_remeasure.sh` never fetched
+either. The first auto-merged PR makes both halves of that assumption false in the same moment:
+the next nightly's `git push origin main` gets a non-fast-forward rejection (the exact "STOPPED at
+step push.sh" alert `nightly_remeasure.sh`'s own `fail()` raises), and, independently of whether
+that push ever recovers, the bump that auto-merged never reaches the live site regardless, because
+the site is built from this tree, not from GitHub's copy of it - two ownership models of one ref,
+each blind to the other.
+
+Measured directly on this host as part of confirming the finding: an anonymous `git ls-remote` of
+the repository gets a 200 on the smart-HTTP `GET info/refs` half of the exchange and a 401 on the
+following `POST git-upload-pack` - GitHub declines the actual object negotiation without
+credentials from this network, for a repository that is otherwise public. This is the same shape
+of gap `scripts/push.sh` already closes on the write side (a token spliced into the remote URL for
+the duration of the push, then removed).
+
+**Fix.** `scripts/sync_main.sh`, a new module at the door: fetches `origin/main` (splicing in the
+same token `push.sh` uses, only when the remote is `https://github.com/...` - a local-path or
+already-authed remote is untouched), then one of three named outcomes, never a fourth: HEAD
+already matches (no-op), `origin/main` is ahead and a fast-forward is possible (taken,
+unconditionally - there is no case where declining a real Dependabot bump is correct), or the two
+histories have genuinely diverged, which is refused by name rather than resolved by a guessed
+merge - a real divergence means something wrote to one side outside this script's own model, and
+picking a side automatically would publish a choice nobody made. `~/orchestra/nightly_remeasure.sh`
+now runs it immediately after `unset PROVEK_GITHUB_TOKEN` and before `cohort.py` takes a single
+reading - before the measurement is load-bearing, not a preference: pulling after would let a
+night's passports be measured off a tree that is about to change under them. A refusal here is the
+same `fail()` envelope every other step in that chain already uses, so it pages exactly as loudly
+as the failure it prevents.
+
+Bound `ABI-32-1`/`ABI-16-5` (same class as `clean_tree_gate.sh`/`publishable_tree.py`: a named
+refusal at the door rather than a swallowed exit code), law `LAW-ORIGIN-SYNCED-BEFORE-MEASURE` in
+`enforced_by.yaml`.
+
+**Mutation control.** `tests/test_sync_main_ff.py` reproduces the defect with real git
+repositories (a bare `origin`, a `server` clone, and a second clone standing in for the
+auto-merged Dependabot branch): the RED case runs the OLD sequence - no sync, `cohort.py`'s commit
+lands on the stale tree, the push is rejected non-fast-forward, exactly as a real night got it. The
+GREEN case runs `sync_main.sh` first and shows the same commit-then-push succeeding. Confirmed by
+mutating the fix itself before writing the entry: with `scripts/sync_main.sh` replaced by a no-op
+stub, the GREEN case and the divergence-refusal case both fail red; restoring the real script turns
+both green again - a test that could not fail under the stub would have proven nothing. A fourth
+case pins that a local-path (non-GitHub) remote never triggers the token splice, so the suite
+itself needs no token or network to run in CI.
+
+**What this does NOT do.** It does not touch `dependabot-auto-merge.yml` or turn auto-merge off -
+the model chosen is "the server pulls before it measures," the other of Fable's two named
+alternatives. It does not change `scripts/push.sh` itself: that script's own non-fast-forward push
+failure was always a correct refusal on genuine divergence, and this fix removes the one case that
+was never a genuine divergence - an already-fast-forwardable Dependabot bump the server simply
+had not looked for yet.
+
+**Numbers.** 1077 passed, 1 pre-existing skip (1072 + 5 new in `tests/test_sync_main_ff.py`), ruff
+clean, `ratchet_scope.py` and `ratchet_decisions.py` both clean with the new gate/test tracked and
+bound.

@@ -118,6 +118,12 @@ scripts/publishable_tree.py:      [ABI-32-1, ABI-16-5]
 # one module over. Same two requirements as publishable_tree.py because it is the same kind of
 # refusal at the same kind of door.
 scripts/clean_tree_gate.sh:       [ABI-32-1, ABI-16-5]
+# D-55 (AUD-003). The door's write side (push.sh) already assumes this server's main IS the tip;
+# this is the read side of the same assumption - fetch and fast-forward onto origin/main before
+# the nightly measurement, or name the divergence as a refusal rather than guess a merge. Same two
+# requirements as clean_tree_gate.sh/publishable_tree.py because it is the same class of refusal
+# at the same door, one step earlier.
+scripts/sync_main.sh:             [ABI-32-1, ABI-16-5]
 # T-H2: the same door, one question later - not "may this tree go out" but "what is what went out
 # CALLED". Same two requirements because it is the same door and the same kind of refusal; the
 # module is separate because the two callers have opposite exemptions, not because the subject is.
