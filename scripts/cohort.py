@@ -22,6 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.abs_profile.evidence import EvidenceClass
 from src.abs_profile.identity import Binding, BindingKind
+from src.abs_profile.isotime import parse_iso_ts
 from src.abs_profile.ladder import SIGNED_SHARE_FOR_L4, SMALL_TEAM_FOR_L3, SOLE_AUTHOR, L
 from src.abs_profile.measured import NotMeasured
 from src.collector.declaration import apply_declaration
@@ -191,10 +192,21 @@ def previous_rows() -> dict:
         return {}
     rows = {}
     for _r in json.loads(prev.read_text(encoding="utf-8"))["subjects"]:
+        # `parse_iso_ts`, not `datetime.fromisoformat` directly (LAW #ONE-PLACE,
+        # `src/abs_profile/isotime.py`) - this repository's own writer never emits a trailing `Z`,
+        # but a second, independent `fromisoformat` call is exactly how AUD-002 reintroduced the
+        # Python-3.10-rejects-`Z` defect a `src/liveness/commitments.py` had already fixed once.
+        # `valid_until` on a row we ourselves published is a load-bearing field, so an unreadable
+        # one still fails loudly rather than silently becoming `None`.
+        valid_until = parse_iso_ts(_r["valid_until"])
+        if valid_until is None:
+            raise ValueError(
+                f"registry.json: unreadable valid_until for {_r['subject_id']!r}: "
+                f"{_r['valid_until']!r}")
         rows[_r["subject_id"]] = Row(
             _r["subject_id"], Status(_r["status"]), _r["projection"],
             _r["projection_absent_reason"], _r["protocol_version"],
-            datetime.fromisoformat(_r["valid_until"]), _r["passport_ref"],
+            valid_until, _r["passport_ref"],
             verifier_affiliation=_r["verifier_affiliation"])
     return rows
 

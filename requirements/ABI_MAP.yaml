@@ -7,6 +7,10 @@ src/abs_profile/ladder.py:        [ABI-2-1, ABI-2-2, ABI-2-3, ABI-2-4]
 src/abs_profile/evidence.py:      [ABI-5-4]
 src/abs_profile/identity.py:      [ABI-12-7]
 src/abs_profile/measured.py:      [ABI-13-6, ABI-16-11, ABI-33-4]
+# T-01-ci-red-isoformat-z: an instrument-failure-as-evidence defect, same class as measured.py's,
+# applied to timestamp parsing instead of a gate - no separate requirement, same reasoning
+# evidence_stamp.py/ratchet_evidence.py already carry below for the identical pattern.
+src/abs_profile/isotime.py:       [ABI-13-6, ABI-16-11, ABI-33-4]
 scripts/ratchet_scope.py:         [ABI-21-1, ABI-21-2, ABI-21-3, ABI-21-4]
 scripts/ratchet_decisions.py:     [ABI-16-8, ABI-16-9]
 scripts/ratchet_staged_media.py: [ABI-16-8, ABI-16-9]

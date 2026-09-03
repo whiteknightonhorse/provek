@@ -42,6 +42,7 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 from pathlib import Path
 
+from src.abs_profile.isotime import parse_iso_ts as _parse_ts
 from src.liveness.obligations import (
     MAX_AGE,
     RENEWAL_MARGIN,
@@ -127,20 +128,11 @@ class CohortRun:
     no subjects, which is a true zero and a different fact."""
 
 
-def _parse_ts(raw: object) -> datetime | None:
-    if not isinstance(raw, str):
-        return None
-    # `fromisoformat` REJECTS A TRAILING `Z` ON PYTHON 3.10, which is the interpreter this host and
-    # CI both pin (see pyproject). It is also the commonest ISO spelling of UTC there is, so a
-    # record written by anything other than this repository's own `isoformat()` would have read as
-    # an unusable timestamp - an instrument failure reported as a fact about the artefact.
-    if raw.endswith("Z"):
-        raw = raw[:-1] + "+00:00"
-    try:
-        ts = datetime.fromisoformat(raw)
-    except ValueError:
-        return None
-    return ts if ts.tzinfo else ts.replace(tzinfo=timezone.utc)
+# `_parse_ts` above is `src.abs_profile.isotime.parse_iso_ts` under this module's own name -
+# LAW #ONE-PLACE: the `Z`-tolerant parse itself lives there, not here (see that module's docstring
+# for why - AUD-002 regrew this exact workaround a second time, wrong, in `src/collector/repo.py`,
+# after this module had already gotten it right once). Kept under this name because
+# `tests/test_validation_target_obligation.py` names it `C._parse_ts`.
 
 
 def read_run(path: Path) -> CohortRun:

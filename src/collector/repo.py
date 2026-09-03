@@ -22,6 +22,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from src.abs_profile.evidence import EvidenceClass
+from src.abs_profile.isotime import parse_iso_ts
 from src.abs_profile.measured import Measurement, NotMeasured
 from src.collector.github import EVIDENCE_WINDOW_DAYS
 
@@ -113,7 +114,13 @@ def collect(remote: str, *, keep: bool = False, now: datetime | None = None) -> 
             # boundary's own oldest commit can.
             rc2, oldest_out = _run(["git", "log", "--format=%cI"], cwd=r)
             oldest_lines = [ln for ln in oldest_out.strip().splitlines() if ln.strip()]
-            if rc2 == 0 and oldest_lines and datetime.fromisoformat(oldest_lines[-1]) >= cutoff:
+            # `parse_iso_ts`, not `datetime.fromisoformat` directly (LAW #ONE-PLACE,
+            # `src/abs_profile/isotime.py`): git's own strict-ISO `%cI` output spells UTC with a
+            # trailing `Z` on some git versions, which `fromisoformat` rejects outright on Python
+            # 3.10 (AUD-002, 2026-09-03) - an unparseable line here is treated the same as no line
+            # at all, since either way this advisory note cannot be established.
+            oldest_ts = parse_iso_ts(oldest_lines[-1]) if oldest_lines else None
+            if rc2 == 0 and oldest_ts is not None and oldest_ts >= cutoff:
                 notes.append(
                     f"window not fully read: shallow clone (depth {CLONE_DEPTH_CEILING}) reached "
                     f"its boundary before the {EVIDENCE_WINDOW_DAYS}-day cutoff")
