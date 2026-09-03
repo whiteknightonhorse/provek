@@ -4,38 +4,48 @@
 [![codeql](https://github.com/whiteknightonhorse/provek/actions/workflows/codeql.yml/badge.svg)](https://github.com/whiteknightonhorse/provek/actions/workflows/codeql.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/whiteknightonhorse/provek/badge)](https://scorecard.dev/viewer/?uri=github.com/whiteknightonhorse/provek)
 
-*Each of these is a live run, not a picture — click one and read the run it came from.
-[What they do and do not assert](#what-the-badges-assert) is stated below, because a badge is a
-claim like any other.*
+Each badge is a live run, not a picture — [what they assert](#what-the-badges-assert) is below.
 
-**Evidence, not claims.** A verification layer that measures, per business operation, how much of a
-company actually runs without a human in the loop — and publishes the evidence behind every number,
-including what could not be measured.
+**What it is.** A verification layer for businesses operated by AI agents. It measures, per
+business operation, how much of a company runs without a human — and publishes the evidence
+behind every number, including what could not be measured.
 
-🔗 **[provek.dev](https://provek.dev)** · [Public registry](https://provek.dev/registry/) · [Method](https://provek.dev/method/)
+**Why.** Anyone can write "AI-powered" on a landing page; nobody can tell that apart from a
+business machines actually run. Provek is an [ERC-8004](https://eips.ethereum.org/EIPS/eip-8004)
+validator: the standard supplies identity and transport, the methodology is ours and is public, so
+any third party can recompute a verdict from the same inputs — every read is anonymous and
+credential-free.
 
----
+**What it does.**
 
-## The problem
+- Issues a machine-readable **passport** per subject: an `L0`–`L5` level per operation (never one
+  number per company), evidence classed by forgery cost, and a self-declared accountability block
+  that never enters the score.
+- **Absence is a state, not a zero**: an unmeasured value carries its own reason
+  (`check_did_not_run` is not `nothing_qualified` is not `unreadable`), never collapsed to zero.
+- **Order channel.** A verified subject can declare where customers order from it. We probe that
+  address ourselves before showing anything. The "Order" link appears only when the passport is
+  `verified` **and** the declared address is `https` **and** our last anonymous check reached it —
+  any one of those failing removes the link and shows the reason instead. How to get one:
+  [provek.dev/method/#the-order-link](https://provek.dev/method/#the-order-link).
+- Publishes a [registry](https://provek.dev/registry/) of verdicts; a verdict expires and lapses to
+  `stale` on its own. Corrections are published in full, not quietly fixed — see the
+  [corrections log](https://provek.dev/registry/corrections/).
+- Takes [applications](https://provek.dev/apply/) — free, public repositories only, read-only
+  unless a signed mandate says otherwise.
 
-Anyone can write "AI-powered" on a landing page. Nobody can currently tell that apart from a company
-where machines really do the work. That is not a marketing problem — a competitor can always claim
-more loudly. It is a verification problem.
-
-Provek is an [ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) **validator**: the standard supplies
-identity and transport, the methodology is ours, and it is published in full so a third party can
-recompute any verdict from the same inputs.
+A later phase (a verified agent commissioning and witnessing paid work) is specified and not
+built; [why](https://provek.dev/phase-2/) explains the boundary.
 
 ## What a verdict looks like
 
 Below is `passport.verified.operations`, taken from
-[`/data/passports/git_whiteknightonhorse_APIbase.json`](https://provek.dev/data/passports/git_whiteknightonhorse_APIbase.json).
-It is the complete array — all three operations, nothing dropped, nothing reshaped and nothing
-reordered — extracted from that subtree and re-serialised with `json.dumps(..., indent=2)`. In the
-served file the same array sits three levels deeper, attached to its `"operations":` key and
-followed by a comma; those are the differences, and they are the whole of them. It is one subtree
-of a passport, not a whole one: the rest carries `self_reported`, `accountability` and provenance
-at `passport.*`, and coverage at `passport.verified.coverage`.
+[`/data/passports/git_whiteknightonhorse_APIbase.json`](https://provek.dev/data/passports/git_whiteknightonhorse_APIbase.json) —
+the complete array, extracted from that subtree and re-serialised with `json.dumps(..., indent=2)`.
+It is one subtree of a passport, not a whole one: the rest carries `self_reported`,
+`accountability` and provenance at `passport.*`, and coverage at `passport.verified.coverage`.
+`tests/test_readme_fragment_is_verbatim.py` fails the build if this stops being an emitted
+passport's operations array, entire and in order.
 
 ```json
 [
@@ -65,170 +75,66 @@ at `passport.*`, and coverage at `passport.verified.coverage`.
 ]
 ```
 
-> This block used to be introduced as *"Real output, from the live registry — not an example"*, and
-> it was neither. It came from a passport rather than the registry, and its shape existed in no
-> artefact: `status` and `verifier_affiliation` sit at `passport.*` while `operations` sits two
-> levels down, and the fragment spliced the two levels flat and then dropped the third operation.
-> Every value in it was true. A reader who pasted the path into `jq` would have got nothing, on the
-> page that invites them to recompute the verdict themselves.
-> `tests/test_readme_fragment_is_verbatim.py` now fails the build if this block stops being an
-> emitted passport's operations array, entire and in order — the red run that proves it can fail is
-> kept as `evidence/RED-008-readme-fragment-not-verbatim.txt`.
-
-Three things here are the whole product — two of them quoted above, and the third,
+Three things here are the whole product — two quoted above, and the third,
 `"verifier_affiliation": "same_owner"`, one level up at `passport.verifier_affiliation`:
 
 | | |
 |---|---|
-| `"level": "check_did_not_run"` | **Absence is a state, never a zero.** Three reasons exist — `nothing_qualified`, `check_did_not_run`, `unreadable` — and a verdict always says which. A zero would mean "measured, and fully non-autonomous", an entirely different claim about the world. |
+| `"level": "check_did_not_run"` | **Absence is a state, never a zero.** A verdict always says which reason applies; a zero would mean "measured, and fully non-autonomous", a different claim about the world. |
 | `"confidence": "inferred"` | The published number is never stronger than the measurement behind it. |
-| `"verifier_affiliation": "same_owner"` | Every record discloses whether the verifier and the subject share an owner. Today all of them do. |
+| `"verifier_affiliation": "same_owner"` | Every record discloses whether the verifier and the subject share an owner — re-derived at each re-measure, not a label set once and trusted forever. |
 
-## How it measures
+## How it's built
 
-**A level belongs to an operation, never to a company.** A single number for a whole company is a
-marketing number.
+Data flows left to right:
 
 ```
-L0  a human performs the operation
-L1  a human performs it, tools assist
-L2  a machine proposes, a human approves each time
-L3  a machine acts, a human approves exceptions
-L4  a machine acts, a human is notified
-L5  a machine acts, no human is in the path
+collector  ->  scorer  ->  passport  ->  registry  ->  web
+src/collector  src/verify  src/passport  src/registry  web/ (Preact, prerendered)
+anonymous      determin-   verified /    status rows,   static pages + a few
+public reads,  istic code, self-reported valid_until    Cloudflare Functions
+secrets        no LLM in   kept as                      (intake, badge, brief)
+redacted       any verdict separate branches
 ```
 
-Evidence is classed by **forgery cost** — `self_reported`, `platform_observed`,
-`third_party_attested`, `cryptographically_bound` — and a level built from mixed classes is marked
-`inferred`, not `measured`.
+`scripts/cohort.py` is the production emitter; `scripts/push.sh` is the only door outward and runs
+every gate (secrets, scope, laws, language, lint, build, tests) before any push.
 
-A **human control map** accompanies every verdict. It can prove that a control path *exists*; it can
-never prove that none was missed, so it publishes what it inspected and what it could not reach.
+## Run it
 
-## What the score does *not* measure
-
-Stated here for the same reason it is stated on every page of the site: reliability, decision
-quality, profitability, and the presence of an accountable party. Accountability is recorded in a
-separate block that deliberately does not affect the score — an empty control map yields maximum
-autonomy *and* an honest "no addressee", and a reader deserves both truths side by side.
-
-## Current state, honestly
-
-Eight subjects, all the operator's own systems, all marked affiliated. **4 are verified; 4 are
-unreadable** — those are private repositories, and a verdict on a source no third party can read
-would not be reproducible, which under this project's own standard disqualifies it. The count moves
-as repositories open or close; it is read from the emitted registry, not asserted here.
-
-The registry is not padded. A registry of trust that invented entries would be doing the exact thing
-it exists to detect, so it stays this size until real subjects grant a mandate.
-
-## Reproduce a verdict yourself
-
-The pipeline reads **public sources with no credential at all** — that is what makes a verdict
-checkable by anyone, rather than by whoever holds a token.
+The pipeline reads public sources with no credential at all, so any reader can recompute a verdict
+— not only whoever holds a token.
 
 ```bash
 git clone https://github.com/whiteknightonhorse/provek && cd provek
-python3 -m pytest -q          # the suite prints its own count
-python3 scripts/cohort.py     # re-emits public/registry + public/passports
+(cd web && npm ci && npm run build)   # part of the suite judges the emitted site, not only the code
+python3 -m pytest -q                  # the suite prints its own count
+python3 scripts/cohort.py             # re-emits public/registry + public/passports
 ```
 
-Artefacts land in `public/`. The site reads exactly those files — there is no second content path,
-because a page that could drift from the machine record would stop being worth trusting.
+## Where the rest is
 
-## How the rules are kept
-
-Every load-bearing rule in `enforced_by.yaml` names the gate and the test that enforce it. Rules
-that live only in prose are the ones that quietly stop being true, so a rule without a machine
-behind it is treated as unenforced.
-
-This paragraph used to end "— 31 of them", and the file had grown to 41 by the time anyone
-re-read the sentence. A count copied into prose is a second copy of a fact whose first copy keeps
-moving (L-2), and it decays into a claim the artefact no longer supports — on the page describing
-how this project refuses to let that happen. The number is not restored here in a computed form
-either: it would be one more place to keep true for no reader who needs it, and `enforced_by.yaml`
-is in the repository for anyone who wants to count.
-
-The design record is in the open, including its mistakes:
-
-- [`DECISIONS.md`](DECISIONS.md) — every ratified decision and why
-- [`docs/adr/`](docs/adr/) — architecture decision records
-- [`evidence/`](evidence/) — kept runs, **including failing ones**: `RED-001`, `RED-002`, and
-  `TAINTED-SUDO-CORPUS`, the artefacts produced by a pipeline that read its subjects through host
-  privilege before the rule caught it. Deleting the evidence of a violation would be a second
-  violation.
+- [`SPEC.md`](SPEC.md) — what each screen and rule must be
+- [`DECISIONS.md`](DECISIONS.md) and [`docs/adr/`](docs/adr/) — every ratified decision, mistakes kept
+- [`enforced_by.yaml`](enforced_by.yaml) — each load-bearing rule, with the gate and test that arm it
+- [`evidence/`](evidence/) — kept runs, **including failing ones** (`RED-001`, `RED-002`,
+  `TAINTED-SUDO-CORPUS`) — deleting the evidence of a violation would be a second one
+- [`docs/WHY_GET_VERIFIED.md`](docs/WHY_GET_VERIFIED.md) — what verification offers a subject
 
 ## What the badges assert
 
-Three badges sit at the top of this file. Each is fetched live from the service that ran the check,
-so it goes red when the check does — and a reader who wants the underlying run is one click away.
-
 | badge | who runs it | what green means |
 |---|---|---|
-| `gates` | us, on GitHub Actions | the ratchets, the full test suite at ≥70% coverage, ruff, and the secret scan all passed on this commit |
-| `codeql` | GitHub's CodeQL engine | the `security-and-quality` analysis **completed** on both Python and TypeScript — *not* that it found nothing; findings live in the Security tab |
-| OpenSSF Scorecard | the OpenSSF, from their own copy | supply-chain posture scored against their rubric, published by them at [scorecard.dev](https://scorecard.dev/viewer/?uri=github.com/whiteknightonhorse/provek) |
+| `gates` | us, on GitHub Actions | the ratchets, the full test suite at ≥70% coverage, lint, and the secret scan all passed on this commit |
+| `codeql` | GitHub's CodeQL engine | the analysis **completed** on both Python and TypeScript — not that it found nothing |
+| OpenSSF Scorecard | the OpenSSF, from their own copy | supply-chain posture, scored and published by them, not by us |
 
-**`gates` is us grading our own homework.** Every rule in it was written by the same hands as the
-code it judges, which makes it useful and not independent. That is the whole reason the other two
-are here: their queries and their rubric are not ours.
-
-**The Scorecard number is low, and it is real.** It is not pinned, not cached and not chosen — it
-is whatever the OpenSSF last computed. Several checks score zero because this repository has not
-adopted the practice they measure; raising the number by tuning the run rather than by changing
-the repository would be the exact defect this project exists to detect.
-
-One detail in that report is worth naming, because it is this project's own vocabulary appearing in
-someone else's tool: Scorecard reports `-1` for a check that **could not run**, distinct from `0`
-for one that ran and found nothing. `nothing_qualified` and `check_did_not_run` are different
-states of the world in their rubric as they are in [ours](SPEC.md).
-
-**Badges that were considered and rejected**, so that their absence is a decision rather than an
-oversight: Snyk (its badge answers `200` with the word *monitored* — no scan stands behind it),
-Dependabot (a real service, but no badge that reports a run), Codecov (needs an account credential
-this project does not hold; coverage is already gated at 70% inside `gates`), Sigstore/SLSA
-provenance (nothing to attest — this repository publishes no release artefacts, which Scorecard
-independently confirms with `-1` on `Signed-Releases` and `Packaging`), and the OpenSSF Best
-Practices badge (a self-assessed questionnaire, which is `self_reported` under our own taxonomy and
-therefore not evidence). `tests/test_readme_badges.py` fails the build if a badge without a run
-behind it is ever pasted in here.
-
-## Repository layout
-
-```
-src/abs_profile/    the ladder, evidence classes, identity binding, "not measured" as a state
-src/collector/      evidence collection; secrets redacted before anything becomes an artefact
-src/verify/         the control map and the scorer, with the weak-signal limiters
-src/passport/       passport assembly; verified and self-reported stay separate branches
-src/registry/       status lifecycle and the public registry
-src/transport/      file transport and the ERC-8004 read adapter
-web/                the public surface (Preact + Vite), prerendered to static HTML
-web/functions/      the intake endpoint, writing to KV and announcing to the operator
-```
-
-## Status
-
-Phase 1, verification-first. **Intake is open** at
-[provek.dev/apply](https://provek.dev/apply/) — free, public repositories only, and the passport
-says what it could not measure. See [`docs/WHY_GET_VERIFIED.md`](docs/WHY_GET_VERIFIED.md) for what
-verification offers and what it deliberately does not.
+`gates` is us grading our own homework; the other two are here because their queries and rubric are
+not ours.
 
 ## Licence
 
-Two, because there are two different kinds of thing here.
-
-- **The profile text** — the ladder, the evidence taxonomy, the absence vocabulary, and the
-  methodology prose in `SPEC.md`, `DECISIONS.md`, `docs/` and this file — is
-  **[CC BY 4.0](LICENSE-CC-BY-4.0)**. Quote it, adapt it, build on it; say where it came from.
-- **The schemas, implementation and test vectors** — `src/`, `tests/`, `scripts/`,
-  `requirements/`, `web/` — are **[Apache-2.0](LICENSE-APACHE-2.0)**. Run it, change it, ship it.
-
-A profile that asks others to adopt a vocabulary must let them quote it; an implementation that
-asks to be recomputed must let them run it. Different permissions, so different licences — and
-openness without a licence is legally undefined, which is why the specification names both.
-
-**Not licensed, deliberately:** the accumulated corpus of evidence and the reputation of the
-issuer. They do not travel with the text. Copying the profile gives you the method; it does not
-give you the record of what has been measured.
-
-See [`LICENSE`](LICENSE).
+Methodology prose (the ladder, the evidence taxonomy, `SPEC.md`, `DECISIONS.md`, `docs/`, this
+file): **[CC BY 4.0](LICENSE-CC-BY-4.0)**. Code, schemas, tests (`src/`, `tests/`, `scripts/`,
+`web/`): **[Apache-2.0](LICENSE-APACHE-2.0)**. Not licensed, deliberately: the accumulated evidence
+corpus and the issuer's reputation — they do not travel with the text. See [`LICENSE`](LICENSE).
