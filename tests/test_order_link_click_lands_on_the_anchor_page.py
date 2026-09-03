@@ -19,6 +19,14 @@ by the same source-scan shape for the same reason: `useRoute` is not exported an
 `history`/`addEventListener`, so running it would mean building a DOM harness disproportionate to
 a one-line arithmetic fix - `test_witness_route_handoff.py`'s own docstring makes the identical call
 for the `/w/` guard.
+
+A SECOND, independent bug shared the same symptom and outlived the first fix (Fable rejected the
+first attempt at this ticket over it, 2026-09-03): even once the route resolves to `/method/`
+correctly, the page-change effect in `App.tsx` called `window.scrollTo(0, 0)` on every route
+change, unconditionally - so the reader landed on the TOP of `/method/`, not at `#the-order-link`
+near the bottom, because `history.pushState` (unlike a real page load) never triggers the browser's
+own fragment scroll. Covered below by
+`test_the_route_effect_scrolls_to_the_fragment_instead_of_always_jumping_to_the_top`.
 """
 from __future__ import annotations
 
@@ -48,8 +56,8 @@ def test_the_click_handler_strips_the_fragment_before_computing_the_route():
     pushstate_idx = src.index("history.pushState")
     assert pushstate_idx < m.start(), (
         "history.pushState must still run (and take the full href, fragment included, so the URL "
-        "bar and browser fragment scrolling keep working) before the route is computed from the "
-        "stripped path"
+        "bar reflects the real link and window.location.hash carries the fragment for the "
+        "post-navigation effect to act on) before the route is computed from the stripped path"
     )
 
 
@@ -63,3 +71,33 @@ def test_the_exact_order_link_href_now_normalises_to_the_real_method_route():
     href = "/method/#the-order-link"
     path = re.split(r"[?#]", href)[0]
     assert norm(path) == "/method/"
+
+
+def test_the_route_effect_scrolls_to_the_fragment_instead_of_always_jumping_to_the_top():
+    """SECOND BUG, same symptom, different cause (found when Fable rejected this task's first
+    attempt, 2026-09-03). Fixing `setRoute` above gets the reader to the right ROUTE, but
+    `history.pushState` - unlike a real navigation - never triggers the browser's own fragment
+    scroll; it only changes the address bar. The effect that runs after every SPA route change
+    (`App.tsx`, the `useEffect` keyed on `[route, passportId]`) used to call `window.scrollTo(0, 0)`
+    unconditionally on every route change past the first, which overwrites wherever a real fragment
+    would have scrolled to. Measured: clicking Registry.tsx's "how it is decided" link landed on
+    `/method/` at the top of the page, not at `#the-order-link` near the bottom. Proven by source
+    scan for the same reason `test_the_click_handler_strips_the_fragment_before_computing_the_route`
+    above is: the effect closes over `history`/`document` and is not exported, so exercising it
+    would mean a DOM harness disproportionate to what is, again, a few lines of control flow."""
+    src = APP_TSX.read_text(encoding="utf-8")
+    assert "window.location.hash.slice(1)" in src, (
+        "the post-navigation effect must read the URL's own fragment to know what to scroll to"
+    )
+    # THE REGRESSION CONTROL: an ordinary route change with no fragment (e.g. a plain click to
+    # /method/) must still land on top of the page, exactly as before this fix - the fallback
+    # branch, not a removed default.
+    m = re.search(
+        r"if\s*\(target\)\s*\{\s*target\.scrollIntoView\(\);\s*\}\s*else\s*\{\s*window\.scrollTo\(0,\s*0\);\s*\}",
+        src,
+    )
+    assert m, (
+        "scrollIntoView must run when (and only when) the fragment names a real element on the "
+        "page; window.scrollTo(0, 0) must remain the fallback for a route with no fragment, or a "
+        "plain navigation to /method/ would be left wherever the previous page had scrolled to"
+    )

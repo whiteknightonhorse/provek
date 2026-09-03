@@ -373,7 +373,22 @@ export default function App() {
     // guess - see the comment above `usingKeyboard`.
     top.current?.classList.toggle("no-focus-ring", !usingKeyboard);
     top.current?.focus({ preventScroll: true });
-    window.scrollTo(0, 0);
+    // A same-origin click never triggers the browser's OWN anchor scroll - that only fires on a
+    // real navigation (a fresh load, or history back/forward into a page the browser itself
+    // fetched), never on history.pushState, which changes the address bar and nothing else. So
+    // the click handler's `history.pushState(null, "", href)` carrying the fragment along (see
+    // useRoute above) got the URL right and the scroll position wrong: every reader who clicked
+    // "/method/#the-order-link" from inside the app landed on top of /method/, not on the section
+    // the link named - measured against Registry.tsx's "how it is decided" link, 2026-09-03. Doing
+    // this by hand here is what a client-side router library gives for free; this file explains at
+    // its own top why one was not pulled in for five routes.
+    const id = window.location.hash.slice(1);
+    const target = id ? document.getElementById(id) : null;
+    if (target) {
+      target.scrollIntoView();
+    } else {
+      window.scrollTo(0, 0);
+    }
   }, [route, passportId]);
 
   const passport = slugInRoute ? (passports[passportId ?? slugInRoute] ?? { state: "loading" as const }) : null;

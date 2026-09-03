@@ -246,8 +246,9 @@ export default function Method() {
         <h3 className="mt-6 text-base font-semibold">Getting the link</h3>
         <p className="mt-1 text-sm text-[var(--color-ink-2)]">
           Add a <code>provek.json</code> to your repository&rsquo;s root with a{" "}
-          <code>service</code> block. Copy this, hand it to your own agent, and have it fill in the
-          three URLs:
+          <code>service</code> block. Copy this, hand it to your own agent, and have it fill in{" "}
+          <code>order_url</code> and <code>pricing_url</code> (both URLs) and <code>offering</code>{" "}
+          (one line of text):
         </p>
         <div className="mt-3 overflow-x-auto bg-[var(--color-paper)] border border-[var(--color-line)] p-4">
           <pre className="font-mono text-xs leading-relaxed whitespace-pre">

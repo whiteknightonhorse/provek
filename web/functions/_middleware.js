@@ -9,9 +9,14 @@
  * instead arrives as `GET /method/%23the-order-link` - a literal, non-existent path segment, which
  * 404s where the real fragment 200s. The reader did nothing wrong; the app that opened the link
  * did. This is the ONE place every request passes through regardless of route, so the fix lives
- * here rather than on any one page: strip everything from the first `%23` onward and send the
- * reader to the page it names, rather than a dead end that plainly exists. Covers every page with
- * an anchor, not just `/method/` - checked 2026-09-03, this is the only site defect of its shape.
+ * here rather than on any one page: strip the encoded segment off the path and send the reader to
+ * the page it names - carrying the text that followed `%23` forward as a REAL `#fragment` on the
+ * redirect, not discarding it. The address of the exact place the link pointed at is already
+ * known; landing the reader on the top of the page instead of on it would trade a 404 for a
+ * different way of not arriving, so Fable rejected a first version of this fix that zeroed
+ * `url.hash` here (2026-09-03) - a 200 on the page is not the same as opening what was asked for.
+ * Covers every page with an anchor, not just `/method/` - checked 2026-09-03, this is the only
+ * site defect of its shape.
  *
  * MARKDOWN NEGOTIATION.
  *
@@ -60,14 +65,18 @@ function markdownSiblingPath(pathname) {
 }
 
 /** Everything up to a percent-encoded `#`, normalised back to this site's own route shape (a
- *  trailing slash - see `norm()` in `web/src/App.tsx`). `null` when the path carries no encoded
- *  hash at all, so the caller can tell "nothing to do" from "the clean page is the site root". */
+ *  trailing slash - see `norm()` in `web/src/App.tsx`), paired with the fragment text that
+ *  followed the `%23` (a trailing slash on the fragment itself - `.../%23the-order-link/` - is a
+ *  browser adding the same trailing-slash habit to the fragment; stripped so it still names the
+ *  real anchor id rather than a string nothing has). `null` when the path carries no encoded hash
+ *  at all, so the caller can tell "nothing to do" from "the clean page is the site root". */
 function stripEncodedFragment(pathname) {
   const i = pathname.search(ENCODED_HASH);
   if (i === -1) return null;
   const clean = pathname.slice(0, i);
-  if (clean === "") return "/";
-  return clean.endsWith("/") ? clean : `${clean}/`;
+  const path = clean === "" ? "/" : clean.endsWith("/") ? clean : `${clean}/`;
+  const fragment = pathname.slice(i + 3).replace(/\/$/, "");
+  return { path, fragment };
 }
 
 export async function onRequest(context) {
@@ -82,12 +91,13 @@ export async function onRequest(context) {
 
   // THE CONTROL for the redirect: reproduced against provek.dev 2026-09-03, `/method/#the-order-
   // link` (a real fragment, never sent here) answers 200 while `/method/%23the-order-link` (the
-  // same link, percent-encoded by the client that opened it) 404s. Land on the named page instead.
-  const clean = stripEncodedFragment(url.pathname);
-  if (clean !== null) {
-    url.pathname = clean;
+  // same link, percent-encoded by the client that opened it) 404s. Land on the named page, at the
+  // named place - the fragment text is carried forward, not zeroed.
+  const stripped = stripEncodedFragment(url.pathname);
+  if (stripped !== null) {
+    url.pathname = stripped.path;
     url.search = "";
-    url.hash = "";
+    url.hash = stripped.fragment ? `#${stripped.fragment}` : "";
     return Response.redirect(url.toString(), 301);
   }
 

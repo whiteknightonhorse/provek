@@ -26,10 +26,11 @@ WHAT THIS ENFORCES, in three layers.
 
 4. THE SAME FILE'S OTHER REQUEST-SHAPE FIX, proven through the same probe (2026-09-03): a link like
    `/method/#the-order-link`, percent-encoded by the client that opened it into a literal path
-   segment (`/method/%23the-order-link`), redirects to the page it names instead of 404ing - a real
-   404 reproduced against `provek.dev` before this fix landed. Named a fourth layer here rather than
-   in a file of its own because it is the identical instrument answering the identical question
-   ("what does `_middleware.js` actually do for this request"), not a second subject.
+   segment (`/method/%23the-order-link`), redirects to `/method/#the-order-link` - the exact place
+   the link named, fragment carried forward rather than zeroed - instead of 404ing, a real 404
+   reproduced against `provek.dev` before this fix landed. Named a fourth layer here rather than in
+   a file of its own because it is the identical instrument answering the identical question ("what
+   does `_middleware.js` actually do for this request"), not a second subject.
 """
 from __future__ import annotations
 
@@ -317,27 +318,33 @@ def test_existing_functions_and_data_are_never_intercepted(scenario):
 def test_an_encoded_hash_redirects_to_the_page_it_names_instead_of_404ing():
     """THE REPRODUCTION. `/method/%23the-order-link` is what a browser sends when it has
     percent-encoded the page's own `#` before requesting it - reproduced against `provek.dev`
-    2026-09-03 as a real 404. Must now redirect to `/method/` and never reach `next()` (which, in
-    production, is the path that 404s: there is no static file at that literal name)."""
+    2026-09-03 as a real 404. Must now redirect to `/method/#the-order-link` - the exact place the
+    link named, not merely the page it sits on - and never reach `next()` (which, in production, is
+    the path that 404s: there is no static file at that literal name). A redirect that landed on
+    `/method/` with no fragment would trade one way of not arriving for another: Fable rejected
+    that first version of this fix (2026-09-03) for exactly this reason."""
     r = _probe("encoded_hash_redirects_to_the_clean_page")
     assert r["next_called"] == 0, "fell through to the pipeline that 404s instead of redirecting"
     assert r["status"] == 301
-    assert r["location"] == "https://provek.dev/method/"
+    assert r["location"] == "https://provek.dev/method/#the-order-link"
 
 
 def test_a_trailing_slash_on_the_encoded_segment_lands_on_the_same_page():
+    """A trailing slash on the encoded fragment itself (`.../%23the-order-link/`) must not become
+    part of the anchor id - `#the-order-link/` matches no element `Method.tsx` renders."""
     r = _probe("encoded_hash_with_a_trailing_slash_redirects_the_same_way")
     assert r["next_called"] == 0
-    assert r["location"] == "https://provek.dev/method/"
+    assert r["location"] == "https://provek.dev/method/#the-order-link"
 
 
 def test_an_encoded_hash_with_no_leading_slash_still_lands_on_a_real_page():
     """Not this site's own link shape (every internal link already ends the route in `/` before the
     hash), but a malformed request of this general family must not 404 either - the fix is keyed on
-    the encoded hash appearing at all, not on a slash immediately before it."""
+    the encoded hash appearing at all, not on a slash immediately before it. The fragment text is
+    preserved regardless of whether it names a real anchor on this particular page."""
     r = _probe("encoded_hash_without_a_leading_slash_still_lands_on_a_page")
     assert r["next_called"] == 0
-    assert r["location"] == "https://provek.dev/apply/"
+    assert r["location"] == "https://provek.dev/apply/#whatever"
 
 
 def test_an_encoded_hash_on_the_root_redirects_to_the_root_not_to_nothing():
@@ -346,7 +353,7 @@ def test_an_encoded_hash_on_the_root_redirects_to_the_root_not_to_nothing():
     own leading `/`) cannot hide behind the general case above."""
     r = _probe("encoded_hash_on_the_root_redirects_to_the_root")
     assert r["next_called"] == 0
-    assert r["location"] == "https://provek.dev/"
+    assert r["location"] == "https://provek.dev/#whatever"
 
 
 def test_a_request_with_no_encoded_hash_is_never_redirected():
