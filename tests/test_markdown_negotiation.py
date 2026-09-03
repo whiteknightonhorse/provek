@@ -23,6 +23,13 @@ WHAT THIS ENFORCES, in three layers.
    task named explicitly), and the three existing Functions plus a JSON data file untouched even
    when a client sends the markdown header - proving the fallthrough is decided by route shape, not
    by a list of names that could go stale as routes are added.
+
+4. THE SAME FILE'S OTHER REQUEST-SHAPE FIX, proven through the same probe (2026-09-03): a link like
+   `/method/#the-order-link`, percent-encoded by the client that opened it into a literal path
+   segment (`/method/%23the-order-link`), redirects to the page it names instead of 404ing - a real
+   404 reproduced against `provek.dev` before this fix landed. Named a fourth layer here rather than
+   in a file of its own because it is the identical instrument answering the identical question
+   ("what does `_middleware.js` actually do for this request"), not a second subject.
 """
 from __future__ import annotations
 
@@ -303,3 +310,58 @@ def test_existing_functions_and_data_are_never_intercepted(scenario):
     r = _probe(scenario)
     assert r["next_called"] == 1, f"{scenario}: the middleware intercepted a non-page route"
     assert r["body"] == "ORDINARY-PIPELINE-RESPONSE"
+
+
+# --- layer 4: the encoded-fragment redirect -------------------------------------------------------
+
+def test_an_encoded_hash_redirects_to_the_page_it_names_instead_of_404ing():
+    """THE REPRODUCTION. `/method/%23the-order-link` is what a browser sends when it has
+    percent-encoded the page's own `#` before requesting it - reproduced against `provek.dev`
+    2026-09-03 as a real 404. Must now redirect to `/method/` and never reach `next()` (which, in
+    production, is the path that 404s: there is no static file at that literal name)."""
+    r = _probe("encoded_hash_redirects_to_the_clean_page")
+    assert r["next_called"] == 0, "fell through to the pipeline that 404s instead of redirecting"
+    assert r["status"] == 301
+    assert r["location"] == "https://provek.dev/method/"
+
+
+def test_a_trailing_slash_on_the_encoded_segment_lands_on_the_same_page():
+    r = _probe("encoded_hash_with_a_trailing_slash_redirects_the_same_way")
+    assert r["next_called"] == 0
+    assert r["location"] == "https://provek.dev/method/"
+
+
+def test_an_encoded_hash_with_no_leading_slash_still_lands_on_a_real_page():
+    """Not this site's own link shape (every internal link already ends the route in `/` before the
+    hash), but a malformed request of this general family must not 404 either - the fix is keyed on
+    the encoded hash appearing at all, not on a slash immediately before it."""
+    r = _probe("encoded_hash_without_a_leading_slash_still_lands_on_a_page")
+    assert r["next_called"] == 0
+    assert r["location"] == "https://provek.dev/apply/"
+
+
+def test_an_encoded_hash_on_the_root_redirects_to_the_root_not_to_nothing():
+    """The one case where the path BEFORE the encoded hash is empty - proven on its own so an
+    off-by-one in `stripEncodedFragment` (an empty string treated as `null`, or left without its
+    own leading `/`) cannot hide behind the general case above."""
+    r = _probe("encoded_hash_on_the_root_redirects_to_the_root")
+    assert r["next_called"] == 0
+    assert r["location"] == "https://provek.dev/"
+
+
+def test_a_request_with_no_encoded_hash_is_never_redirected():
+    """THE CONTROL. An ordinary page request, no `%23` anywhere in it - must reach the ordinary
+    pipeline exactly as before this fix, not be redirected to itself or anywhere else."""
+    r = _probe("no_encoded_hash_is_never_redirected")
+    assert r["next_called"] == 1
+    assert r["status"] == 200
+    assert r["location"] is None
+    assert r["body"] == "ORDINARY-PIPELINE-RESPONSE"
+
+
+def test_a_post_request_is_never_redirected_even_with_an_encoded_hash_in_its_path():
+    """The method guard applies to the redirect exactly as it already does to markdown negotiation:
+    a POST must reach its endpoint regardless of what its path happens to contain."""
+    r = _probe("post_with_an_encoded_hash_is_not_redirected")
+    assert r["next_called"] == 1
+    assert r["location"] is None

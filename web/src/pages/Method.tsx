@@ -3,6 +3,22 @@
 
 import { Facts, Page, Strip } from "../components/Chrome";
 
+/** The copy-paste block for "Getting the link" below - `service` (schema 1.1.0, `src/collector/
+ *  declaration.py::_service_from_block`), the same shape apibase.pro actually ships at
+ *  github.com/whiteknightonhorse/APIbase/blob/main/provek.json. Kept generic here rather than
+ *  reusing apibase.pro's own values: this is a template for a DIFFERENT project to fill in, and
+ *  apibase.pro's own offering text describes apibase.pro, not a placeholder. */
+const SERVICE_TEMPLATE = [
+  "{",
+  '  "provek_declaration": "1.1.0",',
+  '  "service": {',
+  '    "order_url": "https://yourproject.example/order",',
+  '    "offering": "one line: what a buyer gets",',
+  '    "pricing_url": "https://yourproject.example/pricing"',
+  "  }",
+  "}",
+];
+
 const LADDER: Array<[string, string]> = [
   ["L0", "A human performs the operation; the agent drafts or advises."],
   ["L1", "The agent performs it; a human approves each instance."],
@@ -218,6 +234,45 @@ export default function Method() {
           its outcome unless both sides later request a{" "}
           <a href="/phase-2/" className="text-[var(--color-accent)] hover:underline">
             WitnessRecord
+          </a>
+          .
+        </p>
+
+        {/* THE HOW, NOT ONLY THE WHAT. The paragraphs above state the rule; this states the steps -
+            requested directly, and kept to a template plus what each field does because a project
+            handing this to its own agent needs something to copy, not a second essay. Mirrors the
+            real declaration apibase.pro ships (linked below), reduced to what THIS button reads:
+            `accountability` is a sibling block (D-46) that no part of `orderLinkUrl` inspects. */}
+        <h3 className="mt-6 text-base font-semibold">Getting the link</h3>
+        <p className="mt-1 text-sm text-[var(--color-ink-2)]">
+          Add a <code>provek.json</code> to your repository&rsquo;s root with a{" "}
+          <code>service</code> block. Copy this, hand it to your own agent, and have it fill in the
+          three URLs:
+        </p>
+        <div className="mt-3 overflow-x-auto bg-[var(--color-paper)] border border-[var(--color-line)] p-4">
+          <pre className="font-mono text-xs leading-relaxed whitespace-pre">
+            {SERVICE_TEMPLATE.join("\n")}
+          </pre>
+        </div>
+        <p className="mt-3 text-sm text-[var(--color-ink-2)]">
+          <code>order_url</code> is the only required field. It must be <code>https</code> and must
+          resolve to a public address &mdash; not internal, private or loopback &mdash; checked both
+          when we read the declaration and every time we probe it. <code>offering</code>,{" "}
+          <code>pricing_url</code> and <code>terms_url</code> are optional.
+        </p>
+        <p className="mt-2 text-sm text-[var(--color-ink-2)]">
+          The file alone does not produce a button. As stated above, all three conditions must hold
+          at once: the passport <code>verified</code>, the URL declared, and our own anonymous GET
+          against it having last succeeded &mdash; we go to the address ourselves, we do not take
+          the file&rsquo;s word for it. Not yet checked is not a partial button; it is no button.
+        </p>
+        <p className="mt-2 text-sm text-[var(--color-ink-2)]">
+          A working example: <code>service</code> is one block inside the fuller declaration{" "}
+          <a
+            href="https://github.com/whiteknightonhorse/APIbase/blob/main/provek.json"
+            className="text-[var(--color-accent)] hover:underline"
+          >
+            apibase.pro publishes
           </a>
           .
         </p>

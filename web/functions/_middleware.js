@@ -1,15 +1,29 @@
 /**
- * Markdown negotiation - the ONLY thing this file does.
+ * Two request-shape fixes that apply to every route, ahead of the ordinary pipeline: an encoded
+ * URL fragment landed on its page instead of a 404, and markdown negotiation.
+ *
+ * ENCODED-FRAGMENT REDIRECT. A `#fragment` is a browser-only construct - it is never sent in an
+ * HTTP request, so a link like `/method/#the-order-link` reaches this server as a plain
+ * `GET /method/`. Some in-app browsers (messenger webviews, reproduced 2026-09-03 against a link
+ * opened from one) percent-encode the `#` themselves before requesting the page, so the SAME link
+ * instead arrives as `GET /method/%23the-order-link` - a literal, non-existent path segment, which
+ * 404s where the real fragment 200s. The reader did nothing wrong; the app that opened the link
+ * did. This is the ONE place every request passes through regardless of route, so the fix lives
+ * here rather than on any one page: strip everything from the first `%23` onward and send the
+ * reader to the page it names, rather than a dead end that plainly exists. Covers every page with
+ * an anchor, not just `/method/` - checked 2026-09-03, this is the only site defect of its shape.
+ *
+ * MARKDOWN NEGOTIATION.
  *
  * WHY IT EXISTS. Fable's ruling on the axis a public checker scored this site 0/100 on: "Provek
  * sells machine-readability and shows 0/100 on Content on its own site." The registry and every
  * passport are already served as JSON (`/data/*.json`) and as prose HTML (the pages themselves);
  * what was missing is the same content in the format a checker on that axis asks for at the SAME
  * address a browser reads - `GET /registry/` with `Accept: text/markdown` answering markdown
- * instead of the HTML `Accept: text/html` gets. This file is the negotiator, nothing else: the
- * markdown itself is generated at build time from registry+passport data by `web/markdown.mjs` and
- * written beside each page's `index.html` as `index.md` (`web/prerender.mjs`), never by hand -
- * `web/discovery.mjs`'s own header names the reason a hand-maintained copy would drift.
+ * instead of the HTML `Accept: text/html` gets. The markdown itself is generated at build time
+ * from registry+passport data by `web/markdown.mjs` and written beside each page's `index.html` as
+ * `index.md` (`web/prerender.mjs`), never by hand - `web/discovery.mjs`'s own header names the
+ * reason a hand-maintained copy would drift.
  *
  * WHY `context.next()` AND NOT `env.ASSETS.fetch(request)` FOR THE "OTHERWISE" BRANCH, THOUGH
  * THAT WAS THE LITERAL SHAPE NAMED FOR IT. A Cloudflare Pages Function router composes, for each
@@ -34,6 +48,7 @@
  */
 
 const MARKDOWN = /\btext\/markdown\b/;
+const ENCODED_HASH = /%23/i;
 
 /** The generated sibling for a page route, or `null` for anything that is not one. Mirrors
  *  `web/prerender.mjs:write()`'s own rule for where an `index.html` lands - the markdown sits
@@ -44,21 +59,45 @@ function markdownSiblingPath(pathname) {
   return `${pathname}index.md`;
 }
 
+/** Everything up to a percent-encoded `#`, normalised back to this site's own route shape (a
+ *  trailing slash - see `norm()` in `web/src/App.tsx`). `null` when the path carries no encoded
+ *  hash at all, so the caller can tell "nothing to do" from "the clean page is the site root". */
+function stripEncodedFragment(pathname) {
+  const i = pathname.search(ENCODED_HASH);
+  if (i === -1) return null;
+  const clean = pathname.slice(0, i);
+  if (clean === "") return "/";
+  return clean.endsWith("/") ? clean : `${clean}/`;
+}
+
 export async function onRequest(context) {
   const { request, env, next } = context;
 
-  // Negotiation is a GET/HEAD concern. A POST to /api/apply carries no Accept header worth reading
-  // for this purpose and must reach the endpoint regardless - `next()` either way, but stated up
-  // front rather than left to fall out of markdownSiblingPath by accident.
+  // Both fixes below are GET/HEAD concerns. A POST to /api/apply carries no Accept header worth
+  // reading and no fragment worth stripping, and must reach the endpoint regardless - `next()`
+  // either way, but stated up front rather than left to fall out of either check by accident.
   if (request.method !== "GET" && request.method !== "HEAD") return next();
 
-  // THE CONTROL. No `Accept: text/markdown` - including no Accept header at all, which is what an
-  // ordinary browser sends - and this file does nothing whatsoever. Every branch below this line
-  // runs only for a request that asked for markdown by name.
+  const url = new URL(request.url);
+
+  // THE CONTROL for the redirect: reproduced against provek.dev 2026-09-03, `/method/#the-order-
+  // link` (a real fragment, never sent here) answers 200 while `/method/%23the-order-link` (the
+  // same link, percent-encoded by the client that opened it) 404s. Land on the named page instead.
+  const clean = stripEncodedFragment(url.pathname);
+  if (clean !== null) {
+    url.pathname = clean;
+    url.search = "";
+    url.hash = "";
+    return Response.redirect(url.toString(), 301);
+  }
+
+  // THE CONTROL for negotiation. No `Accept: text/markdown` - including no Accept header at all,
+  // which is what an ordinary browser sends - and this file does nothing whatsoever from here on.
+  // Every branch below this line runs only for a request that asked for markdown by name.
   const accept = request.headers.get("Accept") || "";
   if (!MARKDOWN.test(accept)) return next();
 
-  const pathname = new URL(request.url).pathname;
+  const pathname = url.pathname;
   const mdPath = markdownSiblingPath(pathname);
   if (!mdPath) return next();
 

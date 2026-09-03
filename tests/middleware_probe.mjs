@@ -3,7 +3,8 @@
  * instead of reading it, the same shape and for the same reason as `tests/intake_probe.mjs` - a
  * source scan can see that `next()` is called somewhere in the file and never that it is called on
  * the right request. The property under test is what the function ANSWERS and whether it called
- * through, not what its source contains.
+ * through, not what its source contains. Covers both of that file's request-shape fixes - the
+ * encoded-fragment redirect and markdown negotiation - since both are proven the same way.
  *
  * Emits one JSON object on stdout: whether `next()` fired, and the response actually returned.
  */
@@ -63,6 +64,31 @@ const CASES = {
   // Ordinary static data, same shape as the three above: no trailing slash, never intercepted.
   registry_json_untouched_even_with_markdown_accept:
     { path: "/data/registry.json", headers: { Accept: "text/markdown" } },
+
+  // An in-app browser that percent-encoded the page's own `#` before requesting it (reproduced
+  // against provek.dev 2026-09-03) - must land on the page the fragment names, not 404.
+  encoded_hash_redirects_to_the_clean_page:
+    { path: "/method/%23the-order-link", headers: {} },
+  // The same shape with a trailing slash already on the encoded segment - a browser that also
+  // appended one, which must not produce a double slash or a different target.
+  encoded_hash_with_a_trailing_slash_redirects_the_same_way:
+    { path: "/method/%23the-order-link/", headers: {} },
+  // No `/` between the route and the encoded hash - not this site's own link shape, but a
+  // malformed one must still land on a real page rather than 404.
+  encoded_hash_without_a_leading_slash_still_lands_on_a_page:
+    { path: "/apply%23whatever", headers: {} },
+  // The encoded hash on the site root itself - the one case where "everything before it" is empty,
+  // proven separately from the general case so an off-by-one here cannot hide behind it.
+  encoded_hash_on_the_root_redirects_to_the_root:
+    { path: "/%23whatever", headers: {} },
+  // THE CONTROL for the redirect: an ordinary request for the same page, no encoded hash anywhere
+  // in it, must never be redirected.
+  no_encoded_hash_is_never_redirected:
+    { path: "/method/", headers: {} },
+  // The method guard applies to the redirect too, not only to markdown negotiation - a POST must
+  // reach its endpoint even if its path happens to contain an encoded hash.
+  post_with_an_encoded_hash_is_not_redirected:
+    { path: "/api/apply%23x", method: "POST", headers: {} },
 };
 
 const name = process.argv[2];
@@ -83,6 +109,7 @@ const result = {
   next_called: calls.count,
   status: response.status,
   content_type: response.headers.get("content-type"),
+  location: response.headers.get("location"),
   body: await response.text(),
 };
 process.stdout.write(JSON.stringify(result));

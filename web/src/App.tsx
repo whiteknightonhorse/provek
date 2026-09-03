@@ -91,7 +91,14 @@ function useRoute(initial: string) {
       if (href.startsWith("/w/")) return;
       e.preventDefault();
       history.pushState(null, "", href);
-      setRoute(norm(href));
+      // THE ROUTE IS THE PATH, NEVER THE FRAGMENT. `popstate`'s own handler two lines up computes
+      // `route` from `window.location.pathname`, which never carries a `#` - this handler must
+      // match it rather than norm()-ing `href` whole. `/method/#the-order-link` (the exact link
+      // the registry, landing, apply and phase-2 pages all point at Method's own anchor with)
+      // otherwise normalised to `/method/#the-order-link/`, a route `Body` matches nothing on -
+      // measured: the reader who clicked that link from inside the app got "No such page" over a
+      // page that plainly exists, for the one link this entire mechanism exists to make work.
+      setRoute(norm(href.split(/[?#]/)[0]));
     };
     addEventListener("click", click);
     return () => {
