@@ -107,9 +107,10 @@ The pipeline reads public sources with no credential at all, so any reader can r
 
 ```bash
 git clone https://github.com/whiteknightonhorse/provek && cd provek
-(cd web && npm ci && npm run build)   # part of the suite judges the emitted site, not only the code
-python3 -m pytest -q                  # the suite prints its own count
-python3 scripts/cohort.py             # re-emits public/registry + public/passports
+(cd web && npm ci && npm run build)                  # part of the suite judges the emitted site, not only the code
+python3 -m pip install -r requirements/ci-tests.txt  # pinned test deps (PyYAML etc.), same set CI uses
+python3 -m pytest -q                                 # the suite prints its own count
+python3 scripts/cohort.py                            # re-emits public/registry + public/passports
 ```
 
 ## Where the rest is
