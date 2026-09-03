@@ -583,3 +583,11 @@ laws:
     text: "the two marked copies of SPEC.md's phase-renumbering note are byte-identical, and at least two copies exist"
     gate: scripts/ratchet_phase3_note.py
     test: tests/test_ratchet_phase3_note.py
+  # D-54 (AUD-001, Fable 2026-09-03). `cryptocardhub-public`, a repository the operator owns,
+  # carried `verifier_affiliation: "independent"` on the live registry for nine days because
+  # intake wrote the value once and nothing ever re-checked it against the owner the repo string
+  # itself names. The gate re-derives the fact every run instead of trusting the stored write.
+  - id: LAW-AFFILIATION-MATCHES-OWNER
+    text: "a subject whose repository the operator owns must carry verifier_affiliation: same_owner, re-checked on every cohort run, never trusted from intake alone"
+    gate: scripts/cohort.py
+    test: tests/test_subjects_affiliation_matches_owner.py

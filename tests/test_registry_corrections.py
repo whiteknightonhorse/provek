@@ -1,6 +1,7 @@
-"""The corrections log (phase-2 plan): both errata this project has ever published moved
-from `/registry/` to `/registry/corrections/`, byte-for-byte - and `/registry/` itself now carries
-exactly one compact line pointing there, never the full text of either correction again.
+"""The corrections log (phase-2 plan): the first two errata this project ever published moved
+from `/registry/` to `/registry/corrections/`, byte-for-byte, and a third (AUD-001, D-54) was
+published directly at that address - `/registry/` itself carries exactly one compact line pointing
+there, never the full text of any correction again.
 
 WHY THIS IS A FIXTURE TEST, NOT A DIFF AGAINST GIT HISTORY. The two expected texts below are
 captured directly from `web/src/pages/Registry.tsx` as it stood BEFORE this task moved them - the
@@ -42,6 +43,18 @@ EXPECTED_31AUG = (
     "moved from L4 to L3 (projection 80 to 60). Nothing here disappears — this notice stays "
     "up next to the one it follows."
 )
+# Captured verbatim from `web/src/pages/Corrections.tsx` (AUD-001, D-54) - the third erratum this
+# project has published, and the first to be published directly on this page rather than moved
+# here from `/registry/`.
+EXPECTED_03SEP = (
+    "Erratum, 2026-09-03. A defect in the corpus, not the rule that reads it: "
+    "cryptocardhub-public, a repository the operator owns, was admitted to the registry on "
+    "2026-08-25 marked independent, and no gate ever compared that stored value to the owner the "
+    "repository's own name states. The row read as an independent verification of the operator's "
+    "own project for the length of that error. It now reads same_owner, the passport has been "
+    "re-issued, and a gate added the same day refuses to publish the registry if any subject the "
+    "operator owns carries anything else."
+)
 
 emitted = pytest.mark.skipif(not CORRECTIONS_PAGE.exists(), reason="site not built in this checkout")
 
@@ -55,14 +68,15 @@ def _main_text(html_path: Path) -> str:
 
 
 @emitted
-def test_both_errata_are_preserved_byte_for_byte_on_the_corrections_page():
+def test_all_three_errata_are_preserved_byte_for_byte_on_the_corrections_page():
     text = _main_text(CORRECTIONS_PAGE)
     assert EXPECTED_25AUG in text, "the 2026-08-25 erratum's text drifted from what was moved here"
     assert EXPECTED_31AUG in text, "the 2026-08-31 erratum's text drifted from what was moved here"
+    assert EXPECTED_03SEP in text, "the 2026-09-03 erratum's text drifted from what was published"
 
 
 @pytest.mark.skipif(not CORRECTIONS_MD.exists(), reason="markdown sibling not built in this checkout")
-def test_both_errata_survive_into_the_no_js_markdown_sibling():
+def test_all_three_errata_survive_into_the_no_js_markdown_sibling():
     """"prerender, no JS" is the whole point of moving this content to its own page - the markdown
     twin `web/markdown.mjs` derives from every page is what proves a reader (or a crawler) with no
     JavaScript still gets the exact same words."""
@@ -72,6 +86,7 @@ def test_both_errata_survive_into_the_no_js_markdown_sibling():
     text = re.sub(r"\s+", " ", CORRECTIONS_MD.read_text(encoding="utf-8").replace("**", "")).strip()
     assert EXPECTED_25AUG in text
     assert EXPECTED_31AUG in text
+    assert EXPECTED_03SEP in text
 
 
 @emitted
@@ -82,8 +97,10 @@ def test_the_full_erratum_text_no_longer_lives_on_the_registry_page():
     text = _main_text(REGISTRY_PAGE)
     assert EXPECTED_25AUG not in text
     assert EXPECTED_31AUG not in text
+    assert EXPECTED_03SEP not in text
     assert "will be re-issued together" not in text
     assert "signature share the published" not in text
+    assert "verification of the operator's own project" not in text
 
 
 @emitted
@@ -91,8 +108,9 @@ def test_registry_carries_exactly_one_correction_line():
     text = _main_text(REGISTRY_PAGE)
     assert text.count("Erratum, 2026-08-25.") == 0
     assert text.count("Erratum, 2026-08-31.") == 0
-    assert text.count("Two corrections are on record for this registry.") == 1
-    assert text.count("All corrections (2)") == 1
+    assert text.count("Erratum, 2026-09-03.") == 0
+    assert text.count("Three corrections are on record for this registry.") == 1
+    assert text.count("All corrections (3)") == 1
     links = re.findall(r'<a\b[^>]*href="([^"]+)"[^>]*>\s*All corrections',
                        REGISTRY_PAGE.read_text(encoding="utf-8"))
     assert links == ["/registry/corrections/"]
@@ -115,3 +133,14 @@ def test_MUTATION_a_reworded_erratum_would_be_CAUGHT():
     reworded = EXPECTED_25AUG.replace("re-measured", "recomputed")
     assert reworded not in EXPECTED_25AUG
     assert EXPECTED_25AUG not in reworded
+
+
+def test_MUTATION_a_silently_softened_09sep_erratum_would_be_CAUGHT():
+    """Same control, for AUD-001's own erratum: a rewrite that quietly drops "independent
+    verification of the operator's own project" for something gentler must still fail the
+    byte-for-byte check above."""
+    softened = EXPECTED_03SEP.replace(
+        "read as an independent verification of the operator's own project",
+        "carried the wrong label")
+    assert softened not in EXPECTED_03SEP
+    assert EXPECTED_03SEP not in softened

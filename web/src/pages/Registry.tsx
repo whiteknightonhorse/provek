@@ -36,16 +36,16 @@ export default function Registry({ reg }: { reg: R }) {
         {reg.generated_at.slice(0, 19).replace("T", " ")} UTC.
       </p>
 
-      {/* Corrections log (phase-2 plan): both errata moved to /registry/corrections/, in full and
+      {/* Corrections log (phase-2 plan): all errata live at /registry/corrections/, in full and
           unabridged - this is a POINTER, not a summary of what they said. Reproducing their text
           here as well would be the same rule written in two places (LAW #ONE-PLACE); the full,
           byte-for-byte originals live at the one address, held to that by
           `tests/test_registry_corrections.py`. */}
       <div className="mt-5">
         <Strip tone="warn">
-          Two corrections are on record for this registry.{" "}
+          Three corrections are on record for this registry.{" "}
           <a href="/registry/corrections/" className="text-[var(--color-accent)] hover:underline">
-            All corrections (2) →
+            All corrections (3) →
           </a>
         </Strip>
       </div>

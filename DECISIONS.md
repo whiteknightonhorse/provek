@@ -3274,3 +3274,96 @@ nothing in any tracked document suggests one exists.
 requirements) remains deferred by decision A-10 ("projects first") - unchanged, not reopened by
 this entry. No new work is authorized by this decision; it records that none is owed under the
 current ratified plan.
+
+
+## D-54. AUD-001: a false `verifier_affiliation` lived on the live registry for nine days; fixed, re-measured, gated, and disclosed
+
+**What was live.** Fable's cross-repository sweep of 2026-09-03 found `https://provek.dev/data/
+registry.json` and the `cryptocardhub-public` passport publishing `verifier_affiliation:
+"independent"` for `whiteknightonhorse/cryptocardhub-public` - a repository the operator owns
+(GitHub API: owner=whiteknightonhorse, fork=false). The `/p/.../brief` page for that subject
+correctly showed no "Affiliated verification" banner, because it takes the same false field at
+face value. The row entered `data/subjects.json` via intake on 2026-08-25 06:59 (`deb1624`);
+`~/orchestra/intake_cron.py`'s logic, as it reads today (mtime 07:02 the same day), derives
+`same_owner` correctly for this exact repository. Whether the row was wrong the moment it was
+written, or was written correctly under different logic that a later fix silently left the
+already-admitted row behind, is **not established** - both are consistent with the evidence and
+nothing distinguishes them after the fact. What is established is the failure this project exists
+to catch in others: no gate compared a stored affiliation to the owner the repository's own name
+states, so a fact recorded once at intake could go stale, silently, forever.
+
+**Fix, three parts, per Fable's recommendation.**
+
+1. **The row.** `data/subjects.json`'s `cryptocardhub-public` entry now reads `same_owner`. The
+   subject was re-measured, not hand-edited downstream - a first attempt used
+   `PROVEK_ONLY=whiteknightonhorse/cryptocardhub-public python3 scripts/cohort.py` to keep the diff
+   to exactly this one row, but that surgical run stamps a fresh `generated_at` onto the WHOLE
+   registry document while carrying the other nine rows forward with their OLD `valid_until`
+   unchanged (`scripts/cohort.py`'s own comment: incremental mode preloads unmeasured rows rather
+   than re-deriving them, precisely so a partial run cannot silently refresh what it did not
+   touch). `src/liveness/commitments.py`'s reissue-obligation check compares
+   `earliest_valid_until - generated_at` against a floor of exactly 30 days with zero slack (a full
+   pass yields exactly 30; the check needs exactly 30) - so the one-day-old skew between a fresh
+   `generated_at` and nine untouched `valid_until` timestamps read as `DEADLINE TOO LATE TO ACT ON`
+   and turned `tests/test_reissue_obligation.py` (both cases) and
+   `tests/test_validation_target_obligation.py::test_the_incubator_is_meeting_its_own_watch_obligation`
+   red - a real defect, not a flaky one: `git stash` on a clean HEAD ran the same 73 tests green.
+   This is not a new bug invented by this fix; it is `scripts/cohort.py`'s own documented design
+   ("a full pass still has to happen -- that is the daily refresh, run when the budget allows")
+   made visible by using the narrow path without the full pass that is supposed to follow it.
+   The fix here is to run the full pass instead of the narrow one - exactly what
+   `~/orchestra/nightly_remeasure.sh` already does unattended every night (`python3
+   scripts/cohort.py` with no `PROVEK_ONLY`, then `git add -A public/passports public/registry
+   web/public/data`) - so this commit carries no mechanism nightly re-measure would not have
+   produced on its own within a day. All ten passports were re-issued together with one shared
+   `generated_at`/`valid_until` (2026-09-03, +30 days), restoring the full 30-day margin for every
+   row, not just the one this finding is about.
+
+   Confirmed by diff before committing: **`level` and `projection` are unchanged for every one of
+   the ten subjects** - the full pass reads live evidence that moved for three repositories with
+   real commit activity since the 2026-09-02 run (`APIbase`, `mcp-protocol-tester`, `provek` - new
+   `head_sha`, updated commit/author counts, and `APIbase` now declaring a `service` block with a
+   live, reachable `order_url` because that repository's own `provek.json` was filled in
+   independently of this task), but none of that activity changed any subject's measured level or
+   projection - so this fix does not raise the operator's own score by any path, which is the
+   condition the boundary on this whole audit turns on. `cryptocardhub-public`'s row carries a
+   fresh `issued_at`/`valid_until`, `mandate_ref: self-mandate-0001` (previously `null`), and
+   `verifier_affiliation: same_owner`; every other field of its passport is byte-identical to the
+   previous, correctly-measured run.
+
+2. **The gate.** `scripts/cohort.py` now defines `OPERATOR = "whiteknightonhorse"` and a pure
+   function `affiliation_violations(subjects, operator=OPERATOR)` that flags any subject whose
+   repo owner matches `OPERATOR` (case-insensitively, matching `intake_cron.py`'s own comparison)
+   but whose stored affiliation is not `same_owner`. The module raises `SystemExit` at import time
+   if the check finds anything, so a future intake defect - or a future edit to `subjects.json` -
+   halts the cohort run instead of quietly republishing a false affiliation. This constant cannot
+   be bound to `intake_cron.py`'s own `OPERATOR` by import, because that script runs from
+   `~/orchestra`, outside this repository; the gate at least re-derives the fact on every run
+   rather than trusting intake's write once.
+   `tests/test_subjects_affiliation_matches_owner.py` lifts the function out with `ast` (the same
+   technique `tests/test_cohort_l4_requires_signature.py` uses, for the same reason: the module
+   performs live GitHub calls at import scope and must never itself be imported by a test) and
+   proves: the exact shape of the live defect is caught (`independent` on an operator-owned repo),
+   the corrected row clears it, a genuinely independent applicant is NOT falsely flagged, the owner
+   comparison is case-insensitive, the real `data/subjects.json` is clean today, and the gate is
+   actually wired into the module rather than left as a function nobody calls.
+
+3. **The disclosure.** Per D-28 (a stale public fact is corrected beside it, never silently), a
+   third erratum is published at `/registry/corrections/`, dated 2026-09-03, naming the defect and
+   its fix in the same terms as this entry. `/registry/` and `/registry/corrections/`'s own count
+   move from two corrections to three; `tests/test_registry_corrections.py`'s byte-for-byte fixture
+   discipline is extended to the new erratum, including its own reworded-text mutation control.
+
+**What this does NOT do.** The fix does not raise this project's own measured score - affiliation
+sits outside the projection/level scoring path entirely, confirmed by re-measuring: level and
+projection are unchanged before and after. AUD-001 explicitly ruled the conflict-of-interest bar
+against self-correction does not apply here (fixing our own false "independent" label is not
+self-scoring), but the public-correction requirement does apply, and is met by part 3 above.
+
+**Numbers.** 1072 passed, 1 pre-existing skip (1051 + 7 new in
+`test_subjects_affiliation_matches_owner.py` + 2 new mutation/coverage lines in
+`test_registry_corrections.py`, net of the reissue-obligation false reds closed by the full pass),
+corrections suite green (7/7, extended from 6), `npm run build` + prerender clean (20 routes,
+unchanged count), ruff clean, all ten subjects re-measured and re-issued together (one shared
+`generated_at`), reissue-obligation and watch-obligation tests confirmed green with a real 30-day
+margin.

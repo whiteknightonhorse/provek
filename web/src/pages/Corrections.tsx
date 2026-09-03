@@ -1,4 +1,4 @@
-/** The corrections log, in full. Both errata this project has ever published, byte-for-byte.
+/** The corrections log, in full. All three errata this project has ever published, byte-for-byte.
  *
  * WHY THIS PAGE EXISTS (the corrections-log step of the phase-2 plan). `/registry/` used to carry both errata in full,
  * as two `<Strip>` blocks above the table - honest, and increasingly not what a reader who has
@@ -15,6 +15,11 @@
  * time-windowed reading) since, and the corrected verdicts ARE the ones on `/registry/` today.
  * Editing the original sentence to the past tense would erase the fact that a promise was made in
  * public before it was kept; appending a dated resolution beside it keeps both facts on the page.
+ *
+ * THE 2026-09-03 ERRATUM (AUD-001, Fable's cross-repository sweep) is published rather than
+ * quietly folded into the intake fix it describes - D-28's rule again, this time for a stored fact
+ * about a row rather than a stale sentence about a process. See D-54 in DECISIONS.md for the full
+ * incident.
  */
 
 import { Page, Strip } from "../components/Chrome";
@@ -31,16 +36,17 @@ export default function Corrections() {
 
         <h1 className="text-2xl font-semibold tracking-tight">All corrections</h1>
         <p className="mt-2 text-sm text-[var(--color-ink-2)]">
-          Every erratum this project has published, in full and unabridged. Two exist today.
+          Every erratum this project has published, in full and unabridged. Three exist today.
         </p>
 
         {/* THE MOVE, NAMED. A reader who bookmarked or quoted the original location on `/registry/`
             should find the same words here, not a summary standing in for them. */}
         <p className="mt-3 text-xs text-[var(--color-ink-3)]">
-          Both corrections below were originally published directly on the registry page. They were
-          moved to this page on 2026-09-02, unabridged, when the registry itself was given a single
-          compact line pointing here instead of carrying the full text of every correction it has
-          ever needed.
+          The first two corrections below were originally published directly on the registry page.
+          They were moved to this page on 2026-09-02, unabridged, when the registry itself was given
+          a single compact line pointing here instead of carrying the full text of every correction
+          it has ever needed. The third was published directly here, the address this page has
+          carried since that move.
         </p>
 
         <div className="mt-6 space-y-4">
@@ -72,6 +78,18 @@ export default function Corrections() {
               methodology requires for that rung. The rule now matches what is published; APIbase, the
               one passport the defect affected, moved from L4 to L3 (projection 80 to 60). Nothing here
               disappears &mdash; this notice stays up next to the one it follows.
+            </Strip>
+          </div>
+
+          <div>
+            <Strip tone="warn">
+              <strong>Erratum, 2026-09-03.</strong> A defect in the corpus, not the rule that reads
+              it: cryptocardhub-public, a repository the operator owns, was admitted to the registry
+              on 2026-08-25 marked independent, and no gate ever compared that stored value to the
+              owner the repository's own name states. The row read as an independent verification of
+              the operator's own project for the length of that error. It now reads same_owner, the
+              passport has been re-issued, and a gate added the same day refuses to publish the
+              registry if any subject the operator owns carries anything else.
             </Strip>
           </div>
         </div>

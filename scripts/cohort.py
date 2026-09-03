@@ -93,6 +93,39 @@ if not _SUBJECTS:
 COHORT = [s["repo"] for s in _SUBJECTS]
 AFFILIATION = {s["repo"]: s["affiliation"] for s in _SUBJECTS}
 
+# THE OPERATOR'S OWN NAME, matched against every subject's repo string so a stored affiliation can
+# be CHECKED rather than merely typed once at intake and trusted forever. AUD-001 (Fable,
+# 2026-09-03): the live registry published `verifier_affiliation: "independent"` for
+# `whiteknightonhorse/cryptocardhub-public` from 2026-08-25 to 2026-09-03 even though its owner IS
+# the operator - a fact `~/orchestra/intake_cron.py` derives correctly TODAY, but nothing re-checked
+# for a row already admitted. This constant has to match that script's OPERATOR by hand: intake runs
+# from `~/orchestra`, outside this repository, so no import can bind the two together - the gate
+# below at least stops the STORED value from drifting from what the repo string itself says, on
+# every run rather than once at intake.
+OPERATOR = "whiteknightonhorse"
+
+
+def affiliation_violations(subjects: list[dict], operator: str = OPERATOR) -> list[str]:
+    """Repos in `subjects` the operator owns whose stored affiliation is not same_owner.
+
+    Pure, so a test can feed it a MUTATED copy of subjects.json's data without loading this whole
+    module - and its live GitHub calls - a second time. See
+    tests/test_subjects_affiliation_matches_owner.py, which proves this trips on the exact shape of
+    AUD-001's defect and clears on the corrected one.
+    """
+    return [s["repo"] for s in subjects
+            if s["repo"].split("/", 1)[0].lower() == operator.lower()
+            and s["affiliation"] != "same_owner"]
+
+
+# GATE, not a convention: this halts the whole cohort run rather than silently republishing a false
+# affiliation - the exact failure mode AUD-001 found live, now checked on every run instead of once.
+_bad_affiliation = affiliation_violations(_SUBJECTS)
+if _bad_affiliation:
+    raise SystemExit(
+        "data/subjects.json claims a non-same_owner affiliation for a repository the operator "
+        "owns: " + ", ".join(_bad_affiliation))
+
 # INCREMENTAL MODE, and it exists because of arithmetic, not taste. Scoring one subject costs three
 # anonymous GitHub calls and the anonymous budget is 60 an hour, so a full pass over N subjects
 # costs 3N. At today's eight that is 24 and a rebuild is cheap; at nineteen it is 57, which is one
