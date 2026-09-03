@@ -29,6 +29,16 @@ SECRET_PATTERNS = (
     re.compile(r"sk-ant-[A-Za-z0-9_-]{30,}"),
     re.compile(r"BEGIN [A-Z ]*PRIVATE KEY"),
     re.compile(r"0x[0-9a-f]{64}"),
+    # AUD-006 (Fable, 2026-09-03): the four forms above are what a stranger's repo might carry;
+    # these four are what THIS project's own ~/.env carries, and a scan blind to its own inputs
+    # reports success on the thing it cannot see. Kept identical, character for character, in
+    # `scripts/secret_scan.sh` - LAW #ONE-PLACE, enforced by `tests/test_secret_scan_one_place.py`
+    # rather than by this comment, because a comment claiming two files agree is exactly the kind
+    # of claim that drifts silently (see this module's own docstring on redaction).
+    re.compile(r"cfat_[A-Za-z0-9_-]{20,}"),
+    re.compile(r"[ps]k1_[A-Za-z0-9]{20,}"),
+    re.compile(r"r8_[A-Za-z0-9]{20,}"),
+    re.compile(r"[0-9]{8,10}:[A-Za-z0-9_-]{35}"),
 )
 
 
