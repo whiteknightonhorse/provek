@@ -134,6 +134,27 @@ if _bad_affiliation:
         "data/subjects.json claims a non-same_owner affiliation for a repository the operator "
         "owns: " + ", ".join(_bad_affiliation))
 
+
+def derive_affiliation(owner: str | None, stored: str, operator: str = OPERATOR) -> str:
+    """AUD-013 (Fable, 2026-09-03): the mechanism that produced AUD-001, not just its one instance.
+
+    `verifier_affiliation` was a fact `~/orchestra/intake_cron.py` wrote ONCE at admission, and
+    every re-measure since just carried the stored value forward - a repository TRANSFER (a change
+    of owner after admission) would go unnoticed in either direction, silently, forever, because
+    nothing here ever looked at the owner again. `affiliation_violations` above catches a bad value
+    sitting in `data/subjects.json` before a run starts; this re-derives the live fact on every
+    single pass instead of trusting a value written once.
+
+    `owner` is `GitHubEvidence.owner` - the login the SAME `/repos/{full}` call already reads, no
+    second request. `stored` (`AFFILIATION[full]`, `data/subjects.json`'s own field) is used ONLY
+    when this pass could not read an owner at all: a private or unreadable repository does not
+    become independent (or same_owner) on a guess - the last known value stands until a real read
+    can update it, the same discipline `skip_rate_limited` already applies to a whole row.
+    """
+    if owner is None:
+        return stored
+    return "same_owner" if owner.lower() == operator.lower() else "independent"
+
 # INCREMENTAL MODE, and it exists because of arithmetic, not taste. Scoring one subject costs three
 # anonymous GitHub calls and the anonymous budget is 60 an hour, so a full pass over N subjects
 # costs 3N. At today's eight that is 24 and a rebuild is cheap; at nineteen it is 57, which is one
@@ -207,7 +228,17 @@ def previous_rows() -> dict:
             _r["subject_id"], Status(_r["status"]), _r["projection"],
             _r["projection_absent_reason"], _r["protocol_version"],
             valid_until, _r["passport_ref"],
-            verifier_affiliation=_r["verifier_affiliation"])
+            verifier_affiliation=_r["verifier_affiliation"],
+            # AUD-004 (Fable, 2026-09-03): these two were built as `Row(...)`'s bare defaults
+            # (`None`) even though both are IN the published JSON this function reads. Latent
+            # today (no subject has declared an `order_url` yet), but a carried-forward row for a
+            # subject who HAS one would silently drop its Order-channel state until the next full
+            # re-measure (`ONLY` is unset) - the button going dark for up to a day because of an
+            # unrelated intake run, not because the declaration itself changed. `.get()`, not `[]`:
+            # a registry.json written before phase 2 added these fields lacks the keys outright,
+            # and an absent field must still read as `None`, not raise.
+            service_url=_r.get("service_url"),
+            service_reachable=_r.get("service_reachable"))
     return rows
 
 
@@ -358,6 +389,10 @@ for full in COHORT:
     lvl = cohort_development_initiation_level(
         ev.distinct_authors, ev.signed_commit_share, ev.identity_window_closed)
 
+    # AUD-013: re-derived from THIS pass's owner read, not carried from `data/subjects.json`
+    # unchecked - see `derive_affiliation`'s docstring for why.
+    affiliation = derive_affiliation(ev.owner, AFFILIATION[full])
+
     # The evidence tuple is a CLAIM that platform-observed evidence exists. When the repository
     # did not answer, passing it anyway made the scorer say `nothing_qualified` - "we looked and
     # none of it counted" - about a source that had refused to speak to us. Pass what we actually
@@ -423,8 +458,8 @@ for full in COHORT:
               # PER SUBJECT. `same_owner` on an applicant's passport would claim the verifier and
               # the subject are the same person, which is false and understates their verdict; the
               # self-mandate is ours and means nothing on a repository we do not own.
-              mandate_ref=("self-mandate-0001" if AFFILIATION[full] == "same_owner" else None),
-              verifier_affiliation=AFFILIATION[full],
+              mandate_ref=("self-mandate-0001" if affiliation == "same_owner" else None),
+              verifier_affiliation=affiliation,
               access_channel=access_channel(tok))
     m = p.to_machine()
     # The return value is deliberately dropped, and the call is not: publishing is the side effect

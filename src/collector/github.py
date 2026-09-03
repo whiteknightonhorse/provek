@@ -66,6 +66,13 @@ class GitHubEvidence:
     not be examined by anyone without a credential."""
     private: bool | None
     """None when the source did not answer: unknown, which is not the same as False."""
+    owner: str | None = field(default=None, kw_only=True)
+    """The repo's current owner login, read off the SAME `/repos/{full_name}` response `private`
+    already comes from - no second call. `None` when the source did not answer (AUD-013, Fable,
+    2026-09-03): a repository transfer changes who owns a subject without any code here noticing,
+    because `verifier_affiliation` used to be a fact intake wrote once and every re-measure
+    trusted forever. This field lets the affiliation be RE-DERIVED from the owner every pass
+    instead."""
     head_sha: str | None
     signed_commit_share: Measurement
     distinct_authors: Measurement
@@ -423,6 +430,7 @@ def collect_github(full_name: str, token: str | None = None) -> GitHubEvidence:
 
     return GitHubEvidence(full_name, bool(repo.get("private")), head,
                           signed, authors, bots, wf, notes=notes,
+                          owner=(repo.get("owner") or {}).get("login"),
                           identity_window_closed=closed,
                           unlinked_commit_share=unlinked_share,
                           unlinked_key_count=unlinked_key_count)
