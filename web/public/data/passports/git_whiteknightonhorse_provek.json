@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-09-03T01:43:48.733510+00:00",
-    "valid_until": "2026-10-03T01:43:48.733510+00:00",
+    "issued_at": "2026-09-03T03:43:03.064296+00:00",
+    "valid_until": "2026-10-03T03:43:03.064296+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -46,7 +46,7 @@
       "projection_absent_reason": null,
       "observations": {
         "signed_commit_share": {
-          "value": 0.071,
+          "value": 0.078,
           "measured": true,
           "absent_reason": null
         },
@@ -56,12 +56,12 @@
           "absent_reason": null
         },
         "bot_author_share": {
-          "value": 0.071,
+          "value": 0.078,
           "measured": true,
           "absent_reason": null
         },
         "workflow_runs": {
-          "value": 461,
+          "value": 485,
           "measured": true,
           "absent_reason": null
         },
@@ -71,7 +71,7 @@
           "absent_reason": null
         },
         "unlinked_commit_share": {
-          "value": 0.041,
+          "value": 0.039,
           "measured": true,
           "absent_reason": null
         },
@@ -80,7 +80,7 @@
           "measured": true,
           "absent_reason": null
         },
-        "head_sha": "a9eccc2447b17783cb5d970c25108157750947b3"
+        "head_sha": "256026faf5d6a7dde859b653979aebc02b19995a"
       },
       "control_map_valid": true,
       "control_map_cap": 5,
@@ -103,7 +103,7 @@
       "private": false,
       "declaration": {
         "present": true,
-        "pinned_sha": "a9eccc2447b17783cb5d970c25108157750947b3",
+        "pinned_sha": "256026faf5d6a7dde859b653979aebc02b19995a",
         "schema_version": "1.0.0"
       }
     },

@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-09-03T01:43:48.733510+00:00",
-    "valid_until": "2026-10-03T01:43:48.733510+00:00",
+    "issued_at": "2026-09-03T03:43:03.064296+00:00",
+    "valid_until": "2026-10-03T03:43:03.064296+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -165,7 +165,7 @@
       "reason": null,
       "confidence": "measured",
       "declared": true,
-      "checked_at": "2026-09-03T01:43:48.733510+00:00"
+      "checked_at": "2026-09-03T03:43:03.064296+00:00"
     },
     "task_history": [],
     "mandate_ref": "self-mandate-0001",
