@@ -14,8 +14,12 @@ import json
 import pytest
 
 import src.collector.reachability as reach
-import src.witness.witness as witness
-from src.witness.witness import UnsupportedCriterion, run_witness
+from src.witness.witness import (
+    UnsupportedCriterion,
+    WitnessRecord,
+    load_task_history,
+    run_witness,
+)
 
 
 def _fake_curl_status(status: int, location: str | None = None):
@@ -180,7 +184,7 @@ def test_MANDATORY_CONTROL_chunked_response_over_the_cap_is_still_caught(monkeyp
 
 
 def test_witness_record_to_machine_is_exactly_the_published_schema():
-    rec = witness.WitnessRecord(
+    rec = WitnessRecord(
         witness_id="w1", subject_id="git:example/repo",
         criterion={"type": "url_reachable", "url": "https://example.com"},
         result="PASS", evidence_digest="abc", checked_at="2026-09-02T00:00:00+00:00")
@@ -193,7 +197,7 @@ def test_witness_record_to_machine_is_exactly_the_published_schema():
 
 
 def test_load_task_history_empty_for_unknown_subject(tmp_path):
-    assert witness.load_task_history("git:nobody/here", tmp_path) == []
+    assert load_task_history("git:nobody/here", tmp_path) == []
 
 
 def test_load_task_history_reads_the_index_in_order(tmp_path):
@@ -209,5 +213,5 @@ def test_load_task_history_reads_the_index_in_order(tmp_path):
         "criterion": {"type": "url_reachable", "url": "https://example.com"},
         "result": "FAIL", "evidence_digest": "d2", "checked_at": "t2",
         "witnessed_fee_paid": False}}))
-    hist = witness.load_task_history("git:example/repo", tmp_path)
+    hist = load_task_history("git:example/repo", tmp_path)
     assert [h["witness_id"] for h in hist] == ["w1", "w2"]
