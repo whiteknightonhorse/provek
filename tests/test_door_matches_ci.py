@@ -134,6 +134,11 @@ CI_GATES: dict[str, Door | Advisory] = {
     "ruff": Door("-m ruff"),
     "mypy": Advisory(until=ADVISORY_UNTIL),
     "repository secret scan": Door("scripts/secret_scan.sh"),
+    # T-63. The marker is the env var that arms tests/test_reproduce_readme.py - it skips by
+    # default (see its own docstring: unguarded, it would clone and run the whole suite, itself
+    # included, without a floor), so the door must set the same variable CI does or run nothing.
+    'reproduce - README\'s "## Run it" block, verbatim, against a fresh clone':
+        Door("PROVEK_REPRODUCE_README"),
 }
 
 # Steps that prepare the runner rather than judge the tree. A step whose command IS one of these is
@@ -529,7 +534,7 @@ def test_a_step_commented_out_at_the_door_is_not_vouched_for_by_its_own_comment(
     """
     door = DOOR.read_text(encoding="utf-8")
     disabled = "\n".join(
-        ("# " + ln) if ln.strip().startswith(('echo "5/7', 'echo "6/7', 'echo "7/7')) else ln
+        ("# " + ln) if ln.strip().startswith(('echo "5/8', 'echo "6/8', 'echo "7/8')) else ln
         for ln in door.splitlines())
     # The prose survives the commenting-out; that is precisely why the raw substring test passed.
     assert "-m ruff" in disabled and "npm run build" in disabled
@@ -613,8 +618,8 @@ def test_a_printed_excuse_does_not_vouch_for_the_step_it_replaces():
     """
     door = DOOR.read_text(encoding="utf-8")
     excused = "\n".join(
-        'echo "5/7 lint skipped today: -m ruff release is broken"'
-        if ln.strip().startswith('echo "5/7') else ln
+        'echo "5/8 lint skipped today: -m ruff release is broken"'
+        if ln.strip().startswith('echo "5/8') else ln
         for ln in door.splitlines())
     assert "-m ruff" in excused, "the excuse still contains the matched string; that is the trap"
     assert any("'ruff' is blocking" in p for p in divergences(WORKFLOW.read_text(), excused))

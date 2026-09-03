@@ -255,6 +255,43 @@ jobs:
           fi
           echo "mypy: $(grep -c ': error:' mypy.out) errors - advisory, baseline not yet clean"
 
+  reproduce:
+    name: reproduce (README's own Run it block, from a fresh clone)
+    # WHAT THE OTHER JOBS CANNOT SEE. Every job above installs `requirements/ci-*.txt` into an
+    # interpreter this workflow has already prepared, so a green `tests` job proves the suite
+    # passes somewhere the dependency it needs was already resolved - never that a reader following
+    # README.md's own "## Run it" block gets the same result on a machine that has never seen this
+    # project. T-62's own "verified on a fresh clone" check made exactly that mistake once (AUD-011:
+    # the check ran on a host that already had PyYAML, so it was blind to the ModuleNotFoundError it
+    # existed to catch), and a dispatcher's audit on 2026-09-03 found the second instance of the same
+    # shape one layer down: `pip install -r requirements/ci-tests.txt` refused by a stock pip's
+    # handling of pytest-cov's own `coverage[toml]>=7.10.6` requirement, on a host whose pip had
+    # never been upgraded - a failure this repository's own CI could not have seen, because every
+    # job here already runs under a `setup-python` environment nothing here re-verifies as stock.
+    # See tests/test_reproduce_readme.py's module docstring for the full account and for what this
+    # gate still cannot prove (it substitutes a local path for README's GitHub URL, so it is blind
+    # to a reader whose network cannot reach GitHub at all).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.10"
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0
+        with:
+          node-version: "22"
+      # Hash-pinned, for the reason written out once in the `tests` job above - and that reason
+      # applies to THIS install, not to the one the step below triggers. This installs pytest itself,
+      # to run the one test below, under this repository's own trusted, defended toolchain.
+      # tests/test_reproduce_readme.py then builds its OWN fresh clone and its OWN fresh, DELIBERATELY
+      # un-pinned virtualenv inside a scratch directory - because an un-pinned install is exactly
+      # what README.md tells a reader to run, and pinning it here would test something nobody reads.
+      - run: |
+          pip install --quiet --require-hashes --only-binary=:all: -r requirements/ci-tests.txt
+
+      - name: reproduce - README's "## Run it" block, verbatim, against a fresh clone
+        run: PROVEK_REPRODUCE_README=1 pytest tests/test_reproduce_readme.py -q
+
   secrets:
     name: secret scan
     runs-on: ubuntu-latest
