@@ -84,6 +84,39 @@ class GitHubEvidence:
         return self.workflow_runs.is_measured and self.workflow_runs.value > 0
 
 
+def publishable_source(ev: GitHubEvidence) -> bool:
+    """May this subject's evidence enter a PUBLISHED verdict?
+
+    Two conditions, and they are different facts. `ev.read` says the source answered us. `private`
+    says it would not answer anyone without a credential - and evidence only we can reach is not
+    evidence a third party can recompute (ABI-5-3). Either failing means the same thing for
+    publication and different things for the record, which is why both are kept.
+
+    LAW #ONE-PLACE (AUD-002, 2026-09-03): this used to be defined only inside `scripts/cohort.py`,
+    the production emitter. `src/pipeline.py` - the published "single entry point" - had no honest
+    equivalent and stamped coverage as `github_inspected=True` unconditionally, so it kept claiming
+    "Inspected: github" for a subject whose repository never answered. Moved here, beside the
+    `GitHubEvidence` it reads, so every caller shares one rule instead of each growing its own.
+    """
+    return bool(ev.read) and ev.private is not True
+
+
+def reads_completed(ev: GitHubEvidence) -> bool:
+    """Did the reads THIS VERDICT RESTS ON actually finish?
+
+    Deliberately not `publishable_source`, which answers a different question - may this evidence
+    enter a published verdict. A subject can pass that while the reads feeding the level never
+    landed: the repository answers 200, the commits page does not, and the passport then prints
+    "Inspected: github" three sections away from three measurements saying the source was never
+    read. Both claims sit on one page and only one can be true.
+
+    Coverage reports the READING. Scoring keeps its own rule, and this function does not touch it.
+    """
+    return publishable_source(ev) and not any(
+        m.absent is NotMeasured.UNREADABLE
+        for m in (ev.distinct_authors, ev.signed_commit_share, ev.identity_window_closed))
+
+
 ANONYMOUS = "anonymous"
 GRANTED = "granted_token"
 

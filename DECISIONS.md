@@ -3427,3 +3427,63 @@ had not looked for yet.
 **Numbers.** 1077 passed, 1 pre-existing skip (1072 + 5 new in `tests/test_sync_main_ff.py`), ruff
 clean, `ratchet_scope.py` and `ratchet_decisions.py` both clean with the new gate/test tracked and
 bound.
+
+## D-56. AUD-002: `pipeline.verify` ("the single entry point") still ran the errata'd 50-commit
+count window and neither platform closure nor the bot-exclusion rule, because it never called
+`collect_github` at all
+
+**What was live.** The 2026-08-25 errata against `collect_github` (a COUNT window - `-n 50` -
+evacuated by the very activity of the subject it measures, publicly corrected to a 30-day TIME
+window) never reached `src/pipeline.py`. `verify()` always read every remote, GitHub or not,
+through `src.collector.repo.collect` - a plain `git clone --depth 50` / `git log -n 50` - and never
+called `collect_github` at all, so the corrected reader that `scripts/cohort.py` (production) uses
+was simply absent from the codebase's other, published emitter. Three consequences named in Fable's
+2026-09-03 sweep, all from the same root cause: (a) the count-window defect was alive a second time,
+unfixed; (b) `_observed_level` had no platform-closure gate and `repo.collect`'s author count came
+from a raw commit e-mail with no bot-exclusion rule at all - both ratified 2026-08-25, both living
+only in `github.py`; (c) `verify()` built coverage with `github_inspected=True` UNCONDITIONALLY,
+even on a failed clone - the exact B2 shape already fixed in `cohort.py`, alive here as a second
+instance.
+
+**Fix.** `src.collector.repo.collect` now reads a TIME window (`EVIDENCE_WINDOW_DAYS`, imported
+from `github.py`, LAW #ONE-PLACE - one published number, not a second literal that can redrift from
+it) instead of a commit count, with an honest underread note when the shallow clone's own depth
+ceiling (`CLONE_DEPTH_CEILING`) is reached before the window's date boundary, and
+`NO_EVIDENCE_IN_WINDOW` (not `UNREADABLE`) for a clone that answered but found nothing inside thirty
+days - mirroring the same absence `collect_github` already gives that case. `verify()` still calls
+`collect()` for every remote - it is the only source of `tree_digest`, and therefore of the
+divergence/attack-T4 check, which `collect_github`'s API reads have no equivalent for - but a GitHub
+remote (`github_full_name(remote) is not None`) is now ALSO read through `collect_github`, and THAT
+richer read, not the local clone, is what scores `development_initiation` and builds coverage:
+platform closure and the bot-exclusion rule both apply, `github_inspected` reflects the actual read
+outcome (`reads_completed`), and the accountability declaration pins to `collect_github`'s own
+`head_sha` (matching what `cohort.py` already pins to) rather than the local clone's. `_observed_level`
+gained an optional `identity_window_closed` parameter - `None` for a plain git clone, which has no
+platform to attribute an unsigned commit to and so makes no closure claim at all, a real Measurement
+for GitHub evidence - and keeps its OWN thresholds (`FEW_AUTHORS_FOR_L3`, weighing the signature
+share for L4) rather than adopting `cohort.py`'s `SMALL_TEAM_FOR_L3` band: see that constant's
+docstring for why the two procedures are deliberately different and this fix does not collapse them.
+`publishable_source` and `reads_completed` moved from `scripts/cohort.py` to `src/collector/github.py`
+(LAW #ONE-PLACE) so both emitters import one rule instead of `pipeline.py` growing a second copy.
+
+**Mutation control.** Three new tests, each shown red before the fix and green after by reverting
+the specific mechanism and re-running: `tests/test_collector_repo.py`'s fifty-one-distinct-author
+test (51 commits made "now", each a different author - a COUNT window of 50 must drop exactly one,
+a TIME window of 30 days drops none: RED at 50 under the reverted count-window code, GREEN at 51
+today); `tests/test_pipeline.py`'s closure-gate test (a sole author with a high signed share and an
+OPEN identity window must floor at L2 - RED at L4 with the closure check deleted from
+`_observed_level`, GREEN at L2 with it restored); and `tests/test_pipeline.py`'s failed-clone
+coverage test (RED with `github` present in `coverage.inspected` under the old unconditional
+`github_inspected=True`, GREEN with it absent). `tests/test_emitted_artefacts.py`'s
+`test_the_private_subject_rule_is_in_the_code_not_only_in_this_test` was repointed at
+`src/collector/github.py`, where the predicate it guards now actually lives.
+
+**What this does NOT do.** It does not touch `scripts/cohort.py`'s own level procedure or its
+`SMALL_TEAM_FOR_L3` band, does not add a token parameter to `verify()` (GitHub reads stay anonymous,
+matching "any reader can recompute a verdict"), and does not catch `RateLimited` from the new
+`collect_github` call - it propagates, so a rate-limited `verify()` call raises rather than
+publishing a passport built on a partial read; `verify()` has no "carry the previous row forward"
+context to fall back on the way `scripts/cohort.py`'s loop does.
+
+**Numbers.** 1080 passed (1077 + 3 new), 1 pre-existing skip, ruff clean, all 7 `push.sh` gates
+green.

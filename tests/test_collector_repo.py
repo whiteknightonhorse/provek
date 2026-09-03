@@ -49,6 +49,26 @@ def test_working_copy_is_deleted_after_audit():
     assert after <= before
 
 
+def test_more_than_fifty_recent_commits_all_count_the_window_is_time_not_position():
+    """AUD-002 mutation control. Until this fix `collect()` read `git log -n 50` - a COUNT window,
+    evacuated by the very activity of the subject being measured (the errata already published
+    against `collect_github` on 2026-08-25 for the GitHub API reader, and alive here as a second,
+    unfixed instance for a plain git clone). Fifty-one commits, each a distinct author, made just
+    now: every one of them is inside the (much longer) 30-day time window this collector reads by
+    date, and the old position-based window would have to drop exactly one of them - the oldest -
+    for counting past fifty, not for falling outside any real span of time."""
+    with tempfile.TemporaryDirectory() as d:
+        r = Path(d) / "src_repo"
+        r.mkdir()
+        subprocess.run(["git", "init", "-q", "-b", "main"], cwd=r, check=True)
+        subprocess.run(["git", "config", "user.name", "T"], cwd=r, check=True)
+        for i in range(51):
+            subprocess.run(["git", "-c", f"user.email=a{i}@x.com",
+                            "commit", "--allow-empty", "-qm", f"c{i}"], cwd=r, check=True)
+        ev = collect(str(r))
+        assert ev.distinct_authors.value == 51
+
+
 def test_tree_digest_changes_with_content():
     """The digest must REACT - otherwise the runtime comparison is meaningless."""
     with tempfile.TemporaryDirectory() as d:

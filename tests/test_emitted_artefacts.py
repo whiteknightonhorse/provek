@@ -188,8 +188,12 @@ def test_a_published_verdict_is_anonymously_reproducible():
 
 
 def test_the_private_subject_rule_is_in_the_code_not_only_in_this_test():
-    """A rule enforced only by a test that reads today's artefacts would pass on an empty corpus."""
-    src = (ROOT / "scripts" / "cohort.py").read_text(encoding="utf-8")
+    """A rule enforced only by a test that reads today's artefacts would pass on an empty corpus.
+
+    Moved from `scripts/cohort.py` to `src/collector/github.py` (AUD-002, LAW #ONE-PLACE,
+    2026-09-03): `src/pipeline.py` needed this same predicate and had no honest equivalent of its
+    own, so the rule now lives beside the `GitHubEvidence` it reads and both emitters import it."""
+    src = (ROOT / "src" / "collector" / "github.py").read_text(encoding="utf-8")
     assert "def publishable_source" in src, "the rule must be a named predicate, not an inline and"
     assert "ev.private is not True" in src, "a private subject must not enter a published verdict"
 

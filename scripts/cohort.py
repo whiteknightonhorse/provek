@@ -25,7 +25,14 @@ from src.abs_profile.identity import Binding, BindingKind
 from src.abs_profile.ladder import SIGNED_SHARE_FOR_L4, SMALL_TEAM_FOR_L3, SOLE_AUTHOR, L
 from src.abs_profile.measured import NotMeasured
 from src.collector.declaration import apply_declaration
-from src.collector.github import EVIDENCE_WINDOW_DAYS, RateLimited, access_channel, collect_github
+from src.collector.github import (
+    EVIDENCE_WINDOW_DAYS,
+    RateLimited,
+    access_channel,
+    collect_github,
+    publishable_source,
+    reads_completed,
+)
 from src.collector.reachability import probe_service_endpoint
 from src.passport.passport import PROFILE_VERSION, PROTOCOL_VERSION, Provenance, build
 from src.registry.public_registry import PublicRegistry, Row
@@ -305,34 +312,9 @@ def cohort_development_initiation_level(distinct_authors, signed_commit_share,
     return L.L2
 
 
-def publishable_source(ev) -> bool:
-    """May this subject's evidence enter a PUBLISHED verdict?
-
-    Two conditions, and they are different facts. `ev.read` says the source answered us. `private`
-    says it would not answer anyone without a credential - and evidence only we can reach is not
-    evidence a third party can recompute (ABI-5-3). Either failing means the same thing for
-    publication and different things for the record, which is why both are kept.
-    """
-    return bool(ev.read) and ev.private is not True
-
-
-def reads_completed(ev) -> bool:
-    """Did the reads THIS VERDICT RESTS ON actually finish?
-
-    Deliberately not `publishable_source`, which answers a different question - may this evidence
-    enter a published verdict. A subject can pass that while the reads feeding the level never
-    landed: the repository answers 200, the commits page does not, and the passport then prints
-    "Inspected: github" three sections away from three measurements saying the source was never
-    read. Both claims sit on one page and only one can be true.
-
-    Coverage reports the READING. Scoring keeps its own rule, and this function does not touch it:
-    `Coverage` feeds no ceiling and no level (measured 2026-09-01 - zero references to coverage in
-    the scorer). Saying so matters because we are a subject in our own registry, and a change that
-    moved our own number would need a different kind of scrutiny than one that cannot.
-    """
-    return publishable_source(ev) and not any(
-        m.absent is NotMeasured.UNREADABLE
-        for m in (ev.distinct_authors, ev.signed_commit_share, ev.identity_window_closed))
+# `publishable_source` and `reads_completed` moved to `src.collector.github` (AUD-002, LAW
+# #ONE-PLACE, 2026-09-03): `src/pipeline.py` needed the same two rules and used to have no honest
+# equivalent of either. Imported above rather than redefined here.
 
 print("%-42s %-7s %-9s %-6s %s" % ("subject", "level", "projection", "CI", "limiters"))
 print("-" * 96)

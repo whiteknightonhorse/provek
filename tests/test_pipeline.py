@@ -93,6 +93,22 @@ def test_unreachable_subject_still_yields_an_honest_passport():
         assert m["verified"]["projection_absent_reason"] is not None
 
 
+def test_a_failed_clone_does_not_claim_github_was_inspected():
+    """AUD-002 mutation control (part c of Fable's 2026-09-03 finding). Before this fix,
+    `pipeline.verify` built coverage with `github_inspected=True` UNCONDITIONALLY - even when the
+    clone above had just failed - so a subject whose repository could not be read at all still had
+    its passport declare "Inspected: github" (the same B2 shape Fable already fixed in
+    `scripts/cohort.py`, alive here as a second instance)."""
+    with tempfile.TemporaryDirectory() as d:
+        p = Path(d)
+        res = pipeline_module.verify(
+            "/nope/x.git", Binding(BindingKind.DNS, "x.com"),
+            FileTransport(p / "o"), PublicRegistry(p / "r"))
+        coverage = res.passport.to_machine()["verified"]["coverage"]
+        assert "github" not in coverage["inspected"]
+        assert "github" in coverage["out_of_reach"]
+
+
 def test_a_local_or_non_github_remote_skips_the_declaration_read_entirely():
     """A remote this collector cannot name a `provek.json` location for leaves accountability at
     its default - the check genuinely did not run, which is a different claim from `not_declared`
@@ -121,15 +137,24 @@ def test_github_full_name_parses_only_github_remotes(remote, expected):
 
 def test_a_github_remote_DOES_reach_the_declaration_mapper(monkeypatch):
     """The wiring test `github_full_name` alone cannot give: a GitHub-shaped `remote` must reach
-    `apply_declaration`, pinned to the head_sha the base collector measured. `collect()` itself is
-    stubbed so this stays offline - only the declaration fetch (already stubbed by the autouse
-    fixture above) is what this test inspects."""
+    `apply_declaration`, pinned to the head_sha the base collector measured. Both `collect()` (the
+    local clone, for `tree_digest`/divergence) and `collect_github()` (the API read AUD-002 added
+    for scoring a GitHub remote) are stubbed so this stays offline - only the declaration fetch
+    (already stubbed by the autouse fixture above) is what this test inspects."""
     from src.abs_profile.measured import Measurement
+    from src.collector.github import GitHubEvidence
     from src.collector.repo import RepoEvidence
 
     fake_ev = RepoEvidence("https://github.com/whiteknightonhorse/apibase", "cafebabe",
                           Measurement(value=1.0), Measurement(value=1), "digest")
-    monkeypatch.setattr(pipeline_module, "collect", lambda remote: fake_ev)
+    monkeypatch.setattr(pipeline_module, "collect", lambda remote, **kw: fake_ev)
+    fake_gh = GitHubEvidence("whiteknightonhorse/apibase", private=False, head_sha="cafebabe",
+                             signed_commit_share=Measurement(value=1.0),
+                             distinct_authors=Measurement(value=1),
+                             bot_author_share=Measurement(value=0.0),
+                             workflow_runs=Measurement(value=0),
+                             identity_window_closed=Measurement(value=True))
+    monkeypatch.setattr(pipeline_module, "collect_github", lambda full_name, *a, **kw: fake_gh)
 
     seen = {}
 
@@ -146,3 +171,44 @@ def test_a_github_remote_DOES_reach_the_declaration_mapper(monkeypatch):
             FileTransport(p / "o"), PublicRegistry(p / "r"))
 
     assert seen == {"full_name": "whiteknightonhorse/apibase", "ref": "cafebabe"}
+
+
+def test_a_github_remote_is_scored_through_platform_closure_not_just_the_local_clone(monkeypatch):
+    """AUD-002 mutation control (part b). Before this fix, `pipeline.verify` scored EVERY remote -
+    including a real github.com one - from `collect()`'s bare `git log`, which cannot see GitHub's
+    bot flag or attribute an unsigned commit to a platform login. It therefore had no platform
+    closure gate at all: a sole author with a high signed share reached L4 (`_observed_level` only
+    checked `signed_commit_share`/`distinct_authors`) even when nothing vouched for the identity
+    behind the unsigned commits - the ratified rule (Fable, 2026-08-25) that an OPEN identity window
+    is a LOWER BOUND, not a count, and floors the level at L2.
+
+    `runtime_trace` is forced true here (via `workflow_runs`) so the O2 weak-signal limiter cannot
+    also produce L2 and mask whether the closure gate itself ran - this test isolates that one gate.
+    """
+    from src.abs_profile.measured import Measurement
+    from src.collector.github import GitHubEvidence
+    from src.collector.repo import RepoEvidence
+
+    fake_ev = RepoEvidence("https://github.com/whiteknightonhorse/apibase", "cafebabe",
+                          Measurement(value=1.0), Measurement(value=1), "digest")
+    monkeypatch.setattr(pipeline_module, "collect", lambda remote, **kw: fake_ev)
+
+    # SOLE_AUTHOR + a high signed share WOULD reach L4 under the old, closure-blind rule - see
+    # `_observed_level`. The open window here must floor it at L2 regardless.
+    fake_gh = GitHubEvidence("whiteknightonhorse/apibase", private=False, head_sha="cafebabe",
+                             signed_commit_share=Measurement(value=1.0),
+                             distinct_authors=Measurement(value=1),
+                             bot_author_share=Measurement(value=0.0),
+                             workflow_runs=Measurement(value=1),
+                             identity_window_closed=Measurement(value=False))
+    monkeypatch.setattr(pipeline_module, "collect_github", lambda full_name, *a, **kw: fake_gh)
+
+    with tempfile.TemporaryDirectory() as d:
+        p = Path(d)
+        res = pipeline_module.verify(
+            "https://github.com/whiteknightonhorse/apibase",
+            Binding(BindingKind.GIT, "whiteknightonhorse/apibase"),
+            FileTransport(p / "o"), PublicRegistry(p / "r"))
+
+    ops = {o["operation"]: o for o in res.passport.to_machine()["verified"]["operations"]}
+    assert ops["development_initiation"]["level"] == "L2"
