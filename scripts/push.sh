@@ -88,7 +88,7 @@ echo "7/8 tests";    python3 -m pytest tests -q --cov=src --cov-fail-under=70 | 
 # other reason. It skips under the bare "7/8 tests" run above (see its own docstring for why -
 # unguarded it would clone and run the ENTIRE suite, including itself, without a floor) and is
 # armed here instead, the same PROVEK_REPRODUCE_README=1 gates.yml's `reproduce` job sets.
-echo "8/8 reproduce"; PROVEK_REPRODUCE_README=1 pytest tests/test_reproduce_readme.py -q
+echo "8/8 reproduce"; PROVEK_REPRODUCE_README=1 python3 -m pytest tests/test_reproduce_readme.py -q
 
 # Gates-only mode. The orchestra must judge the tree after EVERY task, not just before a push,
 # and a second copy of the gate list would drift from this one the first time the list changed.

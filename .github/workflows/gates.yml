@@ -290,7 +290,7 @@ jobs:
           pip install --quiet --require-hashes --only-binary=:all: -r requirements/ci-tests.txt
 
       - name: reproduce - README's "## Run it" block, verbatim, against a fresh clone
-        run: PROVEK_REPRODUCE_README=1 pytest tests/test_reproduce_readme.py -q
+        run: PROVEK_REPRODUCE_README=1 python -m pytest tests/test_reproduce_readme.py -q
 
   secrets:
     name: secret scan

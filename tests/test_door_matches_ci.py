@@ -548,7 +548,21 @@ def test_a_step_commented_out_at_the_door_is_not_vouched_for_by_its_own_comment(
     # the whole-tree suite is deliberately BARE. So that job builds too, under the SAME step name as
     # the one in `shipped`, which means the same CI_GATES row and the same door (`npm run build`).
     # The prior four are untouched: tests/cov, shipped/build, shipped/pytest, lint/ruff.
-    assert len(gaps) == 5, f"a disabled door was reported as matching CI: {gaps}"
+    #
+    # 5 -> 4 on 2026-09-04, and the missing one is named rather than silently dropped:
+    # `shipped: gates that read the emitted artefact` (`-m pytest`) stopped firing here, not because
+    # the door checks less, but because step 8 also gained a `python3 -m pytest` call this same day
+    # (T-01: bare `pytest` at the door's step 8 was `command not found` under a cron PATH that lacks
+    # `~/.local/bin`, so it was made to call pytest the same way step 7 already does). This test
+    # disables steps 5-7 only, and with 7's `-m pytest` gone the substring survives anyway through
+    # 8's own, so the "commented-out prose still vouches" scenario this test exists to catch does not
+    # occur - 8 is a live, executing line, not a comment. This is the coarse-comparison blind spot the
+    # module docstring already names ("compares which COMMANDS each side runs, never the STATE"),
+    # now visible from a second angle: two live steps sharing one substring instead of one live step
+    # and one dead comment. Confirmed no `main`-facing gate lost coverage from this: `--cov-fail-under
+    # =70` (tests/cov) and `-m ruff` (lint) each still appear on exactly the one line this scenario
+    # disables, so those two gaps fire exactly as before.
+    assert len(gaps) == 4, f"a disabled door was reported as matching CI: {gaps}"
 
 
 def test_a_gate_chained_behind_a_setup_command_is_not_read_as_setup():
