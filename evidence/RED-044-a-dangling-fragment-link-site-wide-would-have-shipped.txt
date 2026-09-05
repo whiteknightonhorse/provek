@@ -1,0 +1,58 @@
+# RED-044 - a dangling fragment link site-wide would have shipped
+#
+# tree: ce0ad5f8cd03ef1e0596a1ee1504f27d6fb42516 (dirty)
+#
+# Produced by evidence/RED-044-generator.py, checked in beside this file so the run below can be
+# repeated rather than believed. Closes the gap ruling-2 on T-78 found: the new site-wide anchor
+# gate carried a `tmp_path`-scratch control that proves the CHECKER FUNCTION can fail, but no
+# artefact proving a plant IN THE REAL BUILT TREE turns the real test red. `id="the-order-link"` -
+# the one anchor `/method/` emits that Landing, Apply, Registry and Phase2 all reference by
+# fragment - was renamed in the real `web/dist/method/index.html`, restored unconditionally in a
+# `finally`.
+#
+# SUBJECT: tests/test_site_wide_anchors_resolve.py::test_no_fragment_link_anywhere_points_at_an_anchor_the_target_page_does_not_emit.
+# CHANNEL PLANTED: web/dist/method/index.html, id="the-order-link" -> id="the-order-link-red044-planted".
+
+====================================================================================================
+BEFORE THE PLANT - `python3 -m pytest tests/test_site_wide_anchors_resolve.py::test_no_fragment_link_anywhere_points_at_an_anchor_the_target_page_does_not_emit -q`, exit 0
+====================================================================================================
+
+.                                                                        [100%]
+1 passed in 0.11s
+
+====================================================================================================
+THE PLANT - the real id="the-order-link" in web/dist/method/index.html renamed to
+id="the-order-link-red044-planted", restored from the original bytes in a `finally` regardless of
+outcome
+====================================================================================================
+
+====================================================================================================
+WITH THE PLANT IN PLACE - `python3 -m pytest tests/test_site_wide_anchors_resolve.py::test_no_fragment_link_anywhere_points_at_an_anchor_the_target_page_does_not_emit -q`, exit 1
+====================================================================================================
+
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_no_fragment_link_anywhere_points_at_an_anchor_the_target_page_does_not_emit _
+
+    def test_no_fragment_link_anywhere_points_at_an_anchor_the_target_page_does_not_emit():
+        assert DIST.is_dir(), (
+            f"{DIST} is absent, so this gate measured nothing. Run `npm run build` in web/ - "
+            "scripts/push.sh does exactly that before the suite. A skip here would be a gate present "
+            "but not armed."
+        )
+        dangling = _dangling_fragment_links(DIST)
+>       assert not dangling, f"site-wide, these #fragment links resolve to no id on their target page: {sorted(dangling)}"
+E       AssertionError: site-wide, these #fragment links resolve to no id on their target page: [('/apply/', '/method/#the-order-link'), ('/phase-2/', '/method/#the-order-link'), ('/registry/', '/method/#the-order-link')]
+E       assert not {('/apply/', '/method/#the-order-link'), ('/phase-2/', '/method/#the-order-link'), ('/registry/', '/method/#the-order-link')}
+
+tests/test_site_wide_anchors_resolve.py:114: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_site_wide_anchors_resolve.py::test_no_fragment_link_anywhere_points_at_an_anchor_the_target_page_does_not_emit
+1 failed in 0.08s
+
+====================================================================================================
+AFTER THE PLANT WAS REMOVED - `python3 -m pytest tests/test_site_wide_anchors_resolve.py::test_no_fragment_link_anywhere_points_at_an_anchor_the_target_page_does_not_emit -q`, exit 0
+====================================================================================================
+
+.                                                                        [100%]
+1 passed in 0.07s

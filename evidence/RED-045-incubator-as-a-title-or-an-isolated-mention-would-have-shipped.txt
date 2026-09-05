@@ -1,0 +1,75 @@
+# RED-045 - incubator as a title or an isolated mention would have shipped
+#
+# tree: ce0ad5f8cd03ef1e0596a1ee1504f27d6fb42516 (dirty)
+#
+# Produced by evidence/RED-045-generator.py, checked in beside this file so the two runs below can
+# be repeated rather than believed. Closes the gap ruling-2 on T-78 found: the new
+# incubator-is-a-description gate carried two `tmp_path`-scratch controls proving each CHECKER
+# FUNCTION can fail, but no artefact proving a plant IN THE REAL BUILT TREE turns the REAL tests
+# red. Two plants, run sequentially against the real web/dist/index.html, each restored before the
+# next.
+#
+# SUBJECT: tests/test_incubator_word_is_descriptive_only.py, both halves of the ruling.
+
+====================================================================================================
+HALF 1 - tests/test_incubator_word_is_descriptive_only.py::test_incubator_is_never_capitalised_or_placed_in_a_title_heading_nav_or_meta_tag
+Plant: <title> gets "Incubator " prepended in the real web/dist/index.html.
+====================================================================================================
+
+--- before the plant, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.16s
+
+--- with the plant in place, exit 1 ---
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_incubator_is_never_capitalised_or_placed_in_a_title_heading_nav_or_meta_tag _
+
+    def test_incubator_is_never_capitalised_or_placed_in_a_title_heading_nav_or_meta_tag():
+        offenders = _forbidden_placements(DIST)
+>       assert not offenders, f"forbidden placement or capitalisation of 'incubator': {offenders}"
+E       AssertionError: forbidden placement or capitalisation of 'incubator': {'/': ['title', 'capitalised']}
+E       assert not {'/': ['title', 'capitalised']}
+
+tests/test_incubator_word_is_descriptive_only.py:160: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_incubator_word_is_descriptive_only.py::test_incubator_is_never_capitalised_or_placed_in_a_title_heading_nav_or_meta_tag
+1 failed in 0.16s
+
+--- after the plant was removed, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.14s
+
+====================================================================================================
+HALF 2 - tests/test_incubator_word_is_descriptive_only.py::test_each_funnel_surface_uses_incubator_exactly_once_beside_the_funds_limit
+Plant: a second, isolated lowercase "incubator" mention with no "holds no funds" nearby, appended
+just before </main> in the real web/dist/index.html.
+====================================================================================================
+
+--- before the plant, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.03s
+
+--- with the plant in place, exit 1 ---
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_each_funnel_surface_uses_incubator_exactly_once_beside_the_funds_limit __
+
+    def test_each_funnel_surface_uses_incubator_exactly_once_beside_the_funds_limit():
+        bad = {}
+        for route in sorted(FUNNEL_ROUTES):
+            reading = _funnel_surface_reading(DIST, route)
+            if reading["count"] != 1 or reading["beside_limit"] != [True]:
+                bad[route] = reading
+>       assert not bad, f"funnel surfaces failing the one-sentence-beside-the-limit rule: {bad}"
+E       AssertionError: funnel surfaces failing the one-sentence-beside-the-limit rule: {'/': {'count': 2, 'beside_limit': [True, False]}}
+E       assert not {'/': {'count': 2, 'beside_limit': [True, False]}}
+
+tests/test_incubator_word_is_descriptive_only.py:169: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_incubator_word_is_descriptive_only.py::test_each_funnel_surface_uses_incubator_exactly_once_beside_the_funds_limit
+1 failed in 0.04s
+
+--- after the plant was removed, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.03s
