@@ -232,11 +232,14 @@ recorded as D-57. Not an incubator, not a course: a static library of instructio
 coding agent turns into a running business agent, for one business operation at a time.
 
 **Status as of 2026-09-05: this surface is built and live at `/build/`.** `templates/` carries the
-contract, the licence and the gates below (Phase 0); one template, `customer-support-agent`, is
-admitted under them and emitted (Phase 1). D-18 already set the precedent that a specification may
-precede its instances — describing the target was not the same act as offering it, exactly as
-§3.5 draws that line for phase 2, and Phase 0 shipped that description against zero real templates
-on purpose.
+contract, the licence and the gates below (Phase 0); all six v1 templates are admitted under them
+and emitted: `customer-support-agent` (Phase 1); `lead-generation-agent`,
+`ecommerce-operations-agent`, `market-research-agent` (Phase 2); `content-production-agent`,
+`finance-operations-agent` (Phase 3, which also added a real three-question FAQ, in each
+template's own words, to every template page — item 8 below). D-18 already set the precedent that
+a specification may precede its instances — describing the target was not the same act as
+offering it, exactly as §3.5 draws that line for phase 2, and Phase 0 shipped that description
+against zero real templates on purpose.
 
 1. **`/build/`** — one screen before a grid of admitted templates: an H1 stating the page is a
    library to copy from, not a service that builds for the reader; a three-step explanation with a
@@ -266,6 +269,13 @@ on purpose.
 7. **Reuse, not a second design language.** The Copy control is one component
    (`web/src/components/CopyButton.tsx`), shared with the passport page rather than duplicated;
    zero new colours, fonts or ornament beyond `DESIGN.md`'s existing tokens.
+8. **A real FAQ, and structured data that matches it.** Every template page carries a visible
+   three-question `Questions` block — `What does a human still do?`, `What do I need before I
+   start?`, `What happens after it runs?` — answered in that template's own words, authored in
+   `templates/faq.json` (kept outside every `SKILL.md`, so an answer can be revised without
+   invalidating that template's witnessed dry run). The same three answers are mirrored into a
+   `FAQPage` JSON-LD block alongside the page's `TechArticle`; `tests/test_build_jsonld_validates.py`
+   checks every emitted block parses as valid JSON and carries the fields its `@type` requires.
 
 ## 4. Phase 3 — Funding Tasks — deferred by A-10, specified in full
 

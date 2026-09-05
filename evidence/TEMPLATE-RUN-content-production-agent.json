@@ -1,0 +1,11 @@
+{
+  "tree_stamp": "tree: 6bad4646453a5cc58251280c945367c432abfcc2 (dirty)",
+  "slug": "content-production-agent",
+  "body_sha256": "faf5c8fbaab7e9e39d4bc20c4ab8af5b10a74b14e27078f462b84a90442b3f79",
+  "run_at": "2026-09-05T03:47:24Z",
+  "tool": "claude-code",
+  "model": "claude-sonnet-5",
+  "outcome": "scaffold produced; 6 of 6 template tests passed",
+  "transcript_sha256": "572bceeca9b4db804f423f1321dada6386e3d5a560aa692dead561e953f6d0ed",
+  "notes": "Fresh temporary directory outside this repository (/tmp/dry-run-content-production-agent-20260905T034724Z), no real LLM API key and no fetch tool - drafting ran with a fake complete() callable and fact-check's source-support judgment ran as a deterministic word-overlap stand-in for the model call SKILL.md itself names as the real decision-maker, both named as the dry-run fallback in the template's own Credentials section. No defect found in this pass; full account at evidence/TEMPLATE-RUN-content-production-agent.transcript.txt."
+}

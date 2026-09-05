@@ -217,7 +217,7 @@ function page(route, title, description, ld, data) {
   let out = head(shell, route, title, description);
 
   const blocks = [
-    `<script type="application/ld+json">${JSON.stringify(ld)}</script>`,
+    ...(Array.isArray(ld) ? ld : [ld]).map((x) => `<script type="application/ld+json">${JSON.stringify(x)}</script>`),
     data?.passport
       ? `<link rel="alternate" type="application/json" href="/data/passports/${slug(data.passport.subject_id)}.json">`
       : data?.template
@@ -317,8 +317,13 @@ function ldBuildIndex(list) {
   };
 }
 
+/** TechArticle plus, since every admitted template carries a real three-question FAQ (SPEC 3.7,
+ * ruling section 6.3, `templates/faq.json`), a FAQPage block answered in the template's own
+ * words - never boilerplate, never present without the matching visible block `BuildTemplate.tsx`
+ * renders (the same "no structured data without a real block" rule `web/notes/emit.mjs`'s
+ * `noteLd` already holds itself to). */
 function ldTemplate(t) {
-  return {
+  const article = {
     "@context": "https://schema.org", "@type": "TechArticle",
     headline: t.title, description: t.description, url: `${SITE}/build/${t.slug}/`,
     datePublished: t.datePublished, dateModified: t.dateModified, inLanguage: "en",
@@ -327,6 +332,14 @@ function ldTemplate(t) {
     about: { "@type": "SoftwareApplication", name: t.title, applicationCategory: "BusinessApplication" },
     publisher: { "@type": "Organization", name: "Provek" },
   };
+  const faq = {
+    "@context": "https://schema.org", "@type": "FAQPage",
+    mainEntity: t.faq.map((f) => ({
+      "@type": "Question", name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+  return [article, faq];
 }
 
 if (templates.length) {

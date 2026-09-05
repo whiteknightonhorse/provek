@@ -6,13 +6,14 @@ support, lead generation, back-office, research, content, finance. It is not doc
 this instrument, and it is not a course. Ruled by Fable, 2026-09-05, `docs/adr/ADR-0011-templates-are-a-machine-addressed-artefact-gated-from-the-instrument.md`;
 this file is the working README for that ruling, not a second source of truth for it.
 
-**As of 2026-09-05, four templates exist: `customer-support-agent`, `lead-generation-agent`,
-`ecommerce-operations-agent`, `market-research-agent`.** Phase 0 shipped the contract, the licence
-and the gates a template must pass before it may be published, against zero real templates on
-purpose (D-18 already set this precedent for the method notes corpus - a specification is allowed
-to precede its instances). Phase 1 admitted the first template under those gates; Phase 2 (this
-task) admitted three more. `content-production-agent` and `finance-operations-agent` remain to
-land in a later phase.
+**As of 2026-09-05, all six v1 templates exist: `customer-support-agent`, `lead-generation-agent`,
+`ecommerce-operations-agent`, `market-research-agent`, `content-production-agent`,
+`finance-operations-agent`.** Phase 0 shipped the contract, the licence and the gates a template
+must pass before it may be published, against zero real templates on purpose (D-18 already set
+this precedent for the method notes corpus - a specification is allowed to precede its instances).
+Phase 1 admitted the first template under those gates; Phase 2 admitted three more; Phase 3 (this
+task) admitted the last two and added a real three-question FAQ, in each template's own words, to
+every template page.
 
 ## Admission — a template is added only if all four hold
 
@@ -24,9 +25,9 @@ land in a later phase.
 4. **It has passed a witnessed dry run** — see below. A template with no run record cannot be
    published; the build refuses it.
 
-v1 admits six templates in this order: `customer-support-agent`, `lead-generation-agent`,
-`ecommerce-operations-agent`, `market-research-agent`, `content-production-agent`,
-`finance-operations-agent`. Each is built in a later phase, with its own dry run. A backlog
+v1 admits six templates, all now built, each with its own dry run, in this order:
+`customer-support-agent`, `lead-generation-agent`, `ecommerce-operations-agent`,
+`market-research-agent`, `content-production-agent`, `finance-operations-agent`. A backlog
 (recruiting, SEO, legal research, business analyst, executive assistant, shopping assistant) is
 not shown anywhere on the public surface — a backlog is not a promise.
 
@@ -75,6 +76,19 @@ Apache-2.0 grant because a template is code-shaped (an instruction set for a cod
 methodology prose, and because it may be extracted into a standalone repository later and needs to
 carry its own terms when it travels.
 
+## The FAQ (`templates/faq.json`) is site content, not part of the artefact
+
+Every template page carries a real, visible three-question FAQ, answered in that template's own
+words, mirrored into a `FAQPage` JSON-LD block (SPEC 3.7). The three questions are fixed and the
+same everywhere — `What does a human still do?`, `What do I need before I start?`, `What happens
+after it runs?` — only the answers vary. This content lives in `templates/faq.json`, one entry per
+slug, deliberately **outside** every `SKILL.md`: it is this project's own description of a template
+for a reader, not part of the instruction addressed to a coding agent, so editing an answer never
+changes a `SKILL.md`'s `body_sha256` and so never invalidates that template's witnessed dry run.
+`templates/emit.mjs` refuses to build a template with no FAQ entry, or with the wrong number of
+answers; `tests/test_build_jsonld_validates.py` checks every emitted `FAQPage` answers exactly the
+three fixed questions, in order, with a non-empty and non-duplicated answer.
+
 ## One template, one directory
 
 ```
@@ -82,6 +96,8 @@ templates/
   LICENSE                      Apache-2.0, full text
   README.md                    this file
   SCHEMA.md                    the frontmatter and body contract, normative
+  manifest.json                per-slug body_sha256 / date_published / date_modified pins
+  faq.json                     per-slug site FAQ content (see above) - not part of any artefact
   <slug>/
     SKILL.md                   the artefact: frontmatter + instructions to a coding agent
     references/                optional, one level deep, loaded by the agent on demand

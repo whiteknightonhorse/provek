@@ -138,6 +138,16 @@ export default function BuildTemplate({ t }: { t: Template }) {
           </pre>
         </details>
 
+        <h2 className="mt-8 text-lg font-semibold">Questions</h2>
+        <dl className="mt-3 space-y-4 text-sm">
+          {t.faq.map((f) => (
+            <div key={f.q}>
+              <dt className="font-medium">{f.q}</dt>
+              <dd className="mt-1 text-[var(--color-ink-2)]">{f.a}</dd>
+            </div>
+          ))}
+        </dl>
+
         <p className="mt-6 text-sm">
           <a href={issueUrl(t)} className="text-[var(--color-accent)] hover:underline">
             Something wrong with this template? Open an issue

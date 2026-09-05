@@ -11,7 +11,10 @@
  * frontmatter fields, its body sections rendered to small HTML fragments (for the page's
  * progressive-disclosure `<details>` blocks), the raw file bytes verbatim (for the `<pre>` and
  * for the machine-readable sibling served at `/build/<slug>/SKILL.md`), and the one computed
- * figure this surface is allowed to show: `Dry run · <date> · <tool> · <outcome>`.
+ * figure this surface is allowed to show: `Dry run · <date> · <tool> · <outcome>`. Also attaches
+ * `faq`: three {q, a} pairs read from `templates/faq.json`, the fixed questions matched against
+ * `FAQ_QUESTIONS` by position - site content about a template, kept OUTSIDE `SKILL.md` on purpose,
+ * so editing an answer never touches a body a witnessed dry run is keyed to.
  *
  * WHAT THIS FILE REFUSES. A template whose `name` does not equal its own directory; a body whose
  * `##` headings are not exactly the thirteen sections in the fixed order `SCHEMA.md` requires, in
@@ -19,7 +22,8 @@
  * no longer matches the current file (LAW-TEMPLATE-WAS-RUN's "missing" and "hash mismatch"
  * states) - both refuse the build here, named separately in the thrown message rather than
  * collapsed into one generic failure, even though neither is currently reachable in a build that
- * publishes.
+ * publishes. Also a template with no `templates/faq.json` entry, or with the wrong number of
+ * answers.
  *
  * THIS FILE DOES NOT CHECK LAW-TEMPLATE-NAMES-NO-INSTRUMENT. That gate is
  * `tests/test_templates_never_name_the_instrument.py`, over the same real tree, and duplicating it
@@ -34,6 +38,16 @@ const REPO = new URL("../", import.meta.url).pathname;
 export const TEMPLATES_ROOT = join(REPO, "templates");
 export const EVIDENCE_ROOT = join(REPO, "evidence");
 export const MANIFEST_PATH = join(REPO, "templates", "manifest.json");
+export const FAQ_PATH = join(REPO, "templates", "faq.json");
+
+/** The three fixed questions every template's FAQPage answers, in this order (SPEC 3.7, ruling
+ * section 6.3) - only the answers vary, in that template's own words. Fixed here and in
+ * `templates/faq.json` itself; `loadFaq` cross-checks the two never drift apart. */
+export const FAQ_QUESTIONS = [
+  "What does a human still do?",
+  "What do I need before I start?",
+  "What happens after it runs?",
+];
 
 /** ADR-0011 section 4.2's own order. A slug not in this list (a backlog entry that should not be
  *  on the surface at all, or a mistake) sorts after every known one, alphabetically among itself -
@@ -246,8 +260,32 @@ function loadManifest(manifestPath) {
   return JSON.parse(readFileSync(manifestPath, "utf8")).templates ?? {};
 }
 
+/** `templates/faq.json`'s per-slug entries, validated against `FAQ_QUESTIONS` - three answers,
+ * matched to the fixed questions by position, never a template supplying its own question text
+ * (the three questions are the site's own, not the artefact's - SPEC 3.7). A slug with no entry,
+ * or with a wrong count, fails the build the same way a missing dry-run record does: a page
+ * silently missing its FAQPage block is exactly the kind of drift this project's own doctrine
+ * refuses to let stand unnoticed. */
+function loadFaq(faqPath) {
+  if (!existsSync(faqPath)) throw new Error(`templates/faq.json is missing`);
+  const doc = JSON.parse(readFileSync(faqPath, "utf8"));
+  return doc.templates ?? {};
+}
+
+function faqFor(slug, faqData) {
+  const answers = faqData[slug];
+  if (!answers) throw new Error(`templates/faq.json carries no FAQ entry for ${slug}`);
+  if (answers.length !== FAQ_QUESTIONS.length) {
+    throw new Error(
+      `templates/faq.json's entry for ${slug} has ${answers.length} answers, ` +
+      `expected ${FAQ_QUESTIONS.length} (one per fixed question)`
+    );
+  }
+  return FAQ_QUESTIONS.map((q, i) => ({ q, a: answers[i] }));
+}
+
 /** One template, fully loaded and validated, or a thrown Error naming exactly what failed. */
-function loadOne(slug, templatesRoot, evidenceRoot, manifest) {
+function loadOne(slug, templatesRoot, evidenceRoot, manifest, faqData) {
   const dir = join(templatesRoot, slug);
   const skillPath = join(dir, "SKILL.md");
   const fileBytes = readFileSync(skillPath);
@@ -284,6 +322,7 @@ function loadOne(slug, templatesRoot, evidenceRoot, manifest) {
     bodySha256: hash,
     datePublished: entry.date_published,
     dateModified: entry.date_modified,
+    faq: faqFor(slug, faqData),
     dryRun: {
       date: record.run_at.slice(0, 10),
       tool: record.tool,
@@ -296,7 +335,7 @@ function loadOne(slug, templatesRoot, evidenceRoot, manifest) {
 /** Every admitted template, in ADR-0011's canonical order. Throws (refuses the build) rather than
  * skipping a template that fails validation or carries no witnessed dry run - a page silently
  * missing one template is a drift nobody would notice; a red build is not. */
-export function loadTemplates(templatesRoot = TEMPLATES_ROOT, evidenceRoot = EVIDENCE_ROOT, manifestPath = MANIFEST_PATH) {
+export function loadTemplates(templatesRoot = TEMPLATES_ROOT, evidenceRoot = EVIDENCE_ROOT, manifestPath = MANIFEST_PATH, faqPath = FAQ_PATH) {
   if (!existsSync(templatesRoot)) return [];
   const slugs = readdirSync(templatesRoot, { withFileTypes: true })
     .filter((e) => e.isDirectory() && existsSync(join(templatesRoot, e.name, "SKILL.md")))
@@ -310,5 +349,6 @@ export function loadTemplates(templatesRoot = TEMPLATES_ROOT, evidenceRoot = EVI
     });
   if (slugs.length === 0) return [];
   const manifest = loadManifest(manifestPath);
-  return slugs.map((slug) => loadOne(slug, templatesRoot, evidenceRoot, manifest));
+  const faqData = loadFaq(faqPath);
+  return slugs.map((slug) => loadOne(slug, templatesRoot, evidenceRoot, manifest, faqData));
 }

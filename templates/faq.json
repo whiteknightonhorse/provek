@@ -1,0 +1,40 @@
+{
+  "_comment": "Site-facing FAQ content for /build/<slug>/ (SPEC 3.7, ruling section 6.3). Lives here, not inside a SKILL.md, on purpose: it is this project's own description of a template, addressed to a reader, not part of the artefact addressed to a coding agent - editing it must never change a SKILL.md's body_sha256 and so never invalidates a witnessed dry run (LAW-TEMPLATE-WAS-RUN). The three questions are fixed, in this order, across every template; only the answers vary, in that template's own words. templates/emit.mjs validates the question text and count against this file at build time.",
+  "questions": [
+    "What does a human still do?",
+    "What do I need before I start?",
+    "What happens after it runs?"
+  ],
+  "templates": {
+    "customer-support-agent": [
+      "Sending any reply, issuing refunds, and anything with legal or safety content - nothing in this codebase has network permission to send mail.",
+      "An inbox reachable by IMAP or a provider API such as the Gmail API, and an LLM API key.",
+      "Each new message lands in exactly one place: a drafted reply in outbox/ for a human to read, edit and send from their own mail client, or the untouched message in escalated/ with the reason it was routed there."
+    ],
+    "lead-generation-agent": [
+      "Approving the ideal customer profile, sending any outreach message, and deciding who actually gets contacted - the program never sends anything itself.",
+      "A source of company or contact data you already have rights to use (a CSV export or a data provider), and an LLM API key.",
+      "Every candidate ends up in outbox/ as a draft ready for review, or in rejected/ with the reason it was screened out - nothing is sent until a human reads outbox/ and sends it themselves."
+    ],
+    "ecommerce-operations-agent": [
+      "Approving every staged change - a price move, a restock, a listing edit, or a promotion draft - before it is applied to the live store; only the one approval step ever has a live write credential.",
+      "Read access to the store's own catalog, order and inventory data (an export or a read-only API), and an LLM API key.",
+      "A plain-language performance summary and a set of staged change proposals wait in staged_changes/ for a human to review; nothing is applied to the live store until someone runs the separate, explicit approval step."
+    ],
+    "market-research-agent": [
+      "Choosing the research questions for each run, reading the brief before it is shared or acted on, and deciding what to do about anything it finds.",
+      "API access to at least two independent LLM providers or model families, and a way to fetch or paste the source pages the brief should be checked against.",
+      "A dated brief file lands under briefs/ with one sourced answer per question and a note on anything the models disagreed about - the program never posts, emails, or publishes it."
+    ],
+    "content-production-agent": [
+      "Approving the brief and its angle, publishing anything the program produces, and deciding what to do with any claim the fact-check step could not confirm.",
+      "A content brief naming the topic, audience and allowed sources, and an LLM API key.",
+      "The finished draft lands in queue/ marked ready or flagged, with any unsupported claims listed at the top - nothing is posted, emailed, or pushed to a CMS by the program itself."
+    ],
+    "finance-operations-agent": [
+      "Reviewing and posting every categorized transaction to the actual books, resolving every reconciliation gap, and carrying out any real payment, transfer, or payroll action - none of which this template performs.",
+      "An export of invoices or receipts, a bank or card statement export, the chart of accounts you already use, and an LLM API key.",
+      "A dated report lands in reports/ with a category breakdown and two explicit lists - invoices with no matching statement line, and statement lines with no matching invoice - for a human to resolve. No money moves at any point."
+    ]
+  }
+}

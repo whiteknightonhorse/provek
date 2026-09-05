@@ -19,6 +19,16 @@
       "body_sha256": "fcb4acb510ea70f608389dee881ba9cd906b2ad596de36ca4a497ec8aa208d8e",
       "date_published": "2026-09-05",
       "date_modified": "2026-09-05"
+    },
+    "content-production-agent": {
+      "body_sha256": "faf5c8fbaab7e9e39d4bc20c4ab8af5b10a74b14e27078f462b84a90442b3f79",
+      "date_published": "2026-09-05",
+      "date_modified": "2026-09-05"
+    },
+    "finance-operations-agent": {
+      "body_sha256": "66b0386334819fbae5b83358ca5e59064c1e8e8d83e3ae0f973a767df1f785f1",
+      "date_published": "2026-09-05",
+      "date_modified": "2026-09-05"
     }
   }
 }

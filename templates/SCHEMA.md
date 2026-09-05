@@ -104,3 +104,20 @@ Three states, never collapsed into one another: **no record** (never published),
 (the current body is a later revision than the one that was run — the page says so rather than
 showing a stale dry run as fresh, per CLAUDE.md invariant 1), and **matching record** (publishable).
 A failed dry run is a red result and is not published; it is not retried into silence.
+
+## The FAQ (`templates/faq.json`) — site content, kept outside the artefact
+
+Every template page carries a real three-question FAQ, mirrored into a `FAQPage` JSON-LD block
+(SPEC 3.7). The three questions are fixed, in this order, the same for every template — only the
+answers vary, in that template's own words:
+
+1. What does a human still do?
+2. What do I need before I start?
+3. What happens after it runs?
+
+This content is authored in `templates/faq.json`, keyed by slug, **never inside a `SKILL.md`**: a
+FAQ answer is this project's own description of a template for a reader, not part of the
+instruction addressed to a coding agent, so revising an answer must never change a `SKILL.md`'s
+`body_sha256` and so must never invalidate that template's witnessed dry run. `templates/emit.mjs`
+refuses to build a template whose slug carries no entry in `faq.json`, or whose entry does not
+supply exactly three answers.

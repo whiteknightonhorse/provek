@@ -1,0 +1,11 @@
+{
+  "tree_stamp": "tree: 6bad4646453a5cc58251280c945367c432abfcc2 (dirty)",
+  "slug": "finance-operations-agent",
+  "body_sha256": "66b0386334819fbae5b83358ca5e59064c1e8e8d83e3ae0f973a767df1f785f1",
+  "run_at": "2026-09-05T03:48:09Z",
+  "tool": "claude-code",
+  "model": "claude-sonnet-5",
+  "outcome": "scaffold produced; 6 of 6 template tests passed",
+  "transcript_sha256": "2d52b6dce8aff8a20a57736846ca8551346cb4f4a904162824b1dbcba907229b",
+  "notes": "Fresh temporary directory outside this repository (/tmp/dry-run-finance-operations-agent-20260905T034809Z), no real invoice provider, bank export, or LLM API key - categorize.py's account-match judgment ran as a deterministic word-overlap stand-in for the model call SKILL.md names as the real decision-maker, and fixture CSVs stood in for real exports, both named as the dry-run fallback in the template's own Credentials section. main.run() was also exercised end to end against the fixtures before the test suite. No defect found in this pass; full account at evidence/TEMPLATE-RUN-finance-operations-agent.transcript.txt."
+}

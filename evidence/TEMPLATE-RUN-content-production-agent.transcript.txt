@@ -1,0 +1,87 @@
+# TEMPLATE-RUN-content-production-agent - witnessed dry run transcript
+#
+# tree: 6bad4646453a5cc58251280c945367c432abfcc2 (dirty)
+#
+# SUBJECT: templates/content-production-agent/SKILL.md (ADR-0011, D-57, LAW-TEMPLATE-WAS-RUN).
+# Referenced by evidence/TEMPLATE-RUN-content-production-agent.json via transcript_sha256.
+#
+# What happened: the template's own instructions were followed once, by a real coding agent
+# (this session, Claude Code, model claude-sonnet-5), in a fresh temporary directory outside this
+# repository, with no reference to anything already built here. The agent read SKILL.md's
+# "What to build" through "Tests" sections and wrote the files described, then wrote and ran the
+# six tests SKILL.md's own "Tests" section requires, using a fake `complete()` callable (the
+# dry-run fallback SKILL.md's own Credentials section names) and no fetch tool.
+
+====================================================================================================
+SKILL.md WHOLE-FILE SHA256 AT RUN TIME (matching tests/test_template_was_run.py's own body_sha256())
+====================================================================================================
+faf5c8fbaab7e9e39d4bc20c4ab8af5b10a74b14e27078f462b84a90442b3f79
+
+====================================================================================================
+FRESH DIRECTORY, OUTSIDE THIS REPOSITORY
+====================================================================================================
+/tmp/dry-run-content-production-agent-20260905T034724Z
+
+====================================================================================================
+FILES WRITTEN, FOLLOWING SKILL.md'S OWN ARCHITECTURE
+====================================================================================================
+./draft.py
+./factcheck.py
+./revise.py
+./main.py
+./tests/test_agent.py
+
+====================================================================================================
+END-TO-END SANITY: main.run() EXERCISED DIRECTLY BEFORE THE TEST SUITE
+====================================================================================================
+A supported claim (tagged against a source whose own words overlap the claim) produced a
+`queue/<slug>.md` file headed `status: ready`; an unsupported claim (untagged) produced one headed
+`status: flagged` with the claim text listed at the top, exactly as SKILL.md's Workflow step 5
+describes. No defect found in this pass.
+
+====================================================================================================
+THE SIX TESTS SKILL.md's OWN "Tests" SECTION REQUIRES, MAPPED TO WHAT WAS WRITTEN
+====================================================================================================
+1. test_1_untagged_claim_is_unsupported_never_assumed_true
+2. test_2_tagged_claim_whose_source_does_not_support_it_is_unsupported
+3. test_3_revise_never_invents_a_tag_to_resolve_a_claim
+4. test_4_ready_when_supported_flagged_when_not
+5. test_5_rerun_same_brief_does_not_duplicate
+6. test_6_no_real_credential_and_no_network
+
+====================================================================================================
+`python3 -m pytest tests/ -v`, run inside the fresh directory above, exit 0
+====================================================================================================
+============================= test session starts ==============================
+platform linux -- Python 3.10.12, pytest-9.1.1, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /tmp/dry-run-content-production-agent-20260905T034724Z
+plugins: cov-7.1.0
+collecting ... collected 6 items
+
+tests/test_agent.py::test_1_untagged_claim_is_unsupported_never_assumed_true PASSED [ 16%]
+tests/test_agent.py::test_2_tagged_claim_whose_source_does_not_support_it_is_unsupported PASSED [ 33%]
+tests/test_agent.py::test_3_revise_never_invents_a_tag_to_resolve_a_claim PASSED [ 50%]
+tests/test_agent.py::test_4_ready_when_supported_flagged_when_not PASSED [ 66%]
+tests/test_agent.py::test_5_rerun_same_brief_does_not_duplicate PASSED   [ 83%]
+tests/test_agent.py::test_6_no_real_credential_and_no_network PASSED     [100%]
+
+============================== 6 passed in 0.20s ===============================
+
+====================================================================================================
+OUTCOME
+====================================================================================================
+scaffold produced; 6 of 6 template tests passed, no defect found in this pass.
+
+WHAT THIS RUN DOES NOT PROVE, STATED RATHER THAN IMPLIED. No real LLM API key and no real fetch
+tool were exercised: every drafting call went through a fake `complete()` returning a fixed
+string, and the fact-check step's "does the source actually support this claim" judgment was
+proven with a deterministic word-overlap stand-in for the model call SKILL.md itself names as the
+real decision-maker. What was proven is the logic SKILL.md specifies around that call: an untagged
+claim is never assumed supported, a claim whose cited source does not contain it is marked
+unsupported, `revise.py` never manufactures a new citation to clear a flag, the `ready`/`flagged`
+split follows from whether any claim remains unresolved, a re-run of an unchanged brief does not
+duplicate the queue entry, and no part of the codebase outside the `.env` loader touches a real
+credential or the network.
+
+The fresh directory was left in /tmp; nothing from it was copied into this repository.

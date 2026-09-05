@@ -1,0 +1,113 @@
+# TEMPLATE-RUN-finance-operations-agent - witnessed dry run transcript
+#
+# tree: 6bad4646453a5cc58251280c945367c432abfcc2 (dirty)
+#
+# SUBJECT: templates/finance-operations-agent/SKILL.md (ADR-0011, D-57, LAW-TEMPLATE-WAS-RUN).
+# Referenced by evidence/TEMPLATE-RUN-finance-operations-agent.json via transcript_sha256.
+#
+# What happened: the template's own instructions were followed once, by a real coding agent
+# (this session, Claude Code, model claude-sonnet-5), in a fresh temporary directory outside this
+# repository, with no reference to anything already built here. The agent read SKILL.md's
+# "What to build" through "Tests" sections and wrote the files described, ran main.py end to end
+# against small fixture CSVs to confirm the report it produces reads the way SKILL.md's Workflow
+# section describes, then wrote and ran the six tests SKILL.md's own "Tests" section requires.
+
+====================================================================================================
+SKILL.md WHOLE-FILE SHA256 AT RUN TIME (matching tests/test_template_was_run.py's own body_sha256())
+====================================================================================================
+66b0386334819fbae5b83358ca5e59064c1e8e8d83e3ae0f973a767df1f785f1
+
+====================================================================================================
+FRESH DIRECTORY, OUTSIDE THIS REPOSITORY
+====================================================================================================
+/tmp/dry-run-finance-operations-agent-20260905T034809Z
+
+====================================================================================================
+FILES WRITTEN, FOLLOWING SKILL.md'S OWN ARCHITECTURE
+====================================================================================================
+./extract.py
+./categorize.py
+./match.py
+./main.py
+./data/invoices/batch1.csv        (fixture: 3 invoices)
+./data/statement.csv              (fixture: 3 statement lines)
+./data/chart_of_accounts.csv      (fixture: 2 categories)
+./tests/test_agent.py
+
+====================================================================================================
+END-TO-END SANITY: main.run() EXERCISED DIRECTLY AGAINST FIXTURE CSVs BEFORE THE TEST SUITE
+====================================================================================================
+`python3 -c "from pathlib import Path; import main; print(main.run(Path('.')).read_text())"`
+produced:
+
+# Reconciliation report
+
+## Category breakdown
+- office_supplies: 120.50
+- software: 49.00
+- uncategorized: 15.00
+
+## Matched (2)
+- Cloud Host Inc 49.00 <-> statement 49.00
+- Office Supplies Co 120.50 <-> statement 120.50
+
+## Invoices with no matching statement line (1)
+- Mystery Vendor 15.00 on 2026-09-05
+
+## Statement lines with no matching invoice (1)
+- unmatched small charge 9.99 on 2026-09-10
+
+Two invoices matched their statement lines within the day/amount tolerance, one invoice with no
+plausible chart-of-accounts match landed in `uncategorized` rather than being forced into either
+category, and one invoice and one statement line were correctly left unmatched on each side - the
+exact three-way split (matched / uncategorized / unmatched) SKILL.md's Workflow section specifies.
+No code path in this run ever touched a payment, transfer, or payroll credential or API - none
+exists in the codebase to touch.
+
+====================================================================================================
+THE SIX TESTS SKILL.md's OWN "Tests" SECTION REQUIRES, MAPPED TO WHAT WAS WRITTEN
+====================================================================================================
+1. test_1_no_clear_match_is_uncategorized_never_forced
+2. test_2_amount_outside_tolerance_never_matches
+3. test_3_every_item_appears_exactly_once
+4. test_4_rerun_on_same_data_is_deterministic
+5. test_5_no_payment_transfer_or_payroll_credential_shaped_name
+6. test_6_no_real_credential_and_no_network
+
+====================================================================================================
+`python3 -m pytest tests/ -v`, run inside the fresh directory above, exit 0
+====================================================================================================
+============================= test session starts ==============================
+platform linux -- Python 3.10.12, pytest-9.1.1, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /tmp/dry-run-finance-operations-agent-20260905T034809Z
+plugins: cov-7.1.0
+collecting ... collected 6 items
+
+tests/test_agent.py::test_1_no_clear_match_is_uncategorized_never_forced PASSED [ 16%]
+tests/test_agent.py::test_2_amount_outside_tolerance_never_matches PASSED [ 33%]
+tests/test_agent.py::test_3_every_item_appears_exactly_once PASSED       [ 50%]
+tests/test_agent.py::test_4_rerun_on_same_data_is_deterministic PASSED   [ 66%]
+tests/test_agent.py::test_5_no_payment_transfer_or_payroll_credential_shaped_name PASSED [ 83%]
+tests/test_agent.py::test_6_no_real_credential_and_no_network PASSED     [100%]
+
+============================== 6 passed in 0.02s ===============================
+
+====================================================================================================
+OUTCOME
+====================================================================================================
+scaffold produced; 6 of 6 template tests passed, no defect found in this pass.
+
+WHAT THIS RUN DOES NOT PROVE, STATED RATHER THAN IMPLIED. No real invoice provider, no real bank
+export, and no real LLM API key were exercised: `categorize.py`'s "does this vendor/description
+match this account" step ran as a deterministic word-overlap stand-in for the model call SKILL.md
+names as the real decision-maker, and the fixture data was written by hand, not pulled from a real
+export. What was proven is the logic SKILL.md specifies around that call: an invoice with no clear
+category match is marked `uncategorized` rather than forced, amount/date matching in `match.py` is
+plain code with a hard tolerance rather than a model guess, every invoice and every statement line
+lands in exactly one place, matching is deterministic across reruns of the same data, and - the
+test this template exists to prove above the others - no function, parameter, or environment
+variable anywhere in the codebase is named or shaped to hold a payment, transfer, or payroll
+credential, because this template never asks for one.
+
+The fresh directory was left in /tmp; nothing from it was copied into this repository.

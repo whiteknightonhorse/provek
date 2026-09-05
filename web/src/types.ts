@@ -241,6 +241,11 @@ export interface TemplateDryRun {
   line: string;
 }
 
+export interface TemplateFaqEntry {
+  q: string;
+  a: string;
+}
+
 export interface Template {
   slug: string;
   title: string;
@@ -253,6 +258,9 @@ export interface Template {
   requires: string;
   derivedFrom: string | null;
   sections: TemplateSection[];
+  /** Three fixed questions, answered in this template's own words (SPEC 3.7) - rendered visibly
+   *  on the page and mirrored into a `FAQPage` JSON-LD block. */
+  faq: TemplateFaqEntry[];
   /** The whole SKILL.md file, byte-identical to the source and to the raw sibling served at
    *  `/build/<slug>/SKILL.md` - `LAW-COPY-IS-THE-ARTEFACT`. */
   raw: string;
