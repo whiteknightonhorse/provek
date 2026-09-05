@@ -6,10 +6,11 @@ support, lead generation, back-office, research, content, finance. It is not doc
 this instrument, and it is not a course. Ruled by Fable, 2026-09-05, `docs/adr/ADR-0011-templates-are-a-machine-addressed-artefact-gated-from-the-instrument.md`;
 this file is the working README for that ruling, not a second source of truth for it.
 
-**No template exists in this directory yet.** This phase (Phase 0) ships the contract, the licence and
-the gates a template must pass before it may be published; the first template lands in the next
-phase. A specification is allowed to precede its instances (D-18 already set this precedent for
-the method notes corpus); a page claiming a template exists when none has landed would not be.
+**As of 2026-09-05, one template exists: `customer-support-agent`.** Phase 0 shipped the contract,
+the licence and the gates a template must pass before it may be published, against zero real
+templates on purpose (D-18 already set this precedent for the method notes corpus - a
+specification is allowed to precede its instances). Phase 1 (this task) admitted the first
+template under those gates; more land as later phases admit them.
 
 ## Admission — a template is added only if all four hold
 

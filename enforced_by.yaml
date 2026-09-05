@@ -619,3 +619,12 @@ laws:
     text: "a template's page is emitted only when evidence/TEMPLATE-RUN-<slug>.json exists and its body_sha256 matches the current SKILL.md body; a missing record or a hash mismatch are distinguished states, never collapsed"
     gate: templates/README.md
     test: tests/test_template_was_run.py
+  # D-57 (ADR-0011 section 6.1, SPEC 3.7 item 7, Phase 1). A reader who presses Copy on a template page
+  # must get exactly what the coding agent that ran the witnessed dry run received - never a
+  # rendering, a re-serialisation, or a second string carried in the bundle that could drift from
+  # the source. CopyButton on a template page reads the payload off the page's own `<pre>` DOM
+  # node at click time, not from a prop computed at render time.
+  - id: LAW-COPY-IS-THE-ARTEFACT
+    text: "a template page's Copy control reads its payload from the page's own <pre> DOM node at click time, never from a second string carried in the bundle; the copied text, the source SKILL.md and the emitted raw sibling are byte-identical"
+    gate: web/src/components/CopyButton.tsx
+    test: tests/test_template_copy_is_the_artefact.py

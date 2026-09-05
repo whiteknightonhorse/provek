@@ -231,10 +231,12 @@ Ruled by Fable, `docs/adr/ADR-0011-templates-are-a-machine-addressed-artefact-ga
 recorded as D-57. Not an incubator, not a course: a static library of instructions a reader's own
 coding agent turns into a running business agent, for one business operation at a time.
 
-**Status at the time of writing: the surface specified here is not yet built.** `templates/`
-carries the contract, the licence and the two gates (below); zero templates and zero pages exist.
-D-18 already set the precedent that a specification may precede its instances — describing the
-target here is not the same act as offering it, exactly as §3.5 draws that line for phase 2.
+**Status as of 2026-09-05: this surface is built and live at `/build/`.** `templates/` carries the
+contract, the licence and the gates below (Phase 0); one template, `customer-support-agent`, is
+admitted under them and emitted (Phase 1). D-18 already set the precedent that a specification may
+precede its instances — describing the target was not the same act as offering it, exactly as
+§3.5 draws that line for phase 2, and Phase 0 shipped that description against zero real templates
+on purpose.
 
 1. **`/build/`** — one screen before a grid of admitted templates: an H1 stating the page is a
    library to copy from, not a service that builds for the reader; a three-step explanation with a
