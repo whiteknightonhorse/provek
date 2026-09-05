@@ -1,0 +1,221 @@
+# MEASURED-007 - verbatim copy diff for ce0ad5f, the four funnel surfaces plus the shared lexicon
+#
+# tree: b268acb372ae7bf6dbd5e0af56a34f90b67371af (dirty)
+#
+# Ruling-2 and ruling-3 on T-78 both found the same gap open: the diff below was reported as
+# "included above" or "alongside the verdict" but never survived into anything a reader could
+# open, because `claude --print` captures only the final text block and the diff had been printed
+# earlier. This file is that diff, unmodified, so the claim is checkable independent of any
+# transcript. Produced by:
+#   git show ce0ad5f -- web/src/copy.ts web/src/pages/Apply.tsx web/src/pages/Build.tsx \
+#     web/src/pages/Landing.tsx web/src/pages/Registry.tsx
+# Everything from the next line to end-of-file is that command's unedited stdout.
+
+commit ce0ad5f8cd03ef1e0596a1ee1504f27d6fb42516
+Author: Claude <noreply@anthropic.com>
+Date:   Sat Sep 5 13:49:49 2026 +0000
+
+    T-78 Phase 1: funnel-texts rewrite across the four surfaces, two new gates (Fable ruling)
+    
+    Landing's first screen shrinks to two sentences (was three); a fixed lexicon and one funnel
+    sentence, identical word for word, land on Landing, /apply/, /build/ and /registry/
+    (web/src/copy.ts::FUNNEL_SENTENCE); "incubator" is admitted once per surface, lowercase,
+    descriptive, beside the "holds no funds" limit (INCUBATOR_SENTENCE) - never a title, H1, nav
+    label, or meta, per the ruling and ADR-0011's existing rejection of it as a brand. /apply/ also
+    gets a direct door to /build/ for a reader with no project yet, per the brief.
+    
+    Two ordered gates, each with a red-run control proven before the real tree was trusted:
+      - tests/test_site_wide_anchors_resolve.py - every #fragment link, site-wide, must resolve to a
+        real id on its target page (narrower than test_build_links_resolve.py /
+        test_notes_entrance.py, which strip the fragment and check the route only).
+      - tests/test_incubator_word_is_descriptive_only.py - "incubator" never capitalised, never in a
+        title/heading/nav/meta tag (site-wide); on the four funnel surfaces, exactly one lowercase use,
+        beside "holds no funds".
+    
+    Anchor inventory taken before and after the copy pass (evidence/MEASURED-005): identical - no
+    anchor lost or added.
+    
+    Re-ran ~/orchestra/bing_probe.py per the ruling before touching notes: the crawl step has opened
+    (crawl_stats now 9 rows against 18 at the control, both control_proven_capable), raising
+    web/notes/emit.mjs::NOTE_CEILING from 3 to 7 (evidence/MEASURED-006). query_stats still reads
+    nothing_qualified, so the ladder climbs one rung, not two. Copied into web/notes/reach.json via
+    ~/orchestra/notes_reach.py. No new note authored in this attempt and no keyword recapture run -
+    both are separate, large pieces of work under this project's own evidentiary bar and are reported
+    as not undertaken rather than rushed or invented.
+    
+    Boundaries honoured: no page architecture changed, no template body touched, no registry/passport
+    scoring changed, no secret printed.
+    
+    REVIEW: fable
+
+diff --git a/web/src/copy.ts b/web/src/copy.ts
+new file mode 100644
+index 0000000..89fdf0b
+--- /dev/null
++++ b/web/src/copy.ts
+@@ -0,0 +1,32 @@
++/** T-78 (Fable ruling, 78-texts-for-the-incubator-funnel.ruling-1.md): a fixed lexicon for the
++ * four funnel surfaces (landing, /apply/, /build/, /registry/) and one funnel sentence, identical
++ * word for word on all four, so "no agent yet" reads the same wherever it appears rather than
++ * being retyped once per page and drifting.
++ *
++ * FUNNEL_SENTENCE never links anywhere - each page already carries its own real link for each
++ * step (the masthead's "Request verification", `/build/`'s own template grid, the registry
++ * table), and `tests/test_build_funnel_strip_once.py` counts `/apply/` links per page under
++ * `dist/build/**` at exactly one; a second link inside this sentence on that surface would fail
++ * it for a reason that has nothing to do with what broke.
++ *
++ * INCUBATOR_SENTENCE is the one place "incubator" is allowed to describe the product on these four
++ * surfaces (ruling: lowercase, descriptive, never a title/H1/nav label/meta, one sentence per
++ * surface) - it sits beside the funnel sentence rather than at the top of a page or in a heading,
++ * and it names the two things a reader is likeliest to assume wrongly from the word alone: that
++ * money moves through us, and that there is a cohort or admission date to apply for. Neither
++ * exists (D-05, D-16, ADR-0011's own rejection of "Incubator tiers"), so the sentence says so
++ * instead of leaving the word to imply it.
++ *
++ * NEITHER SENTENCE MAY CONTAIN A BARE NUMBER WORD. `tests/test_apply_names_the_probe_cost.py`
++ * treats every numeral on the whole of `/apply/` - including "one" used as a pronoun, not a count
++ * - as a stray quantity unless it is the prober's own declared number of requests. This sentence
++ * renders on that page too, so "if you don't have one" (an earlier draft) read as an undeclared
++ * second count of something reaching a stranger's server, and failed that gate for a reason that
++ * had nothing to do with what it actually guards. */
++export const FUNNEL_SENTENCE =
++  "Build an agent from a template if you have none yet, request verification for a free " +
++  "passport, and take orders once the registry lists you.";
++
++export const INCUBATOR_SENTENCE =
++  "That whole path — build, verify, list — is what we mean by an AI agent incubator: it " +
++  "holds no funds, and there is no cohort to join.";
+diff --git a/web/src/pages/Apply.tsx b/web/src/pages/Apply.tsx
+index bef8fbf..9afec42 100644
+--- a/web/src/pages/Apply.tsx
++++ b/web/src/pages/Apply.tsx
+@@ -53,6 +53,7 @@ const CONSENT_TEXT =
+   "I agree to receive product updates about Provek at this address: new features, and changes to " +
+   "how verification works. Not shared with anyone else, and you can ask us to stop at any time.";
+ import { Page, Strip } from "../components/Chrome";
++import { FUNNEL_SENTENCE, INCUBATOR_SENTENCE } from "../copy";
+ 
+ type Sent =
+   | { state: "idle" }
+@@ -213,6 +214,17 @@ export default function Apply() {
+           .
+         </p>
+ 
++        {/* T-78: why this form exists at all, in the funnel's own terms - the brief asked this
++            page to say what verifying is FOR rather than just how to submit. No project yet is
++            answered by naming the door rather than leaving a reader with nothing to build with. */}
++        <p className="mt-4 text-sm text-[var(--color-ink-2)]">
++          {FUNNEL_SENTENCE} {INCUBATOR_SENTENCE}{" "}
++          No project of your own yet?{" "}
++          <a href="/build/" className="text-[var(--color-accent)] hover:underline">
++            Build an agent from a template first &rarr;
++          </a>
++        </p>
++
+         {sent.state === "failed" && (
+           <div className="mt-4">
+             <Strip tone="warn">
+diff --git a/web/src/pages/Build.tsx b/web/src/pages/Build.tsx
+index 0d6c6b1..c50e44c 100644
+--- a/web/src/pages/Build.tsx
++++ b/web/src/pages/Build.tsx
+@@ -7,6 +7,7 @@ import { useState } from "react";
+ import { Page, Strip } from "../components/Chrome";
+ import { CopyButton } from "../components/CopyButton";
+ import { FunnelStrip } from "../components/FunnelStrip";
++import { FUNNEL_SENTENCE, INCUBATOR_SENTENCE } from "../copy";
+ import type { Template } from "../types";
+ 
+ const TOOLS = ["Claude Code", "Codex", "Cursor", "Other"] as const;
+@@ -153,6 +154,13 @@ export default function Build({ templates }: { templates: Template[] }) {
+ 
+       <div className="mt-10 max-w-[46rem]">
+         <h2 className="text-lg font-semibold">What follows</h2>
++        {/* T-78: the fixed funnel sentence, identical on all four surfaces, placed next to the
++            four steps it summarises - and the one descriptive, lowercase use of "incubator" this
++            page is allowed (Fable ruling). No new /apply/ link here: FunnelStrip below already
++            carries the page's one permitted link to it (test_build_funnel_strip_once.py). */}
++        <p className="mt-3 text-sm text-[var(--color-ink-2)]">
++          {FUNNEL_SENTENCE} {INCUBATOR_SENTENCE}
++        </p>
+         <dl className="mt-3 space-y-3 text-sm text-[var(--color-ink-2)]">
+           <div>
+             <dt className="font-medium text-[var(--color-ink)]">01 &mdash; An agent, in your repository</dt>
+diff --git a/web/src/pages/Landing.tsx b/web/src/pages/Landing.tsx
+index fe9693f..902b470 100644
+--- a/web/src/pages/Landing.tsx
++++ b/web/src/pages/Landing.tsx
+@@ -6,6 +6,7 @@ import { Page } from "../components/Chrome";
+ import { AbsentMark, REASON_TEXT } from "../components/Measured";
+ import { orderLinkUrl, slug } from "../types";
+ import type { Registry as R } from "../types";
++import { FUNNEL_SENTENCE, INCUBATOR_SENTENCE } from "../copy";
+ 
+ /** THE THREE CLIPS. D-42 admits them here and nowhere else, which is why the `/media/` paths sit
+  * in this file rather than in a component of their own: `scripts/ratchet_staged_media.py` refuses
+@@ -277,9 +278,15 @@ export default function Landing({ reg }: { reg: R | null }) {
+           Your customers cannot tell you apart from a company that wrote
+           &ldquo;AI-powered&rdquo; on a landing page.
+         </h1>
++        {/* SHRUNK TO TWO SENTENCES (Fable, T-78 ruling): this used to run three - the operator's
++            brief asked for short, philosophy-free copy on the first screen, and the ruling set the
++            count rather than leaving it to taste. The two ideas kept are the whole of the pitch:
++            why this is a verification problem and not a marketing one, and what Provek actually
++            measures and publishes. Nothing argued here is new; the merge only removes a sentence
++            boundary, not a claim. */}
+         <p className="mt-5 text-[1.05rem] leading-relaxed text-[var(--color-ink-2)]">
+-          That is not a marketing problem, and marketing cannot fix it: any claim you make, a
+-          competitor can make more loudly. It is a verification problem.
++          That is not a marketing problem &mdash; any claim you make, a competitor can make more
++          loudly &mdash; it is a verification problem.
+         </p>
+         <p className="mt-4 text-[1.05rem] leading-relaxed text-[var(--color-ink-2)]">
+           Provek measures, per business operation, how much of your company runs without a human in
+@@ -295,10 +302,19 @@ export default function Landing({ reg }: { reg: R | null }) {
+           </a>
+         </div>
+ 
++        {/* T-78: the fixed funnel sentence, identical on all four surfaces, and the one
++            descriptive, lowercase use of "incubator" this page is allowed (Fable ruling) - placed
++            here, introducing the two-step strip below, rather than folded into the protected
++            "No agent yet" line beneath it, which ADR-0011/D-57 caps at one sentence and no second
++            CTA. */}
++        <p className="mt-8 text-sm text-[var(--color-ink-2)] max-w-[30rem]">
++          {FUNNEL_SENTENCE} {INCUBATOR_SENTENCE}
++        </p>
++
+         {/* THE TWO PHASES, STATED IN ORDER. Verification comes first and is free; declaring an
+             order channel is only possible once a passport is verified - this strip states that
+             sequence without promising any subject an Order link they have not earned yet. */}
+-        <div className="mt-8 grid grid-cols-2 gap-6 max-w-[30rem]">
++        <div className="mt-4 grid grid-cols-2 gap-6 max-w-[30rem]">
+           <div>
+             <h3 className="text-xs uppercase tracking-wide text-[var(--color-ink-3)]">
+               Step 1 &mdash; Get verified
+diff --git a/web/src/pages/Registry.tsx b/web/src/pages/Registry.tsx
+index 9fd47d3..872b704 100644
+--- a/web/src/pages/Registry.tsx
++++ b/web/src/pages/Registry.tsx
+@@ -9,6 +9,7 @@ import { Page, Strip } from "../components/Chrome";
+ import { AbsentMark } from "../components/Measured";
+ import { effectiveStatus, orderAbsentReason, orderLinkUrl, slug } from "../types";
+ import type { Registry as R } from "../types";
++import { FUNNEL_SENTENCE, INCUBATOR_SENTENCE } from "../copy";
+ 
+ function shortId(id: string) {
+   const i = id.indexOf("/");
+@@ -36,6 +37,13 @@ export default function Registry({ reg }: { reg: R }) {
+         {reg.generated_at.slice(0, 19).replace("T", " ")} UTC.
+       </p>
+ 
++      {/* T-78: the fixed funnel sentence, identical on all four surfaces, and the one
++          descriptive, lowercase use of "incubator" this page is allowed (Fable ruling) - placed
++          beside the table this whole path ends at. */}
++      <p className="mt-2 text-sm text-[var(--color-ink-2)] max-w-[46rem]">
++        {FUNNEL_SENTENCE} {INCUBATOR_SENTENCE}
++      </p>
++
+       {/* Corrections log (phase-2 plan): all errata live at /registry/corrections/, in full and
+           unabridged - this is a POINTER, not a summary of what they said. Reproducing their text
+           here as well would be the same rule written in two places (LAW #ONE-PLACE); the full,
