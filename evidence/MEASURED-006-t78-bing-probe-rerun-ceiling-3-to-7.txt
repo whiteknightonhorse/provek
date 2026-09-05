@@ -1,0 +1,37 @@
+T-78: re-ran ~/orchestra/bing_probe.py per Fable's ruling before touching notes ('the executor
+re-runs the Bing probe first'). Prior reading (D-35's ladder) had crawl_stats at 0 - not
+measured, blocked at the floor ceiling of 3. Fresh capture below shows the crawl step has
+opened: crawl_stats now reads 9 rows for provek.dev against 18 at the control property, both
+control_proven_capable. query_stats still reads nothing_qualified (0 rows, control proven
+capable at 225), so the ladder climbs exactly one rung, not two.
+
+tree: c0195a18c1f46cc1b917ba1aa8d459db5c3219ac (dirty)
+
+Copied into the repository via ~/orchestra/notes_reach.py (web/notes/reach.json), which
+web/notes/emit.mjs::NOTE_CEILING now derives as 7, up from the 3 in force before this run.
+Three notes exist today (autonomy-levels-l0-l5, not-measured-is-not-zero,
+what-erc-8004-provides-and-what-it-does-not), so up to four more may now stand - but none
+were authored in this attempt (see report: authoring a new rubric under this project's own
+evidentiary bar - measured keys, resolving addresses, a real FAQ, model provenance recorded -
+is separate work this attempt did not undertake).
+
+=== web/notes/emit.mjs NOTE_STEP, recomputed from the fresh web/notes/reach.json ===
+NOTE_CEILING: 7
+{
+  "ceiling": 7,
+  "reading": "measured",
+  "steps": [
+    {
+      "ceiling": 7,
+      "open": true,
+      "state": "measured",
+      "detail": "crawl_stats: 9 rows for this site against 18 at the control"
+    },
+    {
+      "ceiling": 15,
+      "open": false,
+      "state": "nothing_qualified",
+      "detail": "query_stats: the call sees, and no row qualified for this site"
+    }
+  ]
+}

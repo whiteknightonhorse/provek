@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Page, Strip } from "../components/Chrome";
 import { CopyButton } from "../components/CopyButton";
 import { FunnelStrip } from "../components/FunnelStrip";
+import { FUNNEL_SENTENCE, INCUBATOR_SENTENCE } from "../copy";
 import type { Template } from "../types";
 
 const TOOLS = ["Claude Code", "Codex", "Cursor", "Other"] as const;
@@ -153,6 +154,13 @@ export default function Build({ templates }: { templates: Template[] }) {
 
       <div className="mt-10 max-w-[46rem]">
         <h2 className="text-lg font-semibold">What follows</h2>
+        {/* T-78: the fixed funnel sentence, identical on all four surfaces, placed next to the
+            four steps it summarises - and the one descriptive, lowercase use of "incubator" this
+            page is allowed (Fable ruling). No new /apply/ link here: FunnelStrip below already
+            carries the page's one permitted link to it (test_build_funnel_strip_once.py). */}
+        <p className="mt-3 text-sm text-[var(--color-ink-2)]">
+          {FUNNEL_SENTENCE} {INCUBATOR_SENTENCE}
+        </p>
         <dl className="mt-3 space-y-3 text-sm text-[var(--color-ink-2)]">
           <div>
             <dt className="font-medium text-[var(--color-ink)]">01 &mdash; An agent, in your repository</dt>

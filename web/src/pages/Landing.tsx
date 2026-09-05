@@ -6,6 +6,7 @@ import { Page } from "../components/Chrome";
 import { AbsentMark, REASON_TEXT } from "../components/Measured";
 import { orderLinkUrl, slug } from "../types";
 import type { Registry as R } from "../types";
+import { FUNNEL_SENTENCE, INCUBATOR_SENTENCE } from "../copy";
 
 /** THE THREE CLIPS. D-42 admits them here and nowhere else, which is why the `/media/` paths sit
  * in this file rather than in a component of their own: `scripts/ratchet_staged_media.py` refuses
@@ -277,9 +278,15 @@ export default function Landing({ reg }: { reg: R | null }) {
           Your customers cannot tell you apart from a company that wrote
           &ldquo;AI-powered&rdquo; on a landing page.
         </h1>
+        {/* SHRUNK TO TWO SENTENCES (Fable, T-78 ruling): this used to run three - the operator's
+            brief asked for short, philosophy-free copy on the first screen, and the ruling set the
+            count rather than leaving it to taste. The two ideas kept are the whole of the pitch:
+            why this is a verification problem and not a marketing one, and what Provek actually
+            measures and publishes. Nothing argued here is new; the merge only removes a sentence
+            boundary, not a claim. */}
         <p className="mt-5 text-[1.05rem] leading-relaxed text-[var(--color-ink-2)]">
-          That is not a marketing problem, and marketing cannot fix it: any claim you make, a
-          competitor can make more loudly. It is a verification problem.
+          That is not a marketing problem &mdash; any claim you make, a competitor can make more
+          loudly &mdash; it is a verification problem.
         </p>
         <p className="mt-4 text-[1.05rem] leading-relaxed text-[var(--color-ink-2)]">
           Provek measures, per business operation, how much of your company runs without a human in
@@ -295,10 +302,19 @@ export default function Landing({ reg }: { reg: R | null }) {
           </a>
         </div>
 
+        {/* T-78: the fixed funnel sentence, identical on all four surfaces, and the one
+            descriptive, lowercase use of "incubator" this page is allowed (Fable ruling) - placed
+            here, introducing the two-step strip below, rather than folded into the protected
+            "No agent yet" line beneath it, which ADR-0011/D-57 caps at one sentence and no second
+            CTA. */}
+        <p className="mt-8 text-sm text-[var(--color-ink-2)] max-w-[30rem]">
+          {FUNNEL_SENTENCE} {INCUBATOR_SENTENCE}
+        </p>
+
         {/* THE TWO PHASES, STATED IN ORDER. Verification comes first and is free; declaring an
             order channel is only possible once a passport is verified - this strip states that
             sequence without promising any subject an Order link they have not earned yet. */}
-        <div className="mt-8 grid grid-cols-2 gap-6 max-w-[30rem]">
+        <div className="mt-4 grid grid-cols-2 gap-6 max-w-[30rem]">
           <div>
             <h3 className="text-xs uppercase tracking-wide text-[var(--color-ink-3)]">
               Step 1 &mdash; Get verified

@@ -9,6 +9,7 @@ import { Page, Strip } from "../components/Chrome";
 import { AbsentMark } from "../components/Measured";
 import { effectiveStatus, orderAbsentReason, orderLinkUrl, slug } from "../types";
 import type { Registry as R } from "../types";
+import { FUNNEL_SENTENCE, INCUBATOR_SENTENCE } from "../copy";
 
 function shortId(id: string) {
   const i = id.indexOf("/");
@@ -34,6 +35,13 @@ export default function Registry({ reg }: { reg: R }) {
         evidence behind it &mdash; and, once verified, where you can order from them. Generated
         {" "}
         {reg.generated_at.slice(0, 19).replace("T", " ")} UTC.
+      </p>
+
+      {/* T-78: the fixed funnel sentence, identical on all four surfaces, and the one
+          descriptive, lowercase use of "incubator" this page is allowed (Fable ruling) - placed
+          beside the table this whole path ends at. */}
+      <p className="mt-2 text-sm text-[var(--color-ink-2)] max-w-[46rem]">
+        {FUNNEL_SENTENCE} {INCUBATOR_SENTENCE}
       </p>
 
       {/* Corrections log (phase-2 plan): all errata live at /registry/corrections/, in full and

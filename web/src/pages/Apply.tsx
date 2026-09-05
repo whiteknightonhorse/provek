@@ -53,6 +53,7 @@ const CONSENT_TEXT =
   "I agree to receive product updates about Provek at this address: new features, and changes to " +
   "how verification works. Not shared with anyone else, and you can ask us to stop at any time.";
 import { Page, Strip } from "../components/Chrome";
+import { FUNNEL_SENTENCE, INCUBATOR_SENTENCE } from "../copy";
 
 type Sent =
   | { state: "idle" }
@@ -211,6 +212,17 @@ export default function Apply() {
             how that link is decided
           </a>
           .
+        </p>
+
+        {/* T-78: why this form exists at all, in the funnel's own terms - the brief asked this
+            page to say what verifying is FOR rather than just how to submit. No project yet is
+            answered by naming the door rather than leaving a reader with nothing to build with. */}
+        <p className="mt-4 text-sm text-[var(--color-ink-2)]">
+          {FUNNEL_SENTENCE} {INCUBATOR_SENTENCE}{" "}
+          No project of your own yet?{" "}
+          <a href="/build/" className="text-[var(--color-accent)] hover:underline">
+            Build an agent from a template first &rarr;
+          </a>
         </p>
 
         {sent.state === "failed" && (

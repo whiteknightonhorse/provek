@@ -1,0 +1,414 @@
+T-78 anchor inventory, before vs after the funnel-text edits (site-wide, every id="..." and
+every href="...#frag" under web/dist/). Diff is empty: no anchor was added, renamed, or lost
+by this task's copy changes.
+
+tree: c0195a18c1f46cc1b917ba1aa8d459db5c3219ac (dirty)
+
+Produced by a scratch inventory script (not committed - its logic now lives permanently in
+tests/test_site_wide_anchors_resolve.py's _anchor_map()), run once before any T-78 edit and
+once after the final edit below.
+
+=== before (pre-edit build) ===
+{
+  "frag_links": [
+    "/\t#main",
+    "/404.html\t#main",
+    "/apply/\t#main",
+    "/apply/\t/method/#the-order-link",
+    "/apply/\thttps://github.com/whiteknightonhorse/provek/blob/main/DECISIONS.md#d-14-measurement-on-the-public-surface-ga4-without-a-consent-banner",
+    "/build/\t#how-it-works",
+    "/build/\t#main",
+    "/build/\t#templates",
+    "/build/content-production-agent/\t#main",
+    "/build/customer-support-agent/\t#main",
+    "/build/ecommerce-operations-agent/\t#main",
+    "/build/finance-operations-agent/\t#main",
+    "/build/lead-generation-agent/\t#main",
+    "/build/market-research-agent/\t#main",
+    "/build/youtube-channel-operations-agent/\t#main",
+    "/method/\t#main",
+    "/method/notes/\t#main",
+    "/method/notes/autonomy-levels-l0-l5/\t#main",
+    "/method/notes/not-measured-is-not-zero/\t#main",
+    "/method/notes/what-erc-8004-provides-and-what-it-does-not/\t#main",
+    "/p/git_whiteknightonhorse_AI-Property-Sales-Platform/\t#main",
+    "/p/git_whiteknightonhorse_AIpush/\t#main",
+    "/p/git_whiteknightonhorse_APIbase/\t#main",
+    "/p/git_whiteknightonhorse_audiobook-shorts-series/\t#main",
+    "/p/git_whiteknightonhorse_cryptocardhub-defycard/\t#main",
+    "/p/git_whiteknightonhorse_cryptocardhub-public/\t#main",
+    "/p/git_whiteknightonhorse_gov-auction-report/\t#main",
+    "/p/git_whiteknightonhorse_mcp-protocol-tester/\t#main",
+    "/p/git_whiteknightonhorse_provek-method/\t#main",
+    "/p/git_whiteknightonhorse_provek/\t#main",
+    "/phase-2/\t#main",
+    "/phase-2/\t/method/#the-order-link",
+    "/registry/\t#main",
+    "/registry/\t/method/#the-order-link",
+    "/registry/corrections/\t#main"
+  ],
+  "ids": {
+    "/": [
+      "main",
+      "root"
+    ],
+    "/404.html": [
+      "main",
+      "root"
+    ],
+    "/apply/": [
+      "contact",
+      "main",
+      "repo",
+      "root",
+      "updates",
+      "website"
+    ],
+    "/build/": [
+      "how-it-works",
+      "main",
+      "root",
+      "templates"
+    ],
+    "/build/content-production-agent/": [
+      "main",
+      "root",
+      "skill-source-content-production-agent"
+    ],
+    "/build/customer-support-agent/": [
+      "main",
+      "root",
+      "skill-source-customer-support-agent"
+    ],
+    "/build/ecommerce-operations-agent/": [
+      "main",
+      "root",
+      "skill-source-ecommerce-operations-agent"
+    ],
+    "/build/finance-operations-agent/": [
+      "main",
+      "root",
+      "skill-source-finance-operations-agent"
+    ],
+    "/build/lead-generation-agent/": [
+      "main",
+      "root",
+      "skill-source-lead-generation-agent"
+    ],
+    "/build/market-research-agent/": [
+      "main",
+      "root",
+      "skill-source-market-research-agent"
+    ],
+    "/build/youtube-channel-operations-agent/": [
+      "main",
+      "root",
+      "skill-source-youtube-channel-operations-agent"
+    ],
+    "/method/": [
+      "main",
+      "root",
+      "the-order-link"
+    ],
+    "/method/notes/": [
+      "main",
+      "root"
+    ],
+    "/method/notes/autonomy-levels-l0-l5/": [
+      "addresses",
+      "evidence-classes-and-what-a-passport-must-show",
+      "main",
+      "not-measured-is-not-zero",
+      "pv-f0-cross",
+      "pv-f0-hatch",
+      "questions",
+      "root",
+      "six-rungs-one-operation-at-a-time",
+      "the-workings-are-published-not-just-the-verdict",
+      "thresholds-assigned-not-measured",
+      "what-the-ladder-does-not-price-in",
+      "who-counts-as-an-author"
+    ],
+    "/method/notes/not-measured-is-not-zero/": [
+      "addresses",
+      "main",
+      "pv-f0-cross",
+      "pv-f0-hatch",
+      "pv-f1-cross",
+      "pv-f1-hatch",
+      "root",
+      "the-accountability-block-s-separate-discipline",
+      "three-states-not-a-blank",
+      "what-a-passport-s-per-operation-table-renders",
+      "when-the-instrument-cannot-see-the-quantity",
+      "where-this-showed-up-in-the-keyword-base"
+    ],
+    "/method/notes/what-erc-8004-provides-and-what-it-does-not/": [
+      "addresses",
+      "main",
+      "on-chain-existence-is-not-evidence-a-reader-can-use",
+      "provek-s-position-on-the-ladder-erc-8004-leaves-open",
+      "reputation-and-the-aggregation-the-standard-declines-to-fix",
+      "root",
+      "the-identity-registry-a-pointer-not-a-verdict",
+      "the-validation-registry-a-fixed-shape-an-open-method",
+      "what-erc-8004-standardizes"
+    ],
+    "/p/git_whiteknightonhorse_AI-Property-Sales-Platform/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_AIpush/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_APIbase/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_audiobook-shorts-series/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_cryptocardhub-defycard/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_cryptocardhub-public/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_gov-auction-report/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_mcp-protocol-tester/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_provek-method/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_provek/": [
+      "main",
+      "root"
+    ],
+    "/phase-2/": [
+      "main",
+      "root"
+    ],
+    "/registry/": [
+      "main",
+      "root"
+    ],
+    "/registry/corrections/": [
+      "main",
+      "root"
+    ]
+  }
+}
+
+=== after (final build, post numeral-gate fixup) ===
+{
+  "frag_links": [
+    "/\t#main",
+    "/404.html\t#main",
+    "/apply/\t#main",
+    "/apply/\t/method/#the-order-link",
+    "/apply/\thttps://github.com/whiteknightonhorse/provek/blob/main/DECISIONS.md#d-14-measurement-on-the-public-surface-ga4-without-a-consent-banner",
+    "/build/\t#how-it-works",
+    "/build/\t#main",
+    "/build/\t#templates",
+    "/build/content-production-agent/\t#main",
+    "/build/customer-support-agent/\t#main",
+    "/build/ecommerce-operations-agent/\t#main",
+    "/build/finance-operations-agent/\t#main",
+    "/build/lead-generation-agent/\t#main",
+    "/build/market-research-agent/\t#main",
+    "/build/youtube-channel-operations-agent/\t#main",
+    "/method/\t#main",
+    "/method/notes/\t#main",
+    "/method/notes/autonomy-levels-l0-l5/\t#main",
+    "/method/notes/not-measured-is-not-zero/\t#main",
+    "/method/notes/what-erc-8004-provides-and-what-it-does-not/\t#main",
+    "/p/git_whiteknightonhorse_AI-Property-Sales-Platform/\t#main",
+    "/p/git_whiteknightonhorse_AIpush/\t#main",
+    "/p/git_whiteknightonhorse_APIbase/\t#main",
+    "/p/git_whiteknightonhorse_audiobook-shorts-series/\t#main",
+    "/p/git_whiteknightonhorse_cryptocardhub-defycard/\t#main",
+    "/p/git_whiteknightonhorse_cryptocardhub-public/\t#main",
+    "/p/git_whiteknightonhorse_gov-auction-report/\t#main",
+    "/p/git_whiteknightonhorse_mcp-protocol-tester/\t#main",
+    "/p/git_whiteknightonhorse_provek-method/\t#main",
+    "/p/git_whiteknightonhorse_provek/\t#main",
+    "/phase-2/\t#main",
+    "/phase-2/\t/method/#the-order-link",
+    "/registry/\t#main",
+    "/registry/\t/method/#the-order-link",
+    "/registry/corrections/\t#main"
+  ],
+  "ids": {
+    "/": [
+      "main",
+      "root"
+    ],
+    "/404.html": [
+      "main",
+      "root"
+    ],
+    "/apply/": [
+      "contact",
+      "main",
+      "repo",
+      "root",
+      "updates",
+      "website"
+    ],
+    "/build/": [
+      "how-it-works",
+      "main",
+      "root",
+      "templates"
+    ],
+    "/build/content-production-agent/": [
+      "main",
+      "root",
+      "skill-source-content-production-agent"
+    ],
+    "/build/customer-support-agent/": [
+      "main",
+      "root",
+      "skill-source-customer-support-agent"
+    ],
+    "/build/ecommerce-operations-agent/": [
+      "main",
+      "root",
+      "skill-source-ecommerce-operations-agent"
+    ],
+    "/build/finance-operations-agent/": [
+      "main",
+      "root",
+      "skill-source-finance-operations-agent"
+    ],
+    "/build/lead-generation-agent/": [
+      "main",
+      "root",
+      "skill-source-lead-generation-agent"
+    ],
+    "/build/market-research-agent/": [
+      "main",
+      "root",
+      "skill-source-market-research-agent"
+    ],
+    "/build/youtube-channel-operations-agent/": [
+      "main",
+      "root",
+      "skill-source-youtube-channel-operations-agent"
+    ],
+    "/method/": [
+      "main",
+      "root",
+      "the-order-link"
+    ],
+    "/method/notes/": [
+      "main",
+      "root"
+    ],
+    "/method/notes/autonomy-levels-l0-l5/": [
+      "addresses",
+      "evidence-classes-and-what-a-passport-must-show",
+      "main",
+      "not-measured-is-not-zero",
+      "pv-f0-cross",
+      "pv-f0-hatch",
+      "questions",
+      "root",
+      "six-rungs-one-operation-at-a-time",
+      "the-workings-are-published-not-just-the-verdict",
+      "thresholds-assigned-not-measured",
+      "what-the-ladder-does-not-price-in",
+      "who-counts-as-an-author"
+    ],
+    "/method/notes/not-measured-is-not-zero/": [
+      "addresses",
+      "main",
+      "pv-f0-cross",
+      "pv-f0-hatch",
+      "pv-f1-cross",
+      "pv-f1-hatch",
+      "root",
+      "the-accountability-block-s-separate-discipline",
+      "three-states-not-a-blank",
+      "what-a-passport-s-per-operation-table-renders",
+      "when-the-instrument-cannot-see-the-quantity",
+      "where-this-showed-up-in-the-keyword-base"
+    ],
+    "/method/notes/what-erc-8004-provides-and-what-it-does-not/": [
+      "addresses",
+      "main",
+      "on-chain-existence-is-not-evidence-a-reader-can-use",
+      "provek-s-position-on-the-ladder-erc-8004-leaves-open",
+      "reputation-and-the-aggregation-the-standard-declines-to-fix",
+      "root",
+      "the-identity-registry-a-pointer-not-a-verdict",
+      "the-validation-registry-a-fixed-shape-an-open-method",
+      "what-erc-8004-standardizes"
+    ],
+    "/p/git_whiteknightonhorse_AI-Property-Sales-Platform/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_AIpush/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_APIbase/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_audiobook-shorts-series/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_cryptocardhub-defycard/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_cryptocardhub-public/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_gov-auction-report/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_mcp-protocol-tester/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_provek-method/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_provek/": [
+      "main",
+      "root"
+    ],
+    "/phase-2/": [
+      "main",
+      "root"
+    ],
+    "/registry/": [
+      "main",
+      "root"
+    ],
+    "/registry/corrections/": [
+      "main",
+      "root"
+    ]
+  }
+}
+
+=== diff before/after ===
+(empty - identical)
