@@ -167,6 +167,13 @@ class RateLimited(RuntimeError):
     `NotMeasured.UNREADABLE` is FORBIDDEN for this case. It asserts that a source was asked and
     did not answer; here the source was never asked. On 2026-08-31 a rate-exhausted run wrote
     exactly that lie into live passports.
+
+    THE MESSAGE NAMES WHAT WAS MEASURED, NOT A REMEDY THAT CONTRADICTS ABI-5-3 (Fable ruling on
+    T-76, 2026-09-05). Until then this exception's own text advised "set PROVEK_GITHUB_TOKEN" -
+    a printed rule that the executable rule in `~/orchestra/nightly_remeasure.sh` (`unset
+    PROVEK_GITHUB_TOKEN`) and `scripts/cohort.py` (`REFUSED: PROVEK_GITHUB_TOKEN is set`) both
+    contradict. Two rules in two places, only one of which can run, is worse than one rule that
+    is merely strict: a reader who trusts the printed one takes an action the code rejects.
     """
 
 
@@ -219,9 +226,10 @@ def _api(path: str, token: str | None = None) -> tuple[int, object]:
         # announcing a fact about us when the truth was one subject refusing - misattribution in
         # the opposite direction from the one this guard exists to prevent.
         raise RateLimited(
-            f"GitHub rate limit reached reading {path} (HTTP {status}). Anonymous access allows "
-            "60 requests an hour. Wait for the window to reset, or set PROVEK_GITHUB_TOKEN - the "
-            "token changes the budget, never the evidence.")
+            f"anonymous budget of this address is spent: remaining=0 reading {path} "
+            f"(HTTP {status}). Spent by this run or by a neighbour sharing the address - this "
+            "process cannot tell which. Wait for the hourly window to reset; a token is not a "
+            "remedy this pipeline accepts (ABI-5-3, unset PROVEK_GITHUB_TOKEN stands).")
     try:
         return status, json.loads(body)
     except Exception:

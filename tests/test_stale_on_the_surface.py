@@ -64,3 +64,28 @@ def test_every_current_row_will_lapse_and_the_date_is_known():
     dates = {row["valid_until"][:10] for row in reg["subjects"]}
     assert dates, "the registry is empty"
     assert all(d >= "2026-09-01" for d in dates), dates
+
+
+def test_the_surface_renders_each_rows_own_issued_at_not_only_the_documents_generated_at():
+    """T-76 ruling (Fable, 2026-09-05): `generated_at` is ONE date for the whole document; a row
+    carried forward unread (budget exhausted, or a `PROVEK_ONLY` run naming a different subject)
+    keeps an OLDER `issued_at`. A page that prints only `generated_at` reports that row as measured
+    today - the third world beside "verified" and "stale" this rule exists to name honestly."""
+    registry = (WEB / "pages" / "Registry.tsx").read_text(encoding="utf-8")
+    assert "s.issued_at" in registry, "the registry table does not render the row's own issued_at"
+
+
+@pytest.mark.skipif(not REGISTRY.exists(), reason="no registry emitted")
+def test_a_carried_forward_row_would_read_measured_earlier_not_as_of_generated_at():
+    """The mechanism the surface test above relies on: `issued_at` on a carried-forward row is
+    strictly older than the document's `generated_at`, so the two dates are never
+    interchangeable and printing the wrong one is detectable, not merely theoretical."""
+    reg = json.loads(REGISTRY.read_text())
+    generated_at = reg["generated_at"]
+    for row in reg["subjects"]:
+        issued_at = row.get("issued_at")
+        if issued_at is None:
+            continue  # published before T-76; not_measured, not a violation of the rule
+        assert issued_at <= generated_at, (
+            f"{row['subject_id']}: issued_at {issued_at} is AFTER the document's own "
+            f"generated_at {generated_at} - a row cannot be measured after the file that holds it")

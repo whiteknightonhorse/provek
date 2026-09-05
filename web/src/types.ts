@@ -106,6 +106,14 @@ export interface RegistryRow {
   /** The LATEST anonymous GET result against `service_url`, or `null` when no URL was declared or
    *  the check has never run. Never a proxy for the score. */
   service_reachable: boolean | null;
+  /** WHEN THIS ROW WAS ACTUALLY MEASURED (T-76 ruling, Fable, 2026-09-05) - the passport's own
+   *  `issued_at`, distinct from the registry document's single `generated_at`. A row carried
+   *  forward unread (budget exhausted, or a `PROVEK_ONLY` run naming a different subject) keeps
+   *  its OLD `issued_at` while every other row in the same file gets a fresh one; a page that
+   *  prints only `generated_at` reports a carried-forward row as measured today, which is the
+   *  same anonymity-adjacent lie ABI-5-3 was written against, moved from "who read it" to "when".
+   *  `null` only for a row published before this field existed. */
+  issued_at: string | null;
 }
 
 export interface Registry {

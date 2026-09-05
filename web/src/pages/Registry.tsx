@@ -81,6 +81,12 @@ export default function Registry({ reg }: { reg: R }) {
               <th scope="col" className="px-4 py-2.5 font-semibold">Status</th>
               <th scope="col" className="px-4 py-2.5 font-semibold">Autonomy</th>
               <th scope="col" className="px-4 py-2.5 font-semibold">Verifier</th>
+              {/* T-76 ruling (Fable, 2026-09-05): `generated_at` above is ONE date for the whole
+                  document; a row carried forward unread keeps an OLDER `issued_at` while every
+                  other row's is fresh. Printing only `generated_at` would report a carried-forward
+                  row as measured today - a third world beside "verified" and "not measured", and
+                  the one this column exists to name honestly rather than silently. */}
+              <th scope="col" className="px-4 py-2.5 font-semibold">Measured</th>
               <th scope="col" className="px-4 py-2.5 font-semibold">Valid until</th>
               {/* PHASE 2 SLOT (decision D-05), FILLED: the Provider Catalog's "Order" link
                   (specification 4.2-bis point 3). The predicate is `orderLinkUrl` - code, not this
@@ -137,6 +143,15 @@ export default function Registry({ reg }: { reg: R }) {
                     <span className="text-[var(--color-ink-2)]">independent</span>
                   )}
                 </td>
+                <td data-label="Measured" className="px-4 py-2.5 tabular-nums">
+                  {/* NOT AbsentMark - `issued_at` missing here means "published before this field
+                      existed", not one of the named absence reasons that enum carries. NOT
+                      staleness either - `valid_until` already says whether the verdict still
+                      holds; this says only WHEN it was taken. */}
+                  {s.issued_at ? s.issued_at.slice(0, 10) : (
+                    <span className="text-[var(--color-ink-3)]">pre-dates this field</span>
+                  )}
+                </td>
                 <td data-label="Valid until" className="px-4 py-2.5 tabular-nums">{s.valid_until.slice(0, 10)}</td>
                 <td data-label="Order" className="px-4 py-2.5">
                   {(() => {
@@ -159,7 +174,7 @@ export default function Registry({ reg }: { reg: R }) {
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-[var(--color-ink-3)]">
+                <td colSpan={7} className="px-4 py-10 text-center text-[var(--color-ink-3)]">
                   Nothing matches &ldquo;{q}&rdquo;. The registry holds {reg.count} records in total.
                 </td>
               </tr>

@@ -69,17 +69,23 @@ def optional_token() -> str | None:
     answer and it is what ships: every call this pipeline makes is a PUBLIC read that returns 200
     with no credential - that much still holds. What does NOT still hold is the count first
     written here, copied from measure_qm2.py's three-subject pipeline rather than measured
-    against this script's own eight-member COHORT below: "all three calls... return 200... a
-    full cohort costs 24 of the 60 anonymous requests." Re-measured 2026-08-24 against the live
-    API (same correction as `_api` in src/collector/github.py; see evidence/RED-037-*):
-    `whiteknightonhorse/gov-auction-report` - a member of COHORT below - now answers 404, not
+    against the cohort in data/subjects.json, n at run time, below: "all three calls... return
+    200... a full cohort costs 24 of the 60 anonymous requests." Re-measured 2026-08-24 against
+    the live API (same correction as `_api` in src/collector/github.py; see evidence/RED-037-*):
+    `whiteknightonhorse/gov-auction-report` - a member of that cohort - now answers 404, not
     200, and a 404 short-circuits `collect_github` after the FIRST call, breaking the flat
-    3-per-subject assumption here too. What that costs THIS script's own eight-subject pass is
+    3-per-subject assumption here too. What that costs THIS script's own pass over the cohort is
     `not_measured`: only the three-subject run in measure_qm2.py was re-run live on 2026-08-24
     (3 + 3 + 1 = 7 calls there), and this file's own total has not been separately re-checked. So
     the default channel holds nothing at all - reproducible by any reader, not merely by one the
     operator has chosen to grant. Raised to Fable as a strengthening of his ruling, not a
     departure from it.
+
+    A COHORT'S SIZE IS NOT A LITERAL A COMMENT MAY QUOTE (T-76 ruling, 2026-09-05). The number of
+    anonymous calls this whole pass costs is `3 * len(COHORT)` at the time it runs, read from
+    `data/subjects.json` above, never restated as a fixed count here - a restated count goes stale
+    exactly as silently as the code literal `remeasure_cost.jsonl` used to carry (see
+    `~/orchestra/nightly_remeasure.sh`'s cost journal, fixed the same day).
 
     A token is honoured when present, purely to widen the rate limit for a larger cohort. It never
     changes what is PUBLISHED - that sentence was false when first written and is now enforced by
@@ -238,7 +244,11 @@ def previous_rows() -> dict:
             # a registry.json written before phase 2 added these fields lacks the keys outright,
             # and an absent field must still read as `None`, not raise.
             service_url=_r.get("service_url"),
-            service_reachable=_r.get("service_reachable"))
+            service_reachable=_r.get("service_reachable"),
+            # T-76 ruling (Fable, 2026-09-05): carried forward UNCHANGED, same discipline as
+            # `service_url` above. A registry.json written before this ruling lacks the key
+            # outright - `.get()` reads that as `None`, not a fabricated "measured now".
+            issued_at=(parse_iso_ts(_r["issued_at"]) if _r.get("issued_at") else None))
     return rows
 
 
@@ -494,7 +504,12 @@ for full in COHORT:
                         service_url=(service.order_url.value if service.order_url.measured
                                     else None),
                         service_reachable=(service_endpoint.reachable.value
-                                           if service_endpoint.reachable.measured else None)))
+                                           if service_endpoint.reachable.measured else None),
+                        # THE PASSPORT'S OWN `issued_at`, not a second `now` (T-76 ruling): both
+                        # come from the same `now` this loop computed once, but reading it off `p`
+                        # keeps the row and the document it links to unable to diverge, the same
+                        # discipline `protocol_version` above already has.
+                        issued_at=p.issued_at))
 
     op = m["verified"]["operations"][0]
     lim = ",".join(scores[0].limiters_applied) or "-"

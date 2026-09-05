@@ -135,6 +135,12 @@ scripts/deploy_label.py:          [ABI-32-1, ABI-16-5]
 src/collector/github.py:          [ABI-5-1, ABI-5-2, ABI-4-4, ABI-30-7]
 scripts/ratchet_language.py:      [ABI-32-1, ABI-32-3]
 scripts/cohort.py:                [ABI-18-3, ABI-31-3, ABI-31-4]
+# T-76 (Fable ruling, 2026-09-05). The nightly chain's anonymous read of `/rate_limit` and its
+# cost journal are ABI-5-3: the whole point is that the budget being measured is the one an
+# anonymous third party would also have, so a run that spends it as if it were unlimited is the
+# same reproducibility violation ABI-5-3 was written against, just aimed at the budget instead of
+# the credential.
+scripts/budget_journal.py:        [ABI-5-3]
 # ABI-16-3 joined this in T-F7: `publish()` now READS the validation-target record to say why it
 # refuses, so the module is a consumer of a result and not only a producer of one.
 src/transport/erc8004.py:         [ABI-24-4, ABI-12-7, ABI-16-3]

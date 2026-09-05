@@ -51,6 +51,18 @@ class Row:
     """The LATEST anonymous GET result against `service_url` (spec 4.2-bis point 2), or `None` when
     no URL was declared or the check has never run. Never a proxy for the score - see
     `ServiceEndpoint` in `src/passport/passport.py`."""
+    issued_at: datetime | None = None
+    """WHEN THIS ROW WAS ACTUALLY MEASURED - the passport's own `issued_at`, not the registry's
+    `generated_at` (T-76 ruling, Fable, 2026-09-05).
+
+    A row carried forward unread (budget exhausted, or `PROVEK_ONLY` skipping a subject not named)
+    keeps its OLD `issued_at` while every other row in the same file gets a fresh one - `write()`
+    stamps one `generated_at` on the whole document, and a page that prints only that date reports
+    a carried-forward row as measured today. That is the exact lie ABI-5-3's anonymity boundary was
+    drawn against, just moved from "who read it" to "when". `None` only for a `Row` built by code
+    that predates this field (a registry.json written before this ruling) - `.get()` in
+    `previous_rows()` reads that as `None` rather than raising, the same discipline `service_url`
+    already has."""
 
 
 class PublicRegistry:
@@ -79,6 +91,7 @@ class PublicRegistry:
                 "verifier_affiliation": r.verifier_affiliation,
                 "service_url": r.service_url,
                 "service_reachable": r.service_reachable,
+                "issued_at": r.issued_at.isoformat() if r.issued_at else None,
             })
         return {"generated_at": now.isoformat(), "disclaimer": DISCLAIMER,
                 "count": len(out), "subjects": sorted(out, key=lambda x: x["subject_id"])}

@@ -1,0 +1,61 @@
+T-76 ruling (Fable, 2026-09-05), Ф4 point 4: "ETag/If-None-Match не тратят бюджет — не верить,
+измерить". Measured 2026-09-05, anonymous (no PROVEK_GITHUB_TOKEN), against a real cohort subject
+(whiteknightonhorse/APIbase). Headers only, per the ruling's own boundary — no response bodies
+kept.
+
+tree: c9787699a304525993ecda09086cc51a03e43dfd (dirty)
+
+METHOD. Two GETs to the same URL, seconds apart: the first cold, the second carrying
+`If-None-Match` set to the first response's own `ETag`. `X-RateLimit-Remaining`/`X-RateLimit-Used`
+read directly off each response's own headers — no separate `/rate_limit` call needed, and no
+race with any other reader of the same shared budget between the two reads this would otherwise
+introduce.
+
+CALL 1 — cold, no conditional header:
+  GET https://api.github.com/repos/whiteknightonhorse/APIbase
+  HTTP/2 200
+  etag: W/"0fb4607902b0a30ca02655bea55b6945d699675de4adcc8ff61871a24b415e55"
+  x-ratelimit-limit: 60
+  x-ratelimit-remaining: 21
+  x-ratelimit-used: 39
+  x-ratelimit-reset: 1788590231
+
+CALL 2 — same URL, `If-None-Match: <call 1's etag>`, ~0.3s later:
+  GET https://api.github.com/repos/whiteknightonhorse/APIbase
+  If-None-Match: W/"0fb4607902b0a30ca02655bea55b6945d699675de4adcc8ff61871a24b415e55"
+  HTTP/2 304
+  etag: W/"0fb4607902b0a30ca02655bea55b6945d699675de4adcc8ff61871a24b415e55"
+  x-ratelimit-limit: 60
+  x-ratelimit-remaining: 20
+  x-ratelimit-used: 40
+  x-ratelimit-reset: 1788590231          (same window: reset unchanged between the two calls)
+
+RESULT: remaining DROPPED BY ONE on the 304, identically to the cold 200 before it (39 -> 40
+used, same reset window both times, ruling out a window rollover as the explanation). GitHub's
+own historical documentation claimed a conditional request answered with 304 was free; that is no
+longer true for anonymous reads against this API version (`x-github-api-version-selected:
+2022-11-28`) as of this measurement. A warm `ETag` saves the response BODY, not the budget.
+
+SEPARATE MEASUREMENT — `/rate_limit` itself, two reads with nothing else run between them:
+  read 1: remaining=28
+  read 2: remaining=28 (unchanged)
+Confirmed free, as documented and as `scripts/budget_journal.py`'s design already assumes (reading
+it before/after the cohort pass must not itself perturb what it measures).
+
+CONSEQUENCE FOR Ф1/Ф4. Conditional-request caching would NOT reduce the anonymous budget this
+project spends per subject — implementing it for that reason would be effort spent on a saving
+that does not exist, the same "declared, not measured" shape T-76 was raised to fix in the first
+place. Not implemented. The real lever remains what Ф1 already ships: read `/rate_limit` (free)
+before spending the paid budget on subjects, and wait once rather than burning read attempts
+against a budget already known to be empty.
+
+NOT MEASURED, BY DELIBERATE CHOICE: "does a 304 still cost when remaining is already 0" (the other
+half of Ф4 point 4). Answering it requires the anonymous budget to actually be at zero at the
+moment of the test, and this host's `/rate_limit` is shared across ten projects (CLAUDE.md,
+"Resource budget"). Deliberately driving it to zero to observe the edge case is the exact harm this
+whole task exists to prevent, done on purpose instead of by a neighbour's accident. Recommended
+instead: read this off a night the budget is ALREADY exhausted for real (the T-76 incident itself,
+or the next one `scripts/budget_journal.py`'s `github_calls_absent_reason` will now name), from the
+headers `cohort.py`'s own calls already receive — not from a manufactured repeat of 2026-09-05.
+
+Anonymous, no token, no host secrets in any header or body kept above.
