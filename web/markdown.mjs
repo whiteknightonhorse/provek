@@ -112,6 +112,12 @@ ${registrySentence(registry)}
 
 ${registry.disclaimer}
 
+## What you can build today
+
+${templateRows}
+
+[All templates, with what each needs](${site}/build/)
+
 ## The registry, right now
 
 | Subject | Projection | Verifier |
@@ -120,12 +126,6 @@ ${rows}
 
 ${scored.length} of ${registry.count} carry a projection; the rest carry the reason none was taken.
 ${expiry}
-
-## What you can build today
-
-${templateRows}
-
-[All templates, with what each needs](${site}/build/)
 
 ## Machine-readable forms
 
