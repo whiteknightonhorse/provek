@@ -278,20 +278,15 @@ export default function Landing({ reg }: { reg: R | null }) {
           Your customers cannot tell you apart from a company that wrote
           &ldquo;AI-powered&rdquo; on a landing page.
         </h1>
-        {/* SHRUNK TO TWO SENTENCES (Fable, T-78 ruling): this used to run three - the operator's
-            brief asked for short, philosophy-free copy on the first screen, and the ruling set the
-            count rather than leaving it to taste. The two ideas kept are the whole of the pitch:
-            why this is a verification problem and not a marketing one, and what Provek actually
-            measures and publishes. Nothing argued here is new; the merge only removes a sentence
-            boundary, not a claim. */}
+        {/* DOWN TO ONE SENTENCE AFTER H1 (Fable, T-02 ruling-1): the T-78 pass left two sentences
+            here, the second of them a restatement of what Provek measures that duplicates
+            /method/ and the "limits, up front" section below. The operator read the live page and
+            reported it longer than before, not shorter; this ruling drops the second sentence
+            outright rather than trimming it, and the funnel sentence further down closes the
+            argument for this screen instead. */}
         <p className="mt-5 text-[1.05rem] leading-relaxed text-[var(--color-ink-2)]">
           That is not a marketing problem &mdash; any claim you make, a competitor can make more
           loudly &mdash; it is a verification problem.
-        </p>
-        <p className="mt-4 text-[1.05rem] leading-relaxed text-[var(--color-ink-2)]">
-          Provek measures, per business operation, how much of your company runs without a human in
-          the loop &mdash; and publishes the measurements behind every number, including the ones
-          that could not be taken.
         </p>
         <div className="mt-7 flex flex-wrap gap-3">
           <a href="/apply/" className="border border-[var(--color-ink)] bg-[var(--color-ink)] text-[var(--color-paper)] px-4 py-2 text-sm">
@@ -302,47 +297,12 @@ export default function Landing({ reg }: { reg: R | null }) {
           </a>
         </div>
 
-        {/* T-78: the fixed funnel sentence, identical on all four surfaces, and the one
-            descriptive, lowercase use of "incubator" this page is allowed (Fable ruling) - placed
-            here, introducing the two-step strip below, rather than folded into the protected
-            "No agent yet" line beneath it, which ADR-0011/D-57 caps at one sentence and no second
-            CTA. */}
+        {/* T-78: the fixed funnel sentence, identical on all four surfaces (Fable ruling). The
+            incubator sentence that used to sit beside it here now lives with the two-step strip
+            below the grid (Fable, T-02 ruling-1, §3) - this paragraph is the second and last
+            sentence of the first screen. */}
         <p className="mt-8 text-sm text-[var(--color-ink-2)] max-w-[30rem]">
-          {FUNNEL_SENTENCE} {INCUBATOR_SENTENCE}
-        </p>
-
-        {/* THE TWO PHASES, STATED IN ORDER. Verification comes first and is free; declaring an
-            order channel is only possible once a passport is verified - this strip states that
-            sequence without promising any subject an Order link they have not earned yet. */}
-        <div className="mt-4 grid grid-cols-2 gap-6 max-w-[30rem]">
-          <div>
-            <h3 className="text-xs uppercase tracking-wide text-[var(--color-ink-3)]">
-              Step 1 &mdash; Get verified
-            </h3>
-            <p className="mt-1.5 text-sm text-[var(--color-ink-2)]">
-              Submit your repo. We publish what could be established &mdash; a public passport,
-              free.
-            </p>
-          </div>
-          <div>
-            <h3 className="text-xs uppercase tracking-wide text-[var(--color-ink-3)]">
-              Step 2 &mdash; Take orders
-            </h3>
-            <p className="mt-1.5 text-sm text-[var(--color-ink-2)]">
-              Once verified, declare where customers order from you. An &ldquo;Order&rdquo; link
-              appears in the registry.
-            </p>
-          </div>
-        </div>
-
-        {/* ADR-0011/D-57: one sentence, one door in from a reader with no agent yet - the
-            proportionate size for a subject that is one sentence away from having one (PRODUCT.md:
-            the landing speaks to the subject first). No card, no second CTA row: /build/ carries
-            its own pitch. */}
-        <p className="mt-6 text-sm">
-          <a href="/build/" className="text-[var(--color-accent)] hover:underline">
-            No agent yet? Build one from a template &rarr;
-          </a>
+          {FUNNEL_SENTENCE}
         </p>
       </section>
 
@@ -477,6 +437,53 @@ export default function Landing({ reg }: { reg: R | null }) {
         )}
       </aside>
       </div>
+
+      {/* MOVED BELOW THE FIRST SCREEN (Fable, T-02 ruling-1, §3): this strip and the two
+          paragraphs beside it used to sit inside the left column, where they were part of what
+          grew the first screen to fourteen sentences. No heading and no id here - a heading
+          naming "incubator" would trip the gate that keeps the word out of headings, and §4 of
+          the ruling forbids adding a new anchor for it. */}
+      <section className="mt-14 max-w-[46rem]">
+        {/* THE TWO PHASES, STATED IN ORDER. Verification comes first and is free; declaring an
+            order channel is only possible once a passport is verified - this strip states that
+            sequence without promising any subject an Order link they have not earned yet. */}
+        <div className="grid grid-cols-2 gap-6 max-w-[30rem]">
+          <div>
+            <h3 className="text-xs uppercase tracking-wide text-[var(--color-ink-3)]">
+              Step 1 &mdash; Get verified
+            </h3>
+            <p className="mt-1.5 text-sm text-[var(--color-ink-2)]">
+              Submit your repo. We publish what could be established &mdash; a public passport,
+              free.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-xs uppercase tracking-wide text-[var(--color-ink-3)]">
+              Step 2 &mdash; Take orders
+            </h3>
+            <p className="mt-1.5 text-sm text-[var(--color-ink-2)]">
+              Once verified, declare where customers order from you. An &ldquo;Order&rdquo; link
+              appears in the registry.
+            </p>
+          </div>
+        </div>
+
+        {/* T-78's incubator sentence, moved down from the first screen alongside the strip it
+            now reads as a conclusion to (Fable, T-02 ruling-1, §3). Text unchanged. */}
+        <p className="mt-4 text-sm text-[var(--color-ink-2)] max-w-[30rem]">
+          {INCUBATOR_SENTENCE}
+        </p>
+
+        {/* ADR-0011/D-57: one sentence, one door in from a reader with no agent yet - the
+            proportionate size for a subject that is one sentence away from having one (PRODUCT.md:
+            the landing speaks to the subject first). No card, no second CTA row: /build/ carries
+            its own pitch. */}
+        <p className="mt-4 text-sm">
+          <a href="/build/" className="text-[var(--color-accent)] hover:underline">
+            No agent yet? Build one from a template &rarr;
+          </a>
+        </p>
+      </section>
 
       {/* THREE ANSWERS TO THREE DIFFERENT QUESTIONS. As three equal-weight strips they read as a
           list of reasons of one kind, which is what made the section feel like padding: nothing

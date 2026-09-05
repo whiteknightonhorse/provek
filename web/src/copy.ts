@@ -11,7 +11,8 @@
  *
  * INCUBATOR_SENTENCE is the one place "incubator" is allowed to describe the product on these four
  * surfaces (ruling: lowercase, descriptive, never a title/H1/nav label/meta, one sentence per
- * surface) - it sits beside the funnel sentence rather than at the top of a page or in a heading,
+ * surface) - it sits beside the funnel sentence or the two-step strip rather than at the top of a
+ * page or in a heading,
  * and it names the two things a reader is likeliest to assume wrongly from the word alone: that
  * money moves through us, and that there is a cohort or admission date to apply for. Neither
  * exists (D-05, D-16, ADR-0011's own rejection of "Incubator tiers"), so the sentence says so
