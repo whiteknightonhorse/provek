@@ -1,0 +1,68 @@
+# RED-046 - landing missing or mismatched a template would have shipped
+#
+# tree: 05ae8d88e950666f27c5a35e3c47461c95084b30 (dirty)
+#
+# Produced by evidence/RED-046-generator.py, checked in beside this file so the two runs below can
+# be repeated rather than believed. Closes the gap RED-044 and RED-045 were written against on the
+# prior two tasks: the new gate carried a `tmp_path`-scratch control proving its CHECKER FUNCTION
+# can fail, but no artefact proved a plant IN THE REAL BUILT TREE turns the REAL test red. Two
+# plants, run sequentially against the real web/dist/index.html, each restored before the next.
+#
+# SUBJECT: tests/test_landing_names_every_template.py::test_landing_names_every_published_template_in_manifest_order_with_its_own_operation.
+
+====================================================================================================
+PLANT 1 - remove the first template's row entirely from the real web/dist/index.html.
+====================================================================================================
+
+--- before the plant, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.04s
+
+--- with the plant in place, exit 1 ---
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_landing_names_every_published_template_in_manifest_order_with_its_own_operation _
+
+    def test_landing_names_every_published_template_in_manifest_order_with_its_own_operation():
+        problems = _check(DIST)
+>       assert not problems, f"landing/manifest/templates.json/index.md disagree: {problems}"
+E       AssertionError: landing/manifest/templates.json/index.md disagree: {'order_or_membership': {'landing': ['lead-generation-agent', 'ecommerce-operations-agent', 'market-research-agent', 'content-production-agent', 'finance-operations-agent', 'youtube-channel-operations-agent'], 'manifest': ['customer-support-agent', 'lead-generation-agent', 'ecommerce-operations-agent', 'market-research-agent', 'content-production-agent', 'finance-operations-agent', 'youtube-channel-operations-agent']}, 'landing_vs_templates_json': {'landing': ['content-production-agent', 'ecommerce-operations-agent', 'finance-operations-agent', 'lead-generation-agent', 'market-research-agent', 'youtube-channel-operations-agent'], 'templates_json': ['content-production-agent', 'customer-support-agent', 'ecommerce-operations-agent', 'finance-operations-agent', 'lead-generation-agent', 'market-research-agent', 'youtube-channel-operations-agent']}}
+E       assert not {'order_or_membership': {'landing': ['lead-generation-agent', 'ecommerce-operations-agent', 'market-research-agent', '...nt', 'ecommerce-operations-agent', 'finance-operations-agent', 'lead-generation-agent', 'market-research-agent', ...]}}
+
+tests/test_landing_names_every_template.py:145: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_landing_names_every_template.py::test_landing_names_every_published_template_in_manifest_order_with_its_own_operation
+1 failed in 0.04s
+
+--- after the plant was removed, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.03s
+
+====================================================================================================
+PLANT 2 - swap the first template's businessOperation text for the second's, in the real
+web/dist/index.html. The row count and order stay correct; only the text is wrong.
+====================================================================================================
+
+--- before the plant, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.03s
+
+--- with the plant in place, exit 1 ---
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_landing_names_every_published_template_in_manifest_order_with_its_own_operation _
+
+    def test_landing_names_every_published_template_in_manifest_order_with_its_own_operation():
+        problems = _check(DIST)
+>       assert not problems, f"landing/manifest/templates.json/index.md disagree: {problems}"
+E       AssertionError: landing/manifest/templates.json/index.md disagree: {'business_operation_text': {'customer-support-agent': {'landing': 'lead generation: sourcing, enriching, and qualifying leads against a stated ideal customer profile, then drafting first-touch outreach', 'templates_json': 'customer support: inbound email triage and reply drafting'}}}
+E       assert not {'business_operation_text': {'customer-support-agent': {'landing': 'lead generation: sourcing, enriching, and qualifyi..., then drafting first-touch outreach', 'templates_json': 'customer support: inbound email triage and reply drafting'}}}
+
+tests/test_landing_names_every_template.py:145: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_landing_names_every_template.py::test_landing_names_every_published_template_in_manifest_order_with_its_own_operation
+1 failed in 0.04s
+
+--- after the plant was removed, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.04s

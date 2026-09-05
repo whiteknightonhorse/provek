@@ -79,8 +79,13 @@ ${rows}
  *  renders only what is already single-sourced: the description `prerender.mjs` puts in the meta
  *  tag, the registry's own sentence, the live rows, and the machine-readable forms. An agent asking
  *  for markdown wants the state and the entry points; a reader wanting the argument has the HTML.
+ *
+ *  `templates` (T-03/D-59) is the one exception to "not a transcription": the seven rows below are
+ *  not prose, they are `templates/manifest.json`'s own order and `templates/emit.mjs`'s own
+ *  `title`/`businessOperation` fields for each - the same projection `web/prerender.mjs` inlines
+ *  for the HTML rendering's "What you can build today" section, so the two cannot drift either.
  */
-export function buildLandingMarkdown(registry, description, site = SITE) {
+export function buildLandingMarkdown(registry, description, site = SITE, templates = []) {
   const scored = registry.subjects.filter((s) => s.projection !== null);
   const rows = registry.subjects.map((s) => {
     const slug = slugOf(s.subject_id);
@@ -95,6 +100,9 @@ export function buildLandingMarkdown(registry, description, site = SITE) {
   const expiry = expiries.length === 1
     ? `Every record above is valid until ${expiries[0]}.`
     : `Earliest expiry among these records: ${expiries.sort()[0]}.`;
+  const templateRows = templates
+    .map((t) => `- [${t.title}](${site}/build/${t.slug}/) — ${t.businessOperation}`)
+    .join("\n");
 
   return `# Provek
 
@@ -112,6 +120,12 @@ ${rows}
 
 ${scored.length} of ${registry.count} carry a projection; the rest carry the reason none was taken.
 ${expiry}
+
+## What you can build today
+
+${templateRows}
+
+[All templates, with what each needs](${site}/build/)
 
 ## Machine-readable forms
 

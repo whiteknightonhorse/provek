@@ -277,3 +277,9 @@ export interface Template {
   dateModified: string;
   dryRun: TemplateDryRun;
 }
+
+/** The landing page's projection of a template (T-03, D-59): enough to name it and link to it,
+ *  never the whole artefact - `raw` alone is a full `SKILL.md`, and the landing is not `/build/`.
+ *  Inlined under its own `window.__PROVEK__` key so the byte budget that keeps the first screen
+ *  small is never spent on seven files' worth of markdown a reader has not asked to build yet. */
+export type TemplateSummary = Pick<Template, "slug" | "title" | "businessOperation">;

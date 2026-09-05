@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Page } from "../components/Chrome";
 import { AbsentMark, REASON_TEXT } from "../components/Measured";
 import { orderLinkUrl, slug } from "../types";
-import type { Registry as R } from "../types";
+import type { Registry as R, TemplateSummary } from "../types";
 import { FUNNEL_SENTENCE, INCUBATOR_SENTENCE } from "../copy";
 
 /** THE THREE CLIPS. D-42 admits them here and nowhere else, which is why the `/media/` paths sit
@@ -218,7 +218,13 @@ function Film() {
 /** `reg` is null while the registry is still loading. Rendering a 0 or an invented row there
  * would state a measured fact we do not have yet - a fabrication in the one place this product
  * promises never to fabricate. */
-export default function Landing({ reg }: { reg: R | null }) {
+export default function Landing({
+  reg,
+  templateSummaries,
+}: {
+  reg: R | null;
+  templateSummaries: TemplateSummary[] | null;
+}) {
   const count = reg?.count ?? null;
 
   // Arms the one authored moment. Nothing here runs unless motion is welcome, and the offset is
@@ -474,13 +480,42 @@ export default function Landing({ reg }: { reg: R | null }) {
           {INCUBATOR_SENTENCE}
         </p>
 
-        {/* ADR-0011/D-57: one sentence, one door in from a reader with no agent yet - the
-            proportionate size for a subject that is one sentence away from having one (PRODUCT.md:
-            the landing speaks to the subject first). No card, no second CTA row: /build/ carries
-            its own pitch. */}
+      </section>
+
+      {/* D-59 (Fable, 03-landing-never-names-the-agents.ruling-1.md), replacing ADR-0011/D-57's
+          one-sentence door: D-57 was written against zero real templates; seven now exist, each
+          published only after a witnessed dry run (LAW-TEMPLATE-WAS-RUN), and a reader who never
+          clicks "Build" never learns any of that. Still no card, no second CTA row - /build/
+          carries its own pitch - just this template's own name and the one operation it runs,
+          read from the same data /build/ renders, never a second list. */}
+      <section className="mt-14 max-w-[46rem]">
+        <h2 className="text-lg font-semibold">What you can build today</h2>
+        <p className="mt-2 text-sm text-[var(--color-ink-2)]">
+          One template per business operation below, built by your own coding agent in your own
+          repository. Free, no account. Each template names what a human still does and carries
+          its dry-run record on its page.
+        </p>
+        {templateSummaries === null ? (
+          <ul className="mt-4 space-y-2.5" aria-hidden="true">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <li key={i} className="skeleton-bar h-4 bg-[var(--color-line)] rounded-sm" />
+            ))}
+          </ul>
+        ) : (
+          <ul className="mt-4 space-y-2 text-sm text-[var(--color-ink-2)]">
+            {templateSummaries.map((t) => (
+              <li key={t.slug}>
+                <a href={`/build/${t.slug}/`} className="text-[var(--color-accent)] hover:underline">
+                  {t.title}
+                </a>{" "}
+                &mdash; {t.businessOperation}
+              </li>
+            ))}
+          </ul>
+        )}
         <p className="mt-4 text-sm">
           <a href="/build/" className="text-[var(--color-accent)] hover:underline">
-            No agent yet? Build one from a template &rarr;
+            All templates, with what each needs &rarr;
           </a>
         </p>
       </section>

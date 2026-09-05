@@ -23,7 +23,7 @@ import Phase2 from "./pages/Phase2";
 import Corrections from "./pages/Corrections";
 import Build from "./pages/Build";
 import BuildTemplate from "./pages/BuildTemplate";
-import type { Passport, Registry as R, Template } from "./types";
+import type { Passport, Registry as R, Template, TemplateSummary } from "./types";
 import { isSafeSlug } from "./slug";
 
 /** Five states, never four. "missing" and "broke" are different facts about the world and a
@@ -48,7 +48,7 @@ type Load<T> =
  * JavaScript, and for an answer engine, which mostly does not. */
 declare global {
   interface Window {
-    __PROVEK__?: { registry?: R; passport?: Passport; templates?: Template[]; template?: Template };
+    __PROVEK__?: { registry?: R; passport?: Passport; templates?: Template[]; template?: Template; templateSummaries?: TemplateSummary[] };
   }
 }
 
@@ -211,12 +211,14 @@ export function Body({
   passport,
   templates,
   template,
+  templateSummaries,
 }: {
   route: string;
   reg: Load<R>;
   passport: Load<Passport> | null;
   templates: Load<Template[]>;
   template: Load<Template> | null;
+  templateSummaries: Load<TemplateSummary[]>;
 }) {
   if (route.startsWith("/p/")) {
     const p = passport ?? { state: "loading" as const };
@@ -298,7 +300,13 @@ export function Body({
       );
     return <PassportSkeleton />;
   }
-  if (route === "/") return <Landing reg={reg.state === "ready" ? reg.data : null} />;
+  if (route === "/")
+    return (
+      <Landing
+        reg={reg.state === "ready" ? reg.data : null}
+        templateSummaries={templateSummaries.state === "ready" ? templateSummaries.data : null}
+      />
+    );
   return (
     <DeadEnd title="No such page">
       {/* THE ADDRESS IS NAMED ONLY WHEN IT IS THE READER'S OWN.
@@ -361,6 +369,9 @@ export default function App() {
   const [templates, setTemplates] = useState<Load<Template[]>>(
     inlined?.templates ? { state: "ready", data: inlined.templates } : { state: "loading" },
   );
+  const [templateSummaries, setTemplateSummaries] = useState<Load<TemplateSummary[]>>(
+    inlined?.templateSummaries ? { state: "ready", data: inlined.templateSummaries } : { state: "loading" },
+  );
   const [templateDetails, setTemplateDetails] = useState<Record<string, Load<Template>>>(() =>
     inlined?.template ? { [inlined.template.slug]: { state: "ready", data: inlined.template } } : {},
   );
@@ -385,6 +396,23 @@ export default function App() {
       .then((d: { templates: Template[] }) => setTemplates({ state: "ready", data: d.templates }))
       .catch((e: Error) => setTemplates({ state: "error", why: e.message }));
   }, [route, templates.state]);
+
+  // The landing page's template section (T-03, D-59) needs only slug/title/businessOperation, not
+  // the full Template[] `/build/` fetches above - so it is not inlined or fetched unconditionally
+  // either, and it reuses the SAME endpoint rather than opening a third data source.
+  useEffect(() => {
+    if (route !== "/") return;
+    if (templateSummaries.state === "ready") return;
+    fetch("/data/templates.json")
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then((d: { templates: Template[] }) =>
+        setTemplateSummaries({
+          state: "ready",
+          data: d.templates.map((t) => ({ slug: t.slug, title: t.title, businessOperation: t.businessOperation })),
+        }),
+      )
+      .catch((e: Error) => setTemplateSummaries({ state: "error", why: e.message }));
+  }, [route, templateSummaries.state]);
 
   const slugInRoute = route.startsWith("/p/") ? route.slice(3).replace(/\/$/, "") : null;
   const known =
@@ -494,7 +522,14 @@ export default function App() {
 
   return (
     <Shell route={route} containerRef={top}>
-      <Body route={route} reg={reg} passport={passport} templates={templates} template={template} />
+      <Body
+        route={route}
+        reg={reg}
+        passport={passport}
+        templates={templates}
+        template={template}
+        templateSummaries={templateSummaries}
+      />
     </Shell>
   );
 }

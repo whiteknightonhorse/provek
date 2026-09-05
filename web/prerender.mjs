@@ -213,7 +213,7 @@ function head(shellHtml, route, title, description) {
 
 function page(route, title, description, ld, data) {
   const html = renderRoute(route, registry, data?.passport ?? null,
-    data?.templatesIndex ?? null, data?.template ?? null);
+    data?.templatesIndex ?? null, data?.template ?? null, data?.templateSummaries ?? null);
   let out = head(shell, route, title, description);
 
   const blocks = [
@@ -234,6 +234,10 @@ function page(route, title, description, ld, data) {
     ...(data?.passport ? { passport: data.passport } : {}),
     ...(data?.templatesIndex ? { templates: data.templatesIndex } : {}),
     ...(data?.template ? { template: data.template } : {}),
+    // T-03/D-59: the landing's own projection, never the full Template[] `/build/` inlines above -
+    // that array carries seven whole SKILL.md files (285KB on /build/) and the landing's byte
+    // budget (T-02 ruling-1) has no room for it.
+    ...(data?.templateSummaries ? { templateSummaries: data.templateSummaries } : {}),
   }).replace(/</g, "\\u003c")}</script>`;
 
   out = out.replace("</head>", `    ${blocks}\n  </head>`);
@@ -257,13 +261,23 @@ function write(route, html) {
   return route;
 }
 
+// Loaded here, ahead of the landing page below, because the landing now renders a projection of
+// this same data (T-03/D-59, "What you can build today") - one call to loadTemplates(), read by
+// both `/` and `/build/`, never a second load of templates/*.
+const templates = loadTemplates();
+const templateSummaries = templates.map((t) => ({
+  slug: t.slug, title: t.title, businessOperation: t.businessOperation,
+}));
+
 const written = [];
 // One sentence, one place: the meta description and the markdown sibling read the SAME constant,
 // so the two renderings of the landing cannot drift into describing different products.
 const LANDING_DESCRIPTION = "Per business operation, how much of a company runs without a human in "
   + "the loop - with the evidence behind every number, including what could not be measured.";
-written.push(write("/", page("/", TITLES["/"], LANDING_DESCRIPTION, ldOrganization())));
-writeFileSync(join(DIST, "index.md"), buildLandingMarkdown(registry, LANDING_DESCRIPTION, SITE));
+written.push(write("/", page("/", TITLES["/"], LANDING_DESCRIPTION, ldOrganization(),
+  { templateSummaries })));
+writeFileSync(join(DIST, "index.md"),
+  buildLandingMarkdown(registry, LANDING_DESCRIPTION, SITE, templateSummaries));
 written.push(write("/registry/", page("/registry/", TITLES["/registry/"],
   REGISTRY_SENTENCE,
   ldRegistry())));
@@ -297,8 +311,8 @@ written.push(write("/registry/corrections/", page("/registry/corrections/", TITL
 // - a page silently missing a template, or one publishing an unrun one, are both worse than a red
 // build. Emitted via `page()`, the same dynamic mechanism the registry and passports use, so
 // `Body()` renders the identical component the browser hydrates - one component set, not a second
-// static renderer for this surface (D-10).
-const templates = loadTemplates();
+// static renderer for this surface (D-10). `templates` itself is loaded above, ahead of the
+// landing page, which now reads a projection of the same call.
 const BUILD_INDEX_DESCRIPTION =
   "AI agent templates you build with your own coding agent: pick one, copy one instruction, get "
   + "an agent that runs a real business operation. Free, no account, tests included.";
@@ -520,9 +534,17 @@ const lastmodFor = (route) => {
     const w = witnessRecords.find((r) => `/w/${r.witness_id}/` === route);
     return w?.checked_at?.slice(0, 10) ?? null;
   }
-  // The landing and the registry ARE renderings of `registry.json` - their content moves when it
-  // does, so its generation stamp is a measurement of them and not a guess.
-  if (route === "/" || route === "/registry/") return registry.generated_at.slice(0, 10);
+  // The registry page IS a rendering of `registry.json` - its content moves when it does, so its
+  // generation stamp is a measurement of it and not a guess.
+  if (route === "/registry/") return registry.generated_at.slice(0, 10);
+  // The landing page (T-03/D-59) is now a rendering of BOTH `registry.json` and the templates -
+  // its own "What you can build today" section moves when either does, so its lastmod is the
+  // later of the two, never just the registry's stamp alone.
+  if (route === "/") {
+    const registryDate = registry.generated_at.slice(0, 10);
+    const templatesDate = templates.length ? templates.map((t) => t.dateModified).sort().at(-1) : null;
+    return templatesDate && templatesDate > registryDate ? templatesDate : registryDate;
+  }
   // Templates: pinned by `templates/manifest.json`'s body-hash-checked date_modified, the same
   // discipline the notes manifest holds itself to - never the build clock.
   if (route === "/build/") {

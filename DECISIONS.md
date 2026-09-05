@@ -3592,3 +3592,38 @@ and `LAW-TEMPLATE-WAS-RUN` (`enforced_by.yaml`) already bind every template gene
 their tests, plus `test_build_links_resolve.py`, `test_build_funnel_strip_once.py`,
 `test_build_jsonld_validates.py` and `test_template_copy_is_the_artefact.py`, count the emitted set
 rather than a fixed number of templates.
+
+## D-59. The landing page names every published template, in its own words — ADR-0011/D-57's one-sentence door is retired
+
+**Decision.** D-57 (Phase 0, against zero real templates) said the landing carries one sentence
+and one door to `/build/` - "no card, no second CTA row" - proportionate to a subject one sentence
+away from having an agent (`PRODUCT.md`: the landing speaks to the subject first). Seven templates
+exist now, each published only after a witnessed dry run (`LAW-TEMPLATE-WAS-RUN`), and 0 of them
+were named on the landing itself - a visitor who never clicked "Build" never learned any of it
+existed. The operator raised this (`taskloop/disputes/03-landing-never-names-the-agents.q-1.md`)
+and Fable ruled (`taskloop/disputes/03-landing-never-names-the-agents.ruling-1.md`) that D-57's
+door is amended rather than reopened: "no card, no second CTA row" stands, `/build/` keeps its own
+pitch, but the landing now names each template and the one operation it runs, in a new "What you
+can build today" section below the two-step strip.
+
+**Basis, from work already done.** T-70's competitor analysis (ruling-1 §1.1, §1.3): "how to build
+an ai agent" is the single largest query in the capture (712), "examples" scores 382-457,
+"incubator" scores 0 of 1418 - the landing's own text answered none of "build" or "examples" before
+this change, and the section is the answer.
+
+**Shape.** All seven templates, in `templates/manifest.json`'s own order (no subset - counters are
+not printed, per D-57's own rule against them, and the manifest's order is the order of admission, not of merit). Each
+row is `title` (linked to `/build/<slug>/`) plus `businessOperation`, verbatim from the same data
+`/build/` renders (`templates/emit.mjs`'s `loadTemplates()`) - never a second, hand-typed list. The
+witnessed dry-run stamp is NOT repeated per row; instead the section's lead sentence states, true by
+construction for any published template, that it carries its own dry-run record on its own page.
+
+**Consequence.** `web/src/types.ts` gains `TemplateSummary` (`Pick<Template, "slug" | "title" |
+"businessOperation">`); `web/prerender.mjs` inlines it under its own `window.__PROVEK__` key
+(never the full `Template[]` `/build/` inlines, which would blow the landing's byte budget past
+the T-02 threshold); `web/src/App.tsx` fetches the same `/data/templates.json` endpoint and
+projects it when the inlined summary is absent; `web/markdown.mjs`'s `buildLandingMarkdown` gains
+the same seven rows. `tests/test_landing_names_every_template.py` gates the landing, the manifest,
+`dist/data/templates.json` and `dist/index.md` against each other. The first-screen threshold
+(T-02 ruling-1) is unchanged: the new section sits below it. Anchors are unchanged: no new `id` is
+added anywhere in the site.
