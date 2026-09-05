@@ -602,3 +602,20 @@ laws:
     text: "the nightly re-measure fetches and fast-forwards onto origin/main before cohort.py takes a reading, so an auto-merged Dependabot bump reaches the site and never turns the push non-fast-forward"
     gate: scripts/sync_main.sh
     test: tests/test_sync_main_ff.py
+  # D-57 (ADR-0011, Fable 2026-09-05). An AI agent template is a specification addressed to a
+  # coding agent, about a THIRD PARTY's business agent - never about this instrument. It is kept
+  # in this repository rather than a second one (unlike the ADR-0009 method corpus), so the
+  # separation is a vocabulary gate machine-checked in both directions instead of a repository
+  # boundary. Phase 0 ships this law and its tests against zero real templates, proven able to fail by
+  # planted fixtures under tests/fixtures/ (CLAUDE.md invariant 5); the first template lands later.
+  - id: LAW-TEMPLATE-NAMES-NO-INSTRUMENT
+    text: "a template under templates/<slug>/ never names this instrument (provek, passport, registry, verif*, an L0-L5 level token, autonomy level, projection, evidence window, score); no file under src/ or scripts/ names the templates/ path"
+    gate: templates/SCHEMA.md
+    test: tests/test_templates_never_name_the_instrument.py
+  # D-57 (ADR-0011). A template is published on the surface only after it has actually been run,
+  # once, against a fresh directory with a real coding agent - otherwise "ready-to-use template" is
+  # an unfalsified claim, the exact defect this product exists to detect, aimed at itself.
+  - id: LAW-TEMPLATE-WAS-RUN
+    text: "a template's page is emitted only when evidence/TEMPLATE-RUN-<slug>.json exists and its body_sha256 matches the current SKILL.md body; a missing record or a hash mismatch are distinguished states, never collapsed"
+    gate: templates/README.md
+    test: tests/test_template_was_run.py

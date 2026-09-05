@@ -8,7 +8,7 @@ Provek is published under two licences, because it contains two different kinds 
       https://creativecommons.org/licenses/by/4.0/
 
   The schemas, the implementation and the test vectors — everything under src/,
-  tests/, scripts/, requirements/ and web/:
+  tests/, scripts/, requirements/, web/ and templates/:
 
       Apache License 2.0
       SPDX-License-Identifier: Apache-2.0

@@ -3487,3 +3487,64 @@ context to fall back on the way `scripts/cohort.py`'s loop does.
 
 **Numbers.** 1080 passed (1077 + 3 new), 1 pre-existing skip, ruff clean, all 7 `push.sh` gates
 green.
+
+## D-57. AI agent templates (`/build/`) are gated from the instrument by vocabulary, not geography — ADR-0011
+
+**Decision.** The operator's brief `briefs/ai-agent-incubator.md` asked for a library of "AI Agent
+Templates" — copy-into-your-coding-agent instructions that build a third party's business agent —
+with a funnel toward this project's own verification. ADR-0009 closed with the exact contingency
+this brief triggers ("an actual course… gets its own ADR if it is ever wanted"), so the executor
+raised a dispute before writing any page (`taskloop/disputes/70-ai-agent-incubator-page.q-1.md`)
+and Fable ruled (`taskloop/disputes/70-ai-agent-incubator-page.ruling-1.md`,
+`docs/adr/ADR-0011-templates-are-a-machine-addressed-artefact-gated-from-the-instrument.md`).
+Templates live in **this** repository, under `templates/<slug>/SKILL.md` (Agent Skills shape), not
+in a second repository — separated from the instrument by a **two-direction machine gate**
+(`LAW-TEMPLATE-NAMES-NO-INSTRUMENT`: a template never names Provek, its passport, registry, ladder
+or verification vocabulary; no file under `src/` or `scripts/` names the `templates/` path) and by
+a **publication gate** (`LAW-TEMPLATE-WAS-RUN`: a template is emitted only after a witnessed dry
+run, recorded by the sha256 of its body, distinguishing "no record", "hash mismatch" and "matching
+record" rather than collapsing them). If verification becomes paid, `templates/` is extracted into
+its own repository before the first paid passport — the named condition, not paid for today.
+
+**Why not the ADR-0009 pattern of a second repository.** That pattern buys one guarantee — the
+verification surface never having hosted the teaching once verification is paid. The same
+guarantee is bought here by naming the extraction trigger instead of paying today for a build that
+would otherwise depend on a network and a token (D-18's reasoning against exactly that cost). The
+vocabulary gate is the stronger day-one instrument in any case: a template mentioning this
+project's ladder while teaching a third party's agent is precisely §10.4's conflict, regardless of
+which repository the file sits in.
+
+**Naming (brief §2).** Nav **Build**, route `/build/`, noun *AI agent templates*. "Incubator"
+rejected: zero measured demand (`seo/keywords.csv`, 0 of 1418 rows) and a direct collision with the
+product's own description and with `/phase-2/`'s reserved phase vocabulary. "Builder Program"
+rejected: the demand is real but vendor-navigational (OpenAI/Vertex/Copilot builders), and
+"Program" asserts a cohort that does not exist (D-05, D-16). Both stay reserved as future paid-tier
+names, not shown in v1.
+
+**What this surface explicitly does not become.** Agent Clinic (scoring a reader's own agent on
+the L0–L5 ladder and coaching it upward) — refused permanently: a level outside the passport breaks
+invariants 2 and 6, and coaching toward a verdict this instrument later issues is the conflict
+itself. Teardowns and Build Logs with hand-written levels — not in v1: a hand-written level is a
+self-issued verdict; later, only if computed at build time from a real linked passport. A second
+Showcase table — not built; `/registry/` already is this, and a softer-entry duplicate would be
+badge inflation by construction. Usage counters, and the Free/Builder Program/Incubator tier
+ladder, announced — not shown: the brief's own condition ("only if measured") cannot be met yet.
+
+**v1 templates**, admitted by rule (one business operation, named human-in-the-loop points, a
+proven source, a passed dry run), never by list alone: `customer-support-agent`,
+`lead-generation-agent`, `ecommerce-operations-agent` (adapted from `anthropics/commerce-agents`,
+Apache-2.0, attribution carried), `market-research-agent`, `content-production-agent`,
+`finance-operations-agent`. A backlog exists and is not shown publicly (a backlog is not a promise).
+
+**What was not readable.** Three files the brief names for prior art and design language exist only
+on the operator's macOS laptop (`/Volumes/Disk D/projects/Tempo/docs/...`) and are unreachable from
+this host — confirmed by `find /` for their names and for `*Tempo*`. Named as a gap in ADR-0011
+rather than papered over; `DESIGN.md` and `SPEC.md` §10 bind this surface until readable copies
+land under `~/briefs/`.
+
+**Consequence.** `SPEC.md` §3.7 specifies the surface; `templates/README.md`, `SCHEMA.md` and
+`LICENSE` (Apache-2.0) hold the contract; `enforced_by.yaml` carries both laws, each proven able to
+fail against a planted fixture (`tests/fixtures/`), against **zero real templates** — this phase
+(Phase 0) ships the contract and the gates only, and D-18's precedent (a specification may precede its
+instances) is the reason that is not a defect. `tests/test_licence.py` is extended to name
+`templates/` as the split's third half rather than weakened.

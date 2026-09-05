@@ -41,10 +41,17 @@ def test_the_full_texts_are_the_real_ones_not_a_summary():
 def test_the_split_names_which_half_is_which():
     """A dual licence that does not say what each half covers is one unanswered question."""
     text = (ROOT / "LICENSE").read_text(encoding="utf-8")
-    for path in ("src/", "tests/", "web/"):
+    for path in ("src/", "tests/", "web/", "templates/"):
         assert path in text, f"the code licence does not name {path}"
     for doc in ("SPEC.md", "DECISIONS.md", "docs/"):
         assert doc in text, f"the profile licence does not name {doc}"
+
+
+def test_the_templates_directory_carries_its_own_licence():
+    """ADR-0011: templates/ may be extracted into its own repository later and must carry its
+    own terms when it travels, rather than relying on a reader having also fetched the root."""
+    tpl = (ROOT / "templates" / "LICENSE").read_text(encoding="utf-8")
+    assert "Apache License" in tpl and "Version 2.0" in tpl and len(tpl) > 8_000
 
 
 def test_the_unlicensed_part_is_stated_rather_than_left_ambiguous():

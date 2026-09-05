@@ -1,0 +1,10 @@
+{
+  "slug": "some-template",
+  "body_sha256": "661244add93f1560f3e1e2a42adf761e0c38266dde85d2c9be97e8e1a5d90b19",
+  "run_at": "2026-09-05T00:00:00Z",
+  "tool": "claude-code",
+  "model": "claude-sonnet-5",
+  "outcome": "fixture record for tests/test_template_was_run.py - matches its SKILL.md exactly",
+  "transcript_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "notes": "fixture, not a real dry run"
+}

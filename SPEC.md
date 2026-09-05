@@ -225,6 +225,46 @@ manifest pins each body by hash so a rebuild cannot manufacture freshness. A not
 marked superseded and keeps its URL. Passports are never silently recomputed (PRODUCT.md); prose
 published from the same surface gets the same treatment.
 
+### 3.7 Build (`/build/`, `/build/<slug>/`) — AI agent templates — NEW
+
+Ruled by Fable, `docs/adr/ADR-0011-templates-are-a-machine-addressed-artefact-gated-from-the-instrument.md`,
+recorded as D-57. Not an incubator, not a course: a static library of instructions a reader's own
+coding agent turns into a running business agent, for one business operation at a time.
+
+**Status at the time of writing: the surface specified here is not yet built.** `templates/`
+carries the contract, the licence and the two gates (below); zero templates and zero pages exist.
+D-18 already set the precedent that a specification may precede its instances — describing the
+target here is not the same act as offering it, exactly as §3.5 draws that line for phase 2.
+
+1. **`/build/`** — one screen before a grid of admitted templates: an H1 stating the page is a
+   library to copy from, not a service that builds for the reader; a three-step explanation with a
+   tool selector (Claude Code / Codex / Cursor / Other) whose copied text is identical across
+   tools; the grid itself, one bordered block per template naming its business operation, its
+   human-in-the-loop point, what it needs, its dry-run date, a Copy control and a link to its page;
+   and a closing "what follows" block stating, as facts with their conditions, what happens after
+   an agent is built — never a promise of a verified outcome.
+2. **`/build/<slug>/`** — one template, in progressive disclosure: the card's facts above the
+   fold; a short description of what it does and what the reader gets; the artefact's own sections
+   rendered as closed `<details>` blocks; the full `SKILL.md` text in a `<pre>`, plus the same
+   bytes served raw at `/build/<slug>/SKILL.md` for a coding agent to fetch directly.
+3. **The gate, in both directions (ADR-0011).** A template names no vocabulary of this instrument
+   (`provek`, `passport`, `registry`, `verif*`, a level token, `autonomy level`, `projection`,
+   `evidence window`, `score`); no file under `src/` or `scripts/` names the `templates/` path.
+   Law `LAW-TEMPLATE-NAMES-NO-INSTRUMENT`, `templates/SCHEMA.md`.
+4. **Publication requires a witnessed dry run** — `evidence/TEMPLATE-RUN-<slug>.json`, keyed to the
+   `SKILL.md` body's sha256. No record: unpublished. A stale record: the page says the dry run
+   predates the current revision, never presented as fresh. Law `LAW-TEMPLATE-WAS-RUN`.
+5. **The funnel strip** — one component, fixed text, on every template page and on the index: that
+   requesting verification is independent of this page, may return any level including
+   *not measured*, and links to `/apply/` exactly once per page. No other route from a template to
+   verification exists; no counters, no tiers, no "verified" wording anywhere under `/build/`.
+6. **Machine channels.** Every `SKILL.md` is reachable raw, at its own URL, with an
+   `Accept: text/markdown` sibling like every other page (§3.6's convention); `llms.txt` and
+   `llms-full.txt` gain a *Templates* section generated from the emitted set, never typed by hand.
+7. **Reuse, not a second design language.** The Copy control is one component
+   (`web/src/components/CopyButton.tsx`), shared with the passport page rather than duplicated;
+   zero new colours, fonts or ornament beyond `DESIGN.md`'s existing tokens.
+
 ## 4. Phase 3 — Funding Tasks — deferred by A-10, specified in full
 
 <!-- PHASE3-NOTE-START -->

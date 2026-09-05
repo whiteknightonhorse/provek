@@ -1,0 +1,10 @@
+{
+  "slug": "some-template",
+  "body_sha256": "7056e94d4dd347c0408f8f6b661397af029363c54cf81af465c1d469f435f1b0",
+  "run_at": "2026-09-01T00:00:00Z",
+  "tool": "claude-code",
+  "model": "claude-sonnet-5",
+  "outcome": "fixture record for tests/test_template_was_run.py - deliberately against an earlier body",
+  "transcript_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "notes": "fixture, not a real dry run"
+}
