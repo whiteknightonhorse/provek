@@ -88,6 +88,21 @@ only if it (i) runs one business operation end-to-end, (ii) names its few human-
 (iii) builds on a proven public source or an architecture this fleet has run, (iv) passes its
 witnessed dry run. `templates/README.md` records the rule and the backlog (not shown publicly).
 
+**2026-09-05 addendum (D-58).** "v1 admits six" above named the launch's scope, not a ceiling: the
+admission mechanism in this section is the only gate, and a category is not admitted because it is
+on a list, nor refused because it is off one. A seventh template, `youtube-channel-operations-agent`,
+is admitted under the same four-part rule: (i) the operation is channel operations — taking a
+finished video and its metadata through to an unlisted upload and a human's publish decision, which
+does not overlap `content-production-agent`'s draft-and-fact-check operation; (ii) its
+human-in-the-loop points are named (OAuth setup in a browser, first consent, the unlisted-to-public
+decision, anything involving money); (iii) its source is the second branch of ground (iii) — three
+of the operator's own live channel-operations codebases (game, cryptocardhub, realestate), read by
+the dispatcher and supplied as `briefs/youtube-agent-facts.md` since this tenant has no access to
+those projects' hosts, rather than an identified public repository; (iv) it passed its witnessed
+dry run before publication. Video production and short-versus-long format rules are not part of
+this template, for lack of a measured source at admission time. Full reasoning:
+`taskloop/disputes/77-seventh-template-youtube-channel-agent.ruling-1.md`.
+
 ## Sources read for this decision, and what was not readable
 
 Fetched and read: `anthropics/commerce-agents` (README, `plugins/commerce-builder`; Apache-2.0) —

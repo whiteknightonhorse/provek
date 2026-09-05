@@ -232,14 +232,16 @@ recorded as D-57. Not an incubator, not a course: a static library of instructio
 coding agent turns into a running business agent, for one business operation at a time.
 
 **Status as of 2026-09-05: this surface is built and live at `/build/`.** `templates/` carries the
-contract, the licence and the gates below (Phase 0); all six v1 templates are admitted under them
-and emitted: `customer-support-agent` (Phase 1); `lead-generation-agent`,
+contract, the licence and the gates below (Phase 0); seven templates are admitted under them and
+emitted: `customer-support-agent` (Phase 1); `lead-generation-agent`,
 `ecommerce-operations-agent`, `market-research-agent` (Phase 2); `content-production-agent`,
 `finance-operations-agent` (Phase 3, which also added a real three-question FAQ, in each
-template's own words, to every template page — item 8 below). D-18 already set the precedent that
-a specification may precede its instances — describing the target was not the same act as
-offering it, exactly as §3.5 draws that line for phase 2, and Phase 0 shipped that description
-against zero real templates on purpose.
+template's own words, to every template page — item 8 below); `youtube-channel-operations-agent`
+(admitted 2026-09-05, D-58 — the six-template v1 set was the launch's scope, not a cap; the library
+is admitted by the same four-part rule as templates land with a measured source). D-18 already set
+the precedent that a specification may precede its instances — describing the target was not the
+same act as offering it, exactly as §3.5 draws that line for phase 2, and Phase 0 shipped that
+description against zero real templates on purpose.
 
 1. **`/build/`** — one screen before a grid of admitted templates: an H1 stating the page is a
    library to copy from, not a service that builds for the reader; a three-step explanation with a

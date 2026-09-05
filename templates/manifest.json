@@ -29,6 +29,11 @@
       "body_sha256": "66b0386334819fbae5b83358ca5e59064c1e8e8d83e3ae0f973a767df1f785f1",
       "date_published": "2026-09-05",
       "date_modified": "2026-09-05"
+    },
+    "youtube-channel-operations-agent": {
+      "body_sha256": "37f3c3baf157c9880d76dfbd70d7b480cbf3623ad6c6e87204bc7851b261dc7d",
+      "date_published": "2026-09-05",
+      "date_modified": "2026-09-05"
     }
   }
 }

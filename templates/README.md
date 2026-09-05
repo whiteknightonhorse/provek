@@ -6,14 +6,17 @@ support, lead generation, back-office, research, content, finance. It is not doc
 this instrument, and it is not a course. Ruled by Fable, 2026-09-05, `docs/adr/ADR-0011-templates-are-a-machine-addressed-artefact-gated-from-the-instrument.md`;
 this file is the working README for that ruling, not a second source of truth for it.
 
-**As of 2026-09-05, all six v1 templates exist: `customer-support-agent`, `lead-generation-agent`,
+**As of 2026-09-05, seven templates exist: `customer-support-agent`, `lead-generation-agent`,
 `ecommerce-operations-agent`, `market-research-agent`, `content-production-agent`,
-`finance-operations-agent`.** Phase 0 shipped the contract, the licence and the gates a template
-must pass before it may be published, against zero real templates on purpose (D-18 already set
-this precedent for the method notes corpus - a specification is allowed to precede its instances).
-Phase 1 admitted the first template under those gates; Phase 2 admitted three more; Phase 3 (this
-task) admitted the last two and added a real three-question FAQ, in each template's own words, to
-every template page.
+`finance-operations-agent`, `youtube-channel-operations-agent`.** Phase 0 shipped the contract, the
+licence and the gates a template must pass before it may be published, against zero real templates
+on purpose (D-18 already set this precedent for the method notes corpus - a specification is
+allowed to precede its instances). Phase 1 admitted the first template under those gates; Phase 2
+admitted three more; Phase 3 admitted the last two of the v1 launch set and added a real
+three-question FAQ, in each template's own words, to every template page. "v1 admits six" (below)
+was the launch's own scope, not a cap: the library is admitted by rule, not by a closed list
+(D-58), and the seventh template landed under the same four-part rule once a measured source for it
+existed.
 
 ## Admission — a template is added only if all four hold
 
@@ -25,11 +28,14 @@ every template page.
 4. **It has passed a witnessed dry run** — see below. A template with no run record cannot be
    published; the build refuses it.
 
-v1 admits six templates, all now built, each with its own dry run, in this order:
+v1 admitted six templates as its launch scope, all built, each with its own dry run, in this order:
 `customer-support-agent`, `lead-generation-agent`, `ecommerce-operations-agent`,
-`market-research-agent`, `content-production-agent`, `finance-operations-agent`. A backlog
-(recruiting, SEO, legal research, business analyst, executive assistant, shopping assistant) is
-not shown anywhere on the public surface — a backlog is not a promise.
+`market-research-agent`, `content-production-agent`, `finance-operations-agent`. The library grows
+by the same four-part rule, not by a closed list (D-58): a seventh, `youtube-channel-operations-agent`,
+was admitted 2026-09-05 once a measured source (three of the fleet's own live channel-operations
+codebases) existed for it. A backlog (recruiting, SEO, legal research, business analyst, executive
+assistant, shopping assistant) is not shown anywhere on the public surface — a backlog is not a
+promise.
 
 ## The gate: a template never names this instrument, and this instrument never reads a template
 

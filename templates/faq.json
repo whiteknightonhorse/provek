@@ -35,6 +35,11 @@
       "Reviewing and posting every categorized transaction to the actual books, resolving every reconciliation gap, and carrying out any real payment, transfer, or payroll action - none of which this template performs.",
       "An export of invoices or receipts, a bank or card statement export, the chart of accounts you already use, and an LLM API key.",
       "A dated report lands in reports/ with a category breakdown and two explicit lists - invoices with no matching statement line, and statement lines with no matching invoice - for a human to resolve. No money moves at any point."
+    ],
+    "youtube-channel-operations-agent": [
+      "Creating the Google Cloud project, OAuth consent screen and OAuth client in a browser under their own Google account; granting the channel's first consent; watching every hidden upload and deciding when it becomes public; anything involving money or affiliate links.",
+      "A Google Cloud project with YouTube Data API v3 enabled, an OAuth client with the youtube.upload and youtube.force-ssl scopes, a refresh token, the channel ID, and finished video files with their metadata - about six uploads a day fit in a project's 10,000-unit daily quota at 1,600 units each.",
+      "The video is on the channel as unlisted, its ID recorded in journal/ alongside the day's quota spend - a human watches it and makes it public from the channel itself; the program never does."
     ]
   }
 }

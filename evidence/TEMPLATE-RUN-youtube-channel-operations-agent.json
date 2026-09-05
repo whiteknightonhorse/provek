@@ -1,0 +1,11 @@
+{
+  "tree_stamp": "tree: 3d178e0dfac4d7e82f91f7925def5ae5df6c8bc0 (dirty)",
+  "slug": "youtube-channel-operations-agent",
+  "body_sha256": "37f3c3baf157c9880d76dfbd70d7b480cbf3623ad6c6e87204bc7851b261dc7d",
+  "run_at": "2026-09-05T07:06:11Z",
+  "tool": "claude-code",
+  "model": "claude-sonnet-5",
+  "outcome": "scaffold produced; 8 of 8 template tests passed",
+  "transcript_sha256": "59412db0f1494cf53efb671adc94807980ea14ee759de27be276d95aba3ae38c",
+  "notes": "Fresh temporary directory outside this repository (/tmp/dry-run-youtube-channel-operations-agent-20260905T070406Z), no real Google Cloud project, OAuth client, refresh token, or network access - uploader.py's real upload() is left unimplemented (raises NotImplementedError naming the missing credentials), and every test plus the end-to-end sanity run injects a fake upload_fn, as SKILL.md's own Tests section (item 6, no network access) directs. main.run() was exercised end to end against a fixture video and fake channel credentials before the test suite: first run uploaded as unlisted and charged 1650 quota units (1600 + 50 for a posted comment, matching the fixture's post_comment: true), second run against the same still-queued file was blocked by the journal's hash record rather than re-uploading. No official Google documentation on short-vs-long video format rules was fetched or used in this run; the template's text makes no claim about format for that reason. No defect found in this pass; full account at evidence/TEMPLATE-RUN-youtube-channel-operations-agent.transcript.txt."
+}

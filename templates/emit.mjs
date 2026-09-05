@@ -59,6 +59,7 @@ const CANONICAL_ORDER = [
   "market-research-agent",
   "content-production-agent",
   "finance-operations-agent",
+  "youtube-channel-operations-agent",
 ];
 
 export const REQUIRED_SECTIONS = [

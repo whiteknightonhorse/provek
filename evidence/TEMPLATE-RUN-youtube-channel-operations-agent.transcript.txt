@@ -1,0 +1,100 @@
+# TEMPLATE-RUN-youtube-channel-operations-agent - witnessed dry run transcript
+#
+# tree: 3d178e0dfac4d7e82f91f7925def5ae5df6c8bc0 (dirty)
+#
+# SUBJECT: templates/youtube-channel-operations-agent/SKILL.md (ADR-0011, D-58, LAW-TEMPLATE-WAS-RUN).
+# Referenced by evidence/TEMPLATE-RUN-youtube-channel-operations-agent.json via transcript_sha256.
+#
+# What happened: the template's own instructions were followed once, by a real coding agent (this
+# session, Claude Code, model claude-sonnet-5), in a fresh temporary directory outside this
+# repository, with no reference to anything already built here. No real Google Cloud project,
+# OAuth client, refresh token, or network access exists in this session, so `uploader.py`'s real
+# upload() is left unimplemented (raises NotImplementedError, naming exactly what it needs) and
+# every test and sanity run injects a fake upload_fn in its place - the same substitution SKILL.md's
+# own "Tests" section (item 6: "no network access") requires. No official Google documentation on
+# short-vs-long video format rules was fetched or used in this run; the template's text says nothing
+# about format for that reason, matching the ruling's scope narrowing (DECISIONS.md D-58).
+
+====================================================================================================
+SKILL.md WHOLE-FILE SHA256 AT RUN TIME (matching tests/test_template_was_run.py's own body_sha256())
+====================================================================================================
+37f3c3baf157c9880d76dfbd70d7b480cbf3623ad6c6e87204bc7851b261dc7d
+
+====================================================================================================
+FRESH DIRECTORY, OUTSIDE THIS REPOSITORY
+====================================================================================================
+/tmp/dry-run-youtube-channel-operations-agent-20260905T070406Z
+
+====================================================================================================
+FILES WRITTEN, FOLLOWING SKILL.md'S OWN ARCHITECTURE
+====================================================================================================
+./main.py                     entry: load channels -> validate distinct -> per channel: pick next
+                               queued video -> check quota -> upload -> journal
+./quota_ledger.py              QuotaLedger: per-channel daily spend, resets on a new UTC date
+./uploader.py                  upload(video_path, metadata, privacy) -> video_id; real body raises
+                               NotImplementedError naming the missing credentials/network, per
+                               SKILL.md's own "Tools and APIs" section
+./channels/<name>.env           one file per channel (test fixtures use fake CLIENT_ID/
+                               CLIENT_SECRET/REFRESH_TOKEN/CHANNEL_ID values, never real ones)
+./queue/<channel>/<file>        finished video file + its <file>.json metadata sidecar
+./journal/<channel>.json        upload journal, keyed by the file's own sha256
+./journal/quota_<channel>.json  daily quota ledger
+./journal/<channel>.lock         flock target guarding against overlapping runs
+./tests/test_agent.py           8 tests covering SKILL.md's 6 numbered "Tests" items (item 3 -
+                               shared CLIENT_ID / shared REFRESH_TOKEN - split into two tests)
+
+====================================================================================================
+END-TO-END SANITY: main.run() EXERCISED DIRECTLY AGAINST A FIXTURE VIDEO BEFORE THE TEST SUITE
+====================================================================================================
+Channel "game" configured with fake credentials (CLIENT_ID=demo-client-game, CLIENT_SECRET=
+demo-secret-game, REFRESH_TOKEN=demo-refresh-game); one fixture file `ep12.mp4` (fake bytes) queued
+with metadata `{"file": "ep12.mp4", "title": "Episode 12", "post_comment": true}`.
+
+First `main.run(root, upload_fn=fake_upload)`:
+  [fake upload] ep12.mp4 privacy=unlisted title=Episode 12
+  run() result: {'game': {'status': 'uploaded', 'video_id': 'yt_fake_0001'}}
+  journal/game.json:      {"uploaded_hashes": {"<sha256 of ep12.mp4>": {"file": "ep12.mp4",
+                           "video_id": "yt_fake_0001", "cost": 1650}}}
+  journal/quota_game.json: {"date": "2026-09-05", "spent": 1650, "calls": [{"units": 1650}]}
+
+Cost charged was 1650 (1600 upload + 50 comment) because the fixture's metadata set
+`post_comment: true`, matching SKILL.md's stated quota arithmetic. Privacy defaulted to "unlisted"
+with no PRIVACY key set in the channel's env file, matching SKILL.md's stated default.
+
+Second `main.run(root, upload_fn=fake_upload)` (same video still sitting in queue/):
+  second run() result: {'game': {'status': 'not_attempted', 'reason': 'already_uploaded', 'hash':
+  '<same sha256>'}}
+No second call reached upload_fn - the journal's hash record alone blocked the re-upload.
+
+====================================================================================================
+TEST SUITE RUN (no network, fake upload_fn throughout)
+====================================================================================================
+`python3 -m pytest tests/test_agent.py -v` from the fresh directory:
+
+tests/test_agent.py::test_default_privacy_is_unlisted PASSED
+tests/test_agent.py::test_no_code_path_sets_privacy_to_public PASSED
+tests/test_agent.py::test_quota_ledger_charges_and_refuses_over_limit PASSED
+tests/test_agent.py::test_shared_client_id_refused_at_startup PASSED
+tests/test_agent.py::test_shared_refresh_token_refused_at_startup PASSED
+tests/test_agent.py::test_already_uploaded_hash_is_not_uploaded_twice PASSED
+tests/test_agent.py::test_overlapping_run_is_locked_out PASSED
+tests/test_agent.py::test_no_secret_values_leak_into_journal_or_ledger PASSED
+
+8 passed in 0.12s
+
+====================================================================================================
+DEFECTS FOUND
+====================================================================================================
+None. All 8 tests passed on the first run; no revision to SKILL.md or the scaffold was needed
+between writing the tests and this passing run.
+
+====================================================================================================
+WHAT THIS RUN DID NOT COVER, NAMED RATHER THAN PAPERED OVER
+====================================================================================================
+* No real Google Cloud project, OAuth consent screen, OAuth client, or refresh token was created -
+  that step is human-only and browser-only by the template's own text, and this session has no
+  browser or Google account access.
+* No real network call to YouTube Data API v3 was made; `uploader.py`'s real upload() path is
+  untested here and is expected to be, per SKILL.md's own "Tools and APIs" section.
+* No official Google documentation on short-vs-long video format differences was fetched during
+  this session; none of the template's text makes a claim about format for that reason.

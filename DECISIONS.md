@@ -3548,3 +3548,47 @@ fail against a planted fixture (`tests/fixtures/`), against **zero real template
 (Phase 0) ships the contract and the gates only, and D-18's precedent (a specification may precede its
 instances) is the reason that is not a defect. `tests/test_licence.py` is extended to name
 `templates/` as the split's third half rather than weakened.
+
+## D-58. A seventh template, `youtube-channel-operations-agent`, is admitted by ADR-0011's rule — "v1 = six" was launch scope, not a cap
+
+**Decision.** The operator asked for an eighth template covering YouTube channel management; the
+executor raised a dispute rather than assume "v1 admits six" (`templates/README.md`) was a closed
+list (`taskloop/disputes/77-seventh-template-youtube-channel-agent.q-1.md`). Fable ruled
+(`taskloop/disputes/77-seventh-template-youtube-channel-agent.ruling-1.md`) that ADR-0011 §4.1's
+four-part admission test is the only gate a template category passes or fails, and "v1 admits six"
+named the launch phase's own budget (Phase 0 through Phase 4, across three attempts), not a ceiling on the
+library: a category is not admitted for being on a list and is not refused for being off one.
+
+**Scope.** The operation admitted is narrower than the operator's request: **channel operations**
+— taking a finished video and its metadata through a quota-tracked, unlisted-by-default upload to
+a human's publish decision — not video production and not the mechanical differences between short
+and long uploads. The dispatcher's fact brief (`briefs/youtube-agent-facts.md`, read from three of
+the fleet's own live channel-operations codebases — game, cryptocardhub, realestate, this tenant
+having no access to their hosts) named format rules as unmeasured; per the operator's own brief,
+an unmeasured fact is not invented to fill a template's scope, so format rules are out and named as
+out in the template's own text, in `## What to build`, ahead of everything else.
+
+**Admission, against the four-part test.** (i) One operation end-to-end: channel operations, ending
+where `content-production-agent`'s draft-and-fact-check operation ends and where this one begins —
+a finished file. (ii) Human-in-the-loop points are named: browser-only OAuth/consent-screen setup,
+first channel consent, the unlisted-to-public decision after a human watches the video, anything
+touching money. (iii) Source: the second branch of ground (iii), an architecture the fleet has
+actually run, not a public repository — three live production codebases, supplied as a fact brief
+rather than read directly (no host access). (iv) A witnessed dry run passed before publication
+(`evidence/TEMPLATE-RUN-youtube-channel-operations-agent.json`), same as every other template.
+
+**The number the whole template is built around.** Google's default quota is 10,000 units per
+project per day; one upload costs 1,600 (1,650 with a comment) — a ceiling of about six uploads a
+day per Google Cloud project. The template states this before anything else, so a reader learns
+the ceiling before building an agent that runs into it, and states as a named law never to share an
+OAuth refresh token between channels — one project, one client secret, one token, per channel.
+
+**Consequence.** `templates/manifest.json` carries the new slug's `body_sha256` pin;
+`templates/emit.mjs`'s `CANONICAL_ORDER` places it seventh; `templates/faq.json` carries its
+three-question entry; `templates/README.md`, `SPEC.md` §3.7 and
+`docs/adr/ADR-0011-templates-are-a-machine-addressed-artefact-gated-from-the-instrument.md` are
+updated with a dated addendum rather than rewritten. No new law: `LAW-TEMPLATE-NAMES-NO-INSTRUMENT`
+and `LAW-TEMPLATE-WAS-RUN` (`enforced_by.yaml`) already bind every template generically, and both
+their tests, plus `test_build_links_resolve.py`, `test_build_funnel_strip_once.py`,
+`test_build_jsonld_validates.py` and `test_template_copy_is_the_artefact.py`, count the emitted set
+rather than a fixed number of templates.
