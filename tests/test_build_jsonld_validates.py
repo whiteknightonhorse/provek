@@ -80,6 +80,30 @@ def test_faqpage_answers_are_not_boilerplate_copied_across_templates():
         seen[answers] = page
 
 
+def test_isBasedOn_when_present_is_a_url_or_a_creativework_with_a_url():
+    """schema.org's `isBasedOn` is `URL | CreativeWork | Product` - a free-text attribution
+    sentence (`metadata.derived_from`: "<url> (<license>) - <what was adapted>") is none of those
+    and any validator reads it as a malformed URL. `web/prerender.mjs`'s `isBasedOn()` must split
+    the leading URL out; this asserts the split landed, not just that the field exists."""
+    checked_a_creativework = False
+    for page in _template_pages():
+        article = next(b for b in _blocks(page.read_text(encoding="utf-8")) if b["@type"] == "TechArticle")
+        based_on = article.get("isBasedOn")
+        if based_on is None:
+            continue
+        if isinstance(based_on, str):
+            url = based_on
+        else:
+            assert based_on.get("@type") == "CreativeWork", f"{page}: isBasedOn is neither a URL nor a CreativeWork: {based_on}"
+            url = based_on.get("url")
+            assert url, f"{page}: isBasedOn CreativeWork carries no url"
+            checked_a_creativework = True
+        assert re.match(r"^https?://\S+$", url) and " " not in url, (
+            f"{page}: isBasedOn's url is not a bare URL: {url!r}"
+        )
+    assert checked_a_creativework, "no template exercised the CreativeWork branch of isBasedOn"
+
+
 def test_the_index_page_collectionpage_hasPart_names_every_emitted_template():
     index = DIST_BUILD / "index.html"
     assert index.is_file(), "dist/build/index.html is missing"

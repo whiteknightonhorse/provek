@@ -317,6 +317,18 @@ function ldBuildIndex(list) {
   };
 }
 
+/** `derivedFrom` (each template's own `metadata.derived_from`) is free text for a human -
+ * "<url> (<license>) - <what was adapted>" - not itself a URL, so it cannot be handed to
+ * `isBasedOn` as-is: schema.org expects `URL | CreativeWork | Product` there, and a validator
+ * reads the whole sentence as a malformed URL. Split off the leading URL and carry the rest as
+ * the CreativeWork's own description. */
+function isBasedOn(derivedFrom) {
+  if (!derivedFrom) return undefined;
+  const [, url, rest] = /^(\S+)\s*(.*)$/s.exec(derivedFrom);
+  const description = rest.replace(/^-\s*/, "");
+  return description ? { "@type": "CreativeWork", url, description } : url;
+}
+
 /** TechArticle plus, since every admitted template carries a real three-question FAQ (SPEC 3.7,
  * ruling section 6.3, `templates/faq.json`), a FAQPage block answered in the template's own
  * words - never boilerplate, never present without the matching visible block `BuildTemplate.tsx`
@@ -328,7 +340,7 @@ function ldTemplate(t) {
     headline: t.title, description: t.description, url: `${SITE}/build/${t.slug}/`,
     datePublished: t.datePublished, dateModified: t.dateModified, inLanguage: "en",
     license: t.license === "Apache-2.0" ? "https://www.apache.org/licenses/LICENSE-2.0" : t.license,
-    isBasedOn: t.derivedFrom || undefined,
+    isBasedOn: isBasedOn(t.derivedFrom),
     about: { "@type": "SoftwareApplication", name: t.title, applicationCategory: "BusinessApplication" },
     publisher: { "@type": "Organization", name: "Provek" },
   };
