@@ -1,5 +1,7 @@
 # BROWSER-WALK-T-74 — operator's live-site verification, transcribed
 
+tree: fd551adab5a16fd941a49081abfbac45668f5598
+
 Source: dispatcher's two reports on T-74's active task file (`~/taskloop/active/74-ai-agent-templates-phase4-final-walk.md`),
 2026-09-05 ~05:0x UTC and ~05:2x UTC, run from the operator's laptop via `claude-in-chrome`
 against the live `provek.dev` at deploy label `bc5a296`. Direct write access to
