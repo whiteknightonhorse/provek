@@ -624,7 +624,11 @@ laws:
   # rendering, a re-serialisation, or a second string carried in the bundle that could drift from
   # the source. CopyButton on a template page reads the payload off the page's own `<pre>` DOM
   # node at click time, not from a prop computed at render time.
+  # T-74 Phase 4 review widened the test to the two machine channels this line had not named: the
+  # `/build/` index card's Copy control (which reads `t.raw` off `window.__PROVEK__.templates[]`,
+  # never a `<pre>`) and the two machine-fetchable JSON siblings `/data/templates.json` and
+  # `/data/templates/<slug>.json` (SPEC 3.7 item 6). RED-043 keeps the kept red run for this gate.
   - id: LAW-COPY-IS-THE-ARTEFACT
-    text: "a template page's Copy control reads its payload from the page's own <pre> DOM node at click time, never from a second string carried in the bundle; the copied text, the source SKILL.md and the emitted raw sibling are byte-identical"
+    text: "a template page's Copy control reads its payload from the page's own <pre> DOM node at click time, and the /build/ index card's Copy control reads the same Template object, never a second string carried in the bundle; the copied text, the source SKILL.md, the emitted raw sibling, and the /data/templates.json and /data/templates/<slug>.json siblings are byte-identical"
     gate: web/src/components/CopyButton.tsx
     test: tests/test_template_copy_is_the_artefact.py

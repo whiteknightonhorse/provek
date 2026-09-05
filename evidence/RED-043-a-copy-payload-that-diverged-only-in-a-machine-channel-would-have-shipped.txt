@@ -1,0 +1,92 @@
+# RED-043 - a copy payload that diverged only in a machine channel would have shipped
+#
+# tree: bc5a296b586eb760903309ba71562f51e1cf6d35 (dirty)
+#
+# Produced by evidence/RED-043-generator.py, checked in beside this file so the run below can be
+# repeated rather than believed. Closes the gap T-74 Ф4 review found: LAW-COPY-IS-THE-ARTEFACT's
+# test armed a template page's own `<pre>` and its raw sibling, and never measured the `/build/`
+# index card's Copy button (which reads `window.__PROVEK__.templates[].raw`, never a `<pre>`) or
+# the two machine-fetchable JSON siblings a coding agent may fetch instead of the rendered page.
+# One byte appended to `dist/data/templates.json`'s first template's `raw` field - a mutation the
+# old two-channel test would have missed entirely, because it never opened this file - now turns
+# the extended test red, naming the mutated slug and the mutated channel.
+#
+# SUBJECT: tests/test_template_copy_is_the_artefact.py, arming LAW-COPY-IS-THE-ARTEFACT (SPEC 3.7 item 7, ADR-0011 section 6.1).
+# CHANNEL PLANTED: web/dist/data/templates.json, template 'customer-support-agent'.
+
+====================================================================================================
+BEFORE THE PLANT - `python3 -m pytest tests/test_template_copy_is_the_artefact.py -q`, exit 0
+====================================================================================================
+
+..                                                                       [100%]
+2 passed in 0.03s
+
+====================================================================================================
+THE PLANT - one byte appended to templates[0].raw ('customer-support-agent') in dist/data/templates.json,
+restored from the original bytes in a `finally` regardless of outcome
+====================================================================================================
+
+====================================================================================================
+WITH THE PLANT IN PLACE - `python3 -m pytest tests/test_template_copy_is_the_artefact.py -q`, exit 1
+====================================================================================================
+
+F.                                                                       [100%]
+=================================== FAILURES ===================================
+________ test_every_emitted_template_s_copy_payload_matches_its_source _________
+
+    def test_every_emitted_template_s_copy_payload_matches_its_source():
+        slugs = _slugs()
+        assert slugs, "no template exists under templates/ to check"
+        assert DIST.is_dir(), (
+            f"{DIST} is absent, so this gate measured nothing. Run `npm run build` in web/ - "
+            "scripts/push.sh does exactly that before the suite."
+        )
+        assert BUILD_INDEX.is_file(), f"no /build/ index emitted at {BUILD_INDEX}"
+        index_raw_by_slug = {
+            t["slug"]: t["raw"] for t in _provek_data(BUILD_INDEX.read_text(encoding="utf-8"))["templates"]
+        }
+        templates_json = json.loads((DATA / "templates.json").read_text(encoding="utf-8"))
+        templates_json_raw_by_slug = {t["slug"]: t["raw"] for t in templates_json["templates"]}
+    
+        mismatches = {}
+        for slug in slugs:
+            source = (TEMPLATES / slug / "SKILL.md").read_text(encoding="utf-8")
+            raw_path = DIST / slug / "SKILL.md"
+            page_path = DIST / slug / "index.html"
+            slug_json_path = DATA / "templates" / f"{slug}.json"
+            assert raw_path.is_file(), f"no raw sibling emitted at dist/build/{slug}/SKILL.md"
+            assert page_path.is_file(), f"no page emitted at dist/build/{slug}/index.html"
+            assert slug_json_path.is_file(), f"no data channel emitted at dist/data/templates/{slug}.json"
+            raw = raw_path.read_text(encoding="utf-8")
+            pre = _pre_text(page_path.read_text(encoding="utf-8"), slug)
+            # The /build/ index card's CopyButton reads `t.raw` off this object, never off a <pre> -
+            # this IS the actual read path, not a proxy for it (Build.tsx TemplateCard).
+            index_raw = index_raw_by_slug.get(slug)
+            # /data/templates.json and /data/templates/<slug>.json are the machine-fetchable siblings
+            # of the same object (SPEC 3.7 item 6) - a coding agent may fetch either instead of the
+            # rendered page, and LAW-COPY-IS-THE-ARTEFACT makes no exception for that path.
+            templates_json_raw = templates_json_raw_by_slug.get(slug)
+            slug_json_raw = json.loads(slug_json_path.read_text(encoding="utf-8"))["template"]["raw"]
+            values = {
+                "source": source, "raw_sibling": raw, "pre_dom": pre,
+                "build_index___PROVEK__": index_raw,
+                "data_templates_json": templates_json_raw,
+                "data_templates_slug_json": slug_json_raw,
+            }
+            if len(set(values.values())) != 1:
+                mismatches[slug] = {k: len(v) if v is not None else None for k, v in values.items()}
+>       assert not mismatches, f"copy payload diverged from the source: {mismatches}"
+E       AssertionError: copy payload diverged from the source: {'customer-support-agent': {'source': 10754, 'raw_sibling': 10754, 'pre_dom': 10754, 'build_index___PROVEK__': 10754, 'data_templates_json': 10755, 'data_templates_slug_json': 10754}}
+E       assert not {'customer-support-agent': {'source': 10754, 'raw_sibling': 10754, 'pre_dom': 10754, 'build_index___PROVEK__': 10754, ...}}
+
+tests/test_template_copy_is_the_artefact.py:100: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_template_copy_is_the_artefact.py::test_every_emitted_template_s_copy_payload_matches_its_source
+1 failed, 1 passed in 0.05s
+
+====================================================================================================
+AFTER THE PLANT WAS REMOVED - `python3 -m pytest tests/test_template_copy_is_the_artefact.py -q`, exit 0
+====================================================================================================
+
+..                                                                       [100%]
+2 passed in 0.03s
