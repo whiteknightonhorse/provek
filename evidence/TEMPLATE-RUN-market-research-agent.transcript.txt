@@ -1,0 +1,98 @@
+# TEMPLATE-RUN-market-research-agent - witnessed dry run transcript
+#
+# tree: e699ee4203650769f932421bda3ebdbd65098c2b (dirty)
+#
+# SUBJECT: templates/market-research-agent/SKILL.md (ADR-0011, D-57, LAW-TEMPLATE-WAS-RUN).
+# Referenced by evidence/TEMPLATE-RUN-market-research-agent.json via transcript_sha256.
+#
+# What happened: the template's own instructions were followed once, by a real coding agent
+# (this session, Claude Code, model claude-sonnet-5), in a fresh temporary directory outside this
+# repository. The agent read SKILL.md's "What to build" through "Tests" sections and wrote the
+# three-stage pipeline (independent answers, anonymized cross-review, one combining model) it
+# describes, then wrote and ran the six tests SKILL.md's own "Tests" section requires, using fake
+# `complete()` callables for three labeled models, no real provider account and no network call.
+
+====================================================================================================
+SKILL.md WHOLE-FILE SHA256 AT RUN TIME (matching tests/test_template_was_run.py's own body_sha256())
+====================================================================================================
+fcb4acb510ea70f608389dee881ba9cd906b2ad596de36ca4a497ec8aa208d8e
+
+====================================================================================================
+FRESH DIRECTORY, OUTSIDE THIS REPOSITORY
+====================================================================================================
+/tmp/dry-run-market-research-agent-20260905T032900Z
+
+====================================================================================================
+FILES WRITTEN, FOLLOWING SKILL.md'S OWN ARCHITECTURE
+====================================================================================================
+./models.py
+./stage1.py
+./stage2.py
+./stage3.py
+./main.py
+./questions.md
+./sources/urls.txt
+./tests/test_agent.py
+
+====================================================================================================
+ONE TEST FIXED FOR BEING A BAD TEST, NOT FOR THE CODE BEING WRONG
+====================================================================================================
+The first version of test 4 seeded two random.Random() instances with seed=1 and seed=2 and
+asserted the resulting label assignments differed - with only 3 models there are 6 possible
+orderings, and those two particular seeds happened to land on the same one, failing a correct
+implementation. Rewritten to run anonymize() across 20 different seeds and assert the label
+assignment is not identical every time (SKILL.md Tests item 4's actual claim: "labels are not
+fixed per model across runs"), which is the assertion that can actually fail against a real
+fixed-mapping defect without being flaky against a correct random shuffle. No production code
+changed for this one; the fix was to the test, and is reported as such rather than folded into
+the "code was buggy" account the other two dry runs give (CLAUDE.md invariant 5: a test must be
+able to fail meaningfully, and a test that can spuriously fail against correct code is its own
+defect).
+
+====================================================================================================
+THE SIX TESTS SKILL.md's OWN "Tests" SECTION REQUIRES, MAPPED TO WHAT WAS WRITTEN
+====================================================================================================
+1. test_1_anonymized_labels_never_contain_real_model_names
+2. test_2_claim_with_no_source_flagged_unsupported
+3. test_3_single_model_run_completes_and_notes_no_independence
+4. test_4_labels_are_not_a_fixed_mapping_across_runs
+5. test_5_appendix_present_and_nonempty_on_disagreement
+6. test_6_no_real_credential_and_no_network
+
+====================================================================================================
+`python3 -m pytest tests/ -v`, run inside the fresh directory above, exit 0 (after the test fix above)
+====================================================================================================
+============================= test session starts ==============================
+platform linux -- Python 3.10.12, pytest-9.1.1, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /tmp/dry-run-market-research-agent-20260905T032900Z
+plugins: cov-7.1.0
+collecting ... collected 6 items
+
+tests/test_agent.py::test_1_anonymized_labels_never_contain_real_model_names PASSED [ 16%]
+tests/test_agent.py::test_2_claim_with_no_source_flagged_unsupported PASSED [ 33%]
+tests/test_agent.py::test_3_single_model_run_completes_and_notes_no_independence PASSED [ 50%]
+tests/test_agent.py::test_4_labels_are_not_a_fixed_mapping_across_runs PASSED [ 66%]
+tests/test_agent.py::test_5_appendix_present_and_nonempty_on_disagreement PASSED [ 83%]
+tests/test_agent.py::test_6_no_real_credential_and_no_network PASSED     [100%]
+
+============================== 6 passed in 0.02s ===============================
+
+====================================================================================================
+OUTCOME
+====================================================================================================
+scaffold produced; 6 of 6 template tests passed, after correcting one flaky test assertion (see
+above; the production code it tested was correct on the first try).
+
+WHAT THIS RUN DOES NOT PROVE, STATED RATHER THAN IMPLIED. No real model provider was called: all
+three council models and the combining model were fake `complete()` callables returning fixed
+text, and no genuine independence between model families was exercised (SKILL.md's own
+Requirements section names real independence as needed for the pattern to be meaningful; a dry
+run without real accounts cannot demonstrate that). What was proven is that the pipeline shape
+SKILL.md specifies - independent stage 1 answers, stage 2 anonymization that never leaks a real
+model name and never uses a fixed label order, a stage 3 brief that flags any unsupported claim,
+a single-model run that says plainly it had no cross-model independence, and an appendix that is
+non-empty exactly when disagreement was recorded - holds under the tests SKILL.md itself demands,
+and that the codebase never references a network call or a hard-coded credential.
+
+The fresh directory was left in /tmp; nothing from it was copied into this repository.

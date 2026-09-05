@@ -1,0 +1,99 @@
+# TEMPLATE-RUN-ecommerce-operations-agent - witnessed dry run transcript
+#
+# tree: e699ee4203650769f932421bda3ebdbd65098c2b (dirty)
+#
+# SUBJECT: templates/ecommerce-operations-agent/SKILL.md (ADR-0011, D-57, LAW-TEMPLATE-WAS-RUN).
+# Referenced by evidence/TEMPLATE-RUN-ecommerce-operations-agent.json via transcript_sha256.
+#
+# What happened: the template's own instructions were followed once, by a real coding agent
+# (this session, Claude Code, model claude-sonnet-5), in a fresh temporary directory outside this
+# repository. The agent read SKILL.md's "What to build" through "Tests" sections and wrote the
+# files described, then wrote and ran the six tests SKILL.md's own "Tests" section requires, using
+# CSV fixtures and a fake `complete()` callable, no live store credential and no network call.
+
+====================================================================================================
+SKILL.md WHOLE-FILE SHA256 AT RUN TIME (matching tests/test_template_was_run.py's own body_sha256())
+====================================================================================================
+2bf40800a6bfceead6c907c725dacac70e342088f8bea49e0ce62fe5dc2b3fe2
+
+====================================================================================================
+FRESH DIRECTORY, OUTSIDE THIS REPOSITORY
+====================================================================================================
+/tmp/dry-run-ecommerce-operations-agent-20260905T032734Z
+
+====================================================================================================
+FILES WRITTEN, FOLLOWING SKILL.md'S OWN ARCHITECTURE (apply.py kept as the only file with a live
+write path, per SKILL.md's own Architecture section - here live_write is a caller-supplied
+function so tests never touch a real store)
+====================================================================================================
+./config.py
+./analyze.py
+./changes.py
+./apply.py
+./main.py
+./data/catalog.csv
+./data/orders.csv
+./tests/test_agent.py
+
+====================================================================================================
+A REAL DEFECT WAS FOUND AND FIXED, NOT PAPERED OVER
+====================================================================================================
+The first version of apply.py's recheck_bounds() took `max_pct=MAX_PRICE_MOVE_PCT` as a default
+parameter, which Python binds once at function-definition time. SKILL.md's own Security section
+requires the bounds check to run "again at apply time against the live configuration, not only
+against the configuration in force when the proposal was staged" - test 3 exercises exactly this
+by lowering the configured bound between staging and apply, and the stale default parameter meant
+the lowered bound was never actually consulted, so a proposal that should have been refused was
+applied. Fix: recheck_bounds() now reads `config.MAX_PRICE_MOVE_PCT` from the module at call time
+instead of capturing it as a default argument. Same class of defect as the lead-generation-agent
+dry run's stale-path bug: a value captured once at definition/import time instead of read fresh
+when it is used - caught here because the template's own Tests section specifically demands the
+recheck-at-apply-time behavior, which is exactly what a witnessed dry run is supposed to catch.
+
+====================================================================================================
+THE SIX TESTS SKILL.md's OWN "Tests" SECTION REQUIRES, MAPPED TO WHAT WAS WRITTEN
+====================================================================================================
+1. test_1_price_move_over_bound_refused_before_staging
+2. test_2_apply_refuses_unknown_proposal_id
+3. test_3_apply_rechecks_bounds_even_if_ok_at_staging_time
+4. test_4_fully_filled_listing_produces_no_fix_proposal
+5. test_5_rerun_does_not_duplicate_staged_proposal
+6. test_6_no_real_credential_and_no_network
+
+====================================================================================================
+`python3 -m pytest tests/ -v`, run inside the fresh directory above, exit 0 (after the fix above)
+====================================================================================================
+============================= test session starts ==============================
+platform linux -- Python 3.10.12, pytest-9.1.1, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /tmp/dry-run-ecommerce-operations-agent-20260905T032734Z
+plugins: cov-7.1.0
+collecting ... collected 6 items
+
+tests/test_agent.py::test_1_price_move_over_bound_refused_before_staging PASSED [ 16%]
+tests/test_agent.py::test_2_apply_refuses_unknown_proposal_id PASSED     [ 33%]
+tests/test_agent.py::test_3_apply_rechecks_bounds_even_if_ok_at_staging_time PASSED [ 50%]
+tests/test_agent.py::test_4_fully_filled_listing_produces_no_fix_proposal PASSED [ 66%]
+tests/test_agent.py::test_5_rerun_does_not_duplicate_staged_proposal PASSED [ 83%]
+tests/test_agent.py::test_6_no_real_credential_and_no_network PASSED     [100%]
+
+============================== 6 passed in 0.03s ===============================
+
+====================================================================================================
+OUTCOME
+====================================================================================================
+scaffold produced; 6 of 6 template tests passed, after one fix to the scaffold's own stale-bound
+defect found by the first pytest run (see above).
+
+WHAT THIS RUN DOES NOT PROVE, STATED RATHER THAN IMPLIED. No live store platform and no real LLM
+API key were exercised: catalog/orders came from the CSV fixtures above (SKILL.md's own stated
+dry-run path), `apply.py`'s `live_write` was a list-appending stub supplied by the tests rather
+than a real write connection, and every model call was a fake `complete()` returning a fixed
+string. What was proven is that the decision logic SKILL.md specifies - that an over-bound price
+move is refused before staging, that apply refuses an unknown or already-applied id, that the
+bound is re-checked (not just re-read) at apply time, that a fully-filled listing produces no
+fix proposal, and that a re-run does not duplicate a still-pending proposal - holds under the
+tests SKILL.md itself demands, and that the codebase never references a network call or a
+hard-coded credential.
+
+The fresh directory was left in /tmp; nothing from it was copied into this repository.

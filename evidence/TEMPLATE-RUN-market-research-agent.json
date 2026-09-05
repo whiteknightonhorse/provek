@@ -1,0 +1,11 @@
+{
+  "tree_stamp": "tree: e699ee4203650769f932421bda3ebdbd65098c2b (dirty)",
+  "slug": "market-research-agent",
+  "body_sha256": "fcb4acb510ea70f608389dee881ba9cd906b2ad596de36ca4a497ec8aa208d8e",
+  "run_at": "2026-09-05T03:29:00Z",
+  "tool": "claude-code",
+  "model": "claude-sonnet-5",
+  "outcome": "scaffold produced; 6 of 6 template tests passed",
+  "transcript_sha256": "69014b4af7f8d3bffc5a1e2c34481c292edbc541c605d4aad10fa2384d74cbc1",
+  "notes": "Fresh temporary directory outside this repository (/tmp/dry-run-market-research-agent-20260905T032900Z), three labeled fake complete() callables standing in for independent model providers, no real provider account and no network. One test assertion (not the production code) was corrected for being flaky against a correct random shuffle; full account at evidence/TEMPLATE-RUN-market-research-agent.transcript.txt."
+}

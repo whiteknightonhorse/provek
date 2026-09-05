@@ -1,0 +1,11 @@
+{
+  "tree_stamp": "tree: e699ee4203650769f932421bda3ebdbd65098c2b (dirty)",
+  "slug": "lead-generation-agent",
+  "body_sha256": "e9625d0a64a7dbbe0755ab58b1e280400c66bc51231fa41e47b7f4a1302fbc1c",
+  "run_at": "2026-09-05T03:25:55Z",
+  "tool": "claude-code",
+  "model": "claude-sonnet-5",
+  "outcome": "scaffold produced; 6 of 6 template tests passed",
+  "transcript_sha256": "8ff4d5efa4f7ff83627e6bea8302e80a13b668882742fdc41b23efec2ca8c9aa",
+  "notes": "Fresh temporary directory outside this repository (/tmp/dry-run-lead-generation-agent-20260905T032555Z), no real enrichment source and no real LLM API key - enrich() ran with source=None and a fake complete() callable, both named as the dry-run fallback in the template's own Credentials section. One real defect (a stale seen-file path computed at import time rather than at call time) was found by the first pytest run and fixed before the run recorded here; full account at evidence/TEMPLATE-RUN-lead-generation-agent.transcript.txt."
+}

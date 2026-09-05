@@ -1,0 +1,96 @@
+# TEMPLATE-RUN-lead-generation-agent - witnessed dry run transcript
+#
+# tree: e699ee4203650769f932421bda3ebdbd65098c2b (dirty)
+#
+# SUBJECT: templates/lead-generation-agent/SKILL.md (ADR-0011, D-57, LAW-TEMPLATE-WAS-RUN).
+# Referenced by evidence/TEMPLATE-RUN-lead-generation-agent.json via transcript_sha256.
+#
+# What happened: the template's own instructions were followed once, by a real coding agent
+# (this session, Claude Code, model claude-sonnet-5), in a fresh temporary directory outside this
+# repository, with no reference to anything already built here. The agent read SKILL.md's
+# "What to build" through "Tests" sections and wrote the files described, then wrote and ran the
+# six tests SKILL.md's own "Tests" section requires, using a fake `complete()` callable and no
+# enrichment source (the dry-run fallback SKILL.md's own Credentials section names).
+
+====================================================================================================
+SKILL.md WHOLE-FILE SHA256 AT RUN TIME (matching tests/test_template_was_run.py's own body_sha256())
+====================================================================================================
+e9625d0a64a7dbbe0755ab58b1e280400c66bc51231fa41e47b7f4a1302fbc1c
+
+====================================================================================================
+FRESH DIRECTORY, OUTSIDE THIS REPOSITORY
+====================================================================================================
+/tmp/dry-run-lead-generation-agent-20260905T032555Z
+
+====================================================================================================
+FILES WRITTEN, FOLLOWING SKILL.md'S OWN ARCHITECTURE
+====================================================================================================
+./icp.py
+./enrich.py
+./qualify.py
+./draft.py
+./main.py
+./sources/candidates.csv
+./tests/test_agent.py
+
+====================================================================================================
+FIRST RUN: A REAL DEFECT WAS FOUND AND FIXED, NOT PAPERED OVER
+====================================================================================================
+The first version of main.py computed its "already-seen" file path (SEEN_PATH) once at import
+time from the module-level BASE constant. Tests 3 and 4 monkeypatch main.BASE to point at a
+pytest tmp_path, per SKILL.md's Memory section (an on-disk seen-id set) and Tests item 4 (a
+re-run must not duplicate output) - but the stale SEEN_PATH kept reading and writing the *real*
+dry-run directory's seen.txt across test runs, so a second pytest invocation found emails already
+marked seen from the first invocation and silently produced no output, failing tests 3 and 4 with
+FileNotFoundError on outbox/rejected (never created because the loop body never ran).
+Fix: seen_path() is now computed from the current BASE at call time, exactly as main.run()'s own
+outbox/rejected paths already were. This is the same class of defect SKILL.md's Security and
+Decision points sections guard against in spirit (state must follow the configured root, not a
+value captured once) - caught here by the tests SKILL.md itself demands, which is what a witnessed
+dry run is for.
+
+====================================================================================================
+THE SIX TESTS SKILL.md's OWN "Tests" SECTION REQUIRES, MAPPED TO WHAT WAS WRITTEN
+====================================================================================================
+1. test_1_missing_fields_are_insufficient_data
+2. test_2_full_match_is_strong_fit
+3. test_3_poor_and_insufficient_never_drafted
+4. test_4_rerun_same_csv_no_duplicate
+5. test_5_margin_note_states_no_fact_plainly
+6. test_6_no_real_credential_and_no_network
+
+====================================================================================================
+`python3 -m pytest tests/ -v`, run inside the fresh directory above, exit 0 (after the fix above)
+====================================================================================================
+============================= test session starts ==============================
+platform linux -- Python 3.10.12, pytest-9.1.1, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /tmp/dry-run-lead-generation-agent-20260905T032555Z
+plugins: cov-7.1.0
+collecting ... collected 6 items
+
+tests/test_agent.py::test_1_missing_fields_are_insufficient_data PASSED  [ 16%]
+tests/test_agent.py::test_2_full_match_is_strong_fit PASSED              [ 33%]
+tests/test_agent.py::test_3_poor_and_insufficient_never_drafted PASSED   [ 50%]
+tests/test_agent.py::test_4_rerun_same_csv_no_duplicate PASSED           [ 66%]
+tests/test_agent.py::test_5_margin_note_states_no_fact_plainly PASSED    [ 83%]
+tests/test_agent.py::test_6_no_real_credential_and_no_network PASSED     [100%]
+
+============================== 6 passed in 0.03s ===============================
+
+====================================================================================================
+OUTCOME
+====================================================================================================
+scaffold produced; 6 of 6 template tests passed, after one fix to the scaffold's own stale-path
+defect found by the first pytest run (see above) - reported here rather than silently re-running
+until green with no note, per CLAUDE.md invariant 5.
+
+WHAT THIS RUN DOES NOT PROVE, STATED RATHER THAN IMPLIED. No real data-enrichment provider and no
+real LLM API key were exercised: enrichment ran with `source=None` (SKILL.md's own stated
+fallback), and every model call was a fake `complete()` returning a fixed string. What was proven
+is that the decision logic SKILL.md specifies - which fit category a candidate lands in, that a
+poor/insufficient candidate is never drafted, that a re-run does not duplicate output, and that a
+missing enrichment fact is stated plainly rather than invented - holds under the tests SKILL.md
+itself demands, and that the codebase never references a network call or a hard-coded credential.
+
+The fresh directory was left in /tmp; nothing from it was copied into this repository.

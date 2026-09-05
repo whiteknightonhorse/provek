@@ -1,0 +1,11 @@
+{
+  "tree_stamp": "tree: e699ee4203650769f932421bda3ebdbd65098c2b (dirty)",
+  "slug": "ecommerce-operations-agent",
+  "body_sha256": "2bf40800a6bfceead6c907c725dacac70e342088f8bea49e0ce62fe5dc2b3fe2",
+  "run_at": "2026-09-05T03:27:34Z",
+  "tool": "claude-code",
+  "model": "claude-sonnet-5",
+  "outcome": "scaffold produced; 6 of 6 template tests passed",
+  "transcript_sha256": "59585c1072512930b16925a785c5bf86c62db60856bb838973d3b14b400fe5bb",
+  "notes": "Fresh temporary directory outside this repository (/tmp/dry-run-ecommerce-operations-agent-20260905T032734Z), CSV fixtures for catalog/orders and a fake complete() callable, apply.py's live_write left as a caller-supplied stub - no live store credential and no network. One real defect (a price-move bound captured as a stale default parameter instead of re-read at apply time) was found by the first pytest run and fixed before the run recorded here; full account at evidence/TEMPLATE-RUN-ecommerce-operations-agent.transcript.txt."
+}

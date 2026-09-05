@@ -4,6 +4,21 @@
       "body_sha256": "072dd28c74e6aeaf0f3e093f4e9a41e13e6b59847480a4d284defa284e625d08",
       "date_published": "2026-09-05",
       "date_modified": "2026-09-05"
+    },
+    "lead-generation-agent": {
+      "body_sha256": "e9625d0a64a7dbbe0755ab58b1e280400c66bc51231fa41e47b7f4a1302fbc1c",
+      "date_published": "2026-09-05",
+      "date_modified": "2026-09-05"
+    },
+    "ecommerce-operations-agent": {
+      "body_sha256": "2bf40800a6bfceead6c907c725dacac70e342088f8bea49e0ce62fe5dc2b3fe2",
+      "date_published": "2026-09-05",
+      "date_modified": "2026-09-05"
+    },
+    "market-research-agent": {
+      "body_sha256": "fcb4acb510ea70f608389dee881ba9cd906b2ad596de36ca4a497ec8aa208d8e",
+      "date_published": "2026-09-05",
+      "date_modified": "2026-09-05"
     }
   }
 }
