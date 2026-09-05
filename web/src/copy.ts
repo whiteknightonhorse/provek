@@ -7,12 +7,16 @@
  * step (the masthead's "Request verification", `/build/`'s own template grid, the registry
  * table), and `tests/test_build_funnel_strip_once.py` counts `/apply/` links per page under
  * `dist/build/**` at exactly one; a second link inside this sentence on that surface would fail
- * it for a reason that has nothing to do with what broke.
+ * it for a reason that has nothing to do with what broke. It still renders on all four surfaces.
  *
- * INCUBATOR_SENTENCE is the one place "incubator" is allowed to describe the product on these four
- * surfaces (ruling: lowercase, descriptive, never a title/H1/nav label/meta, one sentence per
- * surface) - it sits beside the funnel sentence or the two-step strip rather than at the top of a
- * page or in a heading,
+ * INCUBATOR_SENTENCE is the one place "incubator" is allowed to describe the product, now on
+ * THREE of the four (/apply/, /build/, /registry/) rather than four (Fable, T-03 ruling-2, D2):
+ * the landing's own copy of it was retired because it duplicated, word for word, the same
+ * sentence already living in /build/'s "What follows" section, and the landing's word count for
+ * "incubator" in `<main>` is enforced at zero, not one, by
+ * `tests/test_incubator_word_is_descriptive_only.py`. On the three surfaces that keep it, the
+ * ruling (lowercase, descriptive, never a title/H1/nav label/meta, one sentence per surface) still
+ * governs: it sits beside the funnel sentence rather than at the top of a page or in a heading,
  * and it names the two things a reader is likeliest to assume wrongly from the word alone: that
  * money moves through us, and that there is a cohort or admission date to apply for. Neither
  * exists (D-05, D-16, ADR-0011's own rejection of "Incubator tiers"), so the sentence says so

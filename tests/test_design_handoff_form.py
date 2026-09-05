@@ -7,6 +7,16 @@ The one thing this handoff adds that the rest of the site does not otherwise hav
 is a single fabricated table-row-shaped example on `/registry/`, labelled as a sample. D-04 forbids
 inventing a company in the registry; this checks the fabrication never becomes one - it must not be
 a link, and it must never appear in the data the registry is actually built from.
+
+AMENDED (Fable, T-03 ruling-2, D1, 03-landing-never-names-the-agents.ruling-2.md): the landing's
+own "Step 1 / Step 2" strip - the form this handoff originally specified for stating the two
+phases in order - was retired. It restated, in different headings, exactly what `FUNNEL_SENTENCE`
+already states in one sentence on the same first screen, and on wide viewports it sat orphaned
+below a registry rail twice its height. `test_home_states_the_two_phases_in_order` now reads the
+two phases out of `FUNNEL_SENTENCE`'s own words ("request verification" before "take orders")
+rather than out of the strip's now-absent headings; `test_the_two_source_files_touched_are_the_ones_the_handoff_named`
+checks for `FUNNEL_SENTENCE`'s presence in Landing.tsx instead. The order-link callout and its
+honest fallback (below) are untouched - that pairing is T-20's own mechanism, not the strip.
 """
 from __future__ import annotations
 
@@ -40,8 +50,12 @@ def _main_text(html_path: Path) -> str:
 @emitted
 def test_home_states_the_two_phases_in_order():
     text = _main_text(HOME_PAGE)
-    assert "Step 1" in text and "Get verified" in text
-    assert "Step 2" in text and "Take orders" in text
+    # FUNNEL_SENTENCE (web/src/copy.ts) is now the only place the homepage states the two
+    # phases - "request verification" (lowercase, mid-sentence) is distinct from the masthead
+    # button's capitalised "Request verification", so this finds the sentence, not the button.
+    i_verify = text.index("request verification")
+    i_orders = text.index("take orders")
+    assert i_verify < i_orders, "the two phases are not stated in order"
     assert "Order from a verified agent" in text
 
 
@@ -109,5 +123,5 @@ def test_apply_and_passport_copy_is_left_alone():
 def test_the_two_source_files_touched_are_the_ones_the_handoff_named():
     landing = LANDING_SRC.read_text(encoding="utf-8")
     registry = REGISTRY_SRC.read_text(encoding="utf-8")
-    assert "Get verified" in landing and "Take orders" in landing
+    assert "FUNNEL_SENTENCE" in landing
     assert "how it is decided" in registry

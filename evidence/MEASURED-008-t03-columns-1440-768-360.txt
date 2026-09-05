@@ -1,0 +1,193 @@
+# MEASURED-008 - the left/right column heights and the gap under the left column,
+# 360/768/1440px, BEFORE (live 05ae8d8) and AFTER (this task's own npm run build)
+#
+# tree: bf8fae7337424befc7f0a65200ad4ac96c43bdd7 (dirty)
+#
+# Fable, T-03 ruling-2 (03-landing-never-names-the-agents.ruling-2.md), §3: the operator's
+# 2026-09-06 addendum reported the Step 1/2 strip reading as "съехал" (drifted) on a wide screen;
+# ruling-1's q-2 dispute measured the cause (CSS Grid's default `align-items: stretch` forces the
+# left grid column to the taller right column's height, leaving 334-390px of empty space below the
+# left column's actual content before the next section starts) but was told not to decide the fix.
+# Ruling-2, D3, moved the "What you can build today" section into the left grid column - the same
+# content the operator asked to see, not a new one - and ordered a real browser re-measurement,
+# not a re-reading of the source, to confirm the gap actually closes.
+#
+# INSTRUMENT: playwright-core 1.55 driving the host's own /usr/bin/chromium-browser (headless,
+# --no-sandbox), installed only under /tmp/pw-audit (not a project dependency, same instrument
+# ruling-1's own q-2 measurement used). BEFORE points at https://provek.dev/ (the live site,
+# label 05ae8d8, read-only - no live-site write or deploy performed by this measurement). AFTER
+# points at a plain `python3 -m http.server` serving this task's own freshly built `web/dist` on
+# http://localhost:8931/ - never the live site, which does not carry this change.
+#
+# Screenshots (full-page PNG, kept outside the repository per the ruling):
+#   BEFORE: /tmp/pw-audit/live-360-full.png, live-768-full.png, live-1440-full.png (already on
+#     disk from the q-2 measurement, same live tree, not retaken here)
+#   AFTER:  /tmp/pw-audit/after-360-full.png, after-768-full.png, after-1440-full.png
+
+====================================================================================================
+SCRIPT - /tmp/pw-audit/baseline.mjs (BEFORE, unmodified from the q-2 measurement; column heights at
+each width)
+====================================================================================================
+
+import { chromium } from 'playwright-core';
+const browser = await chromium.launch({ executablePath: '/usr/bin/chromium-browser', headless: true, args: ['--no-sandbox'] });
+const page = await browser.newPage();
+await page.goto('https://provek.dev/', { waitUntil: 'networkidle' });
+
+for (const w of [360, 768, 1440]) {
+  await page.setViewportSize({ width: w, height: 900 });
+  await page.waitForTimeout(200);
+  const data = await page.evaluate(() => {
+    const grid = document.querySelector('main .grid.gap-10');
+    if (!grid) return { error: 'grid not found' };
+    const cols = Array.from(grid.children);
+    const rects = cols.map(c => c.getBoundingClientRect());
+    return { gridRect: grid.getBoundingClientRect(), colHeights: rects.map(r => r.height) };
+  });
+  console.log('WIDTH', w, JSON.stringify(data, null, 2));
+}
+await browser.close();
+
+--- output, run against https://provek.dev/ (live, label 05ae8d8), 2026-09-05T18:00Z ---
+
+WIDTH 360 colHeights: [538.921875, 697.71875]
+WIDTH 768 colHeights: [359.609375, 621.71875]
+WIDTH 1440 colHeights: [693.71875, 693.71875]   (gridRect.height 693.71875, gridRect.bottom 843.71875)
+
+====================================================================================================
+SCRIPT - /tmp/pw-audit/gap.mjs (BEFORE, unmodified from the q-2 measurement; the actual empty
+space under the left column's own visible content at 1440px, as distinct from the stretched box
+height above)
+====================================================================================================
+
+import { chromium } from 'playwright-core';
+const browser = await chromium.launch({ executablePath: '/usr/bin/chromium-browser', headless: true, args: ['--no-sandbox'] });
+const page = await browser.newPage();
+await page.goto('https://provek.dev/', { waitUntil: 'networkidle' });
+await page.setViewportSize({ width: 1440, height: 900 });
+await page.waitForTimeout(300);
+const data = await page.evaluate(() => {
+  const grid = document.querySelector('main .grid.gap-10');
+  const [leftSection, aside] = grid.children;
+  const leftLastChild = leftSection.lastElementChild;
+  const asideLastVisible = aside.querySelector('p:last-of-type') || aside.lastElementChild;
+  const stepSection = Array.from(document.querySelectorAll('main section')).find(s => s.textContent.includes('Step 1'));
+  return {
+    gridBottom: grid.getBoundingClientRect().bottom,
+    leftContentBottom: leftLastChild.getBoundingClientRect().bottom,
+    asideContentBottom: asideLastVisible.getBoundingClientRect().bottom,
+    stepSectionTop: stepSection.getBoundingClientRect().top,
+  };
+});
+console.log(JSON.stringify(data, null, 2));
+console.log('empty gap under left column (px):', data.stepSectionTop - data.leftContentBottom);
+await browser.close();
+
+--- output, run against https://provek.dev/ (live, label 05ae8d8), 2026-09-05T18:00Z ---
+
+{
+  "gridBottom": 843.71875,
+  "leftContentBottom": 509.609375,
+  "asideContentBottom": 843.71875,
+  "stepSectionTop": 899.71875
+}
+empty gap under left column (px): 390.109375
+
+====================================================================================================
+SCRIPT - /tmp/pw-audit/after.mjs (AFTER, this task's own web/dist served on http://localhost:8931/;
+column heights at each width)
+====================================================================================================
+
+import { chromium } from 'playwright-core';
+const browser = await chromium.launch({ executablePath: '/usr/bin/chromium-browser', headless: true, args: ['--no-sandbox'] });
+const page = await browser.newPage();
+await page.goto('http://localhost:8931/', { waitUntil: 'networkidle' });
+
+for (const w of [360, 768, 1440]) {
+  await page.setViewportSize({ width: w, height: 900 });
+  await page.waitForTimeout(200);
+  const data = await page.evaluate(() => {
+    const grid = document.querySelector('main .grid.gap-10');
+    if (!grid) return { error: 'grid not found' };
+    const cols = Array.from(grid.children);
+    const rects = cols.map(c => c.getBoundingClientRect());
+    const buildSection = Array.from(document.querySelectorAll('main section')).find(s => s.textContent.includes('What you can build today'));
+    const whySection = Array.from(document.querySelectorAll('main section')).find(s => s.textContent.includes('Why this is worth your time today'));
+    return {
+      gridRect: grid.getBoundingClientRect(),
+      colHeights: rects.map(r => r.height),
+      buildSectionBottom: buildSection ? buildSection.getBoundingClientRect().bottom : null,
+      whySectionTop: whySection ? whySection.getBoundingClientRect().top : null,
+    };
+  });
+  console.log('WIDTH', w, JSON.stringify(data, null, 2));
+}
+await browser.close();
+
+--- output, run against http://localhost:8931/ (this task's fresh web/dist), 2026-09-05T18:00Z ---
+
+WIDTH 360 colHeights: [1515.078125, 697.71875]           buildSectionBottom 1679.078125  whySectionTop 2472.796875
+WIDTH 768 colHeights: [932.734375, 621.71875]            buildSectionBottom 1082.734375  whySectionTop 1800.453125
+WIDTH 1440 colHeights: [932.734375, 932.734375]          buildSectionBottom 1082.734375  whySectionTop 1138.734375
+  (gridRect.height 932.734375, gridRect.bottom 1082.734375)
+
+====================================================================================================
+SCRIPT - /tmp/pw-audit/gap_after.mjs (AFTER; same empty-space-under-left-column reading as
+gap.mjs, at 1440px)
+====================================================================================================
+
+import { chromium } from 'playwright-core';
+const browser = await chromium.launch({ executablePath: '/usr/bin/chromium-browser', headless: true, args: ['--no-sandbox'] });
+const page = await browser.newPage();
+await page.goto('http://localhost:8931/', { waitUntil: 'networkidle' });
+await page.setViewportSize({ width: 1440, height: 900 });
+await page.waitForTimeout(300);
+const data = await page.evaluate(() => {
+  const grid = document.querySelector('main .grid.gap-10');
+  const [leftDiv, aside] = grid.children;
+  const leftLastChild = leftDiv.lastElementChild;
+  const asideLastVisible = aside.querySelector('p:last-of-type') || aside.lastElementChild;
+  const nextSection = Array.from(document.querySelectorAll('main section')).find(s => s.textContent.includes('Why this is worth your time today'));
+  return {
+    gridBottom: grid.getBoundingClientRect().bottom,
+    leftContentBottom: leftLastChild.getBoundingClientRect().bottom,
+    asideContentBottom: asideLastVisible.getBoundingClientRect().bottom,
+    nextSectionTop: nextSection.getBoundingClientRect().top,
+  };
+});
+console.log(JSON.stringify(data, null, 2));
+console.log('empty gap under left column (px):', data.nextSectionTop - data.leftContentBottom);
+await browser.close();
+
+--- output, run against http://localhost:8931/ (this task's fresh web/dist), 2026-09-05T18:00Z ---
+
+{
+  "gridBottom": 1082.734375,
+  "leftContentBottom": 1082.734375,
+  "asideContentBottom": 843.71875,
+  "nextSectionTop": 1138.734375
+}
+empty gap under left column (px): 56
+
+====================================================================================================
+SUMMARY TABLE - BEFORE (live, 05ae8d8) vs AFTER (this task, fresh build)
+====================================================================================================
+
+| width | BEFORE left col box height | BEFORE right col (aside) height | AFTER left col box height | AFTER right col (aside) height |
+|------:|----------------------------:|----------------------------------:|----------------------------:|----------------------------------:|
+|  360  | 538.9                       | 697.7                              | 1515.1                      | 697.7                              |
+|  768  | 359.6                       | 621.7                              | 932.7                       | 621.7                              |
+| 1440  | 693.7                       | 693.7                              | 932.7                       | 932.7                              |
+
+| width | BEFORE gap under left column's own visible content, before the next section (px) | AFTER same gap (px) |
+|------:|------------------------------------------------------------------------------------:|-----------------------:|
+| 1440  | 390.1 (dead space - left content ends at 509.6, next section starts at 899.7)       | 56 (exactly `mt-14` = 3.5rem = 56px, the section's own intentional top margin - not dead space; left content now ends AT the grid's own bottom, 1082.7 = 1082.7) |
+
+CONCLUSION: at >=1024px, the left column's box height is still stretched to match the right
+column (CSS Grid's `align-items: stretch` default, unchanged, not this task's target) - but the
+left column's own VISIBLE CONTENT now reaches that same height (1082.7 = 1082.7 at 1440px), where
+before it stopped 390px short. The remaining 56px before "Why this is worth your time today" is
+the section's own `mt-14` margin, present at every width, not a defect. At 360/768 the columns
+still stack (unchanged, <1024px never exhibited the gap): the left column is simply taller now
+because it carries more content (the templates section), which is the intended effect of D3, not
+a regression.

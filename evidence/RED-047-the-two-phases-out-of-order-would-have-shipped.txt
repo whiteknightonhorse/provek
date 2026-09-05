@@ -1,0 +1,61 @@
+# RED-047 - the two phases out of order would have shipped
+#
+# tree: bf8fae7337424befc7f0a65200ad4ac96c43bdd7 (dirty)
+#
+# Produced by evidence/RED-047-generator.py, checked in beside this file so the run below can be
+# repeated rather than believed. T-03 ruling-2 (D1) rewrote
+# test_home_states_the_two_phases_in_order to read the two funnel phases out of FUNNEL_SENTENCE's
+# own words rather than out of the now-retired Step 1/2 strip's headings; this closes the gap of
+# there being no real-tree red run for that rewritten assertion, the same standard RED-044/045/046
+# hold the other new gates in this repository to.
+#
+# SUBJECT: tests/test_design_handoff_form.py::test_home_states_the_two_phases_in_order.
+# CHANNEL PLANTED: web/dist/index.html, the FUNNEL_SENTENCE clause's word order reversed so
+# "take orders" appears before "request verification".
+
+====================================================================================================
+BEFORE THE PLANT - `python3 -m pytest tests/test_design_handoff_form.py::test_home_states_the_two_phases_in_order -q`, exit 0
+====================================================================================================
+
+.                                                                        [100%]
+1 passed in 0.03s
+
+====================================================================================================
+THE PLANT - in the real web/dist/index.html:
+  'request verification for a free passport, and take orders once the registry lists you.'
+  ->
+  'take orders once the registry lists you, and request verification for a free passport.'
+restored from the original bytes in a `finally` regardless of outcome.
+====================================================================================================
+
+====================================================================================================
+WITH THE PLANT IN PLACE - `python3 -m pytest tests/test_design_handoff_form.py::test_home_states_the_two_phases_in_order -q`, exit 1
+====================================================================================================
+
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___________________ test_home_states_the_two_phases_in_order ___________________
+
+    @emitted
+    def test_home_states_the_two_phases_in_order():
+        text = _main_text(HOME_PAGE)
+        # FUNNEL_SENTENCE (web/src/copy.ts) is now the only place the homepage states the two
+        # phases - "request verification" (lowercase, mid-sentence) is distinct from the masthead
+        # button's capitalised "Request verification", so this finds the sentence, not the button.
+        i_verify = text.index("request verification")
+        i_orders = text.index("take orders")
+>       assert i_verify < i_orders, "the two phases are not stated in order"
+E       AssertionError: the two phases are not stated in order
+E       assert 356 < 311
+
+tests/test_design_handoff_form.py:58: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_design_handoff_form.py::test_home_states_the_two_phases_in_order
+1 failed in 0.04s
+
+====================================================================================================
+AFTER THE PLANT WAS REMOVED - `python3 -m pytest tests/test_design_handoff_form.py::test_home_states_the_two_phases_in_order -q`, exit 0
+====================================================================================================
+
+.                                                                        [100%]
+1 passed in 0.03s

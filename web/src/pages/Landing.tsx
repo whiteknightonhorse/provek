@@ -6,7 +6,7 @@ import { Page } from "../components/Chrome";
 import { AbsentMark, REASON_TEXT } from "../components/Measured";
 import { orderLinkUrl, slug } from "../types";
 import type { Registry as R, TemplateSummary } from "../types";
-import { FUNNEL_SENTENCE, INCUBATOR_SENTENCE } from "../copy";
+import { FUNNEL_SENTENCE } from "../copy";
 
 /** THE THREE CLIPS. D-42 admits them here and nowhere else, which is why the `/media/` paths sit
  * in this file rather than in a component of their own: `scripts/ratchet_staged_media.py` refuses
@@ -279,6 +279,7 @@ export default function Landing({
   return (
     <Page>
       <div className="grid gap-10 lg:grid-cols-[minmax(0,42rem)_minmax(0,1fr)] lg:gap-14">
+      <div>
       <section className="pt-6">
         <h1 className="text-[2.1rem] leading-[1.15] font-semibold tracking-tight">
           Your customers cannot tell you apart from a company that wrote
@@ -304,13 +305,57 @@ export default function Landing({
         </div>
 
         {/* T-78: the fixed funnel sentence, identical on all four surfaces (Fable ruling). The
-            incubator sentence that used to sit beside it here now lives with the two-step strip
-            below the grid (Fable, T-02 ruling-1, §3) - this paragraph is the second and last
-            sentence of the first screen. */}
+            incubator sentence and the two-step strip that used to sit below the grid were removed
+            from the landing entirely (Fable, T-03 ruling-2, D1/D2): both restated, in different
+            words, the same two phases this sentence already states in order - this paragraph is
+            the second and last sentence of the first screen. */}
         <p className="mt-8 text-sm text-[var(--color-ink-2)] max-w-[30rem]">
           {FUNNEL_SENTENCE}
         </p>
       </section>
+
+      {/* D-59 (03-landing-never-names-the-agents.ruling-1.md), replacing ADR-0011/D-57's
+          one-sentence door: D-57 was written against zero real templates; seven now exist, each
+          published only after a witnessed dry run (LAW-TEMPLATE-WAS-RUN), and a reader who never
+          clicks "Build" never learns any of that. Still no card, no second CTA row - /build/
+          carries its own pitch - just this template's own name and the one operation it runs,
+          read from the same data /build/ renders, never a second list. Moved into the left grid
+          column (Fable, T-03 ruling-2, D3): the right column's registry rail is taller than the
+          first screen at >=1024px (CSS Grid's `stretch` default forces both columns to that
+          height), and this section is the content the operator asked to see there instead of an
+          empty gap - not a fresh column, the same section content in a different parent. */}
+      <section className="mt-14">
+        <h2 className="text-lg font-semibold">What you can build today</h2>
+        <p className="mt-2 text-sm text-[var(--color-ink-2)]">
+          One template per business operation below, built by your own coding agent in your own
+          repository. Free, no account. Each template names what a human still does and carries
+          its dry-run record on its page.
+        </p>
+        {templateSummaries === null ? (
+          <ul className="mt-4 space-y-2.5" aria-hidden="true">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <li key={i} className="skeleton-bar h-4 bg-[var(--color-line)] rounded-sm" />
+            ))}
+          </ul>
+        ) : (
+          <ul className="mt-4 space-y-2 text-sm text-[var(--color-ink-2)]">
+            {templateSummaries.map((t) => (
+              <li key={t.slug}>
+                <a href={`/build/${t.slug}/`} className="text-[var(--color-accent)] hover:underline">
+                  {t.title}
+                </a>{" "}
+                &mdash; {t.businessOperation}
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className="mt-4 text-sm">
+          <a href="/build/" className="text-[var(--color-accent)] hover:underline">
+            All templates, with what each needs &rarr;
+          </a>
+        </p>
+      </section>
+      </div>
 
       {/* The right column is the argument's own evidence. The page claims a standard exists; the
           registry is the only thing that can show it does. These are the real rows, in the real
@@ -444,91 +489,14 @@ export default function Landing({
       </aside>
       </div>
 
-      {/* MOVED BELOW THE FIRST SCREEN (Fable, T-02 ruling-1, §3): this strip and the two
-          paragraphs beside it used to sit inside the left column, where they were part of what
-          grew the first screen to fourteen sentences. No heading and no id here - a heading
-          naming "incubator" would trip the gate that keeps the word out of headings, and §4 of
-          the ruling forbids adding a new anchor for it. */}
-      <section className="mt-14 max-w-[46rem]">
-        {/* THE TWO PHASES, STATED IN ORDER. Verification comes first and is free; declaring an
-            order channel is only possible once a passport is verified - this strip states that
-            sequence without promising any subject an Order link they have not earned yet. */}
-        <div className="grid grid-cols-2 gap-6 max-w-[30rem]">
-          <div>
-            <h3 className="text-xs uppercase tracking-wide text-[var(--color-ink-3)]">
-              Step 1 &mdash; Get verified
-            </h3>
-            <p className="mt-1.5 text-sm text-[var(--color-ink-2)]">
-              Submit your repo. We publish what could be established &mdash; a public passport,
-              free.
-            </p>
-          </div>
-          <div>
-            <h3 className="text-xs uppercase tracking-wide text-[var(--color-ink-3)]">
-              Step 2 &mdash; Take orders
-            </h3>
-            <p className="mt-1.5 text-sm text-[var(--color-ink-2)]">
-              Once verified, declare where customers order from you. An &ldquo;Order&rdquo; link
-              appears in the registry.
-            </p>
-          </div>
-        </div>
-
-        {/* T-78's incubator sentence, moved down from the first screen alongside the strip it
-            now reads as a conclusion to (Fable, T-02 ruling-1, §3). Text unchanged. */}
-        <p className="mt-4 text-sm text-[var(--color-ink-2)] max-w-[30rem]">
-          {INCUBATOR_SENTENCE}
-        </p>
-
-      </section>
-
-      {/* D-59 (Fable, 03-landing-never-names-the-agents.ruling-1.md), replacing ADR-0011/D-57's
-          one-sentence door: D-57 was written against zero real templates; seven now exist, each
-          published only after a witnessed dry run (LAW-TEMPLATE-WAS-RUN), and a reader who never
-          clicks "Build" never learns any of that. Still no card, no second CTA row - /build/
-          carries its own pitch - just this template's own name and the one operation it runs,
-          read from the same data /build/ renders, never a second list. */}
-      <section className="mt-14 max-w-[46rem]">
-        <h2 className="text-lg font-semibold">What you can build today</h2>
-        <p className="mt-2 text-sm text-[var(--color-ink-2)]">
-          One template per business operation below, built by your own coding agent in your own
-          repository. Free, no account. Each template names what a human still does and carries
-          its dry-run record on its page.
-        </p>
-        {templateSummaries === null ? (
-          <ul className="mt-4 space-y-2.5" aria-hidden="true">
-            {Array.from({ length: 7 }).map((_, i) => (
-              <li key={i} className="skeleton-bar h-4 bg-[var(--color-line)] rounded-sm" />
-            ))}
-          </ul>
-        ) : (
-          <ul className="mt-4 space-y-2 text-sm text-[var(--color-ink-2)]">
-            {templateSummaries.map((t) => (
-              <li key={t.slug}>
-                <a href={`/build/${t.slug}/`} className="text-[var(--color-accent)] hover:underline">
-                  {t.title}
-                </a>{" "}
-                &mdash; {t.businessOperation}
-              </li>
-            ))}
-          </ul>
-        )}
-        <p className="mt-4 text-sm">
-          <a href="/build/" className="text-[var(--color-accent)] hover:underline">
-            All templates, with what each needs &rarr;
-          </a>
-        </p>
-      </section>
-
       {/* THREE ANSWERS TO THREE DIFFERENT QUESTIONS. As three equal-weight strips they read as a
           list of reasons of one kind, which is what made the section feel like padding: nothing
           told the reader that "who is it for", "why now" and "what does it cost" are not variations
-          on one another. The question each answers is now on the face of it. */}
+          on one another. The question each answers is now on the face of it (Fable, T-03
+          ruling-2, D4: the subheading that used to state this in words is retired, the comment
+          above already says what it said). */}
       <section className="mt-14 max-w-[62rem]">
         <h2 className="text-lg font-semibold">Why this is worth your time today</h2>
-        <p className="mt-2 text-sm text-[var(--color-ink-3)]">
-          Three different questions, three different answers.
-        </p>
         <div className="mt-6 grid gap-8 md:grid-cols-3">
           <div>
             <h3 className="border-b border-[var(--color-line-2)] pb-2 text-xs uppercase tracking-wide text-[var(--color-ink-3)]">

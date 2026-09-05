@@ -3627,3 +3627,28 @@ the same seven rows. `tests/test_landing_names_every_template.py` gates the land
 `dist/data/templates.json` and `dist/index.md` against each other. The first-screen threshold
 (T-02 ruling-1) is unchanged: the new section sits below it. Anchors are unchanged: no new `id` is
 added anywhere in the site.
+
+**Amended by ruling-2 (2026-09-06, 03-landing-never-names-the-agents.ruling-2.md).** The
+operator's own read of the live wide-screen page (>=1024px) found the landing's separate Step 1/2
+strip and its copy of `INCUBATOR_SENTENCE` reading as disconnected filler, adrift below a registry
+rail roughly twice the left column's height. Measured cause (CSS Grid's `align-items: stretch`
+default, present before either T-02 or T-03): the left column's box is stretched to the right
+column's height, but its content stopped 390px short of that height at 1440px before the next
+section began. Ruling-2 (D1) retired the Step 1/2 strip outright - it restated, in different
+headings, exactly the two phases `FUNNEL_SENTENCE` already states in order on the first screen;
+(D2) retired the landing's own copy of `INCUBATOR_SENTENCE` - a word-for-word duplicate of the one
+`/build/`'s "What follows" section already carries, on a word with 0 of 1418 measured rows of
+demand (T-70 ruling-1 §1.1); and (D3) moved this section - "What you can build today" - into the
+left grid column, immediately after the first screen, which is the content the operator asked to
+see there rather than an empty gap. Measured after (`evidence/MEASURED-008-t03-columns-1440-768-
+360.txt`): at 1440px the left column's visible content now reaches the same height as the right
+column (1082.7px = 1082.7px), where it previously stopped at 509.6px; the residual 56px before the
+next section is that section's own `mt-14` margin, present at every width, not dead space. Two
+gates narrowed to match: `tests/test_design_handoff_form.py`'s
+`test_home_states_the_two_phases_in_order` now reads the two phases out of `FUNNEL_SENTENCE`'s own
+words (real-tree red run `evidence/RED-047-*`); `tests/test_incubator_word_is_descriptive_only.py`
+holds the landing to exactly zero uses of "incubator" in `<main>` (down from one), narrows
+`FUNNEL_ROUTES` to the three surfaces that still carry the sentence, and rebases its isolated-
+mention control to `/build/` (real-tree red run `evidence/RED-048-*`). First-screen threshold
+(T-02) re-measured unchanged: 397 chars / 3 sentences, before and after. No new `id` added; site-
+wide anchor count unchanged.
