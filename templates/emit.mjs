@@ -251,6 +251,16 @@ function loadRunRecord(slug, fileBytes, evidenceRoot) {
 
 const titleCase = (slug) => slug.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ");
 
+/** `titleCase` capitalises every hyphen-word, which reads "Youtube" where the brand is "YouTube".
+ * Six slugs never collided with a proper-noun spelling; this one does, per Fable's ruling-2 on
+ * T-77. An override map (not a frontmatter field) is the fix: `bodySha256` hashes the whole
+ * SKILL.md file including frontmatter, so a frontmatter edit would mint a new hash and force a
+ * fresh witnessed dry run for a display-string typo alone. */
+const DISPLAY_NAME_OVERRIDES = {
+  "youtube-channel-operations-agent": "YouTube channel operations agent",
+};
+const displayTitle = (slug) => DISPLAY_NAME_OVERRIDES[slug] ?? titleCase(slug);
+
 /** `lastmod`/`dateModified` are pinned to this manifest, never to the build clock (the same
  * discipline `web/notes/manifest.json` holds itself to) - a rebuild that touches nothing must not
  * tell every crawler that every template changed today. A slug missing from the manifest, or
@@ -309,7 +319,7 @@ function loadOne(slug, templatesRoot, evidenceRoot, manifest, faqData) {
 
   return {
     slug,
-    title: titleCase(slug),
+    title: displayTitle(slug),
     description: frontmatter.description,
     license: frontmatter.license,
     compatibility: frontmatter.compatibility,

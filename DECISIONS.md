@@ -3551,7 +3551,7 @@ instances) is the reason that is not a defect. `tests/test_licence.py` is extend
 
 ## D-58. A seventh template, `youtube-channel-operations-agent`, is admitted by ADR-0011's rule — "v1 = six" was launch scope, not a cap
 
-**Decision.** The operator asked for an eighth template covering YouTube channel management; the
+**Decision.** The operator asked for a seventh template covering YouTube channel management; the
 executor raised a dispute rather than assume "v1 admits six" (`templates/README.md`) was a closed
 list (`taskloop/disputes/77-seventh-template-youtube-channel-agent.q-1.md`). Fable ruled
 (`taskloop/disputes/77-seventh-template-youtube-channel-agent.ruling-1.md`) that ADR-0011 §4.1's

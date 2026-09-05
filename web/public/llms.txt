@@ -35,7 +35,7 @@
 - [Market Research Agent](https://provek.dev/build/market-research-agent/): market/competitor research: a recurring brief produced by asking several models the same questions independently, having them review each other's anonymized answers, and combining the results into one sourced document. Raw: https://provek.dev/build/market-research-agent/SKILL.md
 - [Content Production Agent](https://provek.dev/build/content-production-agent/): content production: drafting an article from a brief, checking every factual claim against the sources it cites, and queuing the result for a human to publish. Raw: https://provek.dev/build/content-production-agent/SKILL.md
 - [Finance Operations Agent](https://provek.dev/build/finance-operations-agent/): finance back office: invoice intake, categorization against a chart of accounts, and a reconciliation report comparing books to a bank/card statement export - it never moves money. Raw: https://provek.dev/build/finance-operations-agent/SKILL.md
-- [Youtube Channel Operations Agent](https://provek.dev/build/youtube-channel-operations-agent/): YouTube channel operations: taking a finished video and its metadata, tracking the channel's daily API quota, uploading it as unlisted, and handing the decision to make it public to a human. Raw: https://provek.dev/build/youtube-channel-operations-agent/SKILL.md
+- [YouTube channel operations agent](https://provek.dev/build/youtube-channel-operations-agent/): YouTube channel operations: taking a finished video and its metadata, tracking the channel's daily API quota, uploading it as unlisted, and handing the decision to make it public to a human. Raw: https://provek.dev/build/youtube-channel-operations-agent/SKILL.md
 
 ## API
 
