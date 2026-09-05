@@ -73,16 +73,22 @@ overridden with the tools available to the operator in this session. The light t
 verified** at all. This is recorded as not-measured, not as passing — a separate pass (e.g. via
 browser devtools media-feature emulation, not attempted here) would be needed to close it.
 
-## P6 — §24, first-time-reader verdict — NOT OBTAINED
+## P6 — §24, first-time-reader verdict — OBTAINED
 
 The ruling (§3, P6) assigns this verdict to the operator personally, first thing, before
 consulting the brief: one sentence on what the page is and what to do on it, plus
-understood/not-understood. The operator was asked directly. As of this transcription, **no
-response has been recorded**. This is the one row of the final-walk table this file cannot close.
+understood/not-understood. The operator's verdict, verbatim, on the live `/build/` page at 1440,
+2026-09-05:
+
+> Понятно сразу, закрывай §24
+
+Parsed against the required form (one sentence + understood/not-understood): **UNDERSTOOD**
+("Понятно сразу" — understood immediately, i.e. without reading documentation, which is exactly
+the condition §24 of the brief tests for); the sentence quoted above is the operator's sentence in
+full. Source: the operator, in person, relayed by the dispatcher without paraphrase.
 
 ## Disposition for the final-walk table
 
 Rows 1, 8, 9, 17, 19 (browser-dependent parts) close against P1–P4 above, **except** the
 dark/light-theme portion of 9/16/19, which stays NOT MEASURED (light theme) rather than DONE.
-Row 24 stays open pending an operator verdict — it is not this file's, or the executor's, to
-supply.
+Row 24 closes against P6 above — the operator's own verdict, quoted, not the executor's.
