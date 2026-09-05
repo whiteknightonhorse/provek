@@ -1,0 +1,77 @@
+# RED-042 - a template naming the instrument, or skipping its dry run, would have shipped
+#
+# tree: 0aaa8e1d3c4cf9c71517f31039125d5228b69406 (dirty)
+#
+# Produced by evidence/RED-042-generator.py, checked in beside this file so the run below can be
+# repeated rather than believed. Closes the gap ruling-2 found in T-70 Phase 0's own review: ADR-0011
+# line 36 promises a kept red run under evidence/ for this gate; the fixture-level pytest controls
+# in the two test files below prove the CHECKER can fail, but until this file existed no artefact
+# proved a plant IN THE REAL (currently empty) templates/ tree actually turned the real-tree tests
+# red. One planted template - naming Provek's own passport, and shipped with no dry-run record -
+# fails both laws at once, because a template that should never exist here is wrong on every axis
+# a real bad template would be wrong on.
+#
+# SUBJECT: tests/test_templates_never_name_the_instrument.py, arming LAW-TEMPLATE-NAMES-NO-INSTRUMENT.
+# SUBJECT: tests/test_template_was_run.py, arming LAW-TEMPLATE-WAS-RUN.
+# Both laws: ADR-0011, D-57.
+
+====================================================================================================
+BEFORE THE PLANT - `python3 -m pytest tests/test_templates_never_name_the_instrument.py tests/test_template_was_run.py -q`, exit 0
+====================================================================================================
+
+...........                                                              [100%]
+11 passed in 0.22s
+
+====================================================================================================
+THE PLANT - templates/_red042-planted-agent/SKILL.md, verbatim (no evidence/TEMPLATE-RUN-_red042-planted-agent.json alongside it)
+====================================================================================================
+
+---
+name: _red042-planted-agent
+description: planted by evidence/RED-042-generator.py to prove both template laws can fail
+---
+
+## What to build
+
+This SKILL.md was planted to check that Provek's own passport and registry are never named
+by a real template, and that a template with no witnessed dry run is never treated as
+publishable. It carries no evidence/TEMPLATE-RUN record anywhere.
+
+====================================================================================================
+WITH THE PLANT IN PLACE - `python3 -m pytest tests/test_templates_never_name_the_instrument.py tests/test_template_was_run.py -q`, exit 1
+====================================================================================================
+
+....F.....F                                                              [100%]
+=================================== FAILURES ===================================
+__________________ test_no_real_template_names_the_instrument __________________
+
+    def test_no_real_template_names_the_instrument():
+        """Phase 0 ships zero templates (templates/SCHEMA.md); this stays armed as templates land."""
+        hits = find_instrument_vocabulary(TEMPLATES)
+>       assert not hits, f"template(s) name the instrument: {hits}"
+E       AssertionError: template(s) name the instrument: {'_red042-planted-agent/SKILL.md': ['passport', 'provek', 'registry']}
+E       assert not {'_red042-planted-agent/SKILL.md': ['passport', 'provek', 'registry']}
+
+tests/test_templates_never_name_the_instrument.py:112: AssertionError
+_________________ test_no_real_template_is_missing_its_dry_run _________________
+
+    def test_no_real_template_is_missing_its_dry_run():
+        """Phase 0 ships zero templates; this stays armed as templates land in later phases."""
+        results = check_run_records(TEMPLATES, EVIDENCE)
+        bad = {slug: state for slug, state in results.items() if state != OK}
+>       assert not bad, f"template(s) without a valid witnessed dry run: {bad}"
+E       AssertionError: template(s) without a valid witnessed dry run: {'_red042-planted-agent': 'missing_record'}
+E       assert not {'_red042-planted-agent': 'missing_record'}
+
+tests/test_template_was_run.py:89: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_templates_never_name_the_instrument.py::test_no_real_template_names_the_instrument
+FAILED tests/test_template_was_run.py::test_no_real_template_is_missing_its_dry_run
+2 failed, 9 passed in 0.15s
+
+====================================================================================================
+AFTER THE PLANT WAS REMOVED - `python3 -m pytest tests/test_templates_never_name_the_instrument.py tests/test_template_was_run.py -q`, exit 0
+====================================================================================================
+
+...........                                                              [100%]
+11 passed in 0.06s
