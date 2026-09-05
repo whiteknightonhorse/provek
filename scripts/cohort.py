@@ -87,11 +87,20 @@ def optional_token() -> str | None:
     exactly as silently as the code literal `remeasure_cost.jsonl` used to carry (see
     `~/orchestra/nightly_remeasure.sh`'s cost journal, fixed the same day).
 
-    A token is honoured when present, purely to widen the rate limit for a larger cohort. It never
-    changes what is PUBLISHED - that sentence was false when first written and is now enforced by
-    the `publishable` rule below, which treats a private subject as unreadable whatever channel we
-    hold. The passport records which channel was used, so "anyone can recompute this" is a
-    published fact rather than an assumption.
+    THIS SCRIPT REFUSES A TOKEN - it does not honour one (T-76 ruling, Fable, 2026-09-05, replacing
+    the paragraph this used to end on, which said the opposite and sat two screens above the
+    `REFUSED` gate below that already contradicted it). The value this function returns exists only
+    so that gate can detect a token is set and stop BEFORE publishing anything: every call this
+    script goes on to make through `collect_github`/`apply_declaration` therefore runs with
+    `tok is None`, exactly like any anonymous reader.
+
+    A token IS honoured - by `src.collector.github`'s own `_api`, one layer below this script, and
+    by `scripts/measure_qm2.py`, which calls it directly - but only for a caller that does not
+    publish a registry (see `_api`'s docstring for that boundary). This function is that library's
+    API, borrowed by the one caller for whom the answer must always be "refuse it": what THIS
+    script builds is served from a fixed URL to anyone, so it must stay reproducible by anyone,
+    which a credentialed run cannot promise (see the `REFUSED` gate below for what a token would
+    make readable that an anonymous third party could not recompute).
     """
     return os.environ.get("PROVEK_GITHUB_TOKEN", "").strip() or None
 
@@ -369,15 +378,60 @@ def cohort_development_initiation_level(distinct_authors, signed_commit_share,
 # #ONE-PLACE, 2026-09-03): `src/pipeline.py` needed the same two rules and used to have no honest
 # equivalent of either. Imported above rather than redefined here.
 
+def read_cohort(cohort: list[str], read_one) -> dict[str, object]:
+    """Read every subject via `read_one`, stopping NEW reads at the FIRST budget exhaustion.
+
+    T-76 ruling (Fable, 2026-09-05), question 4 point 1: on 2026-09-05 all ten subjects paid for a
+    403 plus a confirming `/rate_limit` read against an anonymous budget the FIRST subject's 403
+    had already proved was at zero (`~/orchestra/logs/cohort_refresh.log:589-598`). Once `read_one`
+    raises `RateLimited` for one subject, every subject named later in `cohort` is a fact this run
+    already knows: carried forward WITHOUT a read, not re-asked to confirm it a second, third,
+    tenth time.
+
+    `read_one` is one subject's WHOLE read. `collect_github` (api.github.com) and
+    `apply_declaration` (raw.githubusercontent.com) are separate budgets - see
+    `src.collector.declaration.collect_declaration`'s own docstring - but a `RateLimited` from
+    EITHER means this subject cannot be finished this run regardless of which channel raised it,
+    so both share this one stop rather than each tracking its own: continuing to spend the OTHER
+    channel's budget on a subject whose row is carried forward unchanged either way buys nothing.
+
+    Returns one entry per subject, in call order: whatever `read_one` returned, or the
+    `RateLimited` standing in for it - the ORIGINAL exception for the subject that raised it, the
+    SAME instance (not a fresh call) for every subject after.
+    """
+    results: dict[str, object] = {}
+    exhausted: RateLimited | None = None
+    for full in cohort:
+        if exhausted is not None:
+            results[full] = exhausted
+            continue
+        try:
+            results[full] = read_one(full)
+        except RateLimited as e:
+            exhausted = e
+            results[full] = e
+    return results
+
+
+def _read_one(full: str, tok: str | None):
+    """One subject's `collect_github` + `apply_declaration`, bundled for `read_cohort` above."""
+    ev = collect_github(full, tok)
+    base_claims = {"source": "github", "private": ev.private} if ev.read else {"source": "github"}
+    accountability, service, claims = apply_declaration(full, ev.head_sha, base_claims)
+    return ev, accountability, service, claims
+
+
 print("%-42s %-7s %-9s %-6s %s" % ("subject", "level", "projection", "CI", "limiters"))
 print("-" * 96)
 
+READS = read_cohort(COHORT, lambda full: _read_one(full, tok))
+
 for full in COHORT:
-    try:
-        ev = collect_github(full, tok)
-    except RateLimited as e:
-        skip_rate_limited(f"git:{full}", e)
+    result = READS[full]
+    if isinstance(result, RateLimited):
+        skip_rate_limited(f"git:{full}", result)
         continue
+    ev, accountability, service, claims = result
     binding = Binding(BindingKind.GIT, full)
 
     # THE MAP REPORTS WHAT WAS ACTUALLY INSPECTED (Fable, B2). It used to stamp the same coverage
@@ -439,16 +493,9 @@ for full in COHORT:
     proj = projection(scores)
     # PHASE 2 - the subject's own `provek.json`, pinned to `ev.head_sha` (already measured above;
     # never a second `/commits` call). Reads through `raw.githubusercontent.com`, which spends no
-    # `api.github.com` budget, so this runs for every subject regardless of `publishable` - the
-    # four-world mapper already turns an unreachable or absent declaration into an honest state.
-    base_claims = {"source": "github", "private": ev.private} if ev.read else {"source": "github"}
-    try:
-        accountability, service, claims = apply_declaration(full, ev.head_sha, base_claims)
-    except RateLimited as e:
-        # Nothing is written before this point in the loop body - the passport is emitted below
-        # and the row upserted after it - so `continue` here leaves no half-issued document.
-        skip_rate_limited(f"git:{full}", e)
-        continue
+    # `api.github.com` budget - a SEPARATE one from the `RateLimited` `read_cohort` above already
+    # resolved for this subject via `_read_one`, alongside `collect_github`. The four-world mapper
+    # already turns an unreachable or absent declaration into an honest state in `claims` below.
     # ONE anonymous GET per re-measure (spec 4.2-bis point 2) - this loop body runs once per
     # subject per cohort re-measure, so this call site IS the re-measure event.
     service_endpoint = probe_service_endpoint(service.order_url, now=now)

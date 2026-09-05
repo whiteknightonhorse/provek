@@ -197,9 +197,19 @@ def _api(path: str, token: str | None = None) -> tuple[int, object]:
     token remains optional. That is the strongest available form of ABI-5-3. A scoped read-only
     token would make the pipeline reproducible by anyone the operator chooses to grant one; no
     token makes it reproducible by anyone at all, which is what "a third party can recompute the
-    verdict from the same inputs" actually asks for. The token remains an option purely to widen
-    the rate limit for a cohort larger than the anonymous budget - never as the default, and never
-    as a requirement.
+    verdict from the same inputs" actually asks for.
+
+    WHO THIS OPTION IS FOR (T-76 ruling, Fable, 2026-09-05, replacing the paragraph this used to
+    end on). This module is a library shared by every caller that reads GitHub, and a token widens
+    the rate limit for a caller that does NOT publish a registry - `scripts/measure_qm2.py`'s cost
+    measurement, or a diagnostic run against a scratch directory, both of which exist to be
+    RE-RUN by whoever holds the token, not read by a third party from a fixed URL. Never as the
+    default, and never as a requirement for such a caller either. `scripts/cohort.py` - the one
+    caller that builds the artefact `provek.dev` actually serves - is NOT such a caller: it refuses
+    a token outright (its own `REFUSED` gate, beside `optional_token`'s docstring) precisely because
+    what IT builds must stay reproducible by an anonymous third party. A token accepted here and a
+    token refused there are the same rule seen from a library and from its one publishing caller,
+    not two rules in contradiction.
     """
     headers = ["-H", "Accept: application/vnd.github+json"]
     if token:
@@ -264,6 +274,23 @@ Closure says every commit was attributed. Over two commits that is true and mean
 subject would climb the ladder by committing almost nothing - silence as a strategy. Below the
 floor the ladder answers with the same floor it gives an OPEN window, so staying quiet is never
 better than being read."""
+
+ROTATION_TRIPWIRE_SHARE = 0.5
+"""ASSIGNED (T-76 ruling, Fable, 2026-09-05). NOT a running check - a threshold a human, or a
+future watcher, compares against `~/orchestra/logs/remeasure_cost.jsonl` before designing rotation
+(spreading the cohort across time windows, or measuring a rotating subset instead of all of it
+every night).
+
+The 2026-09-05 incident that raised the question was NOT the cohort outgrowing the budget: the
+budget was already at `remaining=0` before this cohort's first request, spent by a neighbour
+sharing the host's outbound address (CLAUDE.md, "ten projects share this host"; see
+`scripts.cohort.optional_token`'s docstring for the measured proof). Introducing rotation FROM
+THAT NIGHT would have treated a neighbour's traffic as if it were the cohort's own growth. This
+constant names the shape of the night that WOULD justify rotation instead: `remaining_before ==
+limit` in `remeasure_cost.jsonl` (the budget was entirely ours to spend - nobody else had touched
+it that hour) AND `github_calls_measured / limit` exceeds this share (the cohort itself, not a
+neighbour, is what emptied it). Until a logged night matches both halves, rotation stays
+undesigned rather than guessed at from one ambiguous incident."""
 
 
 def authors_and_bot_commits(commits: list[dict]) -> tuple[set[str], int, set[str], int]:
