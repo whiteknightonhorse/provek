@@ -21,7 +21,9 @@ import Apply from "./pages/Apply";
 import Method from "./pages/Method";
 import Phase2 from "./pages/Phase2";
 import Corrections from "./pages/Corrections";
-import type { Passport, Registry as R } from "./types";
+import Build from "./pages/Build";
+import BuildTemplate from "./pages/BuildTemplate";
+import type { Passport, Registry as R, Template } from "./types";
 import { isSafeSlug } from "./slug";
 
 /** Five states, never four. "missing" and "broke" are different facts about the world and a
@@ -46,7 +48,7 @@ type Load<T> =
  * JavaScript, and for an answer engine, which mostly does not. */
 declare global {
   interface Window {
-    __PROVEK__?: { registry?: R; passport?: Passport };
+    __PROVEK__?: { registry?: R; passport?: Passport; templates?: Template[]; template?: Template };
   }
 }
 
@@ -195,6 +197,10 @@ export const TITLES: Record<string, string> = {
   // two (the Provider Catalog) is stated as live, phase three stays specified and not in service.
   "/phase-2/": "Phase three: funding tasks, not in service - Provek",
   "/registry/corrections/": "All corrections - Provek",
+  // The demand words go into the H1's sentence (the ruling on /build/, section 2); this string is
+  // what a browser tab, a bookmark and a search result show, and it names the thing truthfully:
+  // a library of templates, not a promise the templates themselves cannot keep.
+  "/build/": "Build an AI agent from a template - Provek",
 };
 
 /** The one place that decides what a route renders — shared by the browser and by the build-time
@@ -203,10 +209,14 @@ export function Body({
   route,
   reg,
   passport,
+  templates,
+  template,
 }: {
   route: string;
   reg: Load<R>;
   passport: Load<Passport> | null;
+  templates: Load<Template[]>;
+  template: Load<Template> | null;
 }) {
   if (route.startsWith("/p/")) {
     const p = passport ?? { state: "loading" as const };
@@ -254,6 +264,40 @@ export function Body({
   if (route === "/method/") return <Method />;
   if (route === "/phase-2/") return <Phase2 />;
   if (route === "/registry/corrections/") return <Corrections />;
+  if (route === "/build/") {
+    if (templates.state === "ready") return <Build templates={templates.data} />;
+    if (templates.state === "error")
+      return (
+        <DeadEnd title="Templates unavailable">
+          The template list could not be read ({templates.why}). This is our failure to serve it.
+        </DeadEnd>
+      );
+    return <TableSkeleton />;
+  }
+  if (route.startsWith("/build/")) {
+    const t = template ?? { state: "loading" as const };
+    if (t.state === "ready") return <BuildTemplate t={t.data} />;
+    if (t.state === "missing")
+      return (
+        <DeadEnd title="No such template">
+          Nothing is published under this name. See the full list at{" "}
+          <a href="/build/" className="text-[var(--color-accent)] hover:underline">/build/</a>.
+        </DeadEnd>
+      );
+    if (t.state === "invalid")
+      return (
+        <DeadEnd title="Not a template name">
+          This address is not a template slug, so nothing was looked for.
+        </DeadEnd>
+      );
+    if (t.state === "error")
+      return (
+        <DeadEnd title="Template unavailable">
+          The template could not be read ({t.why}). This is our failure to serve it.
+        </DeadEnd>
+      );
+    return <PassportSkeleton />;
+  }
   if (route === "/") return <Landing reg={reg.state === "ready" ? reg.data : null} />;
   return (
     <DeadEnd title="No such page">
@@ -314,6 +358,12 @@ export default function App() {
       ? { [inlined.passport.subject_id]: { state: "ready", data: inlined.passport } }
       : {},
   );
+  const [templates, setTemplates] = useState<Load<Template[]>>(
+    inlined?.templates ? { state: "ready", data: inlined.templates } : { state: "loading" },
+  );
+  const [templateDetails, setTemplateDetails] = useState<Record<string, Load<Template>>>(() =>
+    inlined?.template ? { [inlined.template.slug]: { state: "ready", data: inlined.template } } : {},
+  );
   const first = useRef(true);
   const top = useRef<HTMLDivElement>(null);
 
@@ -324,6 +374,17 @@ export default function App() {
       .then((d: R) => setReg({ state: "ready", data: d }))
       .catch((e: Error) => setReg({ state: "error", why: e.message }));
   }, [reg.state]);
+
+  // Template data is only fetched when a /build/ route actually needs it - unlike the registry,
+  // which every page's chrome can end up reading, so it is not inlined or fetched unconditionally.
+  useEffect(() => {
+    if (!route.startsWith("/build/")) return;
+    if (templates.state === "ready") return;
+    fetch("/data/templates.json")
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then((d: { templates: Template[] }) => setTemplates({ state: "ready", data: d.templates }))
+      .catch((e: Error) => setTemplates({ state: "error", why: e.message }));
+  }, [route, templates.state]);
 
   const slugInRoute = route.startsWith("/p/") ? route.slice(3).replace(/\/$/, "") : null;
   const known =
@@ -361,8 +422,43 @@ export default function App() {
       .catch((e: Error) => setPassports((p) => ({ ...p, [key]: { state: "error", why: e.message } })));
   }, [slugInRoute, passportId, passports]);
 
+  const buildSlugInRoute =
+    route.startsWith("/build/") && route !== "/build/" ? route.slice(7).replace(/\/$/, "") : null;
+
   useEffect(() => {
-    document.title = TITLES[route] ?? (passportId ? `${passportId} - Provek` : "Provek");
+    if (!buildSlugInRoute) return;
+    if (templateDetails[buildSlugInRoute]) return;
+    // Same guard as the passport fetch above, for the same reason: the slug is a substring of the
+    // path and is interpolated raw into /data/templates/<slug>.json one line below.
+    if (!isSafeSlug(buildSlugInRoute)) {
+      setTemplateDetails((p) => ({ ...p, [buildSlugInRoute]: { state: "invalid" } }));
+      return;
+    }
+    setTemplateDetails((p) => ({ ...p, [buildSlugInRoute]: { state: "loading" } }));
+    fetch(`/data/templates/${buildSlugInRoute}.json`)
+      .then((r) => {
+        if (r.status === 404) return null;
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((d: { template: Template } | null) =>
+        setTemplateDetails((p) => ({
+          ...p,
+          [buildSlugInRoute]: d ? { state: "ready", data: d.template } : { state: "missing" },
+        })),
+      )
+      .catch((e: Error) =>
+        setTemplateDetails((p) => ({ ...p, [buildSlugInRoute]: { state: "error", why: e.message } })),
+      );
+  }, [buildSlugInRoute, templateDetails]);
+
+  const buildTitle =
+    buildSlugInRoute && templateDetails[buildSlugInRoute]?.state === "ready"
+      ? `${(templateDetails[buildSlugInRoute] as { state: "ready"; data: Template }).data.title} - AI agent template - Provek`
+      : null;
+
+  useEffect(() => {
+    document.title = TITLES[route] ?? buildTitle ?? (passportId ? `${passportId} - Provek` : "Provek");
     if (first.current) {
       first.current = false;
       return;
@@ -389,13 +485,16 @@ export default function App() {
     } else {
       window.scrollTo(0, 0);
     }
-  }, [route, passportId]);
+  }, [route, passportId, buildTitle]);
 
   const passport = slugInRoute ? (passports[passportId ?? slugInRoute] ?? { state: "loading" as const }) : null;
+  const template = buildSlugInRoute
+    ? (templateDetails[buildSlugInRoute] ?? { state: "loading" as const })
+    : null;
 
   return (
     <Shell route={route} containerRef={top}>
-      <Body route={route} reg={reg} passport={passport} />
+      <Body route={route} reg={reg} passport={passport} templates={templates} template={template} />
     </Shell>
   );
 }

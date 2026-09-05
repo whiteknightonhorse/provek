@@ -5,9 +5,15 @@
  * `Shell` and `Body` from the app rather than reproducing them. */
 import { render as toString } from "preact-render-to-string";
 import { Body, PRERENDER_ROUTE, Shell, TITLES } from "./App";
-import type { Passport, Registry as R } from "./types";
+import type { Passport, Registry as R, Template } from "./types";
 
-export function renderRoute(route: string, reg: R | null, passport: Passport | null): string {
+export function renderRoute(
+  route: string,
+  reg: R | null,
+  passport: Passport | null,
+  templates: Template[] | null = null,
+  template: Template | null = null,
+): string {
   return toString(
     <Shell route={route}>
       <Body
@@ -17,6 +23,14 @@ export function renderRoute(route: string, reg: R | null, passport: Passport | n
           route.startsWith("/p/")
             ? passport
               ? { state: "ready", data: passport }
+              : { state: "missing" }
+            : null
+        }
+        templates={templates ? { state: "ready", data: templates } : { state: "loading" }}
+        template={
+          route.startsWith("/build/") && route !== "/build/"
+            ? template
+              ? { state: "ready", data: template }
               : { state: "missing" }
             : null
         }

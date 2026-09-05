@@ -17,6 +17,7 @@
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { loadNotes, noteArticle, notesIndexArticle, noteLd } from "./notes/emit.mjs";
+import { loadTemplates } from "../templates/emit.mjs";
 import { slugOf } from "./discovery.mjs";
 import { buildRegistryMarkdown, buildPassportMarkdown, buildLandingMarkdown }
   from "./markdown.mjs";
@@ -211,21 +212,28 @@ function head(shellHtml, route, title, description) {
 }
 
 function page(route, title, description, ld, data) {
-  const html = renderRoute(route, registry, data?.passport ?? null);
+  const html = renderRoute(route, registry, data?.passport ?? null,
+    data?.templatesIndex ?? null, data?.template ?? null);
   let out = head(shell, route, title, description);
 
   const blocks = [
     `<script type="application/ld+json">${JSON.stringify(ld)}</script>`,
     data?.passport
       ? `<link rel="alternate" type="application/json" href="/data/passports/${slug(data.passport.subject_id)}.json">`
-      : route === "/registry/"
-        ? `<link rel="alternate" type="application/json" href="/data/registry.json">`
-        : "",
+      : data?.template
+        ? `<link rel="alternate" type="application/json" href="/data/templates/${data.template.slug}.json">`
+        : route === "/registry/"
+          ? `<link rel="alternate" type="application/json" href="/data/registry.json">`
+          : route === "/build/"
+            ? `<link rel="alternate" type="application/json" href="/data/templates.json">`
+            : "",
   ].join("\n    ");
 
   const inline = `<script>window.__PROVEK__=${JSON.stringify({
     registry,
     ...(data?.passport ? { passport: data.passport } : {}),
+    ...(data?.templatesIndex ? { templates: data.templatesIndex } : {}),
+    ...(data?.template ? { template: data.template } : {}),
   }).replace(/</g, "\\u003c")}</script>`;
 
   out = out.replace("</head>", `    ${blocks}\n  </head>`);
@@ -283,6 +291,63 @@ written.push(write("/phase-2/", page("/phase-2/", TITLES["/phase-2/"],
 written.push(write("/registry/corrections/", page("/registry/corrections/", TITLES["/registry/corrections/"],
   "Both corrections this project has published, in full: the 2026-08-25 evidence-window erratum (with its 2026-09-02 resolution) and the 2026-08-31 L4 rule fix.",
   ldOrganization())));
+
+// BUILD - AI agent templates (ADR-0011, D-57, SPEC 3.7). `loadTemplates()` refuses the build if a
+// template fails SCHEMA.md's contract or carries no valid witnessed dry run (LAW-TEMPLATE-WAS-RUN)
+// - a page silently missing a template, or one publishing an unrun one, are both worse than a red
+// build. Emitted via `page()`, the same dynamic mechanism the registry and passports use, so
+// `Body()` renders the identical component the browser hydrates - one component set, not a second
+// static renderer for this surface (D-10).
+const templates = loadTemplates();
+const BUILD_INDEX_DESCRIPTION =
+  "AI agent templates you build with your own coding agent: pick one, copy one instruction, get "
+  + "an agent that runs a real business operation. Free, no account, tests included.";
+
+function ldBuildIndex(list) {
+  return {
+    "@context": "https://schema.org", "@type": "CollectionPage",
+    url: SITE + "/build/", name: "AI agent templates",
+    description: BUILD_INDEX_DESCRIPTION,
+    inLanguage: "en",
+    isPartOf: { "@type": "WebPage", url: SITE + "/" },
+    publisher: { "@type": "Organization", name: "Provek" },
+    hasPart: list.map((t) => ({
+      "@type": "SoftwareSourceCode", name: t.title, url: `${SITE}/build/${t.slug}/`,
+    })),
+  };
+}
+
+function ldTemplate(t) {
+  return {
+    "@context": "https://schema.org", "@type": "TechArticle",
+    headline: t.title, description: t.description, url: `${SITE}/build/${t.slug}/`,
+    datePublished: t.datePublished, dateModified: t.dateModified, inLanguage: "en",
+    license: t.license === "Apache-2.0" ? "https://www.apache.org/licenses/LICENSE-2.0" : t.license,
+    isBasedOn: t.derivedFrom || undefined,
+    about: { "@type": "SoftwareApplication", name: t.title, applicationCategory: "BusinessApplication" },
+    publisher: { "@type": "Organization", name: "Provek" },
+  };
+}
+
+if (templates.length) {
+  written.push(write("/build/", page("/build/", TITLES["/build/"], BUILD_INDEX_DESCRIPTION,
+    ldBuildIndex(templates), { templatesIndex: templates })));
+  mkdirSync(join(DIST, "data"), { recursive: true });
+  writeFileSync(join(DIST, "data", "templates.json"), JSON.stringify({ templates }));
+
+  mkdirSync(join(DIST, "data", "templates"), { recursive: true });
+  for (const t of templates) {
+    const route = `/build/${t.slug}/`;
+    written.push(write(route, page(route, `${t.title} - AI agent template - Provek`, t.description,
+      ldTemplate(t), { template: t })));
+    writeFileSync(join(DIST, "data", "templates", `${t.slug}.json`), JSON.stringify({ template: t }));
+    // The raw artefact, byte-identical to the source file, served at its own URL for a coding
+    // agent to fetch directly (SPEC 3.7 item 6) and for `test_template_copy_is_the_artefact.py`
+    // to compare against the page's own `<pre>` and against `templates/<slug>/SKILL.md`.
+    mkdirSync(join(DIST, "build", t.slug), { recursive: true });
+    writeFileSync(join(DIST, "build", t.slug, "SKILL.md"), t.raw);
+  }
+}
 
 // METHOD NOTES. Descriptive notes on the published methodology (SPEC 3.6, D-18) - never teaching,
 // which ADR-0009 rules off this surface. `loadNotes()` throws rather than emitting a note whose key
@@ -433,6 +498,15 @@ const lastmodFor = (route) => {
   // The landing and the registry ARE renderings of `registry.json` - their content moves when it
   // does, so its generation stamp is a measurement of them and not a guess.
   if (route === "/" || route === "/registry/") return registry.generated_at.slice(0, 10);
+  // Templates: pinned by `templates/manifest.json`'s body-hash-checked date_modified, the same
+  // discipline the notes manifest holds itself to - never the build clock.
+  if (route === "/build/") {
+    return templates.length ? templates.map((t) => t.dateModified).sort().at(-1) : null;
+  }
+  if (route.startsWith("/build/")) {
+    const t = templates.find((x) => `/build/${x.slug}/` === route);
+    return t?.dateModified ?? null;
+  }
   return null;                                             // prose we did not date: say nothing
 };
 

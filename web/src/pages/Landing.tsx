@@ -318,6 +318,16 @@ export default function Landing({ reg }: { reg: R | null }) {
             </p>
           </div>
         </div>
+
+        {/* ADR-0011/D-57: one sentence, one door in from a reader with no agent yet - the
+            proportionate size for a subject that is one sentence away from having one (PRODUCT.md:
+            the landing speaks to the subject first). No card, no second CTA row: /build/ carries
+            its own pitch. */}
+        <p className="mt-6 text-sm">
+          <a href="/build/" className="text-[var(--color-accent)] hover:underline">
+            No agent yet? Build one from a template &rarr;
+          </a>
+        </p>
       </section>
 
       {/* The right column is the argument's own evidence. The page claims a standard exists; the

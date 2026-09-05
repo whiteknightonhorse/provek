@@ -23,8 +23,22 @@
  */
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { loadTemplates } from "../templates/emit.mjs";
 
 export const SITE = "https://provek.dev";
+
+/** AI agent templates (ADR-0011, D-57) - always the real, committed `templates/` tree, never the
+ * `dataDir` override this module's own CLI accepts for registry/passport drift testing: a
+ * template is not a fixture that varies per test, it is the one thing this generator reads from a
+ * fixed place regardless of what `dataDir` names. `{slug, title, businessOperation}` is all the
+ * llms.txt Templates section needs; loading the full parsed template (sections, raw body) here
+ * would be the second copy LAW #ONE-PLACE forbids of what `templates/emit.mjs` already computes
+ * for the page itself. */
+export function templateEntries() {
+  return loadTemplates().map((t) => ({
+    slug: t.slug, title: t.title, businessOperation: t.businessOperation,
+  }));
+}
 
 /** Passport ids, from the one place they are ever listed: the directory the site itself serves. */
 export function passportIdsFromDir(passportsDir) {
@@ -85,11 +99,17 @@ export function buildApiCatalog(entries, site = SITE) {
   return { linkset: [{ anchor: `${site}/`, item }] };
 }
 
-/** llms.txt (llmstxt.org convention): a short map for models, over the same entries as the catalog. */
-export function buildLlmsTxt(entries, site = SITE) {
+/** llms.txt (llmstxt.org convention): a short map for models, over the same entries as the catalog,
+ *  plus a Templates section (ADR-0011) built from the emitted set, never typed by hand. */
+export function buildLlmsTxt(entries, site = SITE, templates = []) {
   const passportLines = entries
     .map(({ slug, subjectId }) => `- [${subjectId}](${site}/data/passports/${slug}.json): autonomy passport, JSON`)
     .join("\n");
+  const templateSection = templates.length
+    ? `\n## Templates\n\n${templates
+        .map((t) => `- [${t.title}](${site}/build/${t.slug}/): ${t.businessOperation}. Raw: ${site}/build/${t.slug}/SKILL.md`)
+        .join("\n")}\n`
+    : "";
   return `# Provek
 
 > Verification of how much of a business runs without a human in the loop, established from
@@ -101,6 +121,7 @@ export function buildLlmsTxt(entries, site = SITE) {
 
 - [Registry](${site}/registry/): every subject submitted, what could be established about each, and why not where it could not.
 - [Method](${site}/method/): how a level is assigned to an operation, how evidence is classed, and what the score does not measure.
+- [Build](${site}/build/): AI agent templates - copy one instruction into your own coding agent, get an agent that runs one business operation. Free, no account.
 - [Apply](${site}/apply/): request verification. Free at this stage. Public repositories only.
 - [Phase 2](${site}/phase-2/): specified and not in service - no application taken, no date given.
 
@@ -108,7 +129,7 @@ export function buildLlmsTxt(entries, site = SITE) {
 
 - [Registry](${site}/data/registry.json)
 ${passportLines}
-
+${templateSection}
 ## API
 
 - [API catalog](${site}/.well-known/api-catalog): RFC 9727 linkset of every resource above and the one endpoint below.
@@ -121,9 +142,9 @@ ${passportLines}
  *  concatenation of outputs this generator already produces - llms.txt itself, plus the same
  *  RFC 9727 linkset `buildApiCatalog` already builds, serialized - rather than hand-written
  *  "expanded content" no checker has asked for yet. */
-export function buildLlmsFullTxt(entries, site = SITE) {
+export function buildLlmsFullTxt(entries, site = SITE, templates = []) {
   const catalog = buildApiCatalog(entries, site);
-  return `${buildLlmsTxt(entries, site)}
+  return `${buildLlmsTxt(entries, site, templates)}
 ## Full API catalog (RFC 9727 linkset, machine-readable)
 
 \`\`\`json
@@ -195,12 +216,14 @@ if (isMain) {
     .map((s) => s.subject_id.replace(/[:/]/g, "_"))
     .sort();
   const entries = passportEntries(registry, join(dataDir, "passports"));
+  const templates = templateEntries();
   process.stdout.write(JSON.stringify({
     registrySubjectIds,
     passportIds: entries.map((e) => e.slug),
+    templateSlugs: templates.map((t) => t.slug),
     apiCatalog: buildApiCatalog(entries, site),
-    llmsTxt: buildLlmsTxt(entries, site),
-    llmsFullTxt: buildLlmsFullTxt(entries, site),
+    llmsTxt: buildLlmsTxt(entries, site, templates),
+    llmsFullTxt: buildLlmsFullTxt(entries, site, templates),
     aiCatalog: buildAiCatalog(entries, site),
   }));
 }

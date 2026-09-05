@@ -87,6 +87,42 @@ def test_directories_under_evidence_are_skipped_not_flagged():
     assert not any("TAINTED-SUDO-CORPUS" in p for p in problems)
 
 
+def test_a_json_file_with_a_valid_tree_stamp_field_passes():
+    """ADR-0011/D-57's TEMPLATE-RUN-<slug>.json records must be strict JSON (they are
+    json.loads'd by tests/test_template_was_run.py), so the header-comment convention above is
+    not available to them - they name the tree in a `tree_stamp` field instead."""
+    import json as _json
+    victim = ROOT / "evidence" / "_probe_stamped.json"
+    victim.write_text(_json.dumps({"tree_stamp": es.tree_stamp(), "x": 1}), encoding="utf-8")
+    try:
+        problems = re_.check()
+        assert not any("_probe_stamped.json" in p for p in problems), problems
+    finally:
+        victim.unlink()
+
+
+def test_a_json_file_with_no_tree_stamp_field_fails():
+    import json as _json
+    victim = ROOT / "evidence" / "_probe_unstamped.json"
+    victim.write_text(_json.dumps({"x": 1}), encoding="utf-8")
+    try:
+        problems = re_.check()
+        assert any("_probe_unstamped.json" in p and "tree_stamp" in p for p in problems), problems
+    finally:
+        victim.unlink()
+    assert re_.check() == []
+
+
+def test_a_json_file_that_is_not_valid_json_fails():
+    victim = ROOT / "evidence" / "_probe_broken.json"
+    victim.write_text("{ not json", encoding="utf-8")
+    try:
+        problems = re_.check()
+        assert any("_probe_broken.json" in p and "not valid JSON" in p for p in problems), problems
+    finally:
+        victim.unlink()
+
+
 def test_legacy_list_is_named_not_a_pattern():
     """CLAUDE.md's `.gitignore` doctrine: no templated exemption. Every legacy entry must be a
     literal filename that exists today, not a glob."""

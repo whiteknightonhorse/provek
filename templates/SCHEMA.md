@@ -14,7 +14,7 @@ description: <what it builds, for whom, when to use - <=1024 chars, keyword-bear
 license: Apache-2.0
 compatibility: Any coding agent that can create files and run shell commands (Claude Code, Codex, Cursor)
 metadata:
-  provek_template_schema: "1"
+  template_schema: "1"
   business_operation: "<one line: the single business operation this agent runs>"
   for: "<one line: who this is for>"
   human_remains_for: "<one line: what stays with a human - shown on the template's card>"

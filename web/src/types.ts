@@ -223,3 +223,41 @@ export interface Observation {
   measured: boolean;
   absent_reason: string | null;
 }
+
+/** AI agent templates (ADR-0011, D-57, `/build/`). Mirrors exactly what `templates/emit.mjs`
+ *  produces from a `SKILL.md` and its witnessed dry-run record - the same D-10 discipline every
+ *  other type in this file holds itself to: the human surface reads the artefact a machine reads,
+ *  never a second description of it. */
+export interface TemplateSection {
+  heading: string;
+  html: string;
+}
+
+export interface TemplateDryRun {
+  date: string;
+  tool: string;
+  outcome: string;
+  /** The one computed figure this surface may show: `Dry run · <date> · <tool> · <outcome>`. */
+  line: string;
+}
+
+export interface Template {
+  slug: string;
+  title: string;
+  description: string;
+  license: string;
+  compatibility: string;
+  businessOperation: string;
+  forWhom: string;
+  humanRemainsFor: string;
+  requires: string;
+  derivedFrom: string | null;
+  sections: TemplateSection[];
+  /** The whole SKILL.md file, byte-identical to the source and to the raw sibling served at
+   *  `/build/<slug>/SKILL.md` - `LAW-COPY-IS-THE-ARTEFACT`. */
+  raw: string;
+  bodySha256: string;
+  datePublished: string;
+  dateModified: string;
+  dryRun: TemplateDryRun;
+}

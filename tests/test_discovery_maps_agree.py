@@ -126,6 +126,54 @@ def test_ai_catalog_lists_exactly_the_served_passports(live_report):
     assert got == want, f"ai-catalog.json passport entries do not match the served passports: {got ^ want}"
 
 
+_TEMPLATE_LINK = re.compile(re.escape(f"({SITE}/build/") + r"([a-z0-9-]+)/\)")
+
+
+def _llms_txt_template_slugs(llms_txt: str) -> set[str]:
+    """Only the Templates-section links, not the Pages-section /build/ link itself - the latter
+    has no trailing template slug and would not match this pattern regardless."""
+    return set(_TEMPLATE_LINK.findall(llms_txt))
+
+
+def test_llms_txt_lists_exactly_the_emitted_templates(live_report):
+    """ADR-0011/D-57: llms.txt gains a Templates section generated from the emitted set, never
+    typed by hand - this is the drift check for that section, the same shape as the passport one
+    above."""
+    got = _llms_txt_template_slugs(live_report["llmsTxt"])
+    want = set(live_report["templateSlugs"])
+    assert want, "the live template set read as empty - sanity check failed"
+    assert got == want, f"llms.txt Templates section does not match the emitted templates: {got ^ want}"
+
+
+def test_llms_full_txt_lists_exactly_the_emitted_templates(live_report):
+    got = _llms_txt_template_slugs(live_report["llmsFullTxt"])
+    want = set(live_report["templateSlugs"])
+    assert got == want, f"llms-full.txt Templates section does not match the emitted templates: {got ^ want}"
+
+
+def test_a_template_dropped_from_the_generators_own_input_is_detected_as_drift():
+    """Control before trust: buildLlmsTxt is a pure function of the `templates` array it is
+    handed, so a template disappearing from that array must vanish from the rendered section -
+    proven directly against the generator's own function, not against a copy of it."""
+    script = (
+        "import { buildLlmsTxt } from './discovery.mjs';"
+        "const withTwo = buildLlmsTxt([], 'https://provek.dev', "
+        "[{slug:'a-template',title:'A Template',businessOperation:'x'},"
+        "{slug:'b-template',title:'B Template',businessOperation:'y'}]);"
+        "const withOne = buildLlmsTxt([], 'https://provek.dev', "
+        "[{slug:'a-template',title:'A Template',businessOperation:'x'}]);"
+        "console.log(JSON.stringify({withTwo, withOne}));"
+    )
+    result = subprocess.run(["node", "--input-type=module", "-e", script],
+                             cwd=str(WEB), capture_output=True, text=True, timeout=30)
+    assert result.returncode == 0, f"node -e failed: {result.stderr}"
+    doc = json.loads(result.stdout)
+    two = _llms_txt_template_slugs(doc["withTwo"])
+    one = _llms_txt_template_slugs(doc["withOne"])
+    assert two == {"a-template", "b-template"}
+    assert one == {"a-template"}, "dropping a template from the input did not vanish it from the output"
+
+
 def test_api_catalog_and_llms_txt_agree_with_each_other(live_report):
     """The two maps are built from the same `entries` array in the same function call - this is
     the assertion that would catch it if a future edit special-cased one map and not the other."""

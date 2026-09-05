@@ -32,6 +32,7 @@ export function Masthead({ route }: { route: string }) {
         <nav className="flex gap-1 border-t border-[var(--color-line)] pt-1" aria-label="Main">
           {link("/registry/", "Registry", route.startsWith("/registry") || route.startsWith("/p/"))}
           {link("/method/", "Method", route === "/method/")}
+          {link("/build/", "Build", route.startsWith("/build/"))}
           {/* PHASE 2 SLOT - reserved, disabled, and NOT described as a coming feature.
 
               THE UNAVAILABILITY IS TEXT, NOT AN ARIA ATTRIBUTE, and that is a correction rather

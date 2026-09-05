@@ -5,8 +5,8 @@
  * year from now - which is why provenance and protocol version are ON the page rather than in
  * metadata. */
 
-import { useState } from "react";
 import { Facts, Page, Strip } from "../components/Chrome";
+import { CopyButton } from "../components/CopyButton";
 import { InfoDot } from "../components/InfoDot";
 import { AbsentMark, LevelRail, Projection, REASON_TEXT } from "../components/Measured";
 import { daysUntil, effectiveStatus, orderLinkUrl, slug } from "../types";
@@ -150,12 +150,9 @@ function SelfReportedValue({ val }: { val: unknown }) {
  * own client is asked to open, and a badge whose link led here would hand that reader the control
  * map and the raw observations instead of the three facts they actually came for.
  *
- * `Clipboard.writeText` is the only path attempted (no `execCommand` fallback): it needs a secure
- * context, which `https://provek.dev` always is, and every browser this site otherwise supports
- * ships it. A failed write says so rather than pretending, since a silent failure here is a
- * visitor who pastes nothing and assumes the button is broken. */
+ * Both buttons are `CopyButton` (`web/src/components/CopyButton.tsx`) - the one copy mechanism on
+ * the site, shared with the template pages under `/build/` rather than a second implementation. */
 function ShareActions({ subjectId }: { subjectId: string }) {
-  const [copied, setCopied] = useState<"link" | "badge" | "error" | null>(null);
   const s = slug(subjectId);
   const briefUrl = `${SITE}/p/${s}/brief`;
   const badgeUrl = `${SITE}/badge/${s}.svg`;
@@ -163,42 +160,13 @@ function ShareActions({ subjectId }: { subjectId: string }) {
     `<a href="${briefUrl}"><img src="${badgeUrl}" width="280" height="60" ` +
     `alt="Provek verification badge for ${subjectId}"></a>`;
 
-  const copy = (text: string, which: "link" | "badge") => {
-    navigator.clipboard
-      ?.writeText(text)
-      .then(() => setCopied(which), () => setCopied("error"));
-  };
-
-  const label = (which: "link" | "badge", idle: string) =>
-    copied === which ? "Copied" : copied === "error" ? "Copy failed - select and copy manually" : idle;
-
   return (
     <div className="mt-3 flex flex-wrap items-center gap-2">
-      <button
-        type="button"
-        onClick={() => copy(briefUrl, "link")}
-        className="text-xs border border-[var(--color-line-2)] px-2.5 py-1.5 min-h-8 inline-flex items-center hover:bg-[var(--color-paper-2)]"
-      >
-        {label("link", "Copy link")}
-      </button>
-      <button
-        type="button"
-        onClick={() => copy(badgeSnippet, "badge")}
-        className="text-xs border border-[var(--color-line-2)] px-2.5 py-1.5 min-h-8 inline-flex items-center hover:bg-[var(--color-paper-2)]"
-      >
-        {label("badge", "Copy badge code")}
-      </button>
+      <CopyButton getText={() => briefUrl} idleLabel="Copy link" announce="Link copied to clipboard." />
+      <CopyButton getText={() => badgeSnippet} idleLabel="Copy badge code" announce="Badge code copied to clipboard." />
       <span className="text-xs text-[var(--color-ink-3)]">
         &mdash; both point to the short summary at <code className="font-mono">/brief</code>, built
         for your own clients rather than for due diligence.
-      </span>
-      {/* A visible label change is a sighted-only confirmation; the action still needs one for a
-          screen reader, which is what an aria-live region is for (Chrome.tsx's masthead uses the
-          same sr-only device for the same reason). */}
-      <span aria-live="polite" className="sr-only">
-        {copied === "link" && "Link copied to clipboard."}
-        {copied === "badge" && "Badge code copied to clipboard."}
-        {copied === "error" && "Copy failed. Select the text and copy it manually."}
       </span>
     </div>
   );

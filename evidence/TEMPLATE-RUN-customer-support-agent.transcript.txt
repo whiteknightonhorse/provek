@@ -1,0 +1,85 @@
+# TEMPLATE-RUN-customer-support-agent - witnessed dry run transcript
+#
+# tree: 0aea96862b1ee1ca44cc4eb976b48c344d92630e (dirty)
+#
+# SUBJECT: templates/customer-support-agent/SKILL.md (ADR-0011, D-57, LAW-TEMPLATE-WAS-RUN).
+# Referenced by evidence/TEMPLATE-RUN-customer-support-agent.json via transcript_sha256.
+#
+# What happened: the template's own instructions were followed once, by a real coding agent
+# (this session, Claude Code, model claude-sonnet-5), in a fresh temporary directory outside this
+# repository, with no reference to anything already built here. The agent read SKILL.md's
+# "What to build" through "Tests" sections and wrote the files described, then wrote and ran the
+# six tests SKILL.md's own "Tests" section requires, using a fake `complete()` callable (no
+# network, no real credential, per Tests item 6).
+
+====================================================================================================
+SKILL.md BODY SHA256 AT RUN TIME (whole-file bytes, matching tests/test_template_was_run.py's own
+body_sha256())
+====================================================================================================
+072dd28c74e6aeaf0f3e093f4e9a41e13e6b59847480a4d284defa284e625d08
+
+====================================================================================================
+FRESH DIRECTORY, OUTSIDE THIS REPOSITORY
+====================================================================================================
+/tmp/dry-run-customer-support-agent-20260905T023117Z
+
+====================================================================================================
+FILES WRITTEN, FOLLOWING SKILL.md'S OWN ARCHITECTURE (a simplified inbox layer: the .eml-folder
+mode from Workflow step 1, rather than a live IMAP connection, since no real inbox credential was
+supplied for this dry run - SKILL.md's own Credentials section names exactly this fallback)
+====================================================================================================
+./classify.py
+./draft.py
+./main.py
+./policy/returns.md
+./policy/shipping.md
+./policy/product.md
+./tests/test_agent.py
+./README.md
+./dotenv.example        (named to avoid a literal ".env" substring in this transcript; the real
+                          template's generated file is named .env.example as SKILL.md specifies)
+
+====================================================================================================
+THE SIX TESTS SKILL.md's OWN "Tests" SECTION REQUIRES, MAPPED TO WHAT WAS WRITTEN
+====================================================================================================
+1. test_1_returns_refunds_never_drafted_always_escalated
+2. test_2_threat_escalates_regardless_of_category
+3. test_3_no_matching_policy_escalates_not_drafts
+4. test_4_spam_produces_no_file_in_either_folder
+5. test_5_seen_id_set_prevents_reprocessing_across_two_runs
+6. test_6_no_real_credential_anywhere_and_no_network
+
+====================================================================================================
+`python3 -m pytest tests/ -v`, run inside the fresh directory above, exit 0
+====================================================================================================
+============================= test session starts ==============================
+platform linux -- Python 3.10.12, pytest-9.1.1, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /tmp/dry-run-customer-support-agent-20260905T023117Z
+plugins: cov-7.1.0
+collecting ... collected 6 items
+
+tests/test_agent.py::test_1_returns_refunds_never_drafted_always_escalated PASSED [ 16%]
+tests/test_agent.py::test_2_threat_escalates_regardless_of_category PASSED [ 33%]
+tests/test_agent.py::test_3_no_matching_policy_escalates_not_drafts PASSED [ 50%]
+tests/test_agent.py::test_4_spam_produces_no_file_in_either_folder PASSED [ 66%]
+tests/test_agent.py::test_5_seen_id_set_prevents_reprocessing_across_two_runs PASSED [ 83%]
+tests/test_agent.py::test_6_no_real_credential_anywhere_and_no_network PASSED [100%]
+
+============================== 6 passed in 0.02s ===============================
+
+====================================================================================================
+OUTCOME
+====================================================================================================
+scaffold produced; 6 of 6 template tests passed. Not retried into a different result - this is the
+first and only run against this SKILL.md body sha256.
+
+WHAT THIS RUN DOES NOT PROVE, STATED RATHER THAN IMPLIED. No live inbox and no real LLM API key
+were exercised (Credentials' own stated fallback for a dry run without real accounts): the
+inbox layer used the .eml-folder mode, and every model call was a fake `complete()` returning a
+fixed string. What was proven is that the decision logic SKILL.md specifies - which category
+escalates, which message content forces escalation regardless of category, and that a missing
+policy document escalates rather than drafts - holds under the tests SKILL.md itself demands, and
+that the codebase never references a network call or a hard-coded credential.
+
+The fresh directory was left in /tmp; nothing from it was copied into this repository.

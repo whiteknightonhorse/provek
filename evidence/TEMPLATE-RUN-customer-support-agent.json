@@ -1,0 +1,11 @@
+{
+  "tree_stamp": "tree: 0aea96862b1ee1ca44cc4eb976b48c344d92630e (dirty)",
+  "slug": "customer-support-agent",
+  "body_sha256": "072dd28c74e6aeaf0f3e093f4e9a41e13e6b59847480a4d284defa284e625d08",
+  "run_at": "2026-09-05T02:31:17Z",
+  "tool": "claude-code",
+  "model": "claude-sonnet-5",
+  "outcome": "scaffold produced; 6 of 6 template tests passed",
+  "transcript_sha256": "fe076af32e290db152e964203e47045fd4b722aba6fef22c282e7f6975c19117",
+  "notes": "Fresh temporary directory outside this repository (/tmp/dry-run-customer-support-agent-20260905T023117Z), no live inbox and no real LLM API key - the .eml-folder input mode and a fake complete() callable, both named as the dry-run fallback in the template's own Credentials section. Full transcript at evidence/TEMPLATE-RUN-customer-support-agent.transcript.txt."
+}

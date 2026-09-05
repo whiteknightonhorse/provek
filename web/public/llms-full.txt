@@ -9,6 +9,7 @@
 
 - [Registry](https://provek.dev/registry/): every subject submitted, what could be established about each, and why not where it could not.
 - [Method](https://provek.dev/method/): how a level is assigned to an operation, how evidence is classed, and what the score does not measure.
+- [Build](https://provek.dev/build/): AI agent templates - copy one instruction into your own coding agent, get an agent that runs one business operation. Free, no account.
 - [Apply](https://provek.dev/apply/): request verification. Free at this stage. Public repositories only.
 - [Phase 2](https://provek.dev/phase-2/): specified and not in service - no application taken, no date given.
 
@@ -25,6 +26,10 @@
 - [git:whiteknightonhorse/mcp-protocol-tester](https://provek.dev/data/passports/git_whiteknightonhorse_mcp-protocol-tester.json): autonomy passport, JSON
 - [git:whiteknightonhorse/provek](https://provek.dev/data/passports/git_whiteknightonhorse_provek.json): autonomy passport, JSON
 - [git:whiteknightonhorse/provek-method](https://provek.dev/data/passports/git_whiteknightonhorse_provek-method.json): autonomy passport, JSON
+
+## Templates
+
+- [Customer Support Agent](https://provek.dev/build/customer-support-agent/): customer support: inbound email triage and reply drafting. Raw: https://provek.dev/build/customer-support-agent/SKILL.md
 
 ## API
 
