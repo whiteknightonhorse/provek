@@ -1,0 +1,48 @@
+{
+  "last_attempt": {
+    "at": "2026-09-07T09:39:38Z",
+    "http_status": 200,
+    "state": "ok"
+  },
+  "measurement": {
+    "dropped": [],
+    "fetched_at": "2026-09-07T09:39:38Z",
+    "raw_entry_count": 8,
+    "valid_entry_count": 8,
+    "videos": {
+      "https://provek.dev/build/": {
+        "title": "7 AI agents your coding agent builds for you",
+        "video_id": "HYHtAT83Mt4"
+      },
+      "https://provek.dev/build/content-production-agent/": {
+        "title": "A writing agent that never hits publish",
+        "video_id": "iPD6NYrvtBU"
+      },
+      "https://provek.dev/build/customer-support-agent/": {
+        "title": "A support agent that never sends the reply",
+        "video_id": "9PMoGlYxzGY"
+      },
+      "https://provek.dev/build/ecommerce-operations-agent/": {
+        "title": "An ecommerce agent with no write access",
+        "video_id": "QBWzl1--UMI"
+      },
+      "https://provek.dev/build/finance-operations-agent/": {
+        "title": "A finance agent with no code to move money",
+        "video_id": "FJiA4-L8MzM"
+      },
+      "https://provek.dev/build/lead-generation-agent/": {
+        "title": "A lead-gen agent that never emails anyone",
+        "video_id": "BStGeJgGHXI"
+      },
+      "https://provek.dev/build/market-research-agent/": {
+        "title": "Several models grade each other's research",
+        "video_id": "6ON9yTRIb8E"
+      },
+      "https://provek.dev/build/youtube-channel-operations-agent/": {
+        "title": "This video was uploaded unlisted, on purpose",
+        "video_id": "VF-dJj06PzQ"
+      }
+    }
+  },
+  "source_url": "https://raw.githubusercontent.com/whiteknightonhorse/AIpush/flywheel/20260629/provek_shorts_map.json"
+}

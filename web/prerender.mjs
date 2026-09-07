@@ -213,7 +213,8 @@ function head(shellHtml, route, title, description) {
 
 function page(route, title, description, ld, data) {
   const html = renderRoute(route, registry, data?.passport ?? null,
-    data?.templatesIndex ?? null, data?.template ?? null, data?.templateSummaries ?? null);
+    data?.templatesIndex ?? null, data?.template ?? null, data?.templateSummaries ?? null,
+    data?.buildIndexVideo ?? null);
   let out = head(shell, route, title, description);
 
   const blocks = [
@@ -238,6 +239,7 @@ function page(route, title, description, ld, data) {
     // that array carries seven whole SKILL.md files (285KB on /build/) and the landing's byte
     // budget (T-02 ruling-1) has no room for it.
     ...(data?.templateSummaries ? { templateSummaries: data.templateSummaries } : {}),
+    ...(data?.buildIndexVideo !== undefined ? { buildIndexVideo: data.buildIndexVideo } : {}),
   }).replace(/</g, "\\u003c")}</script>`;
 
   out = out.replace("</head>", `    ${blocks}\n  </head>`);
@@ -265,6 +267,33 @@ function write(route, html) {
 // this same data (T-03/D-59, "What you can build today") - one call to loadTemplates(), read by
 // both `/` and `/build/`, never a second load of templates/*.
 const templates = loadTemplates();
+
+// T-05 - one short video per /build/ page, sourced from aipush's own map
+// (`scripts/fetch_shorts_map.py` writes the committed sibling this reads, never a live network
+// call here - `templates/emit.mjs`'s own header explains why a build must not touch the network).
+// A page the map has not reached yet, or whose entry failed validation, reads `null` - the honest
+// "no video for this page yet" (CLAUDE.md invariant 1), never a guessed id.
+const SHORTS_MAP_PATH = "public/data/shorts_map.json";
+const VIDEO_ID_RE = /^[A-Za-z0-9_-]{11}$/;
+
+function loadShortsMap() {
+  if (!existsSync(SHORTS_MAP_PATH)) return {};
+  const doc = JSON.parse(readFileSync(SHORTS_MAP_PATH, "utf8"));
+  const raw = doc.measurement?.videos ?? {};
+  const map = {};
+  for (const [url, v] of Object.entries(raw)) {
+    if (!v || typeof v.video_id !== "string" || !VIDEO_ID_RE.test(v.video_id)) continue;
+    if (typeof v.title !== "string" || !v.title) continue;
+    map[url] = { videoId: v.video_id, title: v.title };
+  }
+  return map;
+}
+const shortsMap = loadShortsMap();
+const videoFor = (route) => shortsMap[SITE + route] ?? null;
+
+for (const t of templates) t.video = videoFor(`/build/${t.slug}/`);
+const buildIndexVideo = videoFor("/build/");
+
 const templateSummaries = templates.map((t) => ({
   slug: t.slug, title: t.title, businessOperation: t.businessOperation,
 }));
@@ -370,9 +399,9 @@ function ldTemplate(t) {
 
 if (templates.length) {
   written.push(write("/build/", page("/build/", TITLES["/build/"], BUILD_INDEX_DESCRIPTION,
-    ldBuildIndex(templates), { templatesIndex: templates })));
+    ldBuildIndex(templates), { templatesIndex: templates, buildIndexVideo })));
   mkdirSync(join(DIST, "data"), { recursive: true });
-  writeFileSync(join(DIST, "data", "templates.json"), JSON.stringify({ templates }));
+  writeFileSync(join(DIST, "data", "templates.json"), JSON.stringify({ templates, buildIndexVideo }));
 
   mkdirSync(join(DIST, "data", "templates"), { recursive: true });
   for (const t of templates) {

@@ -23,7 +23,7 @@ import Phase2 from "./pages/Phase2";
 import Corrections from "./pages/Corrections";
 import Build from "./pages/Build";
 import BuildTemplate from "./pages/BuildTemplate";
-import type { Passport, Registry as R, Template, TemplateSummary } from "./types";
+import type { Passport, Registry as R, Template, TemplateSummary, TemplateVideo } from "./types";
 import { isSafeSlug } from "./slug";
 
 /** Five states, never four. "missing" and "broke" are different facts about the world and a
@@ -48,7 +48,10 @@ type Load<T> =
  * JavaScript, and for an answer engine, which mostly does not. */
 declare global {
   interface Window {
-    __PROVEK__?: { registry?: R; passport?: Passport; templates?: Template[]; template?: Template; templateSummaries?: TemplateSummary[] };
+    __PROVEK__?: {
+      registry?: R; passport?: Passport; templates?: Template[]; template?: Template;
+      templateSummaries?: TemplateSummary[]; buildIndexVideo?: TemplateVideo | null;
+    };
   }
 }
 
@@ -212,6 +215,7 @@ export function Body({
   templates,
   template,
   templateSummaries,
+  buildIndexVideo = null,
 }: {
   route: string;
   reg: Load<R>;
@@ -219,6 +223,10 @@ export function Body({
   templates: Load<Template[]>;
   template: Load<Template> | null;
   templateSummaries: Load<TemplateSummary[]>;
+  /** T-05 - `/build/`'s own video, not part of `Load<T>` like the fields above: it always arrives
+   *  in the same response as `templates` (inlined together at build time, fetched together on the
+   *  client), so a state of its own would only ever agree with `templates.state` a step later. */
+  buildIndexVideo?: TemplateVideo | null;
 }) {
   if (route.startsWith("/p/")) {
     const p = passport ?? { state: "loading" as const };
@@ -267,7 +275,8 @@ export function Body({
   if (route === "/phase-2/") return <Phase2 />;
   if (route === "/registry/corrections/") return <Corrections />;
   if (route === "/build/") {
-    if (templates.state === "ready") return <Build templates={templates.data} />;
+    if (templates.state === "ready")
+      return <Build templates={templates.data} indexVideo={buildIndexVideo} />;
     if (templates.state === "error")
       return (
         <DeadEnd title="Templates unavailable">
@@ -369,6 +378,9 @@ export default function App() {
   const [templates, setTemplates] = useState<Load<Template[]>>(
     inlined?.templates ? { state: "ready", data: inlined.templates } : { state: "loading" },
   );
+  const [buildIndexVideo, setBuildIndexVideo] = useState<TemplateVideo | null>(
+    inlined?.buildIndexVideo ?? null,
+  );
   const [templateSummaries, setTemplateSummaries] = useState<Load<TemplateSummary[]>>(
     inlined?.templateSummaries ? { state: "ready", data: inlined.templateSummaries } : { state: "loading" },
   );
@@ -393,7 +405,10 @@ export default function App() {
     if (templates.state === "ready") return;
     fetch("/data/templates.json")
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
-      .then((d: { templates: Template[] }) => setTemplates({ state: "ready", data: d.templates }))
+      .then((d: { templates: Template[]; buildIndexVideo?: TemplateVideo | null }) => {
+        setTemplates({ state: "ready", data: d.templates });
+        setBuildIndexVideo(d.buildIndexVideo ?? null);
+      })
       .catch((e: Error) => setTemplates({ state: "error", why: e.message }));
   }, [route, templates.state]);
 
@@ -529,6 +544,7 @@ export default function App() {
         templates={templates}
         template={template}
         templateSummaries={templateSummaries}
+        buildIndexVideo={buildIndexVideo}
       />
     </Shell>
   );

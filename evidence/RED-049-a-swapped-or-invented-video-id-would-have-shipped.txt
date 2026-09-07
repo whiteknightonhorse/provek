@@ -1,0 +1,78 @@
+# RED-049 - a swapped or invented video id would have shipped
+#
+# tree: 3da8e86e08fc8c01f5c4c4d60789199c2b52e643 (dirty)
+#
+# Produced by evidence/RED-049-generator.py, checked in beside this file so the two runs below can
+# be repeated rather than believed. T-05: one video per /build/ page, matched by the page's own
+# exact url in web/public/data/shorts_map.json - never a neighbour's video, never an invented id.
+#
+# SUBJECT: tests/test_build_shorts_map_matches.py::test_every_emitted_page_s_video_matches_the_map_for_its_own_url.
+
+====================================================================================================
+PLANT 1 - SWAPPED: the finance-operations page's own video id (FJiA4-L8MzM) replaced with the
+market-research page's real id (6ON9yTRIb8E) - the "путаница" the task brief forbids by name.
+====================================================================================================
+
+--- before the plant, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.04s
+
+--- with the plant in place, exit 1 ---
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______ test_every_emitted_page_s_video_matches_the_map_for_its_own_url ________
+
+    def test_every_emitted_page_s_video_matches_the_map_for_its_own_url():
+        assert DIST.is_dir(), (
+            f"{DIST} is absent, so this gate measured nothing. Run `npm run build` in web/ - "
+            "scripts/push.sh does exactly that before the suite."
+        )
+        ids = _video_ids(DIST)
+        mismatches = {r: v for r, v in ids.items() if v["map"] != v["inline"] or v["map"] != v["data_json"]}
+>       assert not mismatches, f"page video does not match the map for its own url: {mismatches}"
+E       AssertionError: page video does not match the map for its own url: {'/build/finance-operations-agent/': {'map': 'FJiA4-L8MzM', 'inline': '6ON9yTRIb8E', 'data_json': '6ON9yTRIb8E'}}
+E       assert not {'/build/finance-operations-agent/': {'map': 'FJiA4-L8MzM', 'inline': '6ON9yTRIb8E', 'data_json': '6ON9yTRIb8E'}}
+
+tests/test_build_shorts_map_matches.py:132: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_build_shorts_map_matches.py::test_every_emitted_page_s_video_matches_the_map_for_its_own_url
+1 failed in 0.05s
+
+--- after the plant was removed, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.04s
+
+====================================================================================================
+PLANT 2 - INVENTED: the customer-support page's own video id (9PMoGlYxzGY) replaced with
+'ZZZZZZZZZZZ', a string shaped like a YouTube id that appears nowhere in the map - forbidden
+under any circumstance by the task brief.
+====================================================================================================
+
+--- before the plant, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.05s
+
+--- with the plant in place, exit 1 ---
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______ test_every_emitted_page_s_video_matches_the_map_for_its_own_url ________
+
+    def test_every_emitted_page_s_video_matches_the_map_for_its_own_url():
+        assert DIST.is_dir(), (
+            f"{DIST} is absent, so this gate measured nothing. Run `npm run build` in web/ - "
+            "scripts/push.sh does exactly that before the suite."
+        )
+        ids = _video_ids(DIST)
+        mismatches = {r: v for r, v in ids.items() if v["map"] != v["inline"] or v["map"] != v["data_json"]}
+>       assert not mismatches, f"page video does not match the map for its own url: {mismatches}"
+E       AssertionError: page video does not match the map for its own url: {'/build/customer-support-agent/': {'map': '9PMoGlYxzGY', 'inline': 'ZZZZZZZZZZZ', 'data_json': 'ZZZZZZZZZZZ'}}
+E       assert not {'/build/customer-support-agent/': {'map': '9PMoGlYxzGY', 'inline': 'ZZZZZZZZZZZ', 'data_json': 'ZZZZZZZZZZZ'}}
+
+tests/test_build_shorts_map_matches.py:132: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_build_shorts_map_matches.py::test_every_emitted_page_s_video_matches_the_map_for_its_own_url
+1 failed in 0.05s
+
+--- after the plant was removed, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.04s

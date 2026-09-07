@@ -7,8 +7,9 @@ import { useState } from "react";
 import { Page, Strip } from "../components/Chrome";
 import { CopyButton } from "../components/CopyButton";
 import { FunnelStrip } from "../components/FunnelStrip";
+import { YouTubeEmbed } from "../components/YouTubeEmbed";
 import { FUNNEL_SENTENCE, INCUBATOR_SENTENCE } from "../copy";
-import type { Template } from "../types";
+import type { Template, TemplateVideo } from "../types";
 
 const TOOLS = ["Claude Code", "Codex", "Cursor", "Other"] as const;
 type Tool = (typeof TOOLS)[number];
@@ -100,7 +101,15 @@ function TemplateCard({ t }: { t: Template }) {
   );
 }
 
-export default function Build({ templates }: { templates: Template[] }) {
+export default function Build({
+  templates,
+  indexVideo = null,
+}: {
+  templates: Template[];
+  /** T-05 - this page's own instructional video (not one of the seven templates' videos), sourced
+   *  the same way each `Template.video` is: `null` until aipush's map names one for `/build/`. */
+  indexVideo?: TemplateVideo | null;
+}) {
   return (
     <Page>
       <div className="max-w-[46rem]">
@@ -180,6 +189,15 @@ export default function Build({ templates }: { templates: Template[] }) {
           </div>
         </dl>
       </div>
+
+      {indexVideo && (
+        <div className="mt-8 max-w-[46rem]">
+          <h2 className="text-lg font-semibold">Watch it built</h2>
+          <div className="mt-3">
+            <YouTubeEmbed videoId={indexVideo.videoId} title={indexVideo.title} />
+          </div>
+        </div>
+      )}
 
       <div className="mt-8 max-w-[46rem]">
         <FunnelStrip />

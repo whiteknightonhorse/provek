@@ -3652,3 +3652,54 @@ holds the landing to exactly zero uses of "incubator" in `<main>` (down from one
 mention control to `/build/` (real-tree red run `evidence/RED-048-*`). First-screen threshold
 (T-02) re-measured unchanged: 397 chars / 3 sentences, before and after. No new `id` added; site-
 wide anchor count unchanged.
+
+## D-60. Each `/build/` page carries the one YouTube short aipush rendered for it, matched by exact url, never by position
+
+**Decision.** aipush's own flywheel produces one short video per `/build/` page and publishes it
+unlisted; the site's work is "under the hood" until the video is actually reachable from the page
+it belongs to, so this task (T-05) closes that gap. The correspondence between a page and its video
+comes from exactly one place: aipush's own public, credential-free map
+(`https://raw.githubusercontent.com/whiteknightonhorse/AIpush/flywheel/20260629/provek_shorts_map.json`),
+keyed by the page's full url. No `video_id` is ever typed by hand or guessed from a slug - a
+mismatch here is the one failure mode the task brief names outright ("путаница = провал").
+
+**Fetch is a separate, committed step, never a build-time network call.** `templates/emit.mjs`'s
+own header already states the rule this would otherwise break: a build that reaches the network
+is not reproducible from a clone. `scripts/fetch_shorts_map.py` (ABI-5-3: anonymous, no token, any
+third party gets the same answer) is the one place that touches this network; it writes
+`web/public/data/shorts_map.json`, an ordinary committed data file `web/prerender.mjs` reads the
+same way it already reads `public/data/registry.json` and every passport. The map is written
+incrementally by aipush, one row per rendered short - a 404, an unparseable body, or a URL missing
+from the map is not an error, it is "not published yet", so the fetch script never regresses a
+prior successful reading: two blocks (`measurement`, `last_attempt`), the same shape
+`scripts/watch_validation_registry.py` already carries for the same reason (ABI-16-11 - a failed
+run leaves the prior measurement exactly as it was, never a zero standing in for it). Per-entry
+validation drops (never publishes) any `video_id` that is not shaped like a real YouTube id
+(11 chars, `^[A-Za-z0-9_-]{11}$`) or carries no title.
+
+**Shape.** `Template` gains `video: TemplateVideo | null` (`{videoId, title}`), filled in by
+`web/prerender.mjs` from the map, keyed on `https://provek.dev/build/<slug>/` - `null` is the
+honest "no video for this page yet" (CLAUDE.md invariant 1), not an omitted field. The `/build/`
+index page's own video (matched on `https://provek.dev/build/` itself, distinct from any
+template's) is threaded as a plain `buildIndexVideo` alongside `templates` through
+`web/prerender.mjs`, `entry-server.tsx`'s `renderRoute`, `App.tsx`'s `Body`, and the client fetch of
+`/data/templates.json` - never a `Load<T>` of its own, because it always arrives in the exact same
+response as `templates` and a separate loading state would only ever agree with `templates.state`
+a step late. Rendering is a new component, `web/src/components/YouTubeEmbed.tsx`: a facade
+(thumbnail `<img loading="lazy">` inside a real `<a href="https://www.youtube.com/watch?v=...">`),
+never the YouTube player itself until a reader clicks - no autoplay, no third-party script loaded
+up front, and a working link even with no JavaScript at all. It carries no `id` of its own. Placed
+at the bottom of each surface (`BuildTemplate.tsx` after the "Open an issue" link, `Build.tsx`
+after "What follows"), below the first screen on every page it appears on - the landing page (`/`)
+is untouched by this task entirely.
+
+**Verified.** `tests/test_build_shorts_map_matches.py` compares three independent channels (the
+map, each page's own `window.__PROVEK__`, and its `/data/templates*.json` sibling) against each
+other for all 8 pages, with a real-tree control that plants a swapped video id and shows the check
+catches it before the real tree is trusted (real-tree red run `evidence/RED-049-*`, two plants: a
+swap between two real templates' videos, and an invented id shaped like a YouTube id that appears
+in no map). Site-wide anchor inventory (`evidence/MEASURED-009-t05-anchor-inventory-unchanged.txt`)
+is byte-identical before and after this task's changes: 29 pages, 100 `id`s, no addition, rename,
+or loss - `YouTubeEmbed` was written to introduce none. At the time this landed the map named all
+8 pages (index plus seven templates); a page the map has not reached renders with no video section
+at all rather than an invented one, per the task's own "ожидание, а не провал" rule.

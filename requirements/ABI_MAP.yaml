@@ -141,6 +141,11 @@ scripts/cohort.py:                [ABI-18-3, ABI-31-3, ABI-31-4]
 # same reproducibility violation ABI-5-3 was written against, just aimed at the budget instead of
 # the credential.
 scripts/budget_journal.py:        [ABI-5-3]
+# T-05: the page->video map lives in aipush's own public repository, read anonymously with no
+# token (ABI-5-3, same reproducibility reasoning as the two entries above). ABI-16-11 because the
+# load-bearing part is the two-block shape - a fetch that fails leaves `measurement` exactly as it
+# was rather than a zero standing in for "could not read it this time".
+scripts/fetch_shorts_map.py:      [ABI-5-3, ABI-16-11]
 # ABI-16-3 joined this in T-F7: `publish()` now READS the validation-target record to say why it
 # refuses, so the module is a consumer of a result and not only a producer of one.
 src/transport/erc8004.py:         [ABI-24-4, ABI-12-7, ABI-16-3]

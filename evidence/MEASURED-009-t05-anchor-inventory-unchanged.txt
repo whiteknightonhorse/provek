@@ -1,0 +1,342 @@
+T-05 anchor inventory, before vs after embedding the eight YouTube shorts into /build/**
+(site-wide, every id="..." under web/dist/). Diff is empty: no anchor was added, renamed, or lost
+by this task's changes - 29 pages, 100 ids, byte-identical set on both sides.
+
+tree: 3da8e86e08fc8c01f5c4c4d60789199c2b52e643 (dirty)
+
+"before" = a build of the tree exactly as it stood on main (this task's working-tree changes
+stashed with `git stash`, `npm run build` run, ids collected, then `git stash pop` restored the
+changes bit-for-bit - `git status --porcelain` after the pop showed the same six new files and
+seven modified files this task's diff carries, nothing lost). "after" = a build of the tree with
+this task's changes in place (the same tree the pushed commit carries).
+
+=== before (pre-edit build, main @ 3da8e86) ===
+{
+  "ids": {
+    "/": [
+      "main",
+      "root"
+    ],
+    "/404.html": [
+      "main",
+      "root"
+    ],
+    "/apply/": [
+      "contact",
+      "main",
+      "repo",
+      "root",
+      "updates",
+      "website"
+    ],
+    "/build/": [
+      "how-it-works",
+      "main",
+      "root",
+      "templates"
+    ],
+    "/build/content-production-agent/": [
+      "main",
+      "root",
+      "skill-source-content-production-agent"
+    ],
+    "/build/customer-support-agent/": [
+      "main",
+      "root",
+      "skill-source-customer-support-agent"
+    ],
+    "/build/ecommerce-operations-agent/": [
+      "main",
+      "root",
+      "skill-source-ecommerce-operations-agent"
+    ],
+    "/build/finance-operations-agent/": [
+      "main",
+      "root",
+      "skill-source-finance-operations-agent"
+    ],
+    "/build/lead-generation-agent/": [
+      "main",
+      "root",
+      "skill-source-lead-generation-agent"
+    ],
+    "/build/market-research-agent/": [
+      "main",
+      "root",
+      "skill-source-market-research-agent"
+    ],
+    "/build/youtube-channel-operations-agent/": [
+      "main",
+      "root",
+      "skill-source-youtube-channel-operations-agent"
+    ],
+    "/method/": [
+      "main",
+      "root",
+      "the-order-link"
+    ],
+    "/method/notes/": [
+      "main",
+      "root"
+    ],
+    "/method/notes/autonomy-levels-l0-l5/": [
+      "addresses",
+      "evidence-classes-and-what-a-passport-must-show",
+      "main",
+      "not-measured-is-not-zero",
+      "pv-f0-cross",
+      "pv-f0-hatch",
+      "questions",
+      "root",
+      "six-rungs-one-operation-at-a-time",
+      "the-workings-are-published-not-just-the-verdict",
+      "thresholds-assigned-not-measured",
+      "what-the-ladder-does-not-price-in",
+      "who-counts-as-an-author"
+    ],
+    "/method/notes/not-measured-is-not-zero/": [
+      "addresses",
+      "main",
+      "pv-f0-cross",
+      "pv-f0-hatch",
+      "pv-f1-cross",
+      "pv-f1-hatch",
+      "root",
+      "the-accountability-block-s-separate-discipline",
+      "three-states-not-a-blank",
+      "what-a-passport-s-per-operation-table-renders",
+      "when-the-instrument-cannot-see-the-quantity",
+      "where-this-showed-up-in-the-keyword-base"
+    ],
+    "/method/notes/what-erc-8004-provides-and-what-it-does-not/": [
+      "addresses",
+      "main",
+      "on-chain-existence-is-not-evidence-a-reader-can-use",
+      "provek-s-position-on-the-ladder-erc-8004-leaves-open",
+      "reputation-and-the-aggregation-the-standard-declines-to-fix",
+      "root",
+      "the-identity-registry-a-pointer-not-a-verdict",
+      "the-validation-registry-a-fixed-shape-an-open-method",
+      "what-erc-8004-standardizes"
+    ],
+    "/p/git_whiteknightonhorse_AI-Property-Sales-Platform/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_AIpush/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_APIbase/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_audiobook-shorts-series/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_cryptocardhub-defycard/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_cryptocardhub-public/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_gov-auction-report/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_mcp-protocol-tester/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_provek-method/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_provek/": [
+      "main",
+      "root"
+    ],
+    "/phase-2/": [
+      "main",
+      "root"
+    ],
+    "/registry/": [
+      "main",
+      "root"
+    ],
+    "/registry/corrections/": [
+      "main",
+      "root"
+    ]
+  }
+}
+
+=== after (post-edit build, T-05 changes in place) ===
+{
+  "ids": {
+    "/": [
+      "main",
+      "root"
+    ],
+    "/404.html": [
+      "main",
+      "root"
+    ],
+    "/apply/": [
+      "contact",
+      "main",
+      "repo",
+      "root",
+      "updates",
+      "website"
+    ],
+    "/build/": [
+      "how-it-works",
+      "main",
+      "root",
+      "templates"
+    ],
+    "/build/content-production-agent/": [
+      "main",
+      "root",
+      "skill-source-content-production-agent"
+    ],
+    "/build/customer-support-agent/": [
+      "main",
+      "root",
+      "skill-source-customer-support-agent"
+    ],
+    "/build/ecommerce-operations-agent/": [
+      "main",
+      "root",
+      "skill-source-ecommerce-operations-agent"
+    ],
+    "/build/finance-operations-agent/": [
+      "main",
+      "root",
+      "skill-source-finance-operations-agent"
+    ],
+    "/build/lead-generation-agent/": [
+      "main",
+      "root",
+      "skill-source-lead-generation-agent"
+    ],
+    "/build/market-research-agent/": [
+      "main",
+      "root",
+      "skill-source-market-research-agent"
+    ],
+    "/build/youtube-channel-operations-agent/": [
+      "main",
+      "root",
+      "skill-source-youtube-channel-operations-agent"
+    ],
+    "/method/": [
+      "main",
+      "root",
+      "the-order-link"
+    ],
+    "/method/notes/": [
+      "main",
+      "root"
+    ],
+    "/method/notes/autonomy-levels-l0-l5/": [
+      "addresses",
+      "evidence-classes-and-what-a-passport-must-show",
+      "main",
+      "not-measured-is-not-zero",
+      "pv-f0-cross",
+      "pv-f0-hatch",
+      "questions",
+      "root",
+      "six-rungs-one-operation-at-a-time",
+      "the-workings-are-published-not-just-the-verdict",
+      "thresholds-assigned-not-measured",
+      "what-the-ladder-does-not-price-in",
+      "who-counts-as-an-author"
+    ],
+    "/method/notes/not-measured-is-not-zero/": [
+      "addresses",
+      "main",
+      "pv-f0-cross",
+      "pv-f0-hatch",
+      "pv-f1-cross",
+      "pv-f1-hatch",
+      "root",
+      "the-accountability-block-s-separate-discipline",
+      "three-states-not-a-blank",
+      "what-a-passport-s-per-operation-table-renders",
+      "when-the-instrument-cannot-see-the-quantity",
+      "where-this-showed-up-in-the-keyword-base"
+    ],
+    "/method/notes/what-erc-8004-provides-and-what-it-does-not/": [
+      "addresses",
+      "main",
+      "on-chain-existence-is-not-evidence-a-reader-can-use",
+      "provek-s-position-on-the-ladder-erc-8004-leaves-open",
+      "reputation-and-the-aggregation-the-standard-declines-to-fix",
+      "root",
+      "the-identity-registry-a-pointer-not-a-verdict",
+      "the-validation-registry-a-fixed-shape-an-open-method",
+      "what-erc-8004-standardizes"
+    ],
+    "/p/git_whiteknightonhorse_AI-Property-Sales-Platform/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_AIpush/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_APIbase/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_audiobook-shorts-series/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_cryptocardhub-defycard/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_cryptocardhub-public/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_gov-auction-report/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_mcp-protocol-tester/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_provek-method/": [
+      "main",
+      "root"
+    ],
+    "/p/git_whiteknightonhorse_provek/": [
+      "main",
+      "root"
+    ],
+    "/phase-2/": [
+      "main",
+      "root"
+    ],
+    "/registry/": [
+      "main",
+      "root"
+    ],
+    "/registry/corrections/": [
+      "main",
+      "root"
+    ]
+  }
+}
+
+=== diff before/after ===
+(empty - identical)

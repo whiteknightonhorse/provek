@@ -254,6 +254,16 @@ export interface TemplateFaqEntry {
   a: string;
 }
 
+/** A short instructional video for a `/build/` page, sourced from `public/data/shorts_map.json`
+ *  (T-05) - aipush's own map of exact page URL to a rendered, uploaded YouTube short, never a
+ *  guessed or hand-typed `videoId`. `null` on the `Template` it belongs to is not an omission: it
+ *  is the honest state "no video has been rendered for this page yet" (CLAUDE.md invariant 1),
+ *  which the map fills in incrementally, one row at a time. */
+export interface TemplateVideo {
+  videoId: string;
+  title: string;
+}
+
 export interface Template {
   slug: string;
   title: string;
@@ -276,6 +286,7 @@ export interface Template {
   datePublished: string;
   dateModified: string;
   dryRun: TemplateDryRun;
+  video: TemplateVideo | null;
 }
 
 /** The landing page's projection of a template (T-03, D-59): enough to name it and link to it,

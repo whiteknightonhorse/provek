@@ -5,7 +5,7 @@
  * `Shell` and `Body` from the app rather than reproducing them. */
 import { render as toString } from "preact-render-to-string";
 import { Body, PRERENDER_ROUTE, Shell, TITLES } from "./App";
-import type { Passport, Registry as R, Template, TemplateSummary } from "./types";
+import type { Passport, Registry as R, Template, TemplateSummary, TemplateVideo } from "./types";
 
 export function renderRoute(
   route: string,
@@ -14,6 +14,7 @@ export function renderRoute(
   templates: Template[] | null = null,
   template: Template | null = null,
   templateSummaries: TemplateSummary[] | null = null,
+  buildIndexVideo: TemplateVideo | null = null,
 ): string {
   return toString(
     <Shell route={route}>
@@ -38,6 +39,7 @@ export function renderRoute(
         templateSummaries={
           templateSummaries ? { state: "ready", data: templateSummaries } : { state: "loading" }
         }
+        buildIndexVideo={buildIndexVideo}
       />
     </Shell>,
   );

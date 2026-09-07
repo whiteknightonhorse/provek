@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Page } from "../components/Chrome";
 import { CopyButton } from "../components/CopyButton";
 import { FunnelStrip } from "../components/FunnelStrip";
+import { YouTubeEmbed } from "../components/YouTubeEmbed";
 import type { Template } from "../types";
 
 const TOOLS = ["Claude Code", "Codex", "Cursor", "Other"] as const;
@@ -153,6 +154,15 @@ export default function BuildTemplate({ t }: { t: Template }) {
             Something wrong with this template? Open an issue
           </a>
         </p>
+
+        {t.video && (
+          <div className="mt-8">
+            <h2 className="text-lg font-semibold">Watch it built</h2>
+            <div className="mt-3">
+              <YouTubeEmbed videoId={t.video.videoId} title={t.video.title} />
+            </div>
+          </div>
+        )}
 
         <div className="mt-4">
           <FunnelStrip />
