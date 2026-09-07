@@ -3661,7 +3661,8 @@ it belongs to, so this task (T-05) closes that gap. The correspondence between a
 comes from exactly one place: aipush's own public, credential-free map
 (`https://raw.githubusercontent.com/whiteknightonhorse/AIpush/flywheel/20260629/provek_shorts_map.json`),
 keyed by the page's full url. No `video_id` is ever typed by hand or guessed from a slug - a
-mismatch here is the one failure mode the task brief names outright ("путаница = провал").
+mismatch here is the one failure mode the task brief names outright: a mix-up between two
+templates' videos, which the brief calls a failure regardless of how it happens.
 
 **Fetch is a separate, committed step, never a build-time network call.** `templates/emit.mjs`'s
 own header already states the rule this would otherwise break: a build that reaches the network
@@ -3702,4 +3703,5 @@ in no map). Site-wide anchor inventory (`evidence/MEASURED-009-t05-anchor-invent
 is byte-identical before and after this task's changes: 29 pages, 100 `id`s, no addition, rename,
 or loss - `YouTubeEmbed` was written to introduce none. At the time this landed the map named all
 8 pages (index plus seven templates); a page the map has not reached renders with no video section
-at all rather than an invented one, per the task's own "ожидание, а не провал" rule.
+at all rather than an invented one, per the task's own rule that a page the map has not reached
+yet is an expectation, not a failure.

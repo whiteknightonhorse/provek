@@ -14,7 +14,7 @@ every channel - never an invented id, and never a stale one left over from an ol
 
 THE CONTROL RUNS FIRST (CLAUDE.md invariant 5): on a SCRATCH copy of the real build, one
 template's inline video id is swapped for a different template's real id, which is exactly the
-mix-up the task brief calls "путаница = провал" - and this is shown turning the check below red
+mix-up the task brief names outright as a failure, whatever caused it - and this is shown turning the check below red
 before the real tree is trusted to have none.
 """
 from __future__ import annotations
