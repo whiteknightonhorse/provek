@@ -36,6 +36,8 @@ on:
 # A `permissions:` block at workflow level grants it to every job the file will ever gain; this
 # file has exactly one, so the workflow-level default (read-only) stands and the job below states
 # what it actually needs - same pattern `scorecard.yml` already uses for its own single job.
+# `checks: read` was added alongside `contents`/`pull-requests` for the same reason: it is what
+# the polling step below spends it on, reading `check-runs` for the PR's head SHA, no more.
 permissions: {}
 
 jobs:
@@ -45,6 +47,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      checks: read
     steps:
       - name: dependabot metadata
         id: metadata
@@ -52,16 +55,50 @@ jobs:
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
 
-      # `gh pr checks --watch` blocks until every check on the PR's OWN head SHA has completed and
-      # exits non-zero the moment one is red - the default shell for a `run:` step on GitHub-hosted
-      # runners already carries `-e`, so that non-zero exit stops the step here and `gh pr merge`
-      # on the next line never executes. This is the measurement this task's boundary asked for
-      # ("never merge past the checks"), taken by the workflow instead of by a person.
-      - name: wait for checks, then merge patch and minor updates
+      # `gh pr checks --watch` blocks until every check on the PR's OWN head SHA has completed -
+      # and this job's own run is one of those checks (it shows up on the head SHA as the check
+      # named "auto-merge"), so `--watch` wound up waiting for itself and never returned; three
+      # PRs sat "in_progress" for 5+ hours before GitHub killed the job at the six-hour mark.
+      # `gh pr checks` (checked against cli/cli's own flag list, not assumed) has no flag to drop
+      # one check by name: `--required` filters by branch-protection requirement, which this repo
+      # does not configure (see above), so it would show none of the nine real checks either.
+      # Poll the check-runs REST API on the PR's head SHA directly instead, and identify "self" by
+      # run id rather than by the job's current name (`details_url` embeds `.../runs/<run-id>/...`,
+      # and `GITHUB_RUN_ID` is this run's own id) so a future rename of this job can't reintroduce
+      # the same deadlock. Measured against PR #18's head SHA while it sat blocked: the nine real
+      # checks all reached `completed` within about ninety seconds of this job starting, so the
+      # ten-minute ceiling below is wide headroom, not a tight fit, and a run that actually hangs
+      # fails on its own clock with a named reason instead of riding GitHub's six-hour kill.
+      - name: wait for the other checks, then merge patch and minor updates
         if: steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor'
         run: |
-          gh pr checks "$PR_URL" --watch
+          set -euo pipefail
+          deadline=$(( $(date +%s) + WAIT_LIMIT_SECONDS ))
+          while true; do
+            others=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/check-runs" --paginate --jq '.check_runs[]' \
+              | jq -s --arg run_id "$GITHUB_RUN_ID" \
+                  '[.[] | select((.details_url // "") | contains("/runs/" + $run_id + "/") | not)]')
+
+            pending=$(jq '[.[] | select(.status != "completed")] | length' <<<"$others")
+            failed=$(jq -r '[.[] | select(.status == "completed" and (.conclusion != "success" and .conclusion != "skipped" and .conclusion != "neutral"))] | .[].name' <<<"$others")
+
+            if [ -n "$failed" ]; then
+              echo "::error::red check(s) on ${HEAD_SHA}, not merging: $(tr '\n' ',' <<<"$failed")" >&2
+              exit 1
+            fi
+            if [ "$pending" -eq 0 ]; then
+              break
+            fi
+            if [ "$(date +%s)" -ge "$deadline" ]; then
+              echo "::error::checks on ${HEAD_SHA} still pending after ${WAIT_LIMIT_SECONDS}s, not merging" >&2
+              exit 1
+            fi
+            sleep "$POLL_INTERVAL_SECONDS"
+          done
           gh pr merge --squash --delete-branch "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WAIT_LIMIT_SECONDS: 600
+          POLL_INTERVAL_SECONDS: 15
