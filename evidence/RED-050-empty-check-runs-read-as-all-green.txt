@@ -1,0 +1,24 @@
+# RED-050 - an empty check-runs list read as "everything is green"
+#
+# subject: the auto-merge poll loop's step script, e5e613c (ruling-1 REJECT) vs current
+# tree: e5e613c9d0f9821dea06f43992077f5a9df5ccd5 (dirty)
+
+--- e5e613c (ruling-1 REJECT): given check-runs == [] on every poll ---
+exit code: 0
+polls made: 1
+merged: True
+stderr:
+(empty)
+
+--- current (this fixup): given check-runs == [] on every poll ---
+exit code: 1
+polls made: 3
+merged: False
+stderr:
+::error::no other checks were ever registered on deadbeefcafe after 2s, not merging
+
+====================================================================================================
+CONFIRMED: e5e613c merges on the FIRST poll of an empty check-runs list -
+nothing measured, read as everything green. This is the defect ruling-1 named.
+CONFIRMED: the current script refuses to merge on the same empty list, and times
+out with its own named reason instead.

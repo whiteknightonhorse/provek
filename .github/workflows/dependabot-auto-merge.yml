@@ -69,6 +69,16 @@ jobs:
       # checks all reached `completed` within about ninety seconds of this job starting, so the
       # ten-minute ceiling below is wide headroom, not a tight fit, and a run that actually hangs
       # fails on its own clock with a named reason instead of riding GitHub's six-hour kill.
+      #
+      # `count -eq 0` IS ITS OWN STATE, DISTINCT FROM "ZERO PENDING" (invariant 1, CLAUDE.md).
+      # e5e613c's first version broke out of the loop on `pending -eq 0` alone, and on the very
+      # first poll - before GitHub has registered any of the other nine check-runs against a head
+      # SHA that has existed for a few seconds - `$others` is `[]`: nothing is pending because
+      # nothing has been measured, and the old code read that as "everything is green" and merged
+      # a PR whose real checks had not even started. Fable's ruling on e5e613c named this the same
+      # shape as `gh pr checks --watch`'s own old behaviour with zero checks reported (it errored,
+      # rather than passing) - so this loop now requires `count -gt 0` before treating `pending -eq
+      # 0` as done, and an all-empty run times out with its own named reason instead of merging.
       - name: wait for the other checks, then merge patch and minor updates
         if: steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor'
         run: |
@@ -79,6 +89,7 @@ jobs:
               | jq -s --arg run_id "$GITHUB_RUN_ID" \
                   '[.[] | select((.details_url // "") | contains("/runs/" + $run_id + "/") | not)]')
 
+            count=$(jq 'length' <<<"$others")
             pending=$(jq '[.[] | select(.status != "completed")] | length' <<<"$others")
             failed=$(jq -r '[.[] | select(.status == "completed" and (.conclusion != "success" and .conclusion != "skipped" and .conclusion != "neutral"))] | .[].name' <<<"$others")
 
@@ -86,11 +97,15 @@ jobs:
               echo "::error::red check(s) on ${HEAD_SHA}, not merging: $(tr '\n' ',' <<<"$failed")" >&2
               exit 1
             fi
-            if [ "$pending" -eq 0 ]; then
+            if [ "$count" -gt 0 ] && [ "$pending" -eq 0 ]; then
               break
             fi
             if [ "$(date +%s)" -ge "$deadline" ]; then
-              echo "::error::checks on ${HEAD_SHA} still pending after ${WAIT_LIMIT_SECONDS}s, not merging" >&2
+              if [ "$count" -eq 0 ]; then
+                echo "::error::no other checks were ever registered on ${HEAD_SHA} after ${WAIT_LIMIT_SECONDS}s, not merging" >&2
+              else
+                echo "::error::checks on ${HEAD_SHA} still pending after ${WAIT_LIMIT_SECONDS}s, not merging" >&2
+              fi
               exit 1
             fi
             sleep "$POLL_INTERVAL_SECONDS"
