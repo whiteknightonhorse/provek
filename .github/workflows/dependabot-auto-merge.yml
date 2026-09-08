@@ -62,13 +62,27 @@ jobs:
       # `gh pr checks` (checked against cli/cli's own flag list, not assumed) has no flag to drop
       # one check by name: `--required` filters by branch-protection requirement, which this repo
       # does not configure (see above), so it would show none of the nine real checks either.
-      # Poll the check-runs REST API on the PR's head SHA directly instead, and identify "self" by
-      # run id rather than by the job's current name (`details_url` embeds `.../runs/<run-id>/...`,
-      # and `GITHUB_RUN_ID` is this run's own id) so a future rename of this job can't reintroduce
-      # the same deadlock. Measured against PR #18's head SHA while it sat blocked: the nine real
-      # checks all reached `completed` within about ninety seconds of this job starting, so the
-      # ten-minute ceiling below is wide headroom, not a tight fit, and a run that actually hangs
-      # fails on its own clock with a named reason instead of riding GitHub's six-hour kill.
+      # Poll the check-runs REST API on the PR's head SHA directly instead.
+      #
+      # T-08, measured on PR #18's head 19a69821 (`check-runs?filter=all`, both `filter=all` and
+      # the default returned the identical 19 rows): excluding "self" by `$GITHUB_RUN_ID` inside
+      # `details_url` only drops THIS run's own check-run, not a STALE one left by an EARLIER
+      # trigger of this same job on the same head SHA. That SHA carried two check-runs named
+      # "auto-merge" - one from a run GitHub killed at its six-hour ceiling (`cancelled`, a leftover
+      # from e5e613c's old self-wait bug, predating the 69fb4e1 fixup) and this run's own. Run-id
+      # filtering left the old `cancelled` one in `$others`; `cancelled` is not `success`, `skipped`
+      # or `neutral`, so the loop read it as a red check and failed six seconds after starting,
+      # before the nine real checks had even registered. Filter by check-run NAME instead - stable
+      # across every past and future run of this job, not just the one running right now - using
+      # `github.job` rather than a literal "auto-merge" so a future rename of the job id stays
+      # self-referential instead of silently reintroducing either bug. Checked against every other
+      # workflow in this repo (gates.yml, codeql.yml, scorecard.yml): none names a job "auto-merge",
+      # so this is not colliding with an unrelated real check of the same name.
+      #
+      # Measured against PR #18's head SHA while it sat blocked: the nine real checks all reached
+      # `completed` within about ninety seconds of this job starting, so the ten-minute ceiling
+      # below is wide headroom, not a tight fit, and a run that actually hangs fails on its own
+      # clock with a named reason instead of riding GitHub's six-hour kill.
       #
       # `count -eq 0` IS ITS OWN STATE, DISTINCT FROM "ZERO PENDING" (invariant 1, CLAUDE.md).
       # e5e613c's first version broke out of the loop on `pending -eq 0` alone, and on the very
@@ -86,8 +100,8 @@ jobs:
           deadline=$(( $(date +%s) + WAIT_LIMIT_SECONDS ))
           while true; do
             others=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/check-runs" --paginate --jq '.check_runs[]' \
-              | jq -s --arg run_id "$GITHUB_RUN_ID" \
-                  '[.[] | select((.details_url // "") | contains("/runs/" + $run_id + "/") | not)]')
+              | jq -s --arg job_name "$JOB_NAME" \
+                  '[.[] | select(.name != $job_name)]')
 
             count=$(jq 'length' <<<"$others")
             pending=$(jq '[.[] | select(.status != "completed")] | length' <<<"$others")
@@ -114,6 +128,7 @@ jobs:
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          JOB_NAME: ${{ github.job }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WAIT_LIMIT_SECONDS: 600
           POLL_INTERVAL_SECONDS: 15

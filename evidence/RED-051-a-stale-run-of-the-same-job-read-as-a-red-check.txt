@@ -1,0 +1,24 @@
+# RED-051 - a stale check-run from an earlier run of the SAME job read as a red check
+#
+# subject: the auto-merge poll loop's step script, 69fb4e1 (T-07 fixup) vs current
+# tree: 69fb4e12eae80df517ade640a44a0ba1d14c2e6d (dirty)
+
+--- 69fb4e1 (T-07 fixup): nine green checks + self (in_progress) + a STALE cancelled "auto-merge" from a different run id ---
+exit code: 1
+polls made: 1
+merged: False
+stderr:
+::error::red check(s) on deadbeefcafe, not merging: auto-merge,
+
+--- current (this fixup): nine green checks + self (in_progress) + a STALE cancelled "auto-merge" from a different run id ---
+exit code: 0
+polls made: 1
+merged: True
+stderr:
+(empty)
+
+====================================================================================================
+CONFIRMED: 69fb4e1's script reads the stale, unrelated "auto-merge" run as a
+red check and refuses to merge - the exact failure measured on PR #18's head 19a69821.
+CONFIRMED: the current script excludes every check-run named after this job,
+not just the run currently executing, and merges on nine real green checks.

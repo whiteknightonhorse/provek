@@ -75,7 +75,7 @@ def _extract_step_script() -> str:
 
 def _run_script(script_text: str, seq: list[list[dict]], tmp_path: pathlib.Path,
                  *, wait_limit: int = 5, poll_interval: int = 1,
-                 self_run_id: str = "111"):
+                 job_name: str = "auto-merge"):
     """Runs `script_text` (the step's shell body) against a `gh` stub that answers `seq[0]`,
     `seq[1]`, ... on successive `gh api` calls. Returns (returncode, stderr, merged, poll_count)."""
     script_path = tmp_path / "step.sh"
@@ -102,7 +102,7 @@ def _run_script(script_text: str, seq: list[list[dict]], tmp_path: pathlib.Path,
         HEAD_SHA="deadbeefcafe",
         GH_TOKEN="stub",
         GITHUB_REPOSITORY="whiteknightonhorse/provek",
-        GITHUB_RUN_ID=self_run_id,
+        JOB_NAME=job_name,
         WAIT_LIMIT_SECONDS=str(wait_limit),
         POLL_INTERVAL_SECONDS=str(poll_interval),
         GH_STUB_SEQ_DIR=str(seq_dir),
@@ -119,11 +119,8 @@ def _run_script(script_text: str, seq: list[list[dict]], tmp_path: pathlib.Path,
 
 
 def _green_checks(other_run_id: str = "1115") -> list[dict]:
-    """The nine real checks, all green, plus this job's OWN run (id 111) still `in_progress` -
-    included so the fixture also exercises self-exclusion, not just the merge decision. `1115`
-    deliberately shares the `111` prefix with the self run id: the exclusion filter matches on
-    `/runs/111/` with trailing slashes, so a naive substring match on `111` alone would wrongly
-    exclude this real check too."""
+    """The nine real checks, all green, plus this job's OWN run still `in_progress` - included so
+    the fixture also exercises self-exclusion, not just the merge decision."""
     checks = [
         {"name": name, "status": "completed", "conclusion": "success",
          "details_url": f"https://github.com/whiteknightonhorse/provek/actions/runs/{other_run_id}/job/1"}
@@ -197,6 +194,26 @@ def test_checks_appearing_after_an_empty_first_poll_still_merge(tmp_path):
     assert rc == 0, stderr
     assert merged
     assert polls == 3, "should have taken exactly the three polls the fixture staged"
+
+
+def test_a_stale_auto_merge_run_from_an_earlier_trigger_does_not_block_the_merge(tmp_path):
+    """T-08, measured on PR #18's head 19a69821 (`check-runs?filter=all`): GitHub does not remove
+    a job's OLD check-run when the same job runs again for the same head SHA (`synchronize`,
+    `reopened`, ...) - the head SHA carried two check-runs named "auto-merge", one `cancelled`
+    (GitHub's own six-hour kill of a run from before the 69fb4e1 fixup) and one this run's own.
+    Excluding only `$GITHUB_RUN_ID` left the stale `cancelled` one in `$others`, read as a red
+    check, and the merge failed six seconds after starting - before the nine real checks had even
+    registered. `cancelled` here is a different run id (`999`) from the self entry `_green_checks`
+    already carries (run id `111`); both share the name "auto-merge", which is what must now be
+    excluded, not the run id."""
+    checks = _green_checks()
+    checks.append({
+        "name": "auto-merge", "status": "completed", "conclusion": "cancelled",
+        "details_url": "https://github.com/whiteknightonhorse/provek/actions/runs/999/job/3",
+    })
+    rc, stderr, merged, _ = _run_script(_extract_step_script(), [checks], tmp_path)
+    assert rc == 0, stderr
+    assert merged, "a stale check-run from an earlier run of this same job must not block the merge"
 
 
 def test_major_bumps_never_reach_the_merge_step():
