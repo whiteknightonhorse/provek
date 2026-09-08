@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-09-07T03:43:05.403916+00:00",
-    "valid_until": "2026-10-07T03:43:05.403916+00:00",
+    "issued_at": "2026-09-08T03:43:05.823812+00:00",
+    "valid_until": "2026-10-08T03:43:05.823812+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -61,7 +61,7 @@
           "absent_reason": null
         },
         "workflow_runs": {
-          "value": 162,
+          "value": 171,
           "measured": true,
           "absent_reason": null
         },
@@ -80,7 +80,7 @@
           "measured": true,
           "absent_reason": null
         },
-        "head_sha": "cba634669e61fb2dec9920201cecfb570f850505"
+        "head_sha": "ff96ab70af4462d446a0fe66301b52909ea93b9b"
       },
       "control_map_valid": true,
       "control_map_cap": 5,
@@ -103,7 +103,7 @@
       "private": false,
       "declaration": {
         "present": true,
-        "pinned_sha": "cba634669e61fb2dec9920201cecfb570f850505",
+        "pinned_sha": "ff96ab70af4462d446a0fe66301b52909ea93b9b",
         "schema_version": "1.0.0"
       }
     },
