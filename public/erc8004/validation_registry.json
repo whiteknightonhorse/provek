@@ -4,14 +4,14 @@
   "source_repo": "erc-8004/erc-8004-contracts",
   "source_url": "https://raw.githubusercontent.com/erc-8004/erc-8004-contracts/main/README.md",
   "last_attempt": {
-    "at": "2026-08-20T22:59:21.686478+00:00",
+    "at": "2026-09-14T05:14:51.504663+00:00",
     "state": "no_target",
     "http_status": 200,
     "reading": "The deployment list was read and recognised, and it carries no Validation Registry address.",
     "validation_registry_rows": []
   },
   "measurement": {
-    "checked_at": "2026-08-20T22:59:21.686478+00:00",
+    "checked_at": "2026-09-14T05:14:51.504663+00:00",
     "state": "no_target",
     "http_status": 200,
     "reading": "The deployment list was read and recognised, and it carries no Validation Registry address.",
