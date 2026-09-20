@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-09-19T03:43:06.020858+00:00",
-    "valid_until": "2026-10-19T03:43:06.020858+00:00",
+    "issued_at": "2026-09-20T03:43:05.462796+00:00",
+    "valid_until": "2026-10-20T03:43:05.462796+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -51,7 +51,7 @@
           "absent_reason": null
         },
         "distinct_authors": {
-          "value": 1,
+          "value": 0,
           "measured": true,
           "absent_reason": null
         },
@@ -71,7 +71,7 @@
           "absent_reason": null
         },
         "unlinked_commit_share": {
-          "value": 0.5,
+          "value": 1.0,
           "measured": true,
           "absent_reason": null
         },

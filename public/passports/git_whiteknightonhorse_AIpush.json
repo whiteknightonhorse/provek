@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-09-19T03:43:06.020858+00:00",
-    "valid_until": "2026-10-19T03:43:06.020858+00:00",
+    "issued_at": "2026-09-20T03:43:05.462796+00:00",
+    "valid_until": "2026-10-20T03:43:05.462796+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
