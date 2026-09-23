@@ -1,0 +1,41 @@
+# RED-053 - Verified-by-Provek button, plant: the status gate is bypassed in the JSX
+#
+# subject: web/src/pages/Passport.tsx, ShareActions's canClaimVerified gate
+# tree: 6192b04ef4a799465f3b090f4442f8dd462c9c43 (dirty)
+
+--- plant applied (tests/test_verified_by_provek_snippet_is_gated_and_dated.py) ---
+exit code: 1
+..F.                                                                     [100%]
+=================================== FAILURES ===================================
+___ test_the_verified_by_provek_button_is_gated_to_the_verified_status_only ____
+
+    def test_the_verified_by_provek_button_is_gated_to_the_verified_status_only():
+        """A subject that is stale, suspended, unverified or in_progress may not hand out text
+        claiming "Verified by Provek" in the present tense - that claim belongs to the two badges,
+        which recompute their own word (`effectiveStatus`) on every load instead of being copied once
+        and left to go stale silently."""
+        s = src()
+        assert "canClaimVerified = status ===" in s.replace('"verified"', '"verified"'), (
+            "no status === \"verified\" gate found ahead of the Verified-by-Provek button"
+        )
+>       assert re.search(r"canClaimVerified\s*&&", s), (
+            "the Verified-by-Provek CopyButton is not conditioned on canClaimVerified"
+        )
+E       AssertionError: the Verified-by-Provek CopyButton is not conditioned on canClaimVerified
+E       assert None
+E        +  where None = <function search at 0x7fb846b6f760>('canClaimVerified\\s*&&', '/** The load-bearing screen (decision D-01).\n *\n * A consumer of evidence arrives here by a link from an email or a...  </span>\n              </a>\n            ))}\n          </div>\n        </section>\n      )}\n    </Page>\n  );\n}\n')
+E        +    where <function search at 0x7fb846b6f760> = re.search
+
+tests/test_verified_by_provek_snippet_is_gated_and_dated.py:61: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_verified_by_provek_snippet_is_gated_and_dated.py::test_the_verified_by_provek_button_is_gated_to_the_verified_status_only
+1 failed, 3 passed in 0.04s
+
+CONFIRMED: with the gate bypassed in the JSX, the source-scan suite fails.
+
+--- plant reverted (tests/test_verified_by_provek_snippet_is_gated_and_dated.py) ---
+exit code: 0
+....                                                                     [100%]
+4 passed in 0.03s
+
+CONFIRMED: green again on the real tree with the plant reverted.

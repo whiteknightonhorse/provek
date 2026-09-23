@@ -73,6 +73,11 @@ const CASES = {
   malformed_id: { id: "not-a-slug!!.svg" },
   missing_svg_extension: { id: "git_whiteknightonhorse_provek" },
   asset_fetch_throws: { id: "git_whiteknightonhorse_provek.svg", fixture: PROVEK, throws: true },
+  // T-SG-14 (`?plain=1`): same healthy fixture, the row-dropping branch. Kept beside
+  // `verified_with_projection` rather than as a separate probe file, so a reader comparing the two
+  // JSON outputs is comparing one input across both branches, not two different fixtures.
+  verified_plain: { id: "git_whiteknightonhorse_provek.svg", fixture: PROVEK, plain: true },
+  verified_lapsed_plain: { id: "git_whiteknightonhorse_provek.svg", fixture: LAPSED, plain: true },
 };
 
 const name = process.argv[2];
@@ -84,7 +89,7 @@ if (!chosen) {
 
 const kv = assets(chosen.fixture ?? null, { throws: !!chosen.throws });
 const env = { ASSETS: kv.binding };
-const request = new Request(`https://provek.dev/badge/${chosen.id}`);
+const request = new Request(`https://provek.dev/badge/${chosen.id}${chosen.plain ? "?plain=1" : ""}`);
 const response = await onRequestGet({ request, params: { id: chosen.id }, env });
 const body = await response.text();
 

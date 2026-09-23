@@ -3705,3 +3705,84 @@ or loss - `YouTubeEmbed` was written to introduce none. At the time this landed 
 8 pages (index plus seven templates); a page the map has not reached renders with no video section
 at all rather than an invented one, per the task's own rule that a page the map has not reached
 yet is an expectation, not a failure.
+
+## D-61. The growth badge idea lands as a live no-number variant and a self-dating text snippet, never a bare number frozen in a copy-paste artefact
+
+**Source.** T-SG-14, `~/taskloop/briefs/SG-00-ruling-1.md` §SG-14 (sales-growth design ruling,
+tenant `sales`): the operator's brainstormed "Badge" idea is accepted "in a modified form: only
+status and term (`Provek passport · autonomy verified · valid until <date>`, linked to the
+passport), no number and no scale, so it does not read as a safety rating under SPEC §10" - and the
+ruling explicitly defers the mechanism to incubator's own decision here, rather than prescribing
+one. The same ruling accepts "open verification challenge" as a page and an application flag, and
+records both under this project's own `DECISIONS.md` by name (SG-14).
+
+**Decision.** Four artefacts, kept separate because they answer different questions rather than
+being four names for one change:
+
+1. **`?plain=1` on the existing badge Function** (`web/functions/badge/[id].js`) — the SAME live
+   endpoint ABI-2-3 already governs, given a second rendering that drops the projection row
+   entirely rather than merely labelling it (the existing numbered badge already satisfies ABI-2-3
+   - `tests/test_badge_never_prints_a_bare_level.py` - by never printing a level unlabelled; this
+   ruling asks for something stricter still: no projection figure AT ALL in front of a stranger who
+   has never opened a passport and has no page beside the badge explaining what the number is a
+   fraction of). STATUS and the expiry date survive, because a date a reader can check against
+   today is not a rating. Kept on the SAME Function rather than a second file so the two renderings
+   can never independently drift on what a given subject's status or expiry actually is.
+2. **A "Verified by Provek" plain-text snippet** (`ShareActions` in `web/src/pages/Passport.tsx`) —
+   `<a href="/p/<slug>/brief" title="Provek passport · autonomy verified · valid until <date>">
+   Verified by Provek</a>`, the ruling's exact phrase carried in the accessible title. This is NOT
+   a third rendering of the badge Function: unlike an `<img>`, which re-fetches (and therefore
+   re-computes `effectiveStatus`, ABI-15-5) on every page load, a copied text snippet has no
+   further contact with this site once pasted - there is nobody on the far end to recompute it. So
+   it stays honest by construction instead of by recomputation: the expiry date is ALWAYS present
+   (a claim a reader can check against today never goes silently stale, the same reasoning the
+   badge Function's own module header gives for why an `<img>` needs a live backend at all), and
+   the button is offered only while `effectiveStatus(...) === "verified"` - the one state honestly
+   described as "Verified by Provek" in the present tense. A stale, suspended, unverified or
+   in-progress subject gets the two live badges above instead, which say their own current word on
+   every view rather than a sentence frozen at copy time.
+3. **`/challenge/`** (`web/src/pages/Challenge.tsx`) — a static page, wired through `App.tsx` and
+   `prerender.mjs` exactly like `/method/` and `/apply/`. Deliberately not a contest: no
+   leaderboard, no participant count (I11 is rejected separately, §2 of the sales ruling), and its
+   one call to action points at the SAME `/apply/` form everyone else uses. The page names the
+   ordinary outcome as `not_measured` or a low level, not a hedged-around edge case, per SPEC §9's
+   own warning against the startup-showcase register.
+4. **`origin` on `/api/apply`'s stored record** (`web/functions/api/apply.js`, read from
+   `Apply.tsx`'s `?via=challenge` query flag) — "a page and an application flag" read literally.
+   Allowlisted to exactly one value the same way `mandate_requested`/`mandate_applied` are
+   (D-23): `body.origin === "challenge" ? "challenge" : null`, never a client-supplied string
+   stored verbatim. It reaches nowhere near `src/verify` or `src/collector/github.py` - D-10's
+   conflict-of-interest rule (no task touches scoring for a commercial reason) is structural here,
+   not a promise: the intake record is written, read by a human, and never referenced by the
+   scorer.
+
+**Rejected alternative.** A single static "badge without a number" `<img>` swapped in as the
+DEFAULT embed for every subject, replacing the existing numbered one. Rejected because the existing
+badge already satisfies SPEC §10 by the project's own prior ruling (ABI-2-3): the number is never
+printed bare, always beside the word "projection". Replacing it site-wide would remove real,
+correctly-labelled information from every subject's embed to solve a narrower problem - a stranger
+in a cold-outreach context with no passport page open beside the badge - that only `?plain=1`
+and the text snippet actually have.
+
+**Verified.** `tests/test_badge_plain_variant_drops_the_number.py` (real handler under Node via
+`tests/badge_probe.mjs`, real-tree red run `evidence/RED-052-plain-badge-defect-still-prints-the-projection.txt`)
+holds `?plain=1` to zero digits in its rendered text and title beyond the date, zero occurrences of
+the word "projection" at all, and the same `effectiveStatus` recomputation (`verified` → `stale`
+past `valid_until`) the numbered badge already carries.
+`tests/test_verified_by_provek_snippet_is_gated_and_dated.py` (source scan over `Passport.tsx`, the
+same shape `tests/test_stale_on_the_surface.py` already uses for this page since no component test
+runner exists in this repository; real-tree red run
+`evidence/RED-053-verified-by-provek-gate-removed.txt`) holds the snippet to always carrying
+`validUntil` and to being gated on `effectiveStatus(p.status, p.valid_until) === "verified"`, not
+on the raw stored `p.status`.
+`tests/test_intake_records_the_application_origin.py` (real handler under Node via
+`tests/intake_probe.mjs`, real-tree red run
+`evidence/RED-054-application-origin-stored-verbatim.txt`) holds the stored `origin` field to
+exactly `"challenge"` or `null`, never a client-supplied string, and confirms the ordinary
+`/apply/` submission (no `via` in the URL) still records `null` rather than an empty string
+(invariant 1: "not applicable" and "asked and got nothing" are different states). Full suite:
+`python3 -m pytest -q` → 1201 passed, 2 skipped (pre-existing, registry-dependent); `npx tsc -b`
+clean; `npm run build` (`web/`) completes and prerenders `/challenge/` alongside every other static
+route with its own markdown sibling; `ruff check` clean on every file this task touched (the nine
+pre-existing lint findings elsewhere in `evidence/` predate this task and are untouched by it).
+Deploy is the operator's own gated step (`scripts/push.sh` / `deploy.sh`), not performed here.

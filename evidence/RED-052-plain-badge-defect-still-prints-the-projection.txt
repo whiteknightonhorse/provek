@@ -1,0 +1,52 @@
+# RED-052 - plain badge, plant: healthySvg's if (plain) early return disabled
+#
+# subject: web/functions/badge/[id].js, healthySvg's plain-vs-numbered branch
+# tree: 6192b04ef4a799465f3b090f4442f8dd462c9c43 (dirty)
+
+--- plant applied (tests/test_badge_plain_variant_drops_the_number.py) ---
+exit code: 1
+...F.                                                                    [100%]
+=================================== FAILURES ===================================
+_______ test_plain_drops_the_projection_row_entirely_not_just_its_number _______
+
+    def test_plain_drops_the_projection_row_entirely_not_just_its_number():
+        """SG-14's own words: "only status and term" - `?plain=1` on an unmeasured subject must not
+        fall through to a THIRD row reading "projection: not measured". That row carries no digit
+        (`test_the_healthy_plain_badge_carries_no_digit_at_all` would not catch it), but it is still
+        the projection row the ruling asked to be gone, not merely de-numbered."""
+        r = run("verified_plain")
+>       assert "projection" not in r["body"].lower(), (
+            f"plain badge still carries a projection row: {r['body']}")
+E       AssertionError: plain badge still carries a projection row: <svg xmlns="http://www.w3.org/2000/svg" width="280" height="60" viewBox="0 0 280 60" role="img" aria-label="Provek verification: verified, valid until 2099-01-01, projection: not measured">
+E           <title>Provek verification: verified, valid until 2099-01-01, projection: not measured</title>
+E           <rect x="0.5" y="0.5" width="279" height="59" rx="2" fill="#fffefb" stroke="#e4e2dd"/>
+E           <text x="10" y="21" font-family="'IBM Plex Mono',ui-monospace,SFMono-Regular,monospace" font-size="12" font-weight="600" letter-spacing="0.04em" fill="#16171c">PROVEK</text>
+E           <text x="270" y="21" text-anchor="end" font-family="'IBM Plex Mono',ui-monospace,SFMono-Regular,monospace" font-size="12" font-weight="600" letter-spacing="0.04em" fill="#2c6b3c">VERIFIED</text>
+E           <text x="10" y="38" font-family="'IBM Plex Sans',ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#464b57">valid until 2099-01-01</text>
+E           <text x="10" y="53" font-family="'IBM Plex Sans',ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#464b57">projection: not measured</text>
+E         </svg>
+E         
+E       assert 'projection' not in '<svg xmlns=...t>\n</svg>\n'
+E         
+E         'projection' is contained here:
+E           99-01-01, projection: not measured">
+E         ?           ++++++++++
+E             <title>provek verification: verified, valid until 2099-01-01, projection: not measured</title>
+E             <rect x="0.5" y="0.5" width="279" height="59" rx="2" fill="#fffefb" stroke="#e4e2dd"/>
+E             <text x="10" y="21" font-family="'ibm plex mono',ui-monospace,sfmono-regular,monospace" font-size="12" font-weight="600" letter-spacing="0.04em" fill="#16171c">provek</text>...
+E         
+E         ...Full output truncated (4 lines hidden), use '-vv' to show
+
+tests/test_badge_plain_variant_drops_the_number.py:70: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_badge_plain_variant_drops_the_number.py::test_plain_drops_the_projection_row_entirely_not_just_its_number
+1 failed, 4 passed in 0.44s
+
+CONFIRMED: with the plain guard disabled, ?plain=1 falls through to the numbered rendering and the plain-badge test suite fails.
+
+--- plant reverted (tests/test_badge_plain_variant_drops_the_number.py) ---
+exit code: 0
+.....                                                                    [100%]
+5 passed in 0.40s
+
+CONFIRMED: green again on the real tree with the plant reverted.

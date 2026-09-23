@@ -145,14 +145,15 @@ function SelfReportedValue({ val }: { val: unknown }) {
   return <span className="break-words">{String(val)}</span>;
 }
 
-/** Task 7's two buttons: copy a link, copy a badge snippet. Both name the SAME destination -
+/** Task 7's buttons: copy a link, copy a badge snippet, and (T-SG-14) copy a badge with no
+ * projection row and a plain-text snippet. All of them name the SAME destination -
  * `/p/<slug>/brief`, never this page - because a due-diligence document is not what a company's
  * own client is asked to open, and a badge whose link led here would hand that reader the control
  * map and the raw observations instead of the three facts they actually came for.
  *
- * Both buttons are `CopyButton` (`web/src/components/CopyButton.tsx`) - the one copy mechanism on
+ * Every button is `CopyButton` (`web/src/components/CopyButton.tsx`) - the one copy mechanism on
  * the site, shared with the template pages under `/build/` rather than a second implementation. */
-function ShareActions({ subjectId }: { subjectId: string }) {
+function ShareActions({ subjectId, status, validUntil }: { subjectId: string; status: string; validUntil: string }) {
   const s = slug(subjectId);
   const briefUrl = `${SITE}/p/${s}/brief`;
   const badgeUrl = `${SITE}/badge/${s}.svg`;
@@ -160,12 +161,47 @@ function ShareActions({ subjectId }: { subjectId: string }) {
     `<a href="${briefUrl}"><img src="${badgeUrl}" width="280" height="60" ` +
     `alt="Provek verification badge for ${subjectId}"></a>`;
 
+  // T-SG-14 (`~/taskloop/briefs/SG-00-ruling-1.md` §SG-14; incubator's own decision, `DECISIONS.md`
+  // D-61). Not a second implementation of the badge - `?plain=1` on the SAME Function, so the two
+  // buttons can never drift into rendering two different states for one subject.
+  const plainBadgeUrl = `${badgeUrl}?plain=1`;
+  const plainBadgeSnippet =
+    `<a href="${briefUrl}"><img src="${plainBadgeUrl}" width="280" height="60" ` +
+    `alt="Provek verification badge for ${subjectId} (status and validity, no score)"></a>`;
+
+  // THE PLAIN-TEXT SNIPPET IS OFFERED ONLY WHILE `status === "verified"`, AND THAT IS DELIBERATE.
+  // Unlike the two badges above, this text is copied once and then sits wherever it was pasted
+  // with no further contact with this site - there is nobody on the far end to recompute it the
+  // way `web/functions/badge/[id].js`'s header explains an `<img>` cannot either, except that an
+  // `<img>` at least re-fetches on every view. So the words themselves have to stay honest with no
+  // help: they always carry the expiry date, per SG-14's own text ("Provek passport · autonomy
+  // verified · valid until <date>") - a dated claim a reader can check against today, not a bare
+  // "Verified" that would go on reading true after the passport lapses. And the button exists only
+  // for the one status honestly described as "Verified by Provek" in the present tense; a stale,
+  // suspended or unverified subject has the two badges above, which recompute their own word on
+  // every load, and is the artefact this site offers for that case instead.
+  const canClaimVerified = status === "verified";
+  const verifiedByProvekSnippet =
+    `<a href="${briefUrl}" title="Provek passport · autonomy verified · valid until ${validUntil.slice(0, 10)}">Verified by Provek</a>`;
+
   return (
     <div className="mt-3 flex flex-wrap items-center gap-2">
       <CopyButton getText={() => briefUrl} idleLabel="Copy link" announce="Link copied to clipboard." />
       <CopyButton getText={() => badgeSnippet} idleLabel="Copy badge code" announce="Badge code copied to clipboard." />
+      <CopyButton
+        getText={() => plainBadgeSnippet}
+        idleLabel="Copy badge code (no score)"
+        announce="Badge code (no score) copied to clipboard."
+      />
+      {canClaimVerified && (
+        <CopyButton
+          getText={() => verifiedByProvekSnippet}
+          idleLabel="Copy “Verified by Provek” text"
+          announce="Text snippet copied to clipboard."
+        />
+      )}
       <span className="text-xs text-[var(--color-ink-3)]">
-        &mdash; both point to the short summary at <code className="font-mono">/brief</code>, built
+        &mdash; all point to the short summary at <code className="font-mono">/brief</code>, built
         for your own clients rather than for due diligence.
       </span>
     </div>
@@ -337,7 +373,7 @@ export default function Passport({ p }: { p: P }) {
           `/p/<slug>/brief` gives them without the rest. "Copy link" therefore copies the brief
           page's address, and the badge's own `<a href>` points at the same place, so the two
           buttons hand out one destination rather than two. */}
-      <ShareActions subjectId={p.subject_id} />
+      <ShareActions subjectId={p.subject_id} status={effectiveStatus(p.status, p.valid_until)} validUntil={p.valid_until} />
 
       {/* THE SHARED THESIS, M's reading of it: coverage as a sentence, not a chart. A bar that
           restates a number beside it is decoration; a count of what was measured is the fact. */}

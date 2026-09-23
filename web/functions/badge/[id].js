@@ -25,6 +25,20 @@
  *
  * `tests/test_badge_never_prints_a_bare_level.py` asserts the negative directly, over every
  * status this file can render and over the real per-subject data on disk.
+ *
+ * `?plain=1` (T-SG-14, `~/taskloop/briefs/SG-00-ruling-1.md` §SG-14): a second rendering that
+ * drops the projection row entirely rather than merely labelling it. The growth brief's own
+ * argument for this is narrower than ABI-2-3 above - it is not that "projection 60/100" reads as a
+ * bare level (the module header already answers that), it is that a badge meant to be seen by a
+ * stranger who has never opened a passport, in a context this project does not control (a cold
+ * outreach email, a third party's own marketing page), is the single worst place for ANY number
+ * next to the word Provek, labelled or not, because that reader has no passport page open beside
+ * it to learn what the number is a fraction OF. STATUS and the expiry date survive in `?plain=1`
+ * because a date a reader can check against today's is not a rating - it is the same fact the
+ * healthy badge already states in `dateLine`, just standing without the projection row beside it.
+ * `healthySvg` never reads `projection` at all when `plain` is true, so this is not a rendering
+ * choice sitting on top of a value still being computed - see `onRequestGet` below, which skips
+ * the read outright.
  */
 import { effectiveStatus } from "../_lib/status.js";
 import { LIGHT, STATUS_COLOR_LIGHT } from "../_lib/palette.js";
@@ -51,11 +65,22 @@ function frame(rows, title) {
 const MONO = "'IBM Plex Mono',ui-monospace,SFMono-Regular,monospace";
 const SANS = "'IBM Plex Sans',ui-sans-serif,system-ui,sans-serif";
 
-/** The healthy badge: status, expiry, and the projection under its own name - see the module
- *  header for why none of these three may ever be a bare ladder level. */
-function healthySvg({ status, validUntil, projection }) {
+/** The healthy badge: status, expiry, and - unless `plain` (T-SG-14, `?plain=1` above) - the
+ *  projection under its own name. See the module header for why none of these may ever be a bare
+ *  ladder level, and for why `plain` drops the row rather than merely keeping it labelled. */
+function healthySvg({ status, validUntil, projection, plain = false }) {
   const color = STATUS_COLOR_LIGHT[status] ?? LIGHT.unknown;
   const dateLine = `valid until ${validUntil.slice(0, 10)}`;
+  if (plain) {
+    return frame(
+      [
+        `<text x="10" y="24" font-family="${MONO}" font-size="12" font-weight="600" letter-spacing="0.04em" fill="${LIGHT.ink}">PROVEK</text>`,
+        `<text x="${W - 10}" y="24" text-anchor="end" font-family="${MONO}" font-size="12" font-weight="600" letter-spacing="0.04em" fill="${color}">${escapeXml(status.toUpperCase())}</text>`,
+        `<text x="10" y="42" font-family="${SANS}" font-size="11" fill="${LIGHT.ink2}">${escapeXml(dateLine)}</text>`,
+      ],
+      `Provek verification: ${status}, ${dateLine}`,
+    );
+  }
   // NEVER A BARE NUMBER STANDING FOR THE SUBJECT. "projection" is part of the string on both
   // branches, so the label travels with the value wherever this text is read, screen reader
   // included - there is no rendering path here where the number appears without its name.
@@ -104,6 +129,10 @@ export async function onRequestGet({ request, params, env }) {
   const slug = raw.slice(0, -4);
   if (!SLUG.test(slug)) return svgResponse(unknownSvg("not a subject identifier"));
 
+  // T-SG-14: read before the fetch, off the request's own URL, never off the fixture - a fixture
+  // that happened to carry a `plain` key could otherwise steer which branch renders.
+  const plain = new URL(request.url).searchParams.get("plain") === "1";
+
   let res;
   try {
     const assetUrl = new URL(request.url);
@@ -125,8 +154,13 @@ export async function onRequestGet({ request, params, env }) {
   if (!p) return svgResponse(unknownSvg("no such passport"));
 
   const status = effectiveStatus(p.status, p.valid_until, new Date());
-  const projection = p.verified && typeof p.verified.projection === "number" ? p.verified.projection : null;
-  return svgResponse(healthySvg({ status, validUntil: p.valid_until, projection }));
+  // Not read at all in the `plain` branch (T-SG-14) - the badge is "without a number" in the
+  // source, not only in the markup: the ternary below is `null` outright rather than a value the
+  // `plain` branch of `healthySvg` merely declines to print.
+  const projection = plain
+    ? null
+    : p.verified && typeof p.verified.projection === "number" ? p.verified.projection : null;
+  return svgResponse(healthySvg({ status, validUntil: p.valid_until, projection, plain }));
 }
 
 export async function onRequestPost() {

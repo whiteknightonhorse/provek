@@ -1,0 +1,35 @@
+# RED-054 - application origin, plant: an unrecognised value stored verbatim
+#
+# subject: web/functions/api/apply.js, the `origin` allowlist
+# tree: 6192b04ef4a799465f3b090f4442f8dd462c9c43 (dirty)
+
+--- plant applied (tests/test_intake_records_the_application_origin.py) ---
+exit code: 1
+.F..                                                                     [100%]
+=================================== FAILURES ===================================
+_ test_an_unrecognised_origin_is_refused_to_null_not_guessed_or_stored_verbatim _
+
+    def test_an_unrecognised_origin_is_refused_to_null_not_guessed_or_stored_verbatim():
+        """The same D-23 shape as `mandate`: a client-supplied string that is not the one value this
+        endpoint defines does not get to name itself in the durable record."""
+        r = run("origin_unrecognised")
+        assert r["outcome"] == "answered" and r["status"] == 200
+>       assert _stored_record(r)["origin"] is None, (
+            "an unrecognised origin value was stored verbatim rather than coerced to null"
+        )
+E       AssertionError: an unrecognised origin value was stored verbatim rather than coerced to null
+E       assert 'some-other-string' is None
+
+tests/test_intake_records_the_application_origin.py:48: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_intake_records_the_application_origin.py::test_an_unrecognised_origin_is_refused_to_null_not_guessed_or_stored_verbatim
+1 failed, 3 passed in 0.24s
+
+CONFIRMED: with the allowlist replaced by a bare fallback, an unrecognised origin value is stored verbatim and the suite fails.
+
+--- plant reverted (tests/test_intake_records_the_application_origin.py) ---
+exit code: 0
+....                                                                     [100%]
+4 passed in 0.22s
+
+CONFIRMED: green again on the real tree with the plant reverted.

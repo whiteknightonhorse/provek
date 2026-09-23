@@ -106,6 +106,14 @@ export default function Apply() {
           // this says only WHICH wording was on screen - and it refuses if that is not today's.
           consent: true,
           consent_version: CONSENT_VERSION,
+          // T-SG-14: "a page and an application flag" - read off the URL at submit time, not off
+          // a route param, because this page carries no route state of its own (App.tsx strips the
+          // query string before `route` is ever compared). Named `origin`, not `source`, so it is
+          // never mistaken for `source_country` in the stored record. Never asserts anything about
+          // the applicant or their evidence - `functions/api/apply.js` stores it verbatim beside
+          // the record for later attribution, and it does not reach `src/verify` or the mandate
+          // fields above, which are computed exactly as they are for every other submission.
+          origin: new URLSearchParams(window.location.search).get("via") === "challenge" ? "challenge" : null,
         }),
       });
       const d = await r.json().catch(() => ({}));

@@ -116,10 +116,18 @@ export async function onRequestPost({ request, env }) {
     return bad("This page is out of date - please reload it and submit again. (The consent wording " +
                "has changed, and we will not record agreement to words you were not shown.)");
 
+  // T-SG-14 (`~/taskloop/briefs/SG-00-ruling-1.md` §SG-14): "a page and an application flag" -
+  // `/challenge/`'s own link is the only place that ever sends this, and it is an allowlist of
+  // one value rather than whatever string a client sends, for the same reason `mandate` above is
+  // not coerced to a default: a value this endpoint did not itself define should never reach a
+  // durable record as though it meant something. `null` (not "direct", not "") is the ordinary
+  // case - every submission before this task, and every one from the plain form today.
+  const origin = body.origin === "challenge" ? "challenge" : null;
+
   const id = crypto.randomUUID();
   const received_at = new Date().toISOString();
   const record = {
-    id, received_at, repo, contact, mandate_requested, mandate_applied,
+    id, received_at, repo, contact, mandate_requested, mandate_applied, origin,
     // Recorded because it is a fact about the submission, and because a verifier that keeps no
     // provenance for its own intake is asking for a trust it does not extend.
     source_country: request.headers.get("cf-ipcountry") || null,
@@ -155,7 +163,10 @@ export async function onRequestPost({ request, env }) {
         // reply the operator has to compose - a signed mandate - and a message showing only the
         // applied policy would show `passive` for every request forever and hide exactly that.
         `repo: ${repo}\ncontact: ${contact}\n` +
-        `mandate requested: ${mandate_requested}, applied: ${mandate_applied}\nid: ${id}`;
+        `mandate requested: ${mandate_requested}, applied: ${mandate_applied}\nid: ${id}` +
+        // T-SG-14: only ever appended, never a fourth line reading "origin: none" for the ordinary
+        // case - a human watching this channel every day should not be asked to parse a constant.
+        (origin ? `\norigin: ${origin}` : "");
       const r = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: "POST",
         headers: { "content-type": "application/json" },

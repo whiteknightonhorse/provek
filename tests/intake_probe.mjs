@@ -126,6 +126,13 @@ const CASES = {
   // A second control, on the code rather than on the answer: a rejected submission proves the
   // probe reached the real validation and is not exercising a stub of its own making.
   invalid_repo: { refuse: [], body: { ...SUBMISSION, repo: "https://example.com/elsewhere" } },
+  // T-SG-14: the ordinary case (no `origin` field at all, the same body every scenario above
+  // sends) is `origin_absent`'s job below via `both_writes_land`. These three exercise the field
+  // itself: the one value `/challenge/`'s own link sends, an unrecognised string a hand-built
+  // client might send, and the field simply missing from the body.
+  origin_challenge: { refuse: [], body: { ...SUBMISSION, origin: "challenge" } },
+  origin_unrecognised: { refuse: [], body: { ...SUBMISSION, origin: "some-other-string" } },
+  origin_absent: { refuse: [], body: SUBMISSION },
 };
 
 const name = process.argv[2];

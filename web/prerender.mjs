@@ -321,6 +321,12 @@ written.push(write("/method/", page("/method/", TITLES["/method/"],
 written.push(write("/apply/", page("/apply/", TITLES["/apply/"],
   "Request verification. Free at this stage. Public repositories only.",
   ldOrganization())));
+// T-SG-14: same mechanism as every other static route above (page() + write()), so Body() renders
+// the identical component the browser hydrates - no second static renderer for this surface (D-10).
+written.push(write("/challenge/", page("/challenge/", TITLES["/challenge/"],
+  "Free, public verification for any business whose operations run through agents - the same "
+  + "pipeline and method as every other request, not a different offer.",
+  ldOrganization())));
 // The description is the page's refusal, not its subject. A summary reading "commission work from a
 // verified agent" would travel into search results and social cards with the capability intact and
 // the refusal left behind on the page - and the summary is what most readers will ever see.
