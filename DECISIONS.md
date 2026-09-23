@@ -3786,3 +3786,59 @@ clean; `npm run build` (`web/`) completes and prerenders `/challenge/` alongside
 route with its own markdown sibling; `ruff check` clean on every file this task touched (the nine
 pre-existing lint findings elsewhere in `evidence/` predate this task and are untouched by it).
 Deploy is the operator's own gated step (`scripts/push.sh` / `deploy.sh`), not performed here.
+
+## D-62. Provek's self-application to APIbase is recorded as a citable fact for the other tenants' growth use — disclosure is already structural, no scoring exception is created
+
+**Source.** T-SG-15, `~/taskloop/briefs/SG-00-ruling-1.md` §SG-15 (row `SG-15` of §3's task table,
+depends on T-SG-14/D-61) and §2's idea list, item 8 ("Provek verifies APIbase publicly" — accepted
+with a condition: a record of the self-application disclosing `same_owner`, the score does not
+change, the text is written by incubator, task SG-15). Read whole, executed literally.
+
+**Decision.** What that item asks incubator to write down is a fact that already lives in the
+tree, not something to build: `git:whiteknightonhorse/APIbase`
+(`public/passports/git_whiteknightonhorse_APIbase.json`, mirrored under `web/public/data/`) carries
+`"verifier_affiliation": "same_owner"`, and that field already renders without any subject-specific
+branch anywhere in the code — the same surfaces that disclose it for every other affiliated subject
+disclose it for APIbase too:
+
+- `web/functions/p/[id]/brief.js:131` prints the "Affiliated verification … a rehearsal of the
+  protocol, not an independent verification" strip on APIbase's public brief, covered by
+  `tests/test_brief_page_carries_the_vector.py`;
+- `web/src/pages/Passport.tsx`'s `affiliated` flag and `web/src/pages/Registry.tsx:148` do the same
+  on the full passport and the registry row;
+- `docs/WHY_GET_VERIFIED.md`'s "Conflict of interest, disclosed rather than hidden" section already
+  states the general policy behind that rendering, and `ADR-0004` records the same honesty applied
+  to Provek's own passport.
+
+This decision's only addition is the one thing that did not already exist: a single citable record
+tying those facts together in the shape sales's future knowledge base (D-41, `sales-data/knowledge/
+provek.json`, built by SG-02/SG-13 in a different tenant's repository) requires for any utterance —
+value, source URL, snapshot time — so that whoever later writes "Provek publicly verifies APIbase"
+in growth material (SG-16's `apibase.pro/partners`, SG-13's provek outreach) links to real evidence
+instead of asserting the affiliation in prose:
+
+| Claim | Source | Snapshot |
+|---|---|---|
+| `git:whiteknightonhorse/APIbase` holds a Provek passport, `status: verified`, `verifier_affiliation: same_owner` | `https://provek.dev/p/git_whiteknightonhorse_APIbase` (full passport), `https://provek.dev/p/git_whiteknightonhorse_APIbase/brief` (machine-readable summary, carries the affiliation strip), `https://provek.dev/data/passports/git_whiteknightonhorse_APIbase.json` (raw record) | `issued_at` 2026-09-23T03:43:05.648617+00:00, `valid_until` 2026-10-23T03:43:05.648617+00:00 |
+
+**What this record is not.** It changes no field the scorer produces or reads. `src/verify` and
+`src/collector/github.py` were not opened by this task — D-10's and D-45's conflict-of-interest
+rule (no sales/growth task reaches the scorer, incubator never touches scoring for a commercial
+reason) holds structurally, not as a promise kept by restraint. The `same_owner` value this record
+cites is the SAME value `collector/github.py`'s owner comparison already derives and re-derives at
+every re-measure (`tests/test_cohort_affiliation_rederive.py`) — this decision does not freeze it;
+if APIbase were ever transferred to a different owner, the passport would read `independent` at the
+next measurement and the claim above would be the stale one, which is why the table carries a
+snapshot time rather than asserting the affiliation as permanent.
+
+**Rejected alternative.** A dedicated APIbase-facing page or badge variant restating "verified by
+its own creator." Rejected: `docs/WHY_GET_VERIFIED.md` already carries that disclosure at the
+product level and `brief.js`'s strip already carries it at the subject level; a third rendering of
+the same fact is a third place for it to drift, the exact failure D-61 avoided by putting the
+no-number badge on the SAME live Function rather than a new one.
+
+**Verified.** No source, test, or data file was changed by this task — `git diff --stat` before
+committing shows only this file and `orchestra/PHASE2-RESUME.md`'s knowledge entry (a different
+tenant's repository, outside this tree). `python3 -m pytest -q` and `npx tsc -b` were re-run
+unchanged to confirm the tree this decision describes is still the green one D-61 left behind.
+Secrets were not read or printed; no value from `.env` appears above.
