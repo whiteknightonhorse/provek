@@ -19,6 +19,7 @@ import json
 import pytest
 import requests
 from gltest.assertions import tx_execution_succeeded
+from gltest.types import TransactionStatus
 
 from .fixtures import deploy_provek_evidence_witness
 from gltest.helpers import load_fixture
@@ -37,14 +38,19 @@ def test_url_reachable_passes_against_a_real_public_url():
     assert tx_execution_succeeded(receipt)
 
 
-def test_url_reachable_fails_against_an_unreachable_url():
+def test_url_reachable_goes_undetermined_against_an_unreachable_url():
     contract = load_fixture(deploy_provek_evidence_witness)
-    # The TRANSACTION still succeeds (consensus was reached on the check itself) — the on-chain
-    # *result* is FAIL. A transaction failure and a FAIL result are different things throughout
-    # this contract; this test only asserts the former.
+    # A `.invalid` host is a DNS failure: the validator's OWN `gl.nondet.web.get` call raises, so
+    # `validator_fn` returns False without ever constructing a FAIL — see the contract's own
+    # "CONSENSUS SEMANTICS" docstring. This is "nobody could observe the URL", not "the claim is
+    # false": GenVM rotates leaders and the transaction never reaches ACCEPTED, no `WitnessResult`
+    # is written. Ask for UNDETERMINED explicitly (default `transact()` targets ACCEPTED, and
+    # `wait_for_transaction_receipt` treats UNDETERMINED as an already-decided match for that
+    # target too, which would let a wrongly-ACCEPTED transaction slip past unnoticed here).
     receipt = contract.witness(
-        "git:whiteknightonhorse/provek", "url_reachable", UNREACHABLE_URL, "").transact()
-    assert tx_execution_succeeded(receipt)
+        "git:whiteknightonhorse/provek", "url_reachable", UNREACHABLE_URL, "",
+    ).transact(wait_transaction_status=TransactionStatus.UNDETERMINED)
+    assert not tx_execution_succeeded(receipt)
 
 
 def test_artifact_hash_passes_against_a_real_artifact():

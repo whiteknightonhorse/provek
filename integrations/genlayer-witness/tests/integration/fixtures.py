@@ -7,10 +7,23 @@ test gets its OWN freshly deployed contract, so `witness()`'s duplicate-id and o
 checks never collide across tests in the same run.
 """
 from gltest import get_contract_factory, get_default_account
+from gltest.types import CalldataAddress
 
 
 def deploy_provek_evidence_witness():
-    """Deploy a fresh `ProvekEvidenceWitness` with the default account as its `operator`."""
+    """Deploy a fresh `ProvekEvidenceWitness` with the default account as its `operator`.
+
+    `get_contract_factory` resolves by CLASS NAME (`ast.ClassDef.name`, see
+    `gltest.artifacts.contract.search_path_by_class_name`), not by file stem — the file is
+    `provek_evidence_witness.py` but the class is `ProvekEvidenceWitness`.
+
+    `operator: Address` on the contract side means the constructor arg must cross the calldata
+    boundary as an address value, not a plain string: `CalldataAddress` is the one
+    `CalldataEncodable` the calldata encoder emits as `SPECIAL_ADDR` (`str` encodes as
+    `TYPE_STR` instead, which `Address(...)` storage cannot accept — the same TYPE_STR/TYPE_BYTES
+    failure class `tests/direct/conftest.py`'s `deploy_witness_contract` docstring names for the
+    direct-mode harness).
+    """
     account = get_default_account()
-    factory = get_contract_factory("provek_evidence_witness")
-    return factory.deploy(args=[account.address])
+    factory = get_contract_factory("ProvekEvidenceWitness")
+    return factory.deploy(args=[CalldataAddress(account.address)])
