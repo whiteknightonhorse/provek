@@ -124,8 +124,7 @@ supported_criteria() -> list[str]               # ["artifact_hash", "url_reachab
 | `expected`        | echoed from the request (normalized: `strip().lower()`'d for `artifact_hash`)                 |
 | `result`          | `"PASS"` or `"FAIL"` — never a third value; see "How validators verify the result"           |
 | `evidence_digest` | see below — not always a hash of fetched bytes                                                |
-| `checked_at`      | the requesting transaction's own datetime, `gl.message_raw["datetime"]` — **not**
-              `datetime.now()`, which is equally deterministic on GenVM but is the exact temporal pattern `genvm-lint` flags, and the field is named explicitly here rather than left to a reader's guess |
+| `checked_at`      | the requesting transaction's own datetime, `gl.message_raw["datetime"]` — **not** `datetime.now()`, which is equally deterministic on GenVM but is the exact temporal pattern `genvm-lint` flags, and the field is named explicitly here rather than left to a reader's guess |
 | `observation`     | a short human string — `"status=200"`, `"sha256 mismatch"`, `"unreachable"`, `"too_large"` — the one field that keeps the nuance a bare PASS/FAIL would lose (see "How GenLayer consensus is used" on 403/429/5xx) |
 
 **`evidence_digest`, by criterion and outcome.** For `artifact_hash`, when the fetch succeeded
@@ -308,11 +307,14 @@ outside the automated door, performs a live deployment. The dispatcher's actual 
 `client.deploy_contract(code=..., args=[CalldataAddress(acct.address)])` followed by
 `client.wait_for_transaction_receipt(tx, status=TransactionStatus.ACCEPTED, ...)` — rather than the
 `genlayer` CLI form (`genlayer deploy --contract ... --rpc ...`) the boilerplate documentation
-otherwise leads with; this was a workaround for `gltest.utils.extract_contract_address` raising
-`TypeError` against a testnet receipt with `tx_data_decoded == None` (limitation 2, below), not a
-change to the contract's deploy semantics. **No contract code was written, or needs to be written,
-specifically to support this deploy path** — it is a difference in which client library the
-dispatcher's own operational script uses.
+otherwise leads with; `genlayer_py` was the operational script's client from its first line, not a
+substitution made after some other approach failed. The actual workaround needed against Bradbury
+is narrower: `gltest.utils.extract_contract_address` raises `TypeError` against a testnet receipt
+with `tx_data_decoded == None` (limitation 2, below), so the script reads the deploy receipt's own
+`recipient` field directly instead of calling that utility — not a change to the contract's deploy
+semantics. **No contract code was written, or needs to be written, specifically to support this
+deploy path** — it is a difference in which client library and receipt field the dispatcher's own
+operational script uses.
 
 **The real, measured Bradbury deployment** — network, chain id, RPC, contract address, explorer
 URL, deploy transaction, the three live PASS/PASS/FAIL records, and the three SDK workarounds
@@ -401,9 +403,11 @@ this contract raises `glvm.UserError(...)`, not a bare `Exception`/`ValueError`.
 
 ## Limitations (named, not hidden)
 
-- **Studionet's own state is not proven stable across resets.** The contract address recorded
-  there (`evidence/MEASURED-011-*`) is dated and marked as such; **Testnet Bradbury is the
-  canonical address** for any external reference to this contract (`deploy/README.md`).
+- **Studionet's own state is not proven stable across resets, and there is no fixed Studionet
+  address to begin with** — `deploy_provek_evidence_witness` (see "How to run integration tests"
+  above) deploys a fresh contract instance per test run, so `evidence/MEASURED-011-*` records only
+  that run's pass/fail outcome, not an address. **Testnet Bradbury is the canonical address** for
+  any external reference to this contract (`deploy/README.md`).
 - **Integration tests are not run in CI, and not run at the door.** `tests/integration/` needs a
   funded account on a real network — a resource this repository's automated gates deliberately
   never hold (`GL-00 ruling-2 §"Networks"/"Secrets"`). They are run manually, by the dispatcher, against
@@ -414,13 +418,13 @@ this contract raises `glvm.UserError(...)`, not a bare `Exception`/`ValueError`.
   building the adapter that actually reads a `WitnessResult` off-chain and constructs a
   `WitnessRecord` from it is a separate, deliberately deferred task, named in `DECISIONS.md` D-63
   rather than built speculatively here.
-- **A third criterion type — a command with a deterministic exit — is not implemented.** The
-  operator's brief and Provek's own specification (spec 4.2-bis point 4) name it as a possible
-  third machine-checkable criterion; `src/witness/witness.py`'s own module docstring already
-  explains why it is not built there (arbitrary code execution triggered by a request from outside
-  the host is a different order of decision than an SSRF-guarded GET), and the same reasoning holds
-  here — `SUPPORTED_CRITERIA` in this contract is deliberately the same two names as Provek's own,
-  not a superset.
+- **A third criterion type — a command with a deterministic exit — is not implemented.** Provek's
+  own specification (spec 4.2-bis point 4) names it as a possible third machine-checkable
+  criterion, and `src/witness/witness.py`'s own module docstring already explains why it is not
+  built there (arbitrary code execution triggered by a request from outside the host is a
+  different order of decision than an SSRF-guarded GET); the same reasoning holds here —
+  `SUPPORTED_CRITERIA` in this contract is deliberately the same two names as Provek's own, not a
+  superset.
 - **Three known `genlayer-py==0.18.0` SDK limitations against Bradbury**, all worked around in the
   dispatcher's own operational script with **no contract code changed** — transaction status `14`
   (`LEADER_REVEALING`) missing from the SDK's status-name map, `gltest.utils.extract_contract_address`
