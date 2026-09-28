@@ -34,7 +34,7 @@ ARTIFACT_URL = "https://raw.githubusercontent.com/whiteknightonhorse/provek/main
 def test_url_reachable_passes_against_a_real_public_url():
     contract = load_fixture(deploy_provek_evidence_witness)
     receipt = contract.witness(
-        "git:whiteknightonhorse/provek", "url_reachable", REACHABLE_URL, "").transact()
+        args=["git:whiteknightonhorse/provek", "url_reachable", REACHABLE_URL, ""]).transact()
     assert tx_execution_succeeded(receipt)
 
 
@@ -62,14 +62,14 @@ def test_url_reachable_goes_undetermined_against_an_unreachable_url():
     # (`genlayer_py.config.transactions.transaction_config`) — pass explicit, larger values so
     # this test fails on the actual status rather than on an impatient wait.
     receipt = contract.witness(
-        subject_id, "url_reachable", UNREACHABLE_URL, "",
+        args=[subject_id, "url_reachable", UNREACHABLE_URL, ""],
     ).transact(
         wait_transaction_status=TransactionStatus.UNDETERMINED,
         wait_retries=20,
         wait_interval=5000,
     )
     assert receipt["status_name"] == "UNDETERMINED"
-    assert json.loads(contract.list_by_subject(subject_id).call()) == []
+    assert json.loads(contract.list_by_subject(args=[subject_id]).call()) == []
 
 
 def test_artifact_hash_passes_against_a_real_artifact():
@@ -77,7 +77,7 @@ def test_artifact_hash_passes_against_a_real_artifact():
     import hashlib
     expected = hashlib.sha256(requests.get(ARTIFACT_URL, timeout=10).content).hexdigest()
     receipt = contract.witness(
-        "git:whiteknightonhorse/provek", "artifact_hash", ARTIFACT_URL, expected).transact()
+        args=["git:whiteknightonhorse/provek", "artifact_hash", ARTIFACT_URL, expected]).transact()
     assert tx_execution_succeeded(receipt)
 
 
@@ -85,13 +85,14 @@ def test_operator_only_and_state_retrieval_round_trip():
     contract = load_fixture(deploy_provek_evidence_witness)
     subject_id = "git:whiteknightonhorse/provek:integration-smoke"
 
-    receipt = contract.witness(subject_id, "url_reachable", REACHABLE_URL, "").transact()
+    receipt = contract.witness(
+        args=[subject_id, "url_reachable", REACHABLE_URL, ""]).transact()
     assert tx_execution_succeeded(receipt)
 
-    ids = json.loads(contract.list_by_subject(subject_id).call())
+    ids = json.loads(contract.list_by_subject(args=[subject_id]).call())
     assert len(ids) == 1
 
-    record = contract.get_result(ids[0]).call()
+    record = contract.get_result(args=[ids[0]]).call()
     assert record["subject_id"] == subject_id
     assert record["criterion"] == "url_reachable"
     assert record["result"] == "PASS"

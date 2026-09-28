@@ -1,0 +1,68 @@
+# RED-060 - offline call-form check, plant: live-test file reverted to c8599ad (positional call form)
+#
+# subject: /home/incubator/orchestra/glenv/bin/python3 -m pytest -q tests/direct/test_live_harness_surface.py (integrations/genlayer-witness/)
+# tree: 04b0c56efebb397b0403a74c9b95ee89cd3bca74 (dirty)
+
+--- plant applied (integrations/genlayer-witness/tests/integration/test_provek_evidence_witness_live.py reverted to c8599ad) ---
+exit code: 1
+..F.                                                                     [100%]
+=================================== FAILURES ===================================
+_______________ test_integration_call_sites_use_args_kwarg_only ________________
+
+    def test_integration_call_sites_use_args_kwarg_only():
+        """AST check over `tests/integration/*.py`: every contract-method call chained into
+        `.transact()`/`.call()` passes zero positional arguments and only `args=`/`kwargs=` keywords —
+        the one form `contract_function_factory`'s bound methods actually accept."""
+        checked_any = False
+        for path in _integration_files():
+            tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+            for _outer, inner in _iter_transact_or_call_sites(tree):
+                checked_any = True
+>               assert not inner.args, (
+                    f"{path.name}:{inner.lineno}: positional argument(s) passed to a contract "
+                    f"method ({ast.dump(inner)})"
+                )
+E               AssertionError: test_provek_evidence_witness_live.py:36: positional argument(s) passed to a contract method (Call(func=Attribute(value=Name(id='contract', ctx=Load()), attr='witness', ctx=Load()), args=[Constant(value='git:whiteknightonhorse/provek'), Constant(value='url_reachable'), Name(id='REACHABLE_URL', ctx=Load()), Constant(value='')], keywords=[]))
+E               assert not [<ast.Constant object at 0x7fa0b7ca6390>, <ast.Constant object at 0x7fa0b7ca6310>, <ast.Name object at 0x7fa0b7ca6290>, <ast.Constant object at 0x7fa0b7ca6210>]
+E                +  where [<ast.Constant object at 0x7fa0b7ca6390>, <ast.Constant object at 0x7fa0b7ca6310>, <ast.Name object at 0x7fa0b7ca6290>, <ast.Constant object at 0x7fa0b7ca6210>] = <ast.Call object at 0x7fa0b7ca6550>.args
+
+tests/direct/test_live_harness_surface.py:90: AssertionError
+=========================== short test summary info ============================
+FAILED tests/direct/test_live_harness_surface.py::test_integration_call_sites_use_args_kwarg_only
+1 failed, 3 passed in 0.12s
+INFO: File `gltest.config.yaml` found in the current directory, using it
+INFO: Using the following configuration:
+INFO:   RPC URL: http://127.0.0.1:4000/api
+INFO:   Selected Network: localnet
+INFO:   Available networks: ['localnet', 'studionet']
+INFO:   Selected chain type: localnet
+INFO:   Available chains: localnet, studionet, testnet_asimov, testnet_bradbury
+INFO:   Contracts directory: contracts
+INFO:   Artifacts directory: artifacts
+INFO:   Environment: .env
+INFO:   Default wait interval: 3000 ms
+INFO:   Default wait retries: 50
+INFO:   Leader only mode: False
+
+CONFIRMED: the old positional call form fails the offline surface check (rc != 0) - caught without any network call, matching the dispatcher's studionet TypeError.
+
+--- plant reverted (live-test file restored to the fixed args= form) ---
+exit code: 0
+....                                                                     [100%]
+4 passed in 0.05s
+INFO: File `gltest.config.yaml` found in the current directory, using it
+INFO: Clearing artifacts directory: artifacts
+INFO: Using the following configuration:
+INFO:   RPC URL: http://127.0.0.1:4000/api
+INFO:   Selected Network: localnet
+INFO:   Available networks: ['localnet', 'studionet']
+INFO:   Selected chain type: localnet
+INFO:   Available chains: localnet, studionet, testnet_asimov, testnet_bradbury
+INFO:   Contracts directory: contracts
+INFO:   Artifacts directory: artifacts
+INFO:   Environment: .env
+INFO:   Default wait interval: 3000 ms
+INFO:   Default wait retries: 50
+INFO:   Leader only mode: False
+
+CONFIRMED: green again on the real tree with the plant reverted.

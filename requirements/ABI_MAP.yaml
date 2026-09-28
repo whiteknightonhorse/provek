@@ -220,9 +220,17 @@ scripts/ratchet_evidence.py:      [ABI-13-6, ABI-16-11, ABI-33-4]
 # `fixtures.py`'s relative import instead of trying to load the test file as a top-level module.
 # ABI-16-11 alone, same as the test files it sits beside: the module it makes exist is collection
 # itself, and a test that fails to even collect must not read as a silent skip.
+#
+# T-GL-03d-callform: `tests/direct/test_live_harness_surface.py` is new
+# (GL-05-call-signature.ruling-1.md) - it makes no `gl.nondet.web.get`/network fetch itself, it
+# checks OFFLINE that `tests/integration/`'s live tests use the call form
+# `gltest.contracts.Contract` actually accepts (`args=[...]`, not positional). ABI-16-11 alone,
+# same as the test files it polices: the discipline it turns on is a call-form mismatch reading as
+# a live `TypeError` (or, worse, a silently wrong call) instead of a red offline result.
 integrations/genlayer-witness/contracts/provek_evidence_witness.py:       [ABI-5-3, ABI-16-11]
 integrations/genlayer-witness/tests/direct/conftest.py:                   [ABI-5-3, ABI-16-11]
 integrations/genlayer-witness/tests/direct/test_provek_evidence_witness.py: [ABI-16-11]
+integrations/genlayer-witness/tests/direct/test_live_harness_surface.py:  [ABI-16-11]
 integrations/genlayer-witness/tests/integration/__init__.py:              [ABI-16-11]
 integrations/genlayer-witness/tests/integration/fixtures.py:              [ABI-5-3, ABI-16-11]
 integrations/genlayer-witness/tests/integration/test_provek_evidence_witness_live.py: [ABI-16-11]
