@@ -1,0 +1,74 @@
+MEASURED-011 - GL-05: `gltest --network studionet tests/integration -v -s`, 4 passed. Run by the
+dispatcher (network access; this task - T-GL-05b - never calls the GenLayer network and does not
+read `~/orchestra/gl/`, see this task's own brief). Transcribed here verbatim from
+`~/taskloop/briefs/GL-05-transcripts/GL-studionet-20260928T063729Z.txt`.
+
+tree: 5e28d5f933329c124c058996da28b2abd4da5d37
+
+DATE (UTC): 2026-09-28
+
+
+1. VERBATIM TRANSCRIPT
+--------------------------------------------------------------------------------------------------
+
+    Mon Sep 28 06:37:29 AM UTC 2026
+    5e28d5f933329c124c058996da28b2abd4da5d37
+    INFO: File `gltest.config.yaml` found in the current directory, using it
+    INFO: Clearing artifacts directory: artifacts
+    INFO: Using the following configuration:
+    INFO:   RPC URL: https://studio.genlayer.com/api
+    INFO:   Selected Network: studionet
+    INFO:   Available networks: ['localnet', 'studionet']
+    INFO:   Selected chain type: studionet
+    INFO:   Available chains: localnet, studionet, testnet_asimov, testnet_bradbury
+    INFO:   Contracts directory: contracts
+    INFO:   Artifacts directory: artifacts
+    INFO:   Environment: .env
+    INFO:   Default wait interval: 3000 ms
+    INFO:   Default wait retries: 50
+    INFO:   Leader only mode: False
+    ============================= test session starts ==============================
+    platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- /home/incubator/orchestra/glenv/bin/python
+    cachedir: .pytest_cache
+    rootdir: /home/incubator/incubator/integrations/genlayer-witness
+    configfile: pyproject.toml
+    plugins: genlayer-test-0.29.2
+    collecting ... collected 4 items
+
+    tests/integration/test_provek_evidence_witness_live.py::test_url_reachable_passes_against_a_real_public_url PASSED
+    tests/integration/test_provek_evidence_witness_live.py::test_url_reachable_goes_undetermined_against_an_unreachable_url PASSED
+    tests/integration/test_provek_evidence_witness_live.py::test_artifact_hash_passes_against_a_real_artifact PASSED
+    tests/integration/test_provek_evidence_witness_live.py::test_operator_only_and_state_retrieval_round_trip PASSED
+
+    ======================== 4 passed in 100.13s (0:01:40) =========================
+    rc=0
+    Mon Sep 28 06:39:10 AM UTC 2026
+
+(The two leading timestamped/commit lines and `rc=0` bracket the pytest output in the source
+transcript file itself; reproduced here exactly as captured, nothing trimmed.)
+
+
+2. WHAT THIS PROVES
+--------------------------------------------------------------------------------------------------
+
+The four consensus-path integration tests written in GL-03/GL-03e
+(`tests/integration/test_provek_evidence_witness_live.py`) pass against a real GenLayer network with
+real validators - Studionet, chain type `studionet`, RPC `https://studio.genlayer.com/api` - not the
+in-process direct-mode VM `tests/direct/` exercises. This is the consensus-path check GL-00
+ruling-2 §3 requires of GL-05 before the Bradbury deploy (MEASURED-012) is attempted. Run by the
+dispatcher only, per GL-00 ruling-2 §"Studionet/Bradbury - только диспетчер": this task (T-GL-05b)
+made no network call and holds no GenLayer key; it transcribes the dispatcher's already-captured
+output rather than re-running it.
+
+
+3. NOT MEASURED HERE
+--------------------------------------------------------------------------------------------------
+
+Per-test transaction ids and `gen_getTransactionReceipt.timestamps`: ruling-2 §3's acceptance line
+for GL-05 names them as evidence content ("evidence `MEASURED-011-*` с tx id и
+`gen_getTransactionReceipt.timestamps`"), but the dispatcher's actual `-v -s` capture (quoted in
+full above) contains only the per-test PASS/PASS/PASS/PASS summary and pytest's own timing line -
+no per-call tx ids or receipt timestamps were printed by this run. `not_measured`, not zero or
+omitted silently, per this repository's own invariant 1 (CLAUDE.md). Bradbury's own live-record tx
+hashes, full detail, and per-record timestamps are in MEASURED-012 instead, from a run that did
+print them.

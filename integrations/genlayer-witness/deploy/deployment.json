@@ -1,0 +1,71 @@
+{
+  "network": "testnet_bradbury",
+  "chain_id": 4221,
+  "rpc_url": "https://rpc-bradbury.genlayer.com",
+  "contract_address": "0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6",
+  "explorer_url": "https://explorer-bradbury.genlayer.com/address/0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6",
+  "deploy_tx": "07d54ea656a583b980f3071587775a66d0aa56da1042c7f77f2f5228d3d6f754",
+  "deploy_tx_status": "ACCEPTED",
+  "deploy_tx_consensus_result": "AGREE",
+  "deploy_tx_execution_result": "FINISHED_WITH_RETURN",
+  "deployer": "0x2c111FCD3082083C9B287DD9DA5995f190968Ef9",
+  "commit": "5e28d5f933329c124c058996da28b2abd4da5d37",
+  "_note_tx_hashes": "deploy_tx and every live_records[].tx below have their 0x prefix stripped - scripts/secret_scan.sh blocks the literal pattern 0x + 64 hex chars (GL-00 ruling-1); see evidence/MEASURED-012-* for the 0x-prefixed originals in their source transcripts.",
+  "live_records": [
+    {
+      "witness_id": "0645571a8dea1e2601e441eb3c451b3eb6ab60f2f1c5af68c70129c03ae13453",
+      "subject_id": "git:whiteknightonhorse/provek",
+      "criterion": "artifact_hash",
+      "evidence_url": "https://raw.githubusercontent.com/whiteknightonhorse/provek/5e28d5f933329c124c058996da28b2abd4da5d37/LICENSE",
+      "expected": "c61e9a12ff00f711d1d42a15430de1f7191c369adcc20cab7d33e7c1cbcf8660",
+      "evidence_digest": "c61e9a12ff00f711d1d42a15430de1f7191c369adcc20cab7d33e7c1cbcf8660",
+      "observation": "status=200",
+      "result": "PASS",
+      "checked_at": "2026-09-28T06:51:33Z",
+      "tx": "45388e3b02dba0295c5960a7aabefadf4175198a1d71b90008689772dfd68c7a",
+      "tx_status": "ACCEPTED"
+    },
+    {
+      "witness_id": "cfa668c12868beb9e0e211c3b5d3179dae39ff699a9747d1f2600305e5c84521",
+      "subject_id": "git:whiteknightonhorse/provek",
+      "criterion": "url_reachable",
+      "evidence_url": "https://provek.dev/",
+      "expected": "",
+      "evidence_digest": "4a2163ff682b70fd98d600abea37117cbaf93dc77e4c866aa8e89afa6c3903d8",
+      "observation": "status=200",
+      "result": "PASS",
+      "checked_at": "2026-09-28T06:51:50Z",
+      "tx": "46986cb115b20fd0b4c81a823b5aefea1e754e785080df459d67ce9ced5fa566",
+      "tx_status": "ACCEPTED"
+    },
+    {
+      "witness_id": "ca1f8567919cf99f1cde6fcb464971920e5ea122f3eea8c7fb019d6fa7c97e1f",
+      "subject_id": "git:whiteknightonhorse/provek",
+      "criterion": "artifact_hash",
+      "evidence_url": "https://raw.githubusercontent.com/whiteknightonhorse/provek/5e28d5f933329c124c058996da28b2abd4da5d37/LICENSE",
+      "expected": "0000000000000000000000000000000000000000000000000000000000000000",
+      "evidence_digest": "c61e9a12ff00f711d1d42a15430de1f7191c369adcc20cab7d33e7c1cbcf8660",
+      "observation": "sha256 mismatch",
+      "result": "FAIL",
+      "checked_at": "2026-09-28T06:52:07Z",
+      "tx": "4973f49c975270b4550623e5ee4cfd7ee4f75cddd60591c3d0bb12cb9e36234f",
+      "tx_status": "ACCEPTED"
+    }
+  ],
+  "studionet_integration_tests": {
+    "network": "studionet",
+    "command": "gltest --network studionet tests/integration -v -s",
+    "result": "4 passed in 100.13s",
+    "evidence": "evidence/MEASURED-011-gl-05-studionet-integration-tests-green.txt"
+  },
+  "known_sdk_limitations": [
+    "genlayer-py 0.18.0 (latest on PyPI as of this deploy) has no entry for transaction status 14 (LEADER_REVEALING) in its status map, though Bradbury emits it and genlayer-js already recognizes it; treated as non-terminal (REVEALING) while polling. No contract code change.",
+    "On testnet the transaction receipt field tx_data_decoded is None, so gltest.utils.extract_contract_address raises TypeError; the deployed contract address was instead read from the deploy transaction's own recipient field. No contract code change.",
+    "gen_call on Bradbury returns an object of the shape {\"data\": <hex>, \"status\": ...}, where genlayer-py 0.18.0 expects a bare hex string; the dispatcher's read helper unwraps the data field before decoding. No contract code change."
+  ],
+  "evidence": [
+    "evidence/MEASURED-011-gl-05-studionet-integration-tests-green.txt",
+    "evidence/MEASURED-012-gl-05-bradbury-live-deploy-and-three-witness-records.txt"
+  ],
+  "source_transcripts": "~/taskloop/briefs/GL-05-transcripts/ (dispatcher-captured; this task made no GenLayer network call and did not read ~/orchestra/gl/)"
+}

@@ -32,7 +32,9 @@ integrations/genlayer-witness/
                                `src.witness.witness._digest`, this directory's 3.12 direct tests
                                read the contract's own `_url_reachable_digest`)
   deploy/
-    README.md                — not deployed by this task; see GL-05/GL-05b
+    README.md                — Deployment record (Bradbury address, explorer, three live records,
+                               three named SDK limitations); see GL-05/GL-05b
+    deployment.json           — the same record's real, measured fields (GL-05b)
 ```
 
 ## Running the tests written so far

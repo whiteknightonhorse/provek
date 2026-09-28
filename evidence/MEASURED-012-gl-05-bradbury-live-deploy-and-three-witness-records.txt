@@ -1,0 +1,223 @@
+MEASURED-012 - GL-05: live deploy of `ProvekEvidenceWitness` on GenLayer Testnet Bradbury (chain id
+4221) and three real on-chain witness records (PASS, PASS, FAIL). Run by the dispatcher (network
+access, key in `~/orchestra/gl/`; this task - T-GL-05b - never calls the GenLayer network and never
+reads that key, per its own brief). Composed here from the dispatcher's own transcripts under
+`~/taskloop/briefs/GL-05-transcripts/`:
+`deploy_bradbury.py.txt` (the operational script, quoted in full below - it never prints the key),
+`GL-bradbury-20260928T064638Z.txt` (attempt 1), `GL-bradbury-20260928T064809Z-resume.txt`
+(attempt 2), `GL-bradbury-20260928T065122Z-writes.txt` (attempt 3, the one that completed).
+
+**Every transaction hash below has its `0x` prefix stripped before being written into this
+repository.** The source transcripts print them `0x`-prefixed; `scripts/secret_scan.sh`'s pattern
+`0x[0-9a-f]{64}` (identical to `src/collector/github.py`'s `SECRET_PATTERNS`, law ONE-PLACE) matches
+exactly that shape and would block the push - the same convention GL-00 ruling-1 already established
+for this project. The stripped value is otherwise byte-identical to the transcript; the full
+`0x`-prefixed original is recoverable from the cited transcript file. Witness ids (`get_result`'s own
+keys) are unaffected - the contract already returns them without a `0x` prefix.
+
+tree: 5e28d5f933329c124c058996da28b2abd4da5d37
+
+DATE (UTC): 2026-09-28
+
+
+1. THE DISPATCHER'S OPERATIONAL SCRIPT (verbatim, `deploy_bradbury.py.txt`)
+--------------------------------------------------------------------------------------------------
+
+    # Dispatcher operational script (GL-05, Fable GL-00 ruling-2 §2 "live check"): deploy + 3 live writes on Bradbury.
+    # Reads the key from key.hex; never prints it. Outside the repo on purpose.
+    import hashlib, json, time, urllib.request
+    from eth_account import Account
+    from genlayer_py import create_client
+    from genlayer_py.chains import testnet_bradbury
+    from gltest.types import CalldataAddress, TransactionStatus
+    from gltest.utils import extract_contract_address
+    import os
+    # genlayer-py 0.18.0 (latest on PyPI, 2026-09-28) lacks status 14 = LEADER_REVEALING, which Bradbury emits
+    # (genlayer-js src/types/transactions.ts has it). Non-terminal; treat as REVEALING while polling only.
+    import genlayer_py.types.transactions as _gtx
+    _gtx.TRANSACTION_STATUS_NUMBER_TO_NAME.setdefault('14', _gtx.TransactionStatus.REVEALING)
+
+    REPO = "/home/incubator/incubator"
+    COMMIT = "5e28d5f933329c124c058996da28b2abd4da5d37"
+    CONTRACT = f"{REPO}/integrations/genlayer-witness/contracts/provek_evidence_witness.py"
+    LICENSE_URL = f"https://raw.githubusercontent.com/whiteknightonhorse/provek/{COMMIT}/LICENSE"
+    SUBJECT = "git:whiteknightonhorse/provek"
+
+
+    # Bradbury gen_call now returns {"data": <hex>, "status": ..., ...}; genlayer-py 0.18.0 expects a bare hex string.
+    import eth_utils
+    from genlayer_py.abi import calldata as _cd
+    from genlayer_py.abi.transactions import serialize as _ser
+    from genlayer_py.contracts.actions import make_calldata_object as _mco
+    def gl_read(client, addr, fn, args=None):
+        data = _ser([_cd.encode(_mco(method=fn, args=args, kwargs=None)), b"\x00"])
+        res = client.provider.make_request(method="gen_call", params=[{"type": "read", "to": addr,
+              "from": client.local_account.address, "data": data, "transaction_hash_variant": "latest-nonfinal"}])["result"]
+        hexdata = res["data"] if isinstance(res, dict) else res
+        return _cd.decode(eth_utils.hexadecimal.decode_hex("0x" + hexdata))
+
+    def log(*a): print(time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), *a, flush=True)
+
+    acct = Account.from_key(open("/home/incubator/orchestra/gl/key.hex").read().strip())
+    log("deployer", acct.address, "chain", testnet_bradbury.id)
+    client = create_client(chain=testnet_bradbury, account=acct)
+
+    lic = urllib.request.urlopen(LICENSE_URL, timeout=30).read()
+    lic_sha = hashlib.sha256(lic).hexdigest()
+    log("LICENSE", LICENSE_URL, "bytes", len(lic), "sha256", lic_sha)
+
+    if os.environ.get("CONTRACT_ADDR"):
+        addr = os.environ["CONTRACT_ADDR"]
+        log("using already-deployed contract", addr, "(deploy tx", os.environ.get("DEPLOY_TX"), ")")
+    else:
+        tx = client.deploy_contract(code=open(CONTRACT).read(), args=[CalldataAddress(acct.address)])
+        log("deploy tx", tx)
+        rc = client.wait_for_transaction_receipt(tx, status=TransactionStatus.ACCEPTED, interval=5000, retries=180)
+        # testnet: tx_data_decoded is None, gltest's extract_contract_address fails; deploy tx recipient = new contract
+        addr = rc.get("recipient")
+        log("DEPLOYED contract", addr, "status", rc.get("status_name"))
+    log("supported_criteria (liveness)", gl_read(client, addr, "supported_criteria"))
+
+    writes = [
+      ("PASS expected: artifact_hash of pinned LICENSE", "artifact_hash", LICENSE_URL, lic_sha),
+      ("PASS expected: url_reachable provek.dev",         "url_reachable", "https://provek.dev/", ""),
+      ("FAIL expected: artifact_hash with a wrong digest", "artifact_hash", LICENSE_URL, "0"*64),
+    ]
+    for label, crit, url, exp in writes:
+        t = client.write_contract(address=addr, function_name="witness", args=[SUBJECT, crit, url, exp])
+        log("write", label, "tx", t)
+        r = client.wait_for_transaction_receipt(t, status=TransactionStatus.ACCEPTED, interval=5000, retries=180)
+        log("  status", r.get("status_name"))
+
+    ids = json.loads(gl_read(client, addr, "list_by_subject", [SUBJECT]))
+    log("list_by_subject", ids)
+    for i in ids:
+        log("get_result", i, gl_read(client, addr, "get_result", [i]))
+    log("supported_criteria", gl_read(client, addr, "supported_criteria"))
+    log("DONE contract", addr)
+
+
+2. ATTEMPT 1 - `GL-bradbury-20260928T064638Z.txt` (deploy tx submitted, receipt polling crashed)
+--------------------------------------------------------------------------------------------------
+
+    2026-09-28T06:46:39Z deployer 0x2c111FCD3082083C9B287DD9DA5995f190968Ef9 chain 4221
+    2026-09-28T06:46:47Z LICENSE https://raw.githubusercontent.com/whiteknightonhorse/provek/5e28d5f933329c124c058996da28b2abd4da5d37/LICENSE bytes 1395 sha256 c61e9a12ff00f711d1d42a15430de1f7191c369adcc20cab7d33e7c1cbcf8660
+    2026-09-28T06:46:50Z deploy tx <deploy_tx, 0x stripped - see §5>
+    Traceback (most recent call last):
+      File "/home/incubator/orchestra/gl/deploy_bradbury.py", line 28, in <module>
+        rc = client.wait_for_transaction_receipt(tx, status=TransactionStatus.ACCEPTED, interval=5000, retries=180)
+      File ".../genlayer_py/client/genlayer_client.py", line 231, in wait_for_transaction_receipt
+        return wait_for_transaction_receipt(...)
+      File ".../genlayer_py/transactions/actions.py", line 80, in wait_for_transaction_receipt
+        transaction = self.get_transaction(transaction_hash=transaction_hash)
+      File ".../genlayer_py/client/genlayer_client.py", line 245, in get_transaction
+        return get_transaction(self=self, transaction_hash=transaction_hash)
+      File ".../genlayer_py/transactions/actions.py", line 138, in get_transaction
+        decoded_transaction = raw_transaction.decode()
+      File ".../genlayer_py/types/transactions.py", line 516, in decode
+        "status_name": TRANSACTION_STATUS_NUMBER_TO_NAME[str(self.status)].value,
+    KeyError: '14'
+    rc=1
+
+Root cause (SDK limitation 1, §5): Bradbury's validators emit transaction status `14`
+(`LEADER_REVEALING`), which `genlayer-py==0.18.0`'s own `TRANSACTION_STATUS_NUMBER_TO_NAME` map does
+not contain (`genlayer-js` does have it) - a non-terminal, in-progress status the SDK's decoder was
+never taught, not a failure of the deploy itself. The deploy transaction that this attempt submitted
+is the same one this record uses (§5) - it was already accepted on-chain by the time attempt 3 ran;
+only the polling code in this script needed the fix in §1 (the `setdefault('14', ...)` patch present
+in the script quoted above, added after this attempt).
+
+
+3. ATTEMPT 2 - `GL-bradbury-20260928T064809Z-resume.txt` (status-14 fix applied, address-extraction crashed)
+--------------------------------------------------------------------------------------------------
+
+    2026-09-28T06:48:10Z deployer 0x2c111FCD3082083C9B287DD9DA5995f190968Ef9 chain 4221
+    2026-09-28T06:48:18Z LICENSE https://raw.githubusercontent.com/whiteknightonhorse/provek/5e28d5f933329c124c058996da28b2abd4da5d37/LICENSE bytes 1395 sha256 c61e9a12ff00f711d1d42a15430de1f7191c369adcc20cab7d33e7c1cbcf8660
+    2026-09-28T06:48:18Z deploy tx <deploy_tx, 0x stripped - see §5, same tx as attempt 1>
+    Traceback (most recent call last):
+      File "/home/incubator/orchestra/gl/deploy_bradbury.py", line 34, in <module>
+        addr = extract_contract_address(rc)
+      File ".../gltest/utils.py", line 8, in extract_contract_address
+        and "contract_address" in receipt["tx_data_decoded"]
+    TypeError: argument of type 'NoneType' is not iterable
+    rc=1
+
+Root cause (SDK limitation 2, §5): on Bradbury the transaction receipt's `tx_data_decoded` field is
+`None`, and `gltest.utils.extract_contract_address` unconditionally indexes into it - a helper built
+for `gltest`'s own local/studio harness, not testnet receipts. Fixed in the script (§1) by reading
+the new contract's address directly off the deploy transaction's own `recipient` field instead of
+calling that helper at all.
+
+
+4. ATTEMPT 3 - `GL-bradbury-20260928T065122Z-writes.txt` (completed: three live records)
+--------------------------------------------------------------------------------------------------
+
+    2026-09-28T06:51:23Z deployer 0x2c111FCD3082083C9B287DD9DA5995f190968Ef9 chain 4221
+    2026-09-28T06:51:30Z LICENSE https://raw.githubusercontent.com/whiteknightonhorse/provek/5e28d5f933329c124c058996da28b2abd4da5d37/LICENSE bytes 1395 sha256 c61e9a12ff00f711d1d42a15430de1f7191c369adcc20cab7d33e7c1cbcf8660
+    2026-09-28T06:51:30Z using already-deployed contract 0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6 (deploy tx <deploy_tx, 0x stripped>)
+    2026-09-28T06:51:32Z supported_criteria (liveness) ['artifact_hash', 'url_reachable']
+    2026-09-28T06:51:34Z write PASS expected: artifact_hash of pinned LICENSE tx <write1 tx, 0x stripped>
+    2026-09-28T06:51:49Z   status ACCEPTED
+    2026-09-28T06:51:51Z write PASS expected: url_reachable provek.dev tx <write2 tx, 0x stripped>
+    2026-09-28T06:52:06Z   status ACCEPTED
+    2026-09-28T06:52:08Z write FAIL expected: artifact_hash with a wrong digest tx <write3 tx, 0x stripped>
+    2026-09-28T06:52:23Z   status ACCEPTED
+    2026-09-28T06:52:25Z list_by_subject ['0645571a8dea1e2601e441eb3c451b3eb6ab60f2f1c5af68c70129c03ae13453', 'cfa668c12868beb9e0e211c3b5d3179dae39ff699a9747d1f2600305e5c84521', 'ca1f8567919cf99f1cde6fcb464971920e5ea122f3eea8c7fb019d6fa7c97e1f']
+    2026-09-28T06:52:26Z get_result 0645571a8dea1e2601e441eb3c451b3eb6ab60f2f1c5af68c70129c03ae13453 {'checked_at': '2026-09-28T06:51:33Z', 'criterion': 'artifact_hash', 'evidence_digest': 'c61e9a12ff00f711d1d42a15430de1f7191c369adcc20cab7d33e7c1cbcf8660', 'evidence_url': 'https://raw.githubusercontent.com/whiteknightonhorse/provek/5e28d5f933329c124c058996da28b2abd4da5d37/LICENSE', 'expected': 'c61e9a12ff00f711d1d42a15430de1f7191c369adcc20cab7d33e7c1cbcf8660', 'observation': 'status=200', 'result': 'PASS', 'subject_id': 'git:whiteknightonhorse/provek'}
+    2026-09-28T06:52:27Z get_result cfa668c12868beb9e0e211c3b5d3179dae39ff699a9747d1f2600305e5c84521 {'checked_at': '2026-09-28T06:51:50Z', 'criterion': 'url_reachable', 'evidence_digest': '4a2163ff682b70fd98d600abea37117cbaf93dc77e4c866aa8e89afa6c3903d8', 'evidence_url': 'https://provek.dev/', 'expected': '', 'observation': 'status=200', 'result': 'PASS', 'subject_id': 'git:whiteknightonhorse/provek'}
+    2026-09-28T06:52:28Z get_result ca1f8567919cf99f1cde6fcb464971920e5ea122f3eea8c7fb019d6fa7c97e1f {'checked_at': '2026-09-28T06:52:07Z', 'criterion': 'artifact_hash', 'evidence_digest': 'c61e9a12ff00f711d1d42a15430de1f7191c369adcc20cab7d33e7c1cbcf8660', 'evidence_url': 'https://raw.githubusercontent.com/whiteknightonhorse/provek/5e28d5f933329c124c058996da28b2abd4da5d37/LICENSE', 'expected': '0000000000000000000000000000000000000000000000000000000000000000', 'observation': 'sha256 mismatch', 'result': 'FAIL', 'subject_id': 'git:whiteknightonhorse/provek'}
+    2026-09-28T06:52:30Z supported_criteria ['artifact_hash', 'url_reachable']
+    2026-09-28T06:52:30Z DONE contract 0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6
+    rc=0
+
+Root cause fixed for this attempt (SDK limitation 3, §5), inside `gl_read` (§1): `gen_call` on
+Bradbury returns `{"data": <hex>, "status": ..., ...}` where `genlayer-py==0.18.0`'s own decode path
+expects a bare hex string; `gl_read` unwraps `res["data"]` before decoding. Without this fix every
+read (`supported_criteria`, `list_by_subject`, `get_result`) would raise before this script could
+even confirm the deployed contract was live.
+
+
+5. THE THREE HASHES, `0x` STRIPPED (full value; recoverable `0x`-prefixed from the transcripts above)
+--------------------------------------------------------------------------------------------------
+
+    deploy_tx  (attempt 1/3, same tx both times):
+      07d54ea656a583b980f3071587775a66d0aa56da1042c7f77f2f5228d3d6f754
+
+    write tx 1 (PASS, artifact_hash / LICENSE):
+      45388e3b02dba0295c5960a7aabefadf4175198a1d71b90008689772dfd68c7a
+
+    write tx 2 (PASS, url_reachable / provek.dev):
+      46986cb115b20fd0b4c81a823b5aefea1e754e785080df459d67ce9ced5fa566
+
+    write tx 3 (FAIL, artifact_hash / wrong digest):
+      4973f49c975270b4550623e5ee4cfd7ee4f75cddd60591c3d0bb12cb9e36234f
+
+Deploy transaction status, per the dispatcher's direct explorer read (this task made no network
+call and cannot re-verify this line itself): ACCEPTED, validators AGREE, execution result
+FINISHED_WITH_RETURN. Contract: `0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6` (40 hex chars, not
+subject to the secret-scan `0x`+64-hex pattern, kept `0x`-prefixed throughout this repository).
+Deployer/operator: `0x2c111FCD3082083C9B287DD9DA5995f190968Ef9` (same reason, kept as-is). Explorer:
+`https://explorer-bradbury.genlayer.com/address/0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6`
+(HTTP 200, per the dispatcher; not re-checked here).
+
+
+6. WHAT THIS PROVES
+--------------------------------------------------------------------------------------------------
+
+Three real, on-chain, consensus-accepted witness records on GenLayer Testnet Bradbury (chain id
+4221), matching GL-00 ruling-2 §2's "живая проверка" requirement exactly: one `artifact_hash`
+PASS against the pinned LICENSE at this commit (digest computed independently by the dispatcher's
+script and confirmed equal to the contract's own `evidence_digest`), one `url_reachable` PASS
+against `https://provek.dev/`, and one `artifact_hash` FAIL against a deliberately wrong digest
+(`observation: "sha256 mismatch"`) - the FAIL path shown on-chain, not merely asserted. No contract
+code was changed to make any of this work; every fix above lives in the dispatcher's own operational
+script (§1), outside this repository, per GL-00 ruling-3's SDK-limitations note.
+
+
+7. NOT DONE BY THIS TASK (T-GL-05b)
+--------------------------------------------------------------------------------------------------
+
+No network call to GenLayer, no read of `~/orchestra/gl/` (the key file is never opened by anything
+in this task - the script that used it ran under the dispatcher, before this task started). This
+evidence file is a transcription and organization of already-captured dispatcher output, per this
+task's own brief.
