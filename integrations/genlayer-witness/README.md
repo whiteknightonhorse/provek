@@ -301,7 +301,7 @@ for Studionet beyond running the integration tests themselves.
 **Testnet Bradbury** (the canonical deployment target — a public explorer, unlike Studionet, whose
 own state is not proven stable across resets): deployment needs a funded account and its private
 key, held outside this repository (`~/orchestra/gl/key.hex`, never committed, never read by any
-automated gate — GL-00 ruling-2 §"Сети"/"Секреты"). This repository's tests and gates make **no
+automated gate — GL-00 ruling-2 §"Networks"/"Secrets"). This repository's tests and gates make **no
 GenLayer network call of any kind** and never read that key; only the dispatcher, operating
 outside the automated door, performs a live deployment. The dispatcher's actual deploy path uses
 `genlayer_py.create_client(chain=testnet_bradbury, account=...)` directly —
@@ -406,7 +406,7 @@ this contract raises `glvm.UserError(...)`, not a bare `Exception`/`ValueError`.
   canonical address** for any external reference to this contract (`deploy/README.md`).
 - **Integration tests are not run in CI, and not run at the door.** `tests/integration/` needs a
   funded account on a real network — a resource this repository's automated gates deliberately
-  never hold (`GL-00 ruling-2 §"Сети"/"Секреты"`). They are run manually, by the dispatcher, against
+  never hold (`GL-00 ruling-2 §"Networks"/"Secrets"`). They are run manually, by the dispatcher, against
   Studionet; see "How to run integration tests" above and `evidence/MEASURED-011-*` for the last
   recorded run.
 - **No bridge writes this contract's on-chain results back into Provek's own `WitnessRecord`
