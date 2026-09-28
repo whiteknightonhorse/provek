@@ -1,0 +1,63 @@
+# RED-057 - collect-only gate, plant: tests/integration/__init__.py removed
+#
+# subject: /home/incubator/orchestra/glenv/bin/python3 -m pytest --collect-only -q tests/integration (integrations/genlayer-witness/)
+# tree: a59fbf2a5355682670503cba585986548745a223 (dirty)
+
+--- plant applied (__init__.py removed) ---
+exit code: 2
+==================================== ERRORS ====================================
+___ ERROR collecting tests/integration/test_provek_evidence_witness_live.py ____
+ImportError while importing test module '/home/incubator/incubator-worktrees/T-GL-03c-collect/integrations/genlayer-witness/tests/integration/test_provek_evidence_witness_live.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../../.local/share/uv/python/cpython-3.12.14-linux-x86_64-gnu/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/integration/test_provek_evidence_witness_live.py:24: in <module>
+    from .fixtures import deploy_provek_evidence_witness
+E   ImportError: attempted relative import with no known parent package
+=========================== short test summary info ============================
+ERROR tests/integration/test_provek_evidence_witness_live.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+no tests collected, 1 error in 0.28s
+INFO: File `gltest.config.yaml` found in the current directory, using it
+INFO: Clearing artifacts directory: artifacts
+INFO: Using the following configuration:
+INFO:   RPC URL: http://127.0.0.1:4000/api
+INFO:   Selected Network: localnet
+INFO:   Available networks: ['localnet', 'studionet']
+INFO:   Selected chain type: localnet
+INFO:   Available chains: localnet, studionet, testnet_asimov, testnet_bradbury
+INFO:   Contracts directory: contracts
+INFO:   Artifacts directory: artifacts
+INFO:   Environment: .env
+INFO:   Default wait interval: 3000 ms
+INFO:   Default wait retries: 50
+INFO:   Leader only mode: False
+
+CONFIRMED: without the package marker, tests/integration fails to collect (rc != 0) - caught before any network call, matching the dispatcher's studionet transcript.
+
+--- plant reverted (__init__.py restored) ---
+exit code: 0
+tests/integration/test_provek_evidence_witness_live.py::test_url_reachable_passes_against_a_real_public_url
+tests/integration/test_provek_evidence_witness_live.py::test_url_reachable_goes_undetermined_against_an_unreachable_url
+tests/integration/test_provek_evidence_witness_live.py::test_artifact_hash_passes_against_a_real_artifact
+tests/integration/test_provek_evidence_witness_live.py::test_operator_only_and_state_retrieval_round_trip
+
+4 tests collected in 0.03s
+INFO: File `gltest.config.yaml` found in the current directory, using it
+INFO: Clearing artifacts directory: artifacts
+INFO: Using the following configuration:
+INFO:   RPC URL: http://127.0.0.1:4000/api
+INFO:   Selected Network: localnet
+INFO:   Available networks: ['localnet', 'studionet']
+INFO:   Selected chain type: localnet
+INFO:   Available chains: localnet, studionet, testnet_asimov, testnet_bradbury
+INFO:   Contracts directory: contracts
+INFO:   Artifacts directory: artifacts
+INFO:   Environment: .env
+INFO:   Default wait interval: 3000 ms
+INFO:   Default wait retries: 50
+INFO:   Leader only mode: False
+
+CONFIRMED: green again on the real tree with the plant reverted.

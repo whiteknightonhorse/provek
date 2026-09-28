@@ -363,6 +363,10 @@ jobs:
         working-directory: integrations/genlayer-witness
         run: python3 -m pytest tests/direct -q
 
+      - name: integration tests collect cleanly - not run, just imported (T-GL-05 runs them live)
+        working-directory: integrations/genlayer-witness
+        run: python3 -m pytest --collect-only -q tests/integration
+
   secrets:
     name: secret scan
     runs-on: ubuntu-latest

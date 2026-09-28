@@ -127,7 +127,8 @@ if [ "$got" != "$want" ]; then
 fi
 ( cd integrations/genlayer-witness \
   && ~/orchestra/glenv/bin/python3 scripts/check_genvm_lint.py \
-  && ~/orchestra/glenv/bin/python3 -m pytest tests/direct -q )
+  && ~/orchestra/glenv/bin/python3 -m pytest tests/direct -q \
+  && ~/orchestra/glenv/bin/python3 -m pytest --collect-only -q tests/integration )
 
 # Gates-only mode. The orchestra must judge the tree after EVERY task, not just before a push,
 # and a second copy of the gate list would drift from this one the first time the list changed.

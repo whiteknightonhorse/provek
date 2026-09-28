@@ -214,9 +214,16 @@ scripts/ratchet_evidence.py:      [ABI-13-6, ABI-16-11, ABI-33-4]
 # them make the fetch themselves, but each is exactly the same three-state discipline turned on a
 # different counter - a test that could not run must not read as a pass, and `check_genvm_lint.py`
 # exists FOR that discipline applied to `genvm-lint`'s own exit code (see its own module docstring).
+#
+# T-GL-03c-collect: `tests/integration/__init__.py` is new (GL-05-harness-import.ruling-1.md) - a
+# package marker with no logic, added so pytest's default `prepend` import mode resolves
+# `fixtures.py`'s relative import instead of trying to load the test file as a top-level module.
+# ABI-16-11 alone, same as the test files it sits beside: the module it makes exist is collection
+# itself, and a test that fails to even collect must not read as a silent skip.
 integrations/genlayer-witness/contracts/provek_evidence_witness.py:       [ABI-5-3, ABI-16-11]
 integrations/genlayer-witness/tests/direct/conftest.py:                   [ABI-5-3, ABI-16-11]
 integrations/genlayer-witness/tests/direct/test_provek_evidence_witness.py: [ABI-16-11]
+integrations/genlayer-witness/tests/integration/__init__.py:              [ABI-16-11]
 integrations/genlayer-witness/tests/integration/fixtures.py:              [ABI-5-3, ABI-16-11]
 integrations/genlayer-witness/tests/integration/test_provek_evidence_witness_live.py: [ABI-16-11]
 integrations/genlayer-witness/scripts/check_genvm_lint.py:                [ABI-16-11]

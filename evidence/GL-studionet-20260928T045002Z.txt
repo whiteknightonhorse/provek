@@ -1,0 +1,52 @@
+# GL-studionet-20260928T045002Z - dispatcher's `gltest --network studionet tests/integration -v -s`
+# run against HEAD d9f87f8 (line 2 below, before this file's own header existed). This is the
+# original red transcript T-GL-03c-collect was opened over (GL-05-harness-import.ruling-1.md,
+# "Замер диспетчера"): collection fails on `tests/integration/test_provek_evidence_witness_live.py`'s
+# `from .fixtures import ...` before any network call, network untouched. Copied verbatim from
+# ~/orchestra/evidence/GL-studionet-20260928T045002Z.txt into this repository's evidence/ per the
+# door's rule that a red artefact a task is opened over lives in the tree, stamped, not only on the
+# dispatcher's host.
+# tree: d9f87f8fbf337c520b657e6d1de2582971ac4a9e
+#
+# --- verbatim below ---
+Mon Sep 28 04:50:02 AM UTC 2026
+d9f87f8fbf337c520b657e6d1de2582971ac4a9e
+INFO: File `gltest.config.yaml` found in the current directory, using it
+INFO: Clearing artifacts directory: artifacts
+INFO: Using the following configuration:
+INFO:   RPC URL: https://studio.genlayer.com/api
+INFO:   Selected Network: studionet
+INFO:   Available networks: ['localnet', 'studionet']
+INFO:   Selected chain type: studionet
+INFO:   Available chains: localnet, studionet, testnet_asimov, testnet_bradbury
+INFO:   Contracts directory: contracts
+INFO:   Artifacts directory: artifacts
+INFO:   Environment: .env
+INFO:   Default wait interval: 3000 ms
+INFO:   Default wait retries: 50
+INFO:   Leader only mode: False
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- /home/incubator/orchestra/glenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/incubator/incubator/integrations/genlayer-witness
+configfile: pyproject.toml
+plugins: genlayer-test-0.29.2
+collecting ... collected 0 items / 1 error
+
+==================================== ERRORS ====================================
+___ ERROR collecting tests/integration/test_provek_evidence_witness_live.py ____
+ImportError while importing test module '/home/incubator/incubator/integrations/genlayer-witness/tests/integration/test_provek_evidence_witness_live.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../.local/share/uv/python/cpython-3.12.14-linux-x86_64-gnu/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/integration/test_provek_evidence_witness_live.py:24: in <module>
+    from .fixtures import deploy_provek_evidence_witness
+E   ImportError: attempted relative import with no known parent package
+=========================== short test summary info ============================
+ERROR tests/integration/test_provek_evidence_witness_live.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+=============================== 1 error in 0.14s ===============================
+rc=2
+Mon Sep 28 04:50:04 AM UTC 2026

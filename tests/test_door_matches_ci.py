@@ -151,6 +151,12 @@ CI_GATES: dict[str, Door | Advisory] = {
     # interpretation lives, run identically by both sides (L-2).
     "genvm-lint - the contract passes the GenVM linter": Door("check_genvm_lint.py"),
     "direct tests - the witness contract in-process": Door("pytest tests/direct -q"),
+    # T-GL-03c-collect (GL-05-harness-import.ruling-1.md). A relative import inside
+    # `tests/integration/` can fail before any network call is even attempted (the door's own
+    # transcript against studionet: `ImportError` at collection, rc=2) - this step measures exactly
+    # that class of defect without touching a network, at the door and in CI alike.
+    "integration tests collect cleanly - not run, just imported (T-GL-05 runs them live)":
+        Door("pytest --collect-only -q tests/integration"),
 }
 
 # Steps that prepare the runner rather than judge the tree. A step whose command IS one of these is
