@@ -1,0 +1,141 @@
+MEASURED-010 - GL-02: a Python 3.12 venv with the three pinned GenLayer packages, and the
+official genlayer-project-boilerplate running green inside it (direct tests + lint), read from a
+`--depth 1` clone in scratch and destroyed after the reading. No file under this repository was
+touched other than this artefact - the venv lives at `~/orchestra/glenv`, outside the tree.
+
+tree: db34a641f535e2f4ca3a0e3bb14ee95349c93e9a
+
+DATE (UTC): 2026-09-28
+
+
+1. TOOLCHAIN INSTALLED
+--------------------------------------------------------------------------------------------------
+
+`uv` itself, hash-verified from PyPI, no curl|sh, no sudo, no apt:
+
+    $ cat > /tmp/uv-req.txt <<'EOF'
+    uv==0.12.19 --hash=sha256:a63d18a0aa38ee9f21a5406afbbaeb41303bcd954be9d6b7c1b95ac275e53958
+    EOF
+    $ python3 -m pip install --user --require-hashes -r /tmp/uv-req.txt
+    Successfully installed uv-0.12.19
+
+Python 3.12 and the venv, via `uv` (no system apt package, no sudo):
+
+    $ uv python install 3.12
+    Installed Python 3.12.14 in 1.03s
+
+    $ uv venv ~/orchestra/glenv --python 3.12
+    Using CPython 3.12.14
+    Creating virtual environment at: orchestra/glenv
+
+    $ ~/orchestra/glenv/bin/python --version
+    Python 3.12.14
+
+Three pinned packages, PyPI versions (see §3 for why `genlayer-test` was installed `--no-deps`):
+
+    $ uv pip install --python ~/orchestra/glenv/bin/python genlayer-py==0.18.0 genvm-linter==0.11.0
+    ... + genlayer-py==0.18.0
+    ... + genvm-linter==0.11.0
+    (+ 43 transitive deps: web3, eth-account, pydantic, etc.)
+
+    $ uv pip install --python ~/orchestra/glenv/bin/python --no-deps genlayer-test==0.29.2
+    + genlayer-test==0.29.2
+
+    $ uv pip install --python ~/orchestra/glenv/bin/python pytest colorama pyyaml python-dotenv
+    + pytest==9.1.1 + colorama==0.4.6 + pyyaml==6.0.3 + python-dotenv==1.2.3 (+ deps)
+
+Final `uv pip list` for the three named packages plus pytest:
+
+    genlayer-py        0.18.0
+    genlayer-test      0.29.2
+    genvm-linter       0.11.0
+    pytest             9.1.1
+
+`genvm-linter==0.11.0` is the version live on PyPI today (2026-09-28), `requires_python: >=3.10`,
+matching GL-facts F10's instruction to pin "the version current on the day of GL-02".
+
+
+2. BOILERPLATE, CLONED TO SCRATCH, RUN, THEN DELETED
+--------------------------------------------------------------------------------------------------
+
+    $ git clone --depth 1 https://github.com/genlayerlabs/genlayer-project-boilerplate \
+        /tmp/gl-scratch-boilerplate
+    Cloning into '/tmp/gl-scratch-boilerplate'...
+
+    $ cd /tmp/gl-scratch-boilerplate && /usr/bin/time -v \
+        ~/orchestra/glenv/bin/python -m pytest tests/direct -q
+    ...........................................                              [100%]
+    43 passed in 50.33s
+    Maximum resident set size (kbytes): 138484
+    Exit status: 0
+
+    $ cd /tmp/gl-scratch-boilerplate && /usr/bin/time -v \
+        ~/orchestra/glenv/bin/genvm-lint check contracts/football_bets.py
+    Downloading: [...128.6 MB...]
+    Lint passed (2 checks)
+      Warnings: line 74/92/98 - Bare Python exception 'Exception'; use gl.vm.UserError(...) instead
+    Validation passed
+      Contract: FootballBets - Methods: 5 (3 view, 2 write)
+    Maximum resident set size (kbytes): 116800
+    Exit status: 0
+
+    $ rm -rf /tmp/gl-scratch-boilerplate /tmp/genvm-universal-v0.2.16.tar.xz /tmp/uv-req.txt
+
+Both green on first attempt AFTER the two fixes named in §3 below; before those fixes, `pytest
+tests/direct -q` was 33 failed / 10 passed (all 33 failures the same `HTTPError: 404` chasing a
+missing `genvm-universal.tar.xz` asset - see §3b) and the `uv pip install` of all three packages
+together did not resolve at all (see §3a). Both fixes are pre-existing-tool workarounds, not edits
+to any installed package's source, and both are described in full in
+`~/orchestra/GL-harness-notes.md` §7 for GL-03 to reuse.
+
+
+3. TWO NAMED TOOLCHAIN DEFECTS (not silently worked around - see GL-harness-notes.md §7 for detail)
+--------------------------------------------------------------------------------------------------
+
+3a. PyPI metadata for `genlayer-test==0.29.2` declares `genlayer-py<0.17.0,>=0.13.0`
+(`pypi.org/pypi/genlayer-test/0.29.2/json` -> `info.requires_dist`), which conflicts with the
+pinned `genlayer-py==0.18.0` and made `uv pip install` refuse to resolve all three together.
+Checked against the actual source at the boilerplate's own pin
+(`raw.githubusercontent.com/.../genlayer-testing-suite/v0.29/pyproject.toml`): it declares
+`genlayer-py>=0.18.0,<0.19.0` - the PyPI-published metadata is stale, the real requirement matches
+0.18.0. Fixed by installing `genlayer-test` with `--no-deps` and installing its actual runtime
+deps directly (§1).
+
+3b. `gltest`'s direct-mode SDK downloader (`gltest/direct/sdk_loader.py`) resolves "latest genvm"
+via the redirect of `github.com/genlayerlabs/genvm/releases/latest`, which today lands on
+`v0.3.0-rc7`, then requests asset `genvm-universal.tar.xz` under that tag. That asset name has not
+existed since `v0.2.16` (checked via `api.github.com/repos/genlayerlabs/genvm/releases`, every
+release from `v0.3.0-rc0` on ships per-platform assets instead) - so this request 404s for ANY
+contract on a fresh host, not something specific to this repository. Verified `v0.2.16`'s
+`genvm-universal.tar.xz` still contains the exact runner hash
+(`1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6`) that `contracts/football_bets.py`'s pinned
+header requires (inspected the tarball's `runners/py-genlayer/1j/b45aa8yn....tar` member directly),
+so it is the matching runtime, not a stale substitute. Fixed by pre-populating
+`~/.cache/gltest-direct/genvm-universal-v0.2.16.tar.xz` so the loader's own existing
+cache-first code path (`list_cached_versions()`) finds it before ever calling GitHub - no package
+source was edited. This cache file must exist for GL-03's own `pytest tests/direct` run to go
+green; it is not part of this repository and not deleted by this task's scratch cleanup.
+
+
+4. STATE LEFT BEHIND, OUTSIDE THIS REPOSITORY
+--------------------------------------------------------------------------------------------------
+
+    ~/orchestra/glenv/                         venv, Python 3.12.14, the three pinned packages
+    ~/orchestra/GL-harness-notes.md            full findings for GL-03 (contract/test authoring)
+    ~/.cache/gltest-direct/genvm-universal-v0.2.16.tar.xz   216630904 bytes, the §3b fix
+    ~/.cache/genvm-linter/                     genvm-lint's own runtime cache (132 MB), unrelated
+
+Nothing under `/tmp` survives this task (`/tmp/gl-scratch-boilerplate` and the loose
+`genvm-universal-v0.2.16.tar.xz` staging copy were both removed after use).
+
+
+5. TREE STATE AFTER
+--------------------------------------------------------------------------------------------------
+
+    $ git status
+    On branch main
+    Your branch is up to date with 'origin/main'.
+    nothing to commit, working tree clean
+
+(read BEFORE `evidence/MEASURED-010-*` itself was added to the index - the tree stamp in the
+header above is this same clean state.)
