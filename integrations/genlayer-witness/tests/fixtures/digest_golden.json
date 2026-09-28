@@ -1,0 +1,20 @@
+[
+  {
+    "url": "https://example.com/a",
+    "result": "PASS",
+    "checked_at": "2026-01-01T00:00:00+00:00",
+    "digest": "00b45db99d9c0555c39cfaaf4ea7b22abccae3f4aec9cc4572bd562057ab7046"
+  },
+  {
+    "url": "https://example.com/b",
+    "result": "FAIL",
+    "checked_at": "2026-06-15T12:34:56+00:00",
+    "digest": "4db95f99b757601c6b64fee608f09bb5581d2a5f02736474b811ccfbb285ecc2"
+  },
+  {
+    "url": "https://x.invalid/artifact",
+    "result": "PASS",
+    "checked_at": "2025-12-31T23:59:59Z",
+    "digest": "452d3ea308bd4e857d76735bbfcfeed738c8602882d6a949d7988225bb334c3b"
+  }
+]
