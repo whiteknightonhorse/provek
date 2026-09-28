@@ -33,7 +33,16 @@ updates:
 
   # The workflows themselves. An action pinned to a moved tag is a supply-chain path into CI,
   # and CI is what judges every other gate here.
+  #
+  # `codeql-action/init` and `codeql-action/analyze` are two calls into one release, but
+  # Dependabot tracks each `uses:` line as its own dependency, so a routine bump opened them as
+  # two separate PRs (#30, #32) pinned to the same new SHA - and `analyze` refuses to run against
+  # a config written by a newer `init`, so each PR was red alone and neither could merge first.
+  # The `groups` key below makes Dependabot open one PR for both lines together.
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: weekly }
     open-pull-requests-limit: 5
+    groups:
+      codeql-action:
+        patterns: ["github/codeql-action*"]
