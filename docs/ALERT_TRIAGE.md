@@ -330,3 +330,48 @@ the run above past the 280-character cap.
 
 **Still open after this act (5), all the operator's:** `#30`, `#31`, `#32`, `#33`, `#34` — unchanged
 for the fourth act running.
+
+## Fifth triage act, 2026-09-28 (T-HY-02) — one alert, closed by repair rather than by disposition
+
+Source: `~/taskloop/disputes/REPO-hygiene-0928.ruling-1.md` §2 (Fable). This act is scoped to
+`#80` alone — the counts and open items the fourth act left are over a month old by now and were
+not re-read here; whatever the live count is, `GET /code-scanning/alerts?state=open` is the
+reading that settles it, not this file.
+
+**`#80` `py/potentially-uninitialized-local-variable`, `scripts/fetch_shorts_map.py`, the guard
+`state == "ok" and body is not None and isinstance(raw_map, dict)`.**
+
+**It is a false positive against the guard as it stood, and it was repaired anyway — the same shape
+`#53` was in the third act.** `raw_map` is assigned on all three branches inside the block above
+that guard (parse ok, `except ValueError`, "parsed but not a dict"), and the guard's own
+`state == "ok" and body is not None` short-circuits before `raw_map` is read on any path where the
+block was skipped — CodeQL does not connect the `state` reassignment inside the block to the
+short-circuit that depends on it, so it cannot see the guard is already safe. But safety here rests
+on two conditions staying in lock-step (the guard's `state == "ok"` and the block's own entry
+condition), which is exactly the kind of coincidence invariant 1 exists to replace with a
+structural guarantee. Repaired by initialising `raw_map: dict | None = None` before the block and
+simplifying the guard to plain `isinstance(raw_map, dict)`, which no longer depends on `state`
+agreeing with anything.
+
+**`main()` had no test at all before this act.** `tests/test_build_shorts_map_matches.py` reads the
+committed `web/public/data/shorts_map.json` but never calls `main()`. New
+`tests/test_fetch_shorts_map_main.py` monkeypatches `fetch()` to `("source_answered_non_200", 503,
+None)` and to `("ok", 200, b"not json")`, and a pre-seeded `OUT` to a temp file: both cases assert
+`main()` returns `0`, `last_attempt.state` reads the fetch outcome, and a pre-existing `measurement`
+is left byte-for-byte untouched (CLAUDE.md invariant 1 — a failed fetch is not a fact about an empty
+one).
+
+**The red run was executed, not argued.** `evidence/RED-058-generator.py` plants the removal of
+exactly the one line the repair added (`raw_map: dict | None = None`) and re-runs the new test
+against the mutant: the first case never enters the block that used to assign `raw_map` (`body is
+None`), so the bare `isinstance(raw_map, dict)` reads a name Python has not bound yet —
+`UnboundLocalError`, Python's own name for the shape CodeQL flagged. Reverting the plant returns the
+suite to green. Full transcript at
+`evidence/RED-058-a-mutant-without-the-raw-map-initialisation-crashes.txt`.
+
+**What is not claimed: that this commit closes the alert.** The same rule every earlier act in this
+file applied applies unchanged — what closes a code-scanning alert is the SCAN, which runs after
+the push, and the edit that should close one is not the instrument that does. Until
+`GET /code-scanning/alerts?state=open` no longer lists `#80` (or shows it `fixed`), it is
+`not_measured`, not `clean`. That reading, and the push itself, are the dispatcher's, per
+`GL-NIGHTLY-collision ruling-1` (this task ran in a worktree on its own branch, not on `main`).

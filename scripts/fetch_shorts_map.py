@@ -113,6 +113,7 @@ def main() -> int:
         "source_url": RAW_URL, "measurement": None, "last_attempt": None,
     }
 
+    raw_map: dict | None = None
     if state == "ok" and body is not None:
         try:
             raw_map = json.loads(body)
@@ -123,7 +124,7 @@ def main() -> int:
             if not isinstance(raw_map, dict):
                 state, raw_map = "not_object", None
 
-    if state == "ok" and body is not None and isinstance(raw_map, dict):
+    if isinstance(raw_map, dict):
         videos, dropped = validate(raw_map)
         existing["measurement"] = {
             "fetched_at": now, "raw_entry_count": len(raw_map),

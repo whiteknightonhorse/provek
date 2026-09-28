@@ -1,0 +1,60 @@
+# RED-058 - tests/test_fetch_shorts_map_main.py, plant: raw_map's pre-initialisation removed
+#
+# subject: /usr/bin/python3 -m pytest -q tests/test_fetch_shorts_map_main.py
+# tree: c9f121c71d61bb956b657aee95efc60505e54ad3 (dirty)
+
+--- plant applied (raw_map: dict | None = None removed) ---
+exit code: 1
+F.                                                                       [100%]
+=================================== FAILURES ===================================
+____ test_main_leaves_measurement_untouched_when_the_source_answers_non_200 ____
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f6a918e6ad0>
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-1900/test_main_leaves_measurement_u0')
+
+    def test_main_leaves_measurement_untouched_when_the_source_answers_non_200(monkeypatch, tmp_path):
+        out = tmp_path / "shorts_map.json"
+        _seed(out, SEEDED_MEASUREMENT)
+        monkeypatch.setattr(fetch_shorts_map, "ROOT", tmp_path)
+        monkeypatch.setattr(fetch_shorts_map, "OUT", out)
+        monkeypatch.setattr(fetch_shorts_map, "fetch", lambda: ("source_answered_non_200", 503, None))
+    
+>       assert fetch_shorts_map.main() == 0
+
+tests/test_fetch_shorts_map_main.py:48: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def main() -> int:
+        now = datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+        state, status, body = fetch()
+    
+        existing = json.loads(OUT.read_text(encoding="utf-8")) if OUT.exists() else {
+            "source_url": RAW_URL, "measurement": None, "last_attempt": None,
+        }
+    
+        if state == "ok" and body is not None:
+            try:
+                raw_map = json.loads(body)
+            except ValueError:
+                state, status = "not_json", status
+                raw_map = None
+            else:
+                if not isinstance(raw_map, dict):
+                    state, raw_map = "not_object", None
+    
+>       if isinstance(raw_map, dict):
+E       UnboundLocalError: local variable 'raw_map' referenced before assignment
+
+scripts/fetch_shorts_map.py:126: UnboundLocalError
+=========================== short test summary info ============================
+FAILED tests/test_fetch_shorts_map_main.py::test_main_leaves_measurement_untouched_when_the_source_answers_non_200
+1 failed, 1 passed in 0.30s
+
+CONFIRMED: without the pre-initialisation, a non-ok fetch with body=None crashes with UnboundLocalError on the bare `isinstance(raw_map, dict)` guard - the same shape alert #80 named, reproduced by execution rather than by resemblance to CodeQL's rule.
+
+--- plant reverted ---
+exit code: 0
+..                                                                       [100%]
+2 passed in 0.03s
+
+CONFIRMED: green again on the real tree with the plant reverted.
