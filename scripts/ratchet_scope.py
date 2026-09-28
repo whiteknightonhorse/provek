@@ -17,7 +17,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 MAP = ROOT / "requirements" / "ABI_MAP.yaml"
-SCAN = ("src", "scripts", "demo")
+SCAN = ("src", "scripts", "demo", "integrations")
 CODE_SUFFIXES = (".py", ".sh", ".mjs")
 """EXPLICIT list of what counts as code.
 

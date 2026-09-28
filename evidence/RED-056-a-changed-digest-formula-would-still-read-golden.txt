@@ -1,0 +1,34 @@
+# RED-056 - golden vector, plant: _digest's field separator changed
+#
+# subject: tests/test_genlayer_witness_digest_matches_provek.py
+# tree: 5a53d6326a040e8564723e15f6c8249ff33aaa58 (dirty)
+
+--- plant applied (tests/test_genlayer_witness_digest_matches_provek.py) ---
+exit code: 1
+.F.                                                                      [100%]
+=================================== FAILURES ===================================
+_____ test_digest_matches_the_golden_vector_produced_by_the_contract_side ______
+
+    def test_digest_matches_the_golden_vector_produced_by_the_contract_side():
+        for vector in _vectors():
+            computed = _digest("url_reachable", vector["url"], vector["result"], vector["checked_at"])
+>           assert computed == vector["digest"], vector
+E           AssertionError: {'url': 'https://example.com/a', 'result': 'PASS', 'checked_at': '2026-01-01T00:00:00+00:00', 'digest': '00b45db99d9c0555c39cfaaf4ea7b22abccae3f4aec9cc4572bd562057ab7046'}
+E           assert 'afdfb1b165de...2138b65679c88' == '00b45db99d9c...d562057ab7046'
+E             
+E             - 00b45db99d9c0555c39cfaaf4ea7b22abccae3f4aec9cc4572bd562057ab7046
+E             + afdfb1b165de767751a049bdecc6e3155913bab7b46db80a7c42138b65679c88
+
+tests/test_genlayer_witness_digest_matches_provek.py:40: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_genlayer_witness_digest_matches_provek.py::test_digest_matches_the_golden_vector_produced_by_the_contract_side
+1 failed, 2 passed in 0.11s
+
+CONFIRMED: a changed digest formula no longer matches the golden vector the contract-side reader agreed to.
+
+--- plant reverted (tests/test_genlayer_witness_digest_matches_provek.py) ---
+exit code: 0
+...                                                                      [100%]
+3 passed in 0.05s
+
+CONFIRMED: green again on the real tree with the plant reverted.

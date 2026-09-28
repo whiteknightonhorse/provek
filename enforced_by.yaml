@@ -48,6 +48,17 @@ laws:
     text: "methodology modules import no transport - proven by a second transport"
     gate: src/transport/file_transport.py
     test: tests/test_transport_independence.py
+  # T-GL-04 (D-63, ADR-0012). The same guarantee LAW-TRANSPORT-INDEPENDENT holds, applied to a
+  # second boundary: `integrations/genlayer-witness` is a separate, reusable GenLayer contract this
+  # repository hosts but must never depend on for its own scoring. Proven the same way - an AST
+  # import scan, not a grep (ADR-0002's own "Why AST and not grep") - with the direction reversed
+  # from ADR-0011's two-way template gate: only `src/`/`scripts/` reaching INTO `integrations/` is
+  # forbidden, since that is the direction that would let an experimental contract move Provek's
+  # own methodology.
+  - id: LAW-GENLAYER-WITNESS-ISOLATED
+    text: "src/ and scripts/ import nothing from integrations/ - the GenLayer witness contract stays a separate, reusable primitive and never fuses with Provek's own scoring methodology"
+    gate: integrations/genlayer-witness/contracts/provek_evidence_witness.py
+    test: tests/test_genlayer_witness_is_isolated.py
   - id: LAW-PUBLIC-STATUS-REGISTRY
     text: "the status registry is ours and mandatory; an absent projection is not a zero"
     gate: src/registry/public_registry.py

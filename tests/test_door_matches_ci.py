@@ -139,6 +139,18 @@ CI_GATES: dict[str, Door | Advisory] = {
     # included, without a floor), so the door must set the same variable CI does or run nothing.
     'reproduce - README\'s "## Run it" block, verbatim, against a fresh clone':
         Door("PROVEK_REPRODUCE_README"),
+    # T-GL-04 (D-63). `integrations/genlayer-witness/` needs Python >= 3.12, so this job alone
+    # runs on a second, isolated toolchain rather than the 3.10 every other job shares - the door's
+    # counterpart is step 9, which reaches into `~/orchestra/glenv` (T-GL-02) instead of the
+    # interpreter running push.sh itself.
+    "pre-populate the direct-mode SDK cache (gltest's own downloader 404s past genvm v0.2.16)":
+        Door("genvm-universal-v0.2.16.tar.xz"),
+    # `genvm-lint check` has no baseline/allowlist flag, so a bare invocation would be permanently
+    # red over two confirmed false-positive warnings this project keeps rather than works around
+    # (see `integrations/genlayer-witness/README.md`) - `check_genvm_lint.py` is the one place that
+    # interpretation lives, run identically by both sides (L-2).
+    "genvm-lint - the contract passes the GenVM linter": Door("check_genvm_lint.py"),
+    "direct tests - the witness contract in-process": Door("pytest tests/direct -q"),
 }
 
 # Steps that prepare the runner rather than judge the tree. A step whose command IS one of these is
@@ -534,7 +546,7 @@ def test_a_step_commented_out_at_the_door_is_not_vouched_for_by_its_own_comment(
     """
     door = DOOR.read_text(encoding="utf-8")
     disabled = "\n".join(
-        ("# " + ln) if ln.strip().startswith(('echo "5/8', 'echo "6/8', 'echo "7/8')) else ln
+        ("# " + ln) if ln.strip().startswith(('echo "5/9', 'echo "6/9', 'echo "7/9')) else ln
         for ln in door.splitlines())
     # The prose survives the commenting-out; that is precisely why the raw substring test passed.
     assert "-m ruff" in disabled and "npm run build" in disabled
@@ -562,6 +574,15 @@ def test_a_step_commented_out_at_the_door_is_not_vouched_for_by_its_own_comment(
     # and one dead comment. Confirmed no `main`-facing gate lost coverage from this: `--cov-fail-under
     # =70` (tests/cov) and `-m ruff` (lint) each still appear on exactly the one line this scenario
     # disables, so those two gaps fire exactly as before.
+    #
+    # STILL 4 ON T-GL-04 (2026-09-28), WHEN THE DENOMINATOR CHANGED BUT THE SET OF DISABLED STEPS
+    # DID NOT. Adding the `genlayer` job's step 9 pushed every door label from `N/8` to `N/9`,
+    # which is why the literal prefixes matched above moved from `"5/8`/`"6/8`/`"7/8` to
+    # `"5/9`/`"6/9`/`"7/9` in the same commit - a bare bump here with the OLD prefixes left standing
+    # would have silently stopped disabling anything (no line starts with a string that no longer
+    # exists), collapsed `gaps` to empty, and made this assertion fail for a reason unrelated to the
+    # scenario it exists to catch. The count itself is unaffected because steps 5-7 (ruff, site,
+    # tests/cov) are still the only ones this scenario disables; step 9 (genlayer) is untouched.
     assert len(gaps) == 4, f"a disabled door was reported as matching CI: {gaps}"
 
 
@@ -631,9 +652,13 @@ def test_a_printed_excuse_does_not_vouch_for_the_step_it_replaces():
     string the table matches on. A door running no lint reported as matching CI.
     """
     door = DOOR.read_text(encoding="utf-8")
+    # T-GL-04 (2026-09-28): the door's step labels moved from `N/8` to `N/9` (see the matching note
+    # on `test_a_step_commented_out_at_the_door_is_not_vouched_for_by_its_own_comment`), so the
+    # literal prefix matched here moved with it - the OLD `"5/8` would silently match nothing on
+    # the current door and this test would stop exercising the scenario it exists to catch.
     excused = "\n".join(
-        'echo "5/8 lint skipped today: -m ruff release is broken"'
-        if ln.strip().startswith('echo "5/8') else ln
+        'echo "5/9 lint skipped today: -m ruff release is broken"'
+        if ln.strip().startswith('echo "5/9') else ln
         for ln in door.splitlines())
     assert "-m ruff" in excused, "the excuse still contains the matched string; that is the trap"
     assert any("'ruff' is blocking" in p for p in divergences(WORKFLOW.read_text(), excused))

@@ -1,0 +1,43 @@
+# RED-055 - isolation, plant: src/ importing the GenLayer contract
+#
+# subject: tests/test_genlayer_witness_is_isolated.py
+# tree: 5a53d6326a040e8564723e15f6c8249ff33aaa58 (dirty)
+
+--- plant applied (tests/test_genlayer_witness_is_isolated.py) ---
+exit code: 1
+F.                                                                       [100%]
+=================================== FAILURES ===================================
+____________ test_src_and_scripts_import_nothing_from_integrations _____________
+
+    def test_src_and_scripts_import_nothing_from_integrations():
+        """The load-bearing guarantee: this repository's own code never reaches into the GenLayer
+        contract, so a change or a removal of `integrations/genlayer-witness` can never break
+        Provek's own scoring, transport, or gates."""
+        offenders: list[str] = []
+        for d in SCAN_DIRS:
+            for path in (ROOT / d).rglob("*.py"):
+                if "__pycache__" in path.parts:
+                    continue
+                for name in _imported_modules(path):
+                    if name.split(".")[0] == "integrations":
+                        offenders.append(f"{path.relative_to(ROOT)} imports {name!r}")
+>       assert offenders == [], "\n".join(offenders)
+E       AssertionError: src/witness/witness.py imports 'integrations.genlayer_witness.contracts.provek_evidence_witness'
+E       assert ["src/witness...nce_witness'"] == []
+E         
+E         Left contains one more item: "src/witness/witness.py imports 'integrations.genlayer_witness.contracts.provek_evidence_witness'"
+E         Use -v to get more diff
+
+tests/test_genlayer_witness_is_isolated.py:51: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_genlayer_witness_is_isolated.py::test_src_and_scripts_import_nothing_from_integrations
+1 failed, 1 passed in 0.13s
+
+CONFIRMED: an import of the GenLayer contract from src/ is caught.
+
+--- plant reverted (tests/test_genlayer_witness_is_isolated.py) ---
+exit code: 0
+..                                                                       [100%]
+2 passed in 0.14s
+
+CONFIRMED: green again on the real tree with the plant reverted.

@@ -6,19 +6,19 @@
 # carried on. A gate you can walk past is worse than no gate: it manufactures a false sense of
 # safety.
 #
-# Order: secrets -> scope -> laws -> language -> lint -> site -> tests -> reproduce -> push.
-# This line had already drifted once - it still read "... -> language -> tests" after ruff was
-# added below, which is the same header-outlives-its-list defect that let the door and CI diverge
-# in the first place, sitting three lines above the comment explaining that defect. The list that
-# is actually compared against CI is `CI_GATES` in tests/test_door_matches_ci.py; this sentence is
-# a reader's convenience and is not what enforces anything.
+# Order: secrets -> scope -> laws -> language -> lint -> site -> tests -> reproduce -> genlayer ->
+# push. This line had already drifted once - it still read "... -> language -> tests" after ruff
+# was added below, which is the same header-outlives-its-list defect that let the door and CI
+# diverge in the first place, sitting three lines above the comment explaining that defect. The
+# list that is actually compared against CI is `CI_GATES` in tests/test_door_matches_ci.py; this
+# sentence is a reader's convenience and is not what enforces anything.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-echo "1/8 secrets";  ./scripts/secret_scan.sh
-echo "2/8 scope";    python3 scripts/ratchet_scope.py
-echo "3/8 laws";     python3 scripts/ratchet_decisions.py
-echo "4/8 language"; python3 scripts/ratchet_language.py
+echo "1/9 secrets";  ./scripts/secret_scan.sh
+echo "2/9 scope";    python3 scripts/ratchet_scope.py
+echo "3/9 laws";     python3 scripts/ratchet_decisions.py
+echo "4/9 language"; python3 scripts/ratchet_language.py
 # LINT IS HERE BECAUSE ITS ABSENCE WAS MEASURED, NOT BECAUSE IT IS TIDY.
 #
 # `gates.yml` opens "THE SAME GATES AS scripts/push.sh". It was not true: CI ran ruff and this
@@ -30,7 +30,7 @@ echo "4/8 language"; python3 scripts/ratchet_language.py
 # The divergence is the defect, not the five violations. Two gate lists that claim to be one list
 # are a rule written in more than one place (L-2), and this one had already survived its own
 # repeal: the header asserting the lists were identical stayed correct-sounding while they drifted.
-echo "5/8 lint";     python3 -m ruff check src tests scripts
+echo "5/9 lint";     python3 -m ruff check src tests scripts
 
 # THE SAME DIVERGENCE, TWICE MORE, FOUND BY WRITING THE TWO LISTS OUT SIDE BY SIDE.
 #
@@ -69,15 +69,15 @@ echo "5/8 lint";     python3 -m ruff check src tests scripts
 # with `npm ci`. That difference is named rather than closed: a clean install at every push costs
 # more than the drift it would catch. If `node_modules` is absent the build fails loudly, which is
 # the correct reading - a missing instrument is a red, never a skip.
-echo "6/8 site";     ( cd web && npm run build >/dev/null )
-echo "7/8 tests";    python3 -m pytest tests -q --cov=src --cov-fail-under=70 | tail -3
+echo "6/9 site";     ( cd web && npm run build >/dev/null )
+echo "7/9 tests";    python3 -m pytest tests -q --cov=src --cov-fail-under=70 | tail -3
 
 # MYPY IS NOT HERE, AND THAT IS THE MEASURED ANSWER RATHER THAN AN OVERSIGHT.
 # It runs in CI with its findings suppressed, so it cannot turn `main` red and the door omitting it
 # creates no asymmetry. Its advisory state expires on 2026-10-15; when it becomes blocking, the
 # comparison above fails until mypy is added here, in that same commit.
 
-# T-63: A GREEN "7/8 tests" ABOVE DOES NOT MEAN A READER'S FIRST RUN WORKS.
+# T-63: A GREEN "7/9 tests" ABOVE DOES NOT MEAN A READER'S FIRST RUN WORKS.
 #
 # It proves the suite passes in THIS host's own already-provisioned interpreter - the exact
 # blindness AUD-011 named once already (a fix "verified on a fresh clone" that ran somewhere the
@@ -85,10 +85,32 @@ echo "7/8 tests";    python3 -m pytest tests -q --cov=src --cov-fail-under=70 | 
 # tree into a scratch directory and a genuinely fresh virtualenv and runs README.md's own "## Run
 # it" commands there, unmodified - catching exactly the class of defect that instrument was blind
 # to: a `pip install` that only works because this host's pip had already been upgraded for some
-# other reason. It skips under the bare "7/8 tests" run above (see its own docstring for why -
+# other reason. It skips under the bare "7/9 tests" run above (see its own docstring for why -
 # unguarded it would clone and run the ENTIRE suite, including itself, without a floor) and is
 # armed here instead, the same PROVEK_REPRODUCE_README=1 gates.yml's `reproduce` job sets.
-echo "8/8 reproduce"; PROVEK_REPRODUCE_README=1 python3 -m pytest tests/test_reproduce_readme.py -q
+echo "8/9 reproduce"; PROVEK_REPRODUCE_README=1 python3 -m pytest tests/test_reproduce_readme.py -q
+
+# T-GL-04. `integrations/genlayer-witness/` needs Python >= 3.12 (D-63) - this repository's own
+# interpreter is 3.10, so this step alone reaches outside it, into the isolated venv T-GL-02 built
+# for exactly this. A MISSING VENV IS RED, NOT SKIP: silently skipping the one step nothing else
+# here can cover would be invariant 1's own mistake, aimed at this door.
+echo "9/9 genlayer"
+if [ ! -x ~/orchestra/glenv/bin/python3 ]; then
+  echo "REFUSED: ~/orchestra/glenv (the isolated Python 3.12 venv T-GL-02 built) is missing or" >&2
+  echo "not executable - a missing venv is RED, not skip." >&2
+  exit 1
+fi
+# Same cache-priming gltest's own broken auto-downloader needs in CI (see gates.yml's matching
+# step for the full account) - guarded, since T-GL-02 already primed this host once and a fresh
+# 216 MB download on every push would be its own kind of waste.
+if [ ! -f ~/.cache/gltest-direct/genvm-universal-v0.2.16.tar.xz ]; then
+  mkdir -p ~/.cache/gltest-direct
+  curl -fsSL -o ~/.cache/gltest-direct/genvm-universal-v0.2.16.tar.xz \
+    https://github.com/genlayerlabs/genvm/releases/download/v0.2.16/genvm-universal.tar.xz
+fi
+( cd integrations/genlayer-witness \
+  && ~/orchestra/glenv/bin/python3 scripts/check_genvm_lint.py \
+  && ~/orchestra/glenv/bin/python3 -m pytest tests/direct -q )
 
 # Gates-only mode. The orchestra must judge the tree after EVERY task, not just before a push,
 # and a second copy of the gate list would drift from this one the first time the list changed.

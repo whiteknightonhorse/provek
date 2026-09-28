@@ -3,8 +3,8 @@
 `tests/test_actions_pinned.py` holds this property for `uses:`. This file holds it for the
 `pip install` lines D-30 pinned - three at D-30 itself, a fourth added by T-63 for the `reproduce`
 job's OWN pytest (a separate concern from the un-pinned install that job's one test then runs
-against a fresh clone - see `tests/test_reproduce_readme.py`'s docstring) - and exists for the
-reason that file states about itself: A ONE-TIME
+against a fresh clone - see `tests/test_reproduce_readme.py`'s docstring), and a fifth added by
+T-GL-04 (D-63) for the `genlayer` job - and exists for the reason that file states about itself: A ONE-TIME
 EDIT DRIFTS BACK. The first draft of D-30 argued no gate was possible here, on the ground that "the
 set was moved by somebody who read what changed" is a fact about an edit rather than about the
 tree. That is true of the JUDGEMENT and false of the SHAPE, and it was smuggling the second past
@@ -52,7 +52,7 @@ def test_every_pip_install_in_gates_names_a_committed_set():
     # THE COUNT IS ASSERTED because "all of them are pinned" is satisfied vacuously by finding none,
     # and a refactor that moved an install into a block scalar this reader missed would do exactly
     # that - report perfect compliance over an empty set.
-    assert len(lines) == 4, f"expected four pip installs in gates.yml, read {len(lines)}: {lines}"
+    assert len(lines) == 5, f"expected five pip installs in gates.yml, read {len(lines)}: {lines}"
     for line in lines:
         assert line_problems(line) == []
 
@@ -295,7 +295,7 @@ def test_a_fully_hashed_set_reports_nothing():
 
 
 def test_the_real_sets_are_fully_hashed():
-    for name in ("ci-tests", "ci-shipped", "ci-lint"):
+    for name in ("ci-tests", "ci-shipped", "ci-lint", "ci-genlayer"):
         body = (ROOT / "requirements" / f"{name}.txt").read_text(encoding="utf-8")
         assert unhashed(body) == [], name
         assert pins(body), f"{name} pins nothing"

@@ -28,3 +28,16 @@ web/.wrangler/
 .env.bak*
 .env*.bak*
 *.bak-*
+
+# T-GL-04/D-63. The GenLayer CLI's default keystore file (`genlayer account create`) - GL-05's
+# funded Studionet/Testnet Bradbury account lives in `~/orchestra/gl/`, never in this tree, but the
+# pattern is added now rather than the day a `genlayer account create` is accidentally run from
+# inside a checkout: an ignore rule added after a key was staged protects nothing that already
+# happened, the same reasoning `.env.bak*` above was added for.
+keypair.json
+
+# `gltest` creates (and clears) this directory itself on every run - empty today, so `git status`
+# does not see it (git does not track empty directories at all), but ignored proactively rather
+# than waiting for the day a live/integration run writes a real compiled-contract artefact into it
+# and the door refuses an otherwise-clean tree over a generated file nobody meant to commit.
+integrations/genlayer-witness/artifacts/

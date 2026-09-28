@@ -196,3 +196,27 @@ scripts/ratchet_evidence.py:      [ABI-13-6, ABI-16-11, ABI-33-4]
 # not data, though - they name executable code fetched at run time - and `scripts/verify_action_pins.py`
 # above is what judges them. NEITHER IS THE FILE ITSELF DATA IN THE SENSE THAT MATTERS: it is the
 # document a parser must accept before any of it runs, which is what the module above measures.
+
+# T-GL-04 (D-63): `ratchet_scope.SCAN` now walks `integrations/` too, so every `.py` file under
+# `integrations/genlayer-witness/` needs a binding here the same as everything else - this is the
+# machine half of "the isolation stays real": a fifth (or sixth) file added there with no
+# requirement fails the build the same way an unbound file under `src/` always has, rather than
+# quietly growing outside the map's ABI-16-11 promise that an unmeasured module reads as its own
+# state, never as clean. ABI-5-3 on the contract and the direct-mode conftest specifically (not on
+# the test files) because both are CODE that performs the same reproducibility-relevant act
+# `src/witness/witness.py` and `scripts/fetch_shorts_map.py` already carry that requirement for: an
+# anonymous, credential-free web fetch a third party could repeat and reach the same evidence
+# (`gl.nondet.web.get` in the contract; `setup_sdk_paths`/`create_address` in the conftest exist so
+# that same fetch can be exercised under `direct_vm.mock_web()` at all). `tests/integration/fixtures.py`
+# gets the same pair as the conftest, not the bare ABI-16-11 the test files get, because it plays
+# the identical role one tier up - shared deploy/fixture plumbing the actual tests call, not an
+# assertion itself. ABI-16-11 alone on the four test files and on `check_genvm_lint.py`: none of
+# them make the fetch themselves, but each is exactly the same three-state discipline turned on a
+# different counter - a test that could not run must not read as a pass, and `check_genvm_lint.py`
+# exists FOR that discipline applied to `genvm-lint`'s own exit code (see its own module docstring).
+integrations/genlayer-witness/contracts/provek_evidence_witness.py:       [ABI-5-3, ABI-16-11]
+integrations/genlayer-witness/tests/direct/conftest.py:                   [ABI-5-3, ABI-16-11]
+integrations/genlayer-witness/tests/direct/test_provek_evidence_witness.py: [ABI-16-11]
+integrations/genlayer-witness/tests/integration/fixtures.py:              [ABI-5-3, ABI-16-11]
+integrations/genlayer-witness/tests/integration/test_provek_evidence_witness_live.py: [ABI-16-11]
+integrations/genlayer-witness/scripts/check_genvm_lint.py:                [ABI-16-11]

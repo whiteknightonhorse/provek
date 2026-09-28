@@ -292,6 +292,62 @@ jobs:
       - name: reproduce - README's "## Run it" block, verbatim, against a fresh clone
         run: PROVEK_REPRODUCE_README=1 python -m pytest tests/test_reproduce_readme.py -q
 
+  genlayer:
+    name: GenLayer witness contract (isolated 3.12 toolchain)
+    # `integrations/genlayer-witness/` needs Python >= 3.12 (GL-harness-notes.md, D-63); this
+    # repository's own interpreter is 3.10, which is why every OTHER job here runs on 3.10 and
+    # this one alone runs on 3.12 - a second, isolated toolchain, not a repository-wide bump.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+      # `--no-deps`, AND THAT IS NOT AN ORDINARY USE OF THE FLAG. `genlayer-test==0.29.2`'s own
+      # PUBLISHED PyPI metadata declares `genlayer-py<0.17.0,>=0.13.0`, which conflicts with the
+      # `genlayer-py==0.18.0` this set pins - a plain `pip install --require-hashes -r
+      # requirements/ci-genlayer.txt` (no `--no-deps`) was measured to refuse on exactly this
+      # conflict. GL-harness-notes.md SS7a: the git tag `genlayer-test==0.29.2` is actually BUILT
+      # FROM declares `>=0.18.0,<0.19.0` instead - the PyPI metadata is stale, not the pin. `--no-
+      # deps` is safe here specifically because `ci-genlayer.txt` already names the FULL correct
+      # transitive closure with hashes (see `requirements/ci-genlayer.in`'s own comment for the
+      # compile command); it only tells pip not to recompute a dependency graph it would get
+      # wrong from the same bad metadata, never to install anything unlisted.
+      - run: |
+          pip install --quiet --require-hashes --only-binary=:all: --no-deps -r requirements/ci-genlayer.txt
+
+      - name: pre-populate the direct-mode SDK cache (gltest's own downloader 404s past genvm v0.2.16)
+        # `gltest`'s `sdk_loader.py` resolves "latest" by following `genvm`'s GitHub releases
+        # redirect - which today points at v0.3.0-rc7 - then unconditionally requests an asset
+        # named `genvm-universal.tar.xz` under that tag. That asset name stopped being published
+        # starting with v0.3.0-rc0 (releases now ship per-platform assets instead), so the request
+        # 404s and EVERY `pytest tests/direct` run fails out of the box on a fresh host, for any
+        # contract using this genlayer-test pin, not something specific to this project
+        # (GL-harness-notes.md SS7b). v0.2.16 is the last release still shipping that asset name,
+        # and it contains the exact runner hash (`1jb45aa8yn...`) this contract's header pins -
+        # verified, not a convenient stand-in. `sdk_loader.list_cached_versions()` finds a
+        # correctly-named file here and skips the broken "latest" call entirely, using its own
+        # existing cache-first path - no package source is patched. A GitHub Actions runner is
+        # fresh on every run, so this has to happen every run, unlike on the door's own host where
+        # T-GL-02 primed it once (see `scripts/push.sh`'s matching step).
+        run: |
+          mkdir -p ~/.cache/gltest-direct
+          curl -fsSL -o ~/.cache/gltest-direct/genvm-universal-v0.2.16.tar.xz \
+            https://github.com/genlayerlabs/genvm/releases/download/v0.2.16/genvm-universal.tar.xz
+
+      - name: genvm-lint - the contract passes the GenVM linter
+        working-directory: integrations/genlayer-witness
+        # `genvm-lint check` itself has no baseline/allowlist flag, so a bare invocation would be
+        # permanently red over two confirmed false-positive warnings this project has decided to
+        # keep (see this directory's README.md and `scripts/check_genvm_lint.py`'s own module
+        # docstring for why). This script is the one place that logic lives - `scripts/push.sh`'s
+        # door step 9 runs the identical command (L-2).
+        run: python3 scripts/check_genvm_lint.py
+
+      - name: direct tests - the witness contract in-process
+        working-directory: integrations/genlayer-witness
+        run: python3 -m pytest tests/direct -q
+
   secrets:
     name: secret scan
     runs-on: ubuntu-latest

@@ -3842,3 +3842,104 @@ committing shows only this file and `orchestra/PHASE2-RESUME.md`'s knowledge ent
 tenant's repository, outside this tree). `python3 -m pytest -q` and `npx tsc -b` were re-run
 unchanged to confirm the tree this decision describes is still the green one D-61 left behind.
 Secrets were not read or printed; no value from `.env` appears above.
+
+## D-63. `integrations/genlayer-witness` is wired into this project's gates as a second, isolated toolchain — ADR-0012
+
+**Source.** `taskloop/disputes/GL-00-genlayer-witness-design.ruling-2.md` §"Toolchain 3.12 and
+gates" / §3 "GL-04", `...ruling-3.md` §A row `GL-04` (amendment 2: this entry is written here, not
+deferred to GL-06 — GL-06 appends to it rather than opening D-64). Read whole, executed literally.
+Architectural summary in `docs/adr/ADR-0012-a-second-isolated-toolchain-is-admitted-without-merging-into-the-first.md`;
+this entry is the project-log record, not a second telling of the ADR.
+
+**Decision, in four parts.**
+
+1. **Scope.** `scripts/ratchet_scope.SCAN` now walks `integrations` alongside `src`/`scripts`/`demo`.
+   Every `.py` file under `integrations/genlayer-witness/` is bound in `requirements/ABI_MAP.yaml`:
+   the contract and the direct-mode `conftest.py` to `ABI-5-3, ABI-16-11` (both perform the same
+   anonymous, credential-free web fetch `src/witness/witness.py` already carries that requirement
+   for), `tests/integration/fixtures.py` to the same pair (shared deploy plumbing, not an assertion
+   itself), and the four remaining test/gate files to `ABI-16-11` alone. `python3
+   scripts/ratchet_scope.py` reports clean with these six files present.
+
+2. **Isolation, machine-checked, ADR-0002 extended to a second boundary.** `tests/test_genlayer_witness_is_isolated.py`
+   AST-scans every module under `src/` and `scripts/` and asserts none imports `integrations` — not
+   a grep, for the reason ADR-0002's own "Why AST and not grep" section gives. `evidence/RED-055-*`
+   is the kept red run: `evidence/RED-055-generator.py` plants an import of the contract into
+   `src/witness/witness.py`, shows the isolation test go red, reverts, and shows it green again.
+   `enforced_by.yaml` gains `LAW-GENLAYER-WITNESS-ISOLATED`, the same shape as
+   `LAW-TRANSPORT-INDEPENDENT`, so `scripts/ratchet_decisions.py` holds this test and its gate file
+   to the same "present and git-tracked" discipline every other named law here already carries.
+
+3. **The golden vector, proven from the other side.** T-GL-03's contract docstring claims its
+   `_url_reachable_digest` is "byte-for-byte `src.witness.witness._digest`" — checked there against
+   the fixture from the 3.12 side. `tests/test_genlayer_witness_digest_matches_provek.py` (3.10,
+   this repository's own interpreter, no GenLayer package imported) reads the same
+   `integrations/genlayer-witness/tests/fixtures/digest_golden.json` and calls `_digest` directly,
+   closing the loop: one file, two independent readers, both shown to agree. `evidence/RED-056-*` is
+   the kept red run (a planted change to `_digest`'s field separator).
+
+4. **CI and the door, one interpreter each for the concern that needs it.** `.github/workflows/gates.yml`
+   gains one job, `genlayer`, on `setup-python 3.12` — not a repository-wide version bump — with two
+   named, blocking steps (`genvm-lint - the contract passes the GenVM linter`,
+   `direct tests - the witness contract in-process`) plus an unnamed `pip install --require-hashes
+   --only-binary=:all: --no-deps -r requirements/ci-genlayer.txt` and a named cache-priming step
+   (below). `scripts/push.sh` gained door step `9/9`, reaching into `~/orchestra/glenv` (T-GL-02)
+   rather than the interpreter running the script itself; a missing venv there is refused as RED,
+   never silently skipped. All nine door steps were relabelled `N/8` → `N/9` in this same commit,
+   and the three literal `"5/8`/`"6/8`/`"7/8` prefixes `tests/test_door_matches_ci.py` matches on to
+   simulate a disabled door (across two separate tests) were updated with them — a bare
+   denominator bump with those prefixes left stale would have silently stopped the scenario those
+   tests exist to catch, matching nothing rather than the intended steps.
+
+**Two toolchain facts, checked rather than assumed, that shaped the above.**
+
+- **`requirements/ci-genlayer.txt` is compiled by `uv pip compile --generate-hashes` under Python
+  3.12, not `pip-compile` under this repository's own 3.10 the way its three siblings are** —
+  measured: `pip-compile` under 3.10 refuses to resolve a set whose packages declare
+  `requires_python: ">=3.12"` before ever reaching the network. The compile also needs a resolver
+  override (`genlayer-py==0.18.0`, forced past `genlayer-test==0.29.2`'s own stale PyPI metadata
+  declaring `<0.17.0` — GL-harness-notes.md §7a); the override file is not committed, since it is
+  only needed to walk the dependency graph once, and the resulting `.txt` is a flat, fully pinned
+  closure. The same stale metadata also makes a plain `pip install` of the compiled file fail
+  (measured, in a genuinely fresh Python 3.12 venv, both with and without the override) — both
+  `gates.yml`'s job and `scripts/push.sh`'s door step install it with `--no-deps`, safe here
+  specifically because the compiled file already names the complete correct transitive closure.
+  End to end verified in a fresh HOME, fresh venv, no pre-existing cache: install, the lint gate,
+  and `pytest tests/direct -q` (28/28) all green, reproducing what a real GitHub Actions runner will
+  do.
+- **The anticipated `pytest` cross-file version conflict ruling-2 named as a real risk did not
+  occur.** `genlayer-test==0.29.2` declares a bare, unconstrained `pytest` dependency — the same way
+  this repository's own `requirements/ci-tests.in` names `pytest` with no version pin — so both
+  compilations independently resolved the identical current release (`pytest==9.1.1`, identical
+  hash, a universal wheel). `python3 scripts/verify_pip_pins.py` was run against the real tree with
+  `ci-genlayer.txt` in place and reports clean with NO code change to that script: there was nothing
+  to except. No interpreter-keyed exception was added, because ruling-2's own fallback was
+  conditional ("if genlayer-test does not allow pytest 9") and the condition did not hold — adding
+  the exception mechanism anyway would have been unmeasured machinery for a conflict that was
+  checked and found absent.
+- **`gltest`'s direct-mode SDK auto-downloader is broken against the current `genvm` release, on
+  every fresh host, for any contract** (GL-harness-notes.md §7b, first measured by T-GL-02): it
+  requests an asset name (`genvm-universal.tar.xz`) that stopped being published after `v0.2.16`.
+  This matters HERE, newly, because a GitHub Actions runner is fresh on every single run — unlike
+  the door's own host, which T-GL-02 primed once. `gates.yml`'s `genlayer` job therefore carries a
+  named step that downloads `v0.2.16`'s asset directly from GitHub releases into `gltest`'s own
+  cache directory before running the direct tests (verified: this asset's sha256 is byte-identical
+  to the copy already cached on this host by T-GL-02, and it contains the exact runner hash this
+  contract's header pins). `scripts/push.sh`'s door step 9 carries the same download, guarded by an
+  existence check so it costs nothing on a host that already has it.
+
+**What GL-04 did not touch:** `src/`, `scripts/witness.py`, `src/collector/*`, Provek's scoring or
+methodology, the GenLayer keys, faucet/network steps (GL-05's job), and the README's eleven operator
+sections (a skeleton only, GL-06's job — this entry is appended to, not replaced, when that lands).
+
+**Verified.** `python3 scripts/ratchet_scope.py`, `scripts/ratchet_decisions.py`,
+`scripts/ratchet_language.py`, `scripts/verify_pip_pins.py`, `scripts/verify_workflow_yaml.py` all
+report clean. `python3 -m pytest tests -q` (whole tree, excluding only the README-reproduce test for
+wall-clock reasons, run separately) is green — 1206 passed, 1 skipped. `python3 -m ruff check src
+tests scripts` reports no violations (`integrations/` is deliberately outside ruff's scope, per
+ruling-2 §2: `target-version py310` and its `F403` rule would flag the contract's required
+`from genlayer import *`, the same reason it is not placed under `src/`). `evidence/RED-055-*` and
+`RED-056-*` are the two kept red runs this task's own new tests required. `./scripts/push.sh
+--gates-only` was run to completion on this host (all nine steps, including the new step 9) and
+reported `TREE GREEN`. Not deployed — no deploy applies to this task; nothing here touches a live
+network.
