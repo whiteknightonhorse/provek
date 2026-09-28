@@ -40,6 +40,7 @@ def test_url_reachable_passes_against_a_real_public_url():
 
 def test_url_reachable_goes_undetermined_against_an_unreachable_url():
     contract = load_fixture(deploy_provek_evidence_witness)
+    subject_id = "git:whiteknightonhorse/provek:integration-unreachable"
     # A `.invalid` host is a DNS failure: the validator's OWN `gl.nondet.web.get` call raises, so
     # `validator_fn` returns False without ever constructing a FAIL — see the contract's own
     # "CONSENSUS SEMANTICS" docstring. This is "nobody could observe the URL", not "the claim is
@@ -47,10 +48,28 @@ def test_url_reachable_goes_undetermined_against_an_unreachable_url():
     # is written. Ask for UNDETERMINED explicitly (default `transact()` targets ACCEPTED, and
     # `wait_for_transaction_receipt` treats UNDETERMINED as an already-decided match for that
     # target too, which would let a wrongly-ACCEPTED transaction slip past unnoticed here).
+    #
+    # Do NOT assert `tx_execution_succeeded`/`tx_execution_failed` here: both read the LEADER's
+    # own `execution_result`, the leader's private GenVM outcome, not the consensus status.
+    # `leader_fn` catches every exception and always returns a normal observation dict (see the
+    # contract's own docstring), so the leader's `execution_result` is "SUCCESS" even when the
+    # transaction as a whole goes UNDETERMINED — `assert not tx_execution_succeeded(receipt)`
+    # fails against a correctly-behaving contract. Assert what the design actually promises
+    # instead: the status the wait already targeted, and that no `WitnessResult` was written.
+    #
+    # Reaching UNDETERMINED needs every validator's DNS lookup to fail across every leader
+    # rotation the round allows, which can take longer than the ten-retry/three-second default
+    # (`genlayer_py.config.transactions.transaction_config`) — pass explicit, larger values so
+    # this test fails on the actual status rather than on an impatient wait.
     receipt = contract.witness(
-        "git:whiteknightonhorse/provek", "url_reachable", UNREACHABLE_URL, "",
-    ).transact(wait_transaction_status=TransactionStatus.UNDETERMINED)
-    assert not tx_execution_succeeded(receipt)
+        subject_id, "url_reachable", UNREACHABLE_URL, "",
+    ).transact(
+        wait_transaction_status=TransactionStatus.UNDETERMINED,
+        wait_retries=20,
+        wait_interval=5000,
+    )
+    assert receipt["status_name"] == "UNDETERMINED"
+    assert json.loads(contract.list_by_subject(subject_id).call()) == []
 
 
 def test_artifact_hash_passes_against_a_real_artifact():
