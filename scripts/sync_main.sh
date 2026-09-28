@@ -67,5 +67,18 @@ if git merge-base --is-ancestor HEAD "$REMOTE/$BRANCH"; then
   exit 0
 fi
 
+# LOCAL AHEAD IS ITS OWN STATE, NOT A THIRD NAME FOR DIVERGED (invariant 1, applied to git).
+# `HEAD` being a strict descendant of `$REMOTE/$BRANCH` is not a divergence - nobody wrote to the
+# remote side outside this script's model, this server simply has commits `push.sh` has not sent
+# yet. Naming it DIVERGED would tell a reader two histories fought over `main`, when in fact only
+# one did and it is only half-published. The exit code stays non-zero either way: a nightly
+# measurement still must not run on an unpushed HEAD, because a re-measure of the same 4 commits
+# tomorrow is `not_measured`-honest and a pretended pass here is not.
+if git merge-base --is-ancestor "$REMOTE/$BRANCH" HEAD; then
+  ahead_count="$(git rev-list --count "$REMOTE/$BRANCH"..HEAD)"
+  echo "sync_main: HEAD ($local_head) is local ahead by $ahead_count unpushed commit(s) of $REMOTE/$BRANCH ($remote_head) - not diverged, nothing to fast-forward, refusing to measure an unpushed tree" >&2
+  exit 1
+fi
+
 echo "sync_main: HEAD ($local_head) and $REMOTE/$BRANCH ($remote_head) have DIVERGED - not a fast-forward, refusing to guess which side wins" >&2
 exit 1

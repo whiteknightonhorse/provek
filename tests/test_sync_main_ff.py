@@ -145,6 +145,33 @@ def test_a_genuine_divergence_is_a_named_refusal_not_a_guessed_merge(tmp_path):
     assert head == local_only, "a refusal must not move HEAD - no merge was attempted"
 
 
+def test_local_ahead_is_named_honestly_not_as_a_diverged_refusal(tmp_path):
+    """`origin/main` never moved tonight; this server is the one carrying unpushed commits,
+    exactly `sync_main.sh:63-70`'s collapsed third rung - before the fix, this shape fell through
+    the `equal` and `remote ahead` checks straight into the DIVERGED branch, which is a false
+    accusation: nobody wrote to `$REMOTE/$BRANCH` outside this script's own model, only HEAD moved.
+    The exit code must still be non-zero (an unpushed HEAD may not be measured), but the message
+    must name the true state and the count, not borrow DIVERGED's wording."""
+    origin = tmp_path / "origin.git"
+    _init_bare(origin)
+    server = tmp_path / "ahead"
+    _clone(origin, server)
+    base = _commit(server, "seed.txt", "seed\n")
+    _push(server)
+
+    _commit(server, "local1.txt", "unpushed commit 1\n")
+    ahead_head = _commit(server, "local2.txt", "unpushed commit 2\n")
+
+    done = _sync(server)
+    assert done.returncode != 0, done.stdout + done.stderr
+    assert "DIVERGED" not in done.stderr, done.stderr
+    assert "local ahead by 2 unpushed commit" in done.stderr, done.stderr
+
+    head = _run("git", "rev-parse", "HEAD", cwd=server).stdout.strip()
+    assert head == ahead_head, "a refusal must not move HEAD"
+    assert base != ahead_head
+
+
 def test_the_https_token_splice_is_skipped_for_a_non_github_remote(tmp_path):
     """This whole suite runs against local-path origins with no auth of any kind; if
     `sync_main.sh` ever stopped gating its token splice on `https://github.com/` it would try to
