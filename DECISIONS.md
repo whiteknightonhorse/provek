@@ -3929,8 +3929,9 @@ this entry is the project-log record, not a second telling of the ADR.
   existence check so it costs nothing on a host that already has it.
 
 **What GL-04 did not touch:** `src/`, `scripts/witness.py`, `src/collector/*`, Provek's scoring or
-methodology, the GenLayer keys, faucet/network steps (GL-05's job), and the README's eleven operator
-sections (a skeleton only, GL-06's job — this entry is appended to, not replaced, when that lands).
+methodology, and GL-05's own steps (account key, faucet, Studionet/Testnet network access), and the
+README's eleven operator sections (a skeleton only, GL-06's job — this entry is appended to, not
+replaced, when that lands).
 
 **Verified.** `python3 scripts/ratchet_scope.py`, `scripts/ratchet_decisions.py`,
 `scripts/ratchet_language.py`, `scripts/verify_pip_pins.py`, `scripts/verify_workflow_yaml.py` all
