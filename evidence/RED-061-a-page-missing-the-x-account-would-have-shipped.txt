@@ -1,0 +1,84 @@
+# RED-061 - a page missing the X account link would have shipped
+#
+# tree: aa2dc9eb6e9052ca5011112aa73a22f615ecc43d (dirty)
+#
+# Produced by evidence/RED-061-generator.py, checked in beside this file so both runs below can be
+# repeated rather than believed. Two plants, run sequentially against the real web/dist, each
+# restored before the next.
+#
+# SUBJECT: tests/test_x_account_link.py::test_every_emitted_page_names_the_x_account_in_the_head_and_the_footer.
+
+====================================================================================================
+PLANT 1 - remove `twitter:site` from the real web/dist/404.html.
+====================================================================================================
+
+--- before the plant, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.04s
+
+--- with the plant in place, exit 1 ---
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____ test_every_emitted_page_names_the_x_account_in_the_head_and_the_footer ____
+
+    def test_every_emitted_page_names_the_x_account_in_the_head_and_the_footer():
+        missing_meta = []
+        missing_link = []
+        for name, html in emitted_pages().items():
+            if TWITTER_SITE not in html:
+                missing_meta.append(name)
+            if X_HREF not in html:
+                missing_link.append(name)
+>       assert not missing_meta, (
+            f'pages missing `{TWITTER_SITE}` in <head>: {sorted(missing_meta)}'
+        )
+E       AssertionError: pages missing `<meta name="twitter:site" content="@provek_dev" />` in <head>: ['404.html']
+E       assert not ['404.html']
+
+tests/test_x_account_link.py:55: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_x_account_link.py::test_every_emitted_page_names_the_x_account_in_the_head_and_the_footer
+1 failed in 0.05s
+
+--- plant reverted, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.04s
+
+====================================================================================================
+PLANT 2 - remove the footer's X href from the real web/dist/method/notes/index.html.
+====================================================================================================
+
+--- before the plant, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.04s
+
+--- with the plant in place, exit 1 ---
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____ test_every_emitted_page_names_the_x_account_in_the_head_and_the_footer ____
+
+    def test_every_emitted_page_names_the_x_account_in_the_head_and_the_footer():
+        missing_meta = []
+        missing_link = []
+        for name, html in emitted_pages().items():
+            if TWITTER_SITE not in html:
+                missing_meta.append(name)
+            if X_HREF not in html:
+                missing_link.append(name)
+        assert not missing_meta, (
+            f'pages missing `{TWITTER_SITE}` in <head>: {sorted(missing_meta)}'
+        )
+>       assert not missing_link, (
+            f'pages missing the footer link `{X_HREF}`: {sorted(missing_link)}'
+        )
+E       AssertionError: pages missing the footer link `href="https://x.com/provek_dev"`: ['method/notes/index.html']
+E       assert not ['method/notes/index.html']
+
+tests/test_x_account_link.py:58: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_x_account_link.py::test_every_emitted_page_names_the_x_account_in_the_head_and_the_footer
+1 failed in 0.06s
+
+--- plant reverted, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.04s

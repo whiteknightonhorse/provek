@@ -136,6 +136,19 @@ export function Footer() {
                   GitHub
                 </a>
               </div>
+              <div>
+                <a
+                  href="https://x.com/provek_dev"
+                  aria-label="X: @provek_dev"
+                  rel="me"
+                  className="inline-flex items-center gap-1.5 text-sm text-[var(--color-accent)] underline underline-offset-2 hover:text-[var(--color-ink)] focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-[var(--color-accent)]"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                  X
+                </a>
+              </div>
             </div>
           </div>
         </div>
