@@ -1,7 +1,7 @@
 # RED-056 - golden vector, plant: _digest's field separator changed
 #
 # subject: tests/test_genlayer_witness_digest_matches_provek.py
-# tree: 5a53d6326a040e8564723e15f6c8249ff33aaa58 (dirty)
+# tree: 3f03ea897b5b7f895e496a80d6c66ef22f32b624 (dirty)
 
 --- plant applied (tests/test_genlayer_witness_digest_matches_provek.py) ---
 exit code: 1
@@ -22,13 +22,13 @@ E             + afdfb1b165de767751a049bdecc6e3155913bab7b46db80a7c42138b65679c88
 tests/test_genlayer_witness_digest_matches_provek.py:40: AssertionError
 =========================== short test summary info ============================
 FAILED tests/test_genlayer_witness_digest_matches_provek.py::test_digest_matches_the_golden_vector_produced_by_the_contract_side
-1 failed, 2 passed in 0.11s
+1 failed, 2 passed in 0.10s
 
 CONFIRMED: a changed digest formula no longer matches the golden vector the contract-side reader agreed to.
 
 --- plant reverted (tests/test_genlayer_witness_digest_matches_provek.py) ---
 exit code: 0
 ...                                                                      [100%]
-3 passed in 0.05s
+3 passed in 0.06s
 
 CONFIRMED: green again on the real tree with the plant reverted.

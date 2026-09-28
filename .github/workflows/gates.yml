@@ -330,10 +330,25 @@ jobs:
         # existing cache-first path - no package source is patched. A GitHub Actions runner is
         # fresh on every run, so this has to happen every run, unlike on the door's own host where
         # T-GL-02 primed it once (see `scripts/push.sh`'s matching step).
+        #
+        # THE FOURTH MOVABLE POINTER THIS FILE'S OWN HEADER DID NOT NAME. The comment above
+        # `permissions:` counts three legs of pinning - action SHAs, token scope, pip hashes - and
+        # this download was a fourth left unpinned: a release ASSET, not a tag, which GitHub lets
+        # the same account re-upload under an unchanged version number (D-30's own argument, applied
+        # to a binary instead of a wheel). `sha256sum -c` against the digest this project commits in
+        # `genvm-universal-v0.2.16.sha256` (D-63) makes a re-signed or truncated asset a refused
+        # download rather than a silently trusted one - checked here, and again at the door in
+        # `scripts/push.sh`'s matching step (L-2: one committed digest, not a copy per caller).
         run: |
           mkdir -p ~/.cache/gltest-direct
           curl -fsSL -o ~/.cache/gltest-direct/genvm-universal-v0.2.16.tar.xz \
             https://github.com/genlayerlabs/genvm/releases/download/v0.2.16/genvm-universal.tar.xz
+          want="$(cat integrations/genlayer-witness/genvm-universal-v0.2.16.sha256)"
+          got="$(sha256sum ~/.cache/gltest-direct/genvm-universal-v0.2.16.tar.xz | cut -d' ' -f1)"
+          if [ "$got" != "$want" ]; then
+            echo "::error::genvm-universal-v0.2.16.tar.xz sha256 mismatch: got $got, want $want (D-63)"
+            exit 1
+          fi
 
       - name: genvm-lint - the contract passes the GenVM linter
         working-directory: integrations/genlayer-witness

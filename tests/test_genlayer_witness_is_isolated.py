@@ -25,8 +25,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 SCAN_DIRS = ("src", "scripts")
 
 
-def _imported_modules(path: pathlib.Path) -> list[str]:
-    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+def _imported_module_names(tree: ast.AST) -> list[str]:
     names: list[str] = []
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
@@ -34,6 +33,11 @@ def _imported_modules(path: pathlib.Path) -> list[str]:
         elif isinstance(node, ast.ImportFrom):
             names.append(node.module or "")
     return names
+
+
+def _imported_modules(path: pathlib.Path) -> list[str]:
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    return _imported_module_names(tree)
 
 
 def test_src_and_scripts_import_nothing_from_integrations():
@@ -52,5 +56,15 @@ def test_src_and_scripts_import_nothing_from_integrations():
 
 
 def test_the_isolation_check_is_ABLE_to_fail():
-    """Instrument control: the check must catch a planted import (see evidence/RED-055-*)."""
-    assert "integrations".split(".")[0] == "integrations"
+    """Instrument control: runs the same name-extraction the check above uses against a planted
+    `from integrations... import ...` snippet and asserts it is caught - not a string tautology
+    that can never go red (Fable, GL-04-gates.ruling-1: the previous body was `assert
+    "integrations".split(".")[0] == "integrations"`, which does not exercise the check at all).
+    See evidence/RED-055-* for the same plant, applied to the real tree end to end."""
+    planted = ast.parse(
+        "from integrations.genlayer_witness.contracts.provek_evidence_witness import x\n"
+    )
+    offenders = [
+        name for name in _imported_module_names(planted) if name.split(".")[0] == "integrations"
+    ]
+    assert offenders == ["integrations.genlayer_witness.contracts.provek_evidence_witness"]

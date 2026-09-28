@@ -3858,7 +3858,7 @@ this entry is the project-log record, not a second telling of the ADR.
    the contract and the direct-mode `conftest.py` to `ABI-5-3, ABI-16-11` (both perform the same
    anonymous, credential-free web fetch `src/witness/witness.py` already carries that requirement
    for), `tests/integration/fixtures.py` to the same pair (shared deploy plumbing, not an assertion
-   itself), and the four remaining test/gate files to `ABI-16-11` alone. `python3
+   itself), and the three remaining test/gate files to `ABI-16-11` alone. `python3
    scripts/ratchet_scope.py` reports clean with these six files present.
 
 2. **Isolation, machine-checked, ADR-0002 extended to a second boundary.** `tests/test_genlayer_witness_is_isolated.py`
@@ -3869,6 +3869,11 @@ this entry is the project-log record, not a second telling of the ADR.
    `enforced_by.yaml` gains `LAW-GENLAYER-WITNESS-ISOLATED`, the same shape as
    `LAW-TRANSPORT-INDEPENDENT`, so `scripts/ratchet_decisions.py` holds this test and its gate file
    to the same "present and git-tracked" discipline every other named law here already carries.
+   `test_the_isolation_check_is_ABLE_to_fail` (invariant 5) runs the same import-name extraction
+   the check above uses against a planted `from integrations...` snippet and asserts it is caught —
+   fixed after Fable's ruling-1 on this task found the original body a tautology
+   (`assert "integrations".split(".")[0] == "integrations"`) that could never go red while
+   ADR-0012's own "Instrument control" section cited it as proof the check works.
 
 3. **The golden vector, proven from the other side.** T-GL-03's contract docstring claims its
    `_url_reachable_digest` is "byte-for-byte `src.witness.witness._digest`" — checked there against
@@ -3923,10 +3928,20 @@ this entry is the project-log record, not a second telling of the ADR.
   This matters HERE, newly, because a GitHub Actions runner is fresh on every single run — unlike
   the door's own host, which T-GL-02 primed once. `gates.yml`'s `genlayer` job therefore carries a
   named step that downloads `v0.2.16`'s asset directly from GitHub releases into `gltest`'s own
-  cache directory before running the direct tests (verified: this asset's sha256 is byte-identical
-  to the copy already cached on this host by T-GL-02, and it contains the exact runner hash this
-  contract's header pins). `scripts/push.sh`'s door step 9 carries the same download, guarded by an
-  existence check so it costs nothing on a host that already has it.
+  cache directory before running the direct tests. `scripts/push.sh`'s door step 9 carries the same
+  download, guarded by an existence check so it costs nothing on a host that already has it.
+- **A release asset is a fourth movable pointer neither `gates.yml`'s own header nor the original
+  cut of this step counted** (fixed after Fable's ruling-1 on this task): the header above
+  `permissions:` names three legs of pinning — action SHAs, token scope, pip hashes — and a `curl`
+  of a GitHub release asset by tag name is a fourth, uncounted one, since the same account can
+  re-upload a different file under an unchanged tag. `integrations/genlayer-witness/genvm-universal-v0.2.16.sha256`
+  commits the one digest this asset must match
+  (`4f0b358ec98ec148be9b95cdfb0f0e1a6cbe64da0194fdfac3fffc6f5d1d93e2`, sha256, verified against the
+  copy already cached on this host by T-GL-02) — checked against it in both `gates.yml`'s step
+  (fresh download, every run) and `scripts/push.sh`'s door step (the existing cached copy, not only
+  a fresh one, so a truncated or re-signed cache already sitting on this host is refused rather than
+  trusted on the strength of its filename). A mismatch is RED in both places, never a silent
+  re-download.
 
 **What GL-04 did not touch:** `src/`, `scripts/witness.py`, `src/collector/*`, Provek's scoring or
 methodology, and GL-05's own steps (account key, faucet, Studionet/Testnet network access), and the
@@ -3936,7 +3951,7 @@ replaced, when that lands).
 **Verified.** `python3 scripts/ratchet_scope.py`, `scripts/ratchet_decisions.py`,
 `scripts/ratchet_language.py`, `scripts/verify_pip_pins.py`, `scripts/verify_workflow_yaml.py` all
 report clean. `python3 -m pytest tests -q` (whole tree, excluding only the README-reproduce test for
-wall-clock reasons, run separately) is green — 1206 passed, 1 skipped. `python3 -m ruff check src
+wall-clock reasons, run separately) is green — 1206 passed, 2 skipped. `python3 -m ruff check src
 tests scripts` reports no violations (`integrations/` is deliberately outside ruff's scope, per
 ruling-2 §2: `target-version py310` and its `F403` rule would flag the contract's required
 `from genlayer import *`, the same reason it is not placed under `src/`). `evidence/RED-055-*` and

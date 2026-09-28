@@ -1,7 +1,7 @@
 # RED-055 - isolation, plant: src/ importing the GenLayer contract
 #
 # subject: tests/test_genlayer_witness_is_isolated.py
-# tree: 5a53d6326a040e8564723e15f6c8249ff33aaa58 (dirty)
+# tree: 3f03ea897b5b7f895e496a80d6c66ef22f32b624 (dirty)
 
 --- plant applied (tests/test_genlayer_witness_is_isolated.py) ---
 exit code: 1
@@ -28,16 +28,16 @@ E
 E         Left contains one more item: "src/witness/witness.py imports 'integrations.genlayer_witness.contracts.provek_evidence_witness'"
 E         Use -v to get more diff
 
-tests/test_genlayer_witness_is_isolated.py:51: AssertionError
+tests/test_genlayer_witness_is_isolated.py:55: AssertionError
 =========================== short test summary info ============================
 FAILED tests/test_genlayer_witness_is_isolated.py::test_src_and_scripts_import_nothing_from_integrations
-1 failed, 1 passed in 0.13s
+1 failed, 1 passed in 0.12s
 
 CONFIRMED: an import of the GenLayer contract from src/ is caught.
 
 --- plant reverted (tests/test_genlayer_witness_is_isolated.py) ---
 exit code: 0
 ..                                                                       [100%]
-2 passed in 0.14s
+2 passed in 0.11s
 
 CONFIRMED: green again on the real tree with the plant reverted.

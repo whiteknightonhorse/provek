@@ -103,10 +103,27 @@ fi
 # Same cache-priming gltest's own broken auto-downloader needs in CI (see gates.yml's matching
 # step for the full account) - guarded, since T-GL-02 already primed this host once and a fresh
 # 216 MB download on every push would be its own kind of waste.
-if [ ! -f ~/.cache/gltest-direct/genvm-universal-v0.2.16.tar.xz ]; then
+GENVM_TARBALL=~/.cache/gltest-direct/genvm-universal-v0.2.16.tar.xz
+if [ ! -f "$GENVM_TARBALL" ]; then
   mkdir -p ~/.cache/gltest-direct
-  curl -fsSL -o ~/.cache/gltest-direct/genvm-universal-v0.2.16.tar.xz \
+  curl -fsSL -o "$GENVM_TARBALL" \
     https://github.com/genlayerlabs/genvm/releases/download/v0.2.16/genvm-universal.tar.xz
+fi
+# THE DOOR'S OWN CACHE OUTLIVES ANY SINGLE PUSH, SO THE GUARD ABOVE IS BLIND TO IT GOING STALE.
+#
+# The existence check above only proves A file is sitting there under that name - not that it is
+# still the asset this project pinned. A release ASSET, unlike a tag, is a fourth movable pointer
+# this file's own header did not count (see gates.yml's matching step for the full argument): the
+# same tag can serve a re-uploaded or truncated asset under an unchanged name, and an existence
+# check alone would trust it silently, forever, on a host T-GL-02 only primed once. Checked against
+# the one committed digest (D-63) every time this step runs, cached copy or fresh download alike -
+# not only on the branch that just downloaded it.
+want="$(cat integrations/genlayer-witness/genvm-universal-v0.2.16.sha256)"
+got="$(sha256sum "$GENVM_TARBALL" | cut -d' ' -f1)"
+if [ "$got" != "$want" ]; then
+  echo "REFUSED: $GENVM_TARBALL sha256 mismatch (got $got, want $want, D-63) - a moved or" >&2
+  echo "truncated release asset is RED here, never silently trusted." >&2
+  exit 1
 fi
 ( cd integrations/genlayer-witness \
   && ~/orchestra/glenv/bin/python3 scripts/check_genvm_lint.py \
