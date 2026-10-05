@@ -1,5 +1,8 @@
 MEASURED-013 - GL-07a: dry run of `git subtree split --prefix=integrations/genlayer-witness` (D-64)
-Stamp: HEAD 1ae90e7979c53d95ef98edc79f5e7209050de701, tree 72c5aa15b6108b7b3db6cccd399c5c1c36e93c43 (task T-GL-07a-mirror-prep; evidence-only files are added after this commit and do not touch the subdirectory)
+Stamp (commit the split was taken from, 1ae90e7979c53d95ef98edc79f5e7209050de701; evidence-only files are
+added after it and do not touch the subdirectory):
+# HEAD: 1ae90e7979c53d95ef98edc79f5e7209050de701
+# tree: 72c5aa15b6108b7b3db6cccd399c5c1c36e93c43
 
 $ git subtree split --prefix=integrations/genlayer-witness -b gl07-split-dryrun
 [git subtree progress counters 1/281..281/281 omitted]
