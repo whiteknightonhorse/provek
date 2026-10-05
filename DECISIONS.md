@@ -3997,3 +3997,7 @@ not rewritten and the contract does not move.
 
 Creating the mirror repository, the first push and the live checks belong to GL-07b (dispatcher) and
 are recorded by GL-07c; this entry records only the preparation.
+
+Live, 2026-10-05T10:18:07Z: mirror main = 334902eb0c261bb443de281d1ed5746656747a66, CI run
+https://github.com/whiteknightonhorse/provek-genlayer-witness/actions/runs/37295173624 success,
+`evidence/MEASURED-014-gl-07-mirror-live-checks.txt`.
