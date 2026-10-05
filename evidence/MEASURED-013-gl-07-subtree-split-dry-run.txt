@@ -1,0 +1,658 @@
+MEASURED-013 - GL-07a: dry run of `git subtree split --prefix=integrations/genlayer-witness` (D-64)
+Stamp: HEAD 1ae90e7979c53d95ef98edc79f5e7209050de701, tree 72c5aa15b6108b7b3db6cccd399c5c1c36e93c43 (task T-GL-07a-mirror-prep; evidence-only files are added after this commit and do not touch the subdirectory)
+
+$ git subtree split --prefix=integrations/genlayer-witness -b gl07-split-dryrun
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+[git subtree progress counters 1/281..281/281 omitted]
+
+Created branch 'gl07-split-dryrun'
+334902eb0c261bb443de281d1ed5746656747a66
+rc=0
+
+$ git rev-parse gl07-split-dryrun^{tree}
+e9787cdc76e03dd8e550a73381db70764a3a326f
+$ git rev-parse HEAD:integrations/genlayer-witness
+e9787cdc76e03dd8e550a73381db70764a3a326f
+RESULT: tree hashes EQUAL
+
+$ git ls-tree -r --name-only gl07-split-dryrun
+.github/workflows/contract-tests.yml
+.gitignore
+LICENSE
+README.md
+contracts/provek_evidence_witness.py
+deploy/README.md
+deploy/deployment.json
+genvm-universal-v0.2.16.sha256
+gltest.config.yaml
+pyproject.toml
+requirements.txt
+requirements/ci-genlayer.txt
+scripts/check_genvm_lint.py
+tests/direct/conftest.py
+tests/direct/test_live_harness_surface.py
+tests/direct/test_provek_evidence_witness.py
+tests/fixtures/digest_golden.json
+tests/integration/__init__.py
+tests/integration/fixtures.py
+tests/integration/test_provek_evidence_witness_live.py
+
+# every path must start with one of: .github/ .gitignore LICENSE README.md contracts/ deploy/ genvm-universal-v0.2.16.sha256 gltest.config.yaml pyproject.toml requirements.txt requirements/ scripts/check_genvm_lint.py tests/
+paths: 20; paths outside the allow-list: 0
+RESULT: allow-list holds
+
+$ PATTERN="$(sed -n "s/^PATTERN='\(.*\)'$/\1/p" scripts/secret_scan.sh)"; git log -p gl07-split-dryrun | grep -cE "$PATTERN"
+pattern length: 189 chars (read from scripts/secret_scan.sh, not reprinted)
+0
+
+$ git grep -l PRIVATE gl07-split-dryrun
+rc=1 (1 = no match)
+
+# authors: split
+Claude <noreply@anthropic.com>
+# authors: git log -- integrations/genlayer-witness (on HEAD)
+Claude <noreply@anthropic.com>
+RESULT: split authors are a subset
+
+split commits: 12
+provek commits touching the subdirectory: 12
+
+# CI steps of the mirror, run locally in a worktree of the split (its root = the mirror's root)
+$ git -C <worktree> rev-parse HEAD  (split tip)
+334902eb0c261bb443de281d1ed5746656747a66
+$ ~/orchestra/glenv/bin/python3 scripts/check_genvm_lint.py
+check_genvm_lint.py: clean (exactly the 2 named E010 false positives, validate ok - contract ProvekEvidenceWitness, 5 methods)
+rc=0
+$ ~/orchestra/glenv/bin/python3 -m pytest tests/direct -q
+INFO:   Contracts directory: contracts
+INFO:   Artifacts directory: artifacts
+INFO:   Environment: .env
+INFO:   Default wait interval: 3000 ms
+INFO:   Default wait retries: 50
+INFO:   Leader only mode: False
+................................                                         [100%]
+32 passed in 1.16s
+rc=0
+$ ~/orchestra/glenv/bin/python3 -m pytest --collect-only -q tests/integration
+INFO:   Environment: .env
+INFO:   Default wait interval: 3000 ms
+INFO:   Default wait retries: 50
+INFO:   Leader only mode: False
+tests/integration/test_provek_evidence_witness_live.py::test_url_reachable_passes_against_a_real_public_url
+tests/integration/test_provek_evidence_witness_live.py::test_url_reachable_goes_undetermined_against_an_unreachable_url
+tests/integration/test_provek_evidence_witness_live.py::test_artifact_hash_passes_against_a_real_artifact
+tests/integration/test_provek_evidence_witness_live.py::test_operator_only_and_state_retrieval_round_trip
+
+4 tests collected in 0.02s
+rc=0
+$ sha256sum contracts/provek_evidence_witness.py
+5fd606701bbb1e62691b52dfcce8676bb053b367a229a7bd4a83dcaab11d3528  contracts/provek_evidence_witness.py
+expected: 5fd606701bbb1e62691b52dfcce8676bb053b367a229a7bd4a83dcaab11d3528
+RESULT: contract bytes match the deployed sha256
+
+Note on the expectation "28 passed": the task text carried the count from GL-04/GL-05 time. The direct
+suite now holds 32 tests (the offline live-harness-surface tests of T-GL-03d, evidence/RED-060, were
+added after 28 was written down); 32 passed, 0 failed, rc=0 - a changed count with every test green,
+not a failure. The four-test integration collection and the contract sha256 match as expected.
+
+Cleanup: `git worktree remove ~/incubator-worktrees/gl07-split-dryrun` and `git branch -D gl07-split-dryrun`
+were run after the checks above; nothing was pushed.
