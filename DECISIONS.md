@@ -3959,3 +3959,41 @@ ruling-2 §2: `target-version py310` and its `F403` rule would flag the contract
 --gates-only` was run to completion on this host (all nine steps, including the new step 9) and
 reported `TREE GREEN`. Not deployed — no deploy applies to this task; nothing here touches a live
 network.
+
+## D-64. The GenLayer witness is published twice — source of record in provek, a history-preserving subtree mirror for the Builder programme
+
+**Source.** `taskloop/disputes/GL-07-contract-repo-split.ruling-1.md` §1 (read whole, executed
+literally); task `T-GL-07a-mirror-prep`; dry run recorded in
+`evidence/MEASURED-013-gl-07-subtree-split-dry-run.txt`.
+
+**Why.** The GenLayer Builder programme rejected the application for this integration with the
+reason: "Intelligent Contract contributions must use a contract-focused repository". The operator
+decided on a separate contract-focused mirror, with Provek itself submitted as a Project. Provek is
+not rewritten and the contract does not move.
+
+**Decision.**
+
+1. **`integrations/genlayer-witness/` in this repository stays the source of record.** The door's
+   step `9/9`, the `genlayer` job, `test_genlayer_witness_digest_matches_provek.py` and
+   `test_genlayer_witness_is_isolated.py` (D-63) all depend on it staying here.
+2. **`whiteknightonhorse/provek-genlayer-witness` is a read-only mirror** produced by
+   `git subtree split --prefix=integrations/genlayer-witness`: the same commits and history, no
+   rewrite of this repository. **The mirror is never edited directly; a re-split of the same path is
+   deterministic and a fast-forward; a non-fast-forward is a defect — somebody edited the mirror —
+   and is fixed in provek, never by force-push.**
+3. **Everything only the mirror needs lives inside the subdirectory**, otherwise the split could not
+   fast-forward. Four mirror-only files: `.github/workflows/contract-tests.yml` (inert here, because
+   GitHub reads workflows only from a repository root; it becomes the mirror's CI),
+   `requirements/ci-genlayer.txt` (a copy of the root file, legal only under
+   `tests/test_genlayer_ci_requirements_one_place.py`, red run `evidence/RED-062-*`), `LICENSE`
+   (a copy of `LICENSE-APACHE-2.0`) and `.gitignore`.
+4. **Licence.** The root `LICENSE` listed `src/, tests/, scripts/, requirements/, web/, templates/`
+   under Apache-2.0 and did not name `integrations/`, so the contract was formally unlicensed. One
+   line changed: `integrations/` is added to that list. Nothing else in `LICENSE` moved.
+5. **README.** The subdirectory README gained exactly three edits: the CI badge, the paragraph
+   "Where this code lives", and four rows in "Directory layout". The contract, the tests and
+   `deploy/` are byte-for-byte unchanged, so the deployed contract's sha256 still matches.
+6. **No Dependabot in the mirror.** Action pins there are updated through provek and re-split.
+
+Creating the mirror repository, the first push and the live checks belong to GL-07b (dispatcher) and
+are recorded by GL-07c; this entry records only the preparation.

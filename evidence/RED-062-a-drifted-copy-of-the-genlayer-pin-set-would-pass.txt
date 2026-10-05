@@ -1,0 +1,35 @@
+# RED-062 - one-place law for the GenLayer pin set, plant: one byte appended to the mirror's copy
+#
+# subject: -m pytest -q tests/test_genlayer_ci_requirements_one_place.py
+# tree: 192727705ad47688bd48aaddd52678c5ce40d1a1 (dirty)
+
+--- plant applied (one byte appended to the copy) ---
+exit code: 1
+F                                                                        [100%]
+=================================== FAILURES ===================================
+________ test_the_two_copies_of_the_genlayer_pin_set_are_byte_identical ________
+
+    def test_the_two_copies_of_the_genlayer_pin_set_are_byte_identical():
+>       assert _read(ROOT_COPY) == _read(MIRROR_COPY), (
+            "requirements/ci-genlayer.txt and "
+            "integrations/genlayer-witness/requirements/ci-genlayer.txt differ - copy the root file "
+            "over the mirror one (D-64)"
+        )
+E       AssertionError: requirements/ci-genlayer.txt and integrations/genlayer-witness/requirements/ci-genlayer.txt differ - copy the root file over the mirror one (D-64)
+E       assert b"#\n# This f...via aiohttp\n" == b"#\n# This f...a aiohttp\n\n"
+E         
+E         Use -v to get more diff
+
+tests/test_genlayer_ci_requirements_one_place.py:30: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_genlayer_ci_requirements_one_place.py::test_the_two_copies_of_the_genlayer_pin_set_are_byte_identical
+1 failed in 0.11s
+
+CONFIRMED: the drifted copy turns the test red (rc != 0).
+
+--- plant reverted (copy restored byte-for-byte) ---
+exit code: 0
+.                                                                        [100%]
+1 passed in 0.03s
+
+CONFIRMED: green again with the plant reverted.

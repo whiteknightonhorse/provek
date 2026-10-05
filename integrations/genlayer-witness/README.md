@@ -1,10 +1,23 @@
 # Provek Evidence Witness (GenLayer Intelligent Contract)
 
+[![contract tests](https://github.com/whiteknightonhorse/provek-genlayer-witness/actions/workflows/contract-tests.yml/badge.svg)](https://github.com/whiteknightonhorse/provek-genlayer-witness/actions/workflows/contract-tests.yml)
+
 A reusable GenLayer Intelligent Contract, built beside — not inside — the
 [Provek](https://provek.dev/) repository this directory lives in
 (`integrations/genlayer-witness/` in `whiteknightonhorse/provek`). It gives a single
 machine-checkable evidence claim (does a URL answer? does the artefact at a URL match a declared
 hash?) a second, consensus-backed opinion, independent of Provek's own single-process check.
+
+**Where this code lives.** The source of record is `integrations/genlayer-witness/` in
+[`whiteknightonhorse/provek`](https://github.com/whiteknightonhorse/provek/tree/main/integrations/genlayer-witness),
+where Provek's gates check it (D-63). The same directory is published, with its history, as
+`whiteknightonhorse/provek-genlayer-witness` — a read-only mirror made with `git subtree split`
+for the GenLayer Builder programme (Intelligent Contracts track), which requires a
+contract-focused repository. The mirror is never edited directly: every change enters Provek and
+is re-split (D-64). Paths such as `src/witness/witness.py`, `tests/test_genlayer_witness_*.py`,
+`evidence/MEASURED-*`, `DECISIONS.md` and `docs/adr/` refer to the root of the Provek repository,
+and `taskloop/...` and `~/orchestra/...` are the operator's private working records, not
+published. Dependabot is not configured in the mirror — action pins are updated through Provek.
 
 This file follows the operator's brief (`taskloop/briefs/GL-00-operator-task.txt`, section
 "README") section by section. The governing design decisions this contract implements are recorded
@@ -20,9 +33,18 @@ commands to reproduce every claim made here.
 ```
 integrations/genlayer-witness/
   README.md                  — this file
+  LICENSE                    — Apache-2.0 full text (a copy of the root `LICENSE-APACHE-2.0`)
+  .gitignore                 — keeps caches, virtualenvs, keys and the local env file out of the mirror
+  .github/workflows/
+    contract-tests.yml       — the mirror's CI (genvm-lint, direct tests, integration collect);
+                               inert inside Provek, live once this directory is a repository root
   pyproject.toml             — pytest rootdir + the `integration` marker
   requirements.txt           — pinned versions, for human readers (CI's own hash-pinned set lives
                                in requirements/ci-genlayer.{in,txt} at the repository root, D-63)
+  requirements/
+    ci-genlayer.txt          — hash-pinned CI set, a byte-identical copy of the root
+                               `requirements/ci-genlayer.txt`, held equal in Provek by
+                               `tests/test_genlayer_ci_requirements_one_place.py`
   gltest.config.yaml         — network config for `gltest` (localnet, studionet)
   scripts/
     check_genvm_lint.py      — the actual lint gate (see "Known genvm-lint check warnings" below)

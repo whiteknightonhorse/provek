@@ -1,0 +1,38 @@
+# INERT IN THE PROVEK REPOSITORY, LIVE IN THE MIRROR. GitHub reads workflows only from the root
+# `.github/workflows/` of a repository, so while this directory lives at
+# `integrations/genlayer-witness/` inside `whiteknightonhorse/provek` this file does nothing there
+# (Provek's own gates are `gates.yml` and `scripts/push.sh`, D-63). In the read-only mirror
+# `whiteknightonhorse/provek-genlayer-witness`, produced by `git subtree split` (D-64), this
+# directory is the repository root and this file becomes its CI.
+name: contract tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  genlayer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+      # `--no-deps` because the PyPI metadata of `genlayer-test==0.29.2` is stale against the
+      # pinned `genlayer-py==0.18.0`; the file names the full hash-pinned closure (see D-63).
+      - run: |
+          pip install --quiet --require-hashes --only-binary=:all: --no-deps -r requirements/ci-genlayer.txt
+      - name: pre-populate the direct-mode SDK cache (checked against the committed digest)
+        run: |
+          mkdir -p ~/.cache/gltest-direct
+          curl -fsSL -o ~/.cache/gltest-direct/genvm-universal-v0.2.16.tar.xz \
+            https://github.com/genlayerlabs/genvm/releases/download/v0.2.16/genvm-universal.tar.xz
+          echo "$(cat genvm-universal-v0.2.16.sha256)  $HOME/.cache/gltest-direct/genvm-universal-v0.2.16.tar.xz" | sha256sum -c -
+      - run: python3 scripts/check_genvm_lint.py
+      - run: python3 -m pytest tests/direct -q
+      - run: python3 -m pytest --collect-only -q tests/integration
