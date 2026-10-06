@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-10-05T03:43:05.117157+00:00",
-    "valid_until": "2026-11-04T03:43:05.117157+00:00",
+    "issued_at": "2026-10-06T03:43:05.024996+00:00",
+    "valid_until": "2026-11-05T03:43:05.024996+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -61,7 +61,7 @@
           "absent_reason": null
         },
         "workflow_runs": {
-          "value": 3300,
+          "value": 3560,
           "measured": true,
           "absent_reason": null
         },
@@ -80,7 +80,7 @@
           "measured": true,
           "absent_reason": null
         },
-        "head_sha": "ab336e6aaec418fa1f648ace993a593753dcd62b"
+        "head_sha": "496ed3c46c0737ad93415e37770d4112badd52c5"
       },
       "control_map_valid": true,
       "control_map_cap": 5,
@@ -103,7 +103,7 @@
       "private": false,
       "declaration": {
         "present": true,
-        "pinned_sha": "ab336e6aaec418fa1f648ace993a593753dcd62b",
+        "pinned_sha": "496ed3c46c0737ad93415e37770d4112badd52c5",
         "schema_version": "1.1.0"
       }
     },
@@ -165,7 +165,7 @@
       "reason": null,
       "confidence": "measured",
       "declared": true,
-      "checked_at": "2026-10-05T03:43:05.117157+00:00"
+      "checked_at": "2026-10-06T03:43:05.024996+00:00"
     },
     "task_history": [],
     "mandate_ref": "self-mandate-0001",
