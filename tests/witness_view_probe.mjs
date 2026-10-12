@@ -60,8 +60,27 @@ const CASES = {
   match_none: () => v.matchRecords(v.callOf(finalized()), [card("get_result_fail")]).kind,
   match_several: () => v.matchRecords(v.callOf(finalized()), [card("get_result_pass"), { ...card("get_result_pass"), witnessId: "dup" }]).kind,
   match_no_call: () => v.matchRecords(null, []).kind,
+  // The tracker loop, driven with a clock: one status per 4 s poll, starting at t=0 (the first poll).
+  track_not_indexed_then_finalized: () => runTrack(["UNINITIALIZED", "UNINITIALIZED", "PENDING", "PROPOSING", "COMMITTING", "REVEALING", "ACCEPTED", "FINALIZED"], 4000),
+  track_uninitialized_for_60s: () => runTrack(Array(40).fill("UNINITIALIZED"), 4000),
+  track_uninitialized_for_58s: () => runTrack(Array(15).fill("UNINITIALIZED"), 4000),
+  track_appeal_recurrence: () => runTrack(["PENDING", "COMMITTING", "APPEAL_COMMITTING", "COMMITTING", "FINALIZED"], 4000),
   undetermined_text: () => v.UNDETERMINED_EXPLANATION,
 };
+
+/** Feed `statuses` to `trackStep` one per `everyMs`, stopping when it says done, like the page does. */
+function runTrack(statuses, everyMs) {
+  let lifecycle = [];
+  const log = [];
+  for (let i = 0; i < statuses.length; i++) {
+    const read = statuses[i] === "UNINITIALIZED" ? v.summariseTx(fx.tx_unknown) : v.summariseTx({ ...finalized(), statusName: statuses[i] });
+    const step = v.trackStep({ startedAt: 0, lifecycle }, read, i * everyMs);
+    lifecycle = step.lifecycle;
+    log.push({ at_s: (i * everyMs) / 1000, notFound: step.notFound, seconds: step.notIndexedSeconds, done: step.done });
+    if (step.done) break;
+  }
+  return { polls: log.length, last: log[log.length - 1], statuses: lifecycle.map((o) => o.status), log };
+}
 
 const name = process.argv[2];
 if (!Object.prototype.hasOwnProperty.call(CASES, name)) {

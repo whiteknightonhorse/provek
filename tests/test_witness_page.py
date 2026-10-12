@@ -175,6 +175,41 @@ def test_record_matching_returns_one_none_or_several_and_never_guesses():
     assert probe("match_no_call") == "no_call"
 
 
+def test_a_just_submitted_hash_is_not_called_nonexistent_while_bradbury_has_not_indexed_it():
+    """A1.1: the relay returns a hash Bradbury may not know for a few seconds. UNINITIALIZED inside
+    the first 60 s is 'not indexed yet', the 4 s cadence goes on, and the lifecycle reaches FINALIZED."""
+    r = probe("track_not_indexed_then_finalized")
+    assert r["statuses"][-1] == "FINALIZED" and r["last"]["done"] == "terminal"
+    assert r["polls"] == 8, "the watch stopped before the lifecycle reached FINALIZED"
+    assert [e["notFound"] for e in r["log"][:2]] == ["not_indexed_yet", "not_indexed_yet"]
+    assert r["log"][1]["seconds"] == 4 and r["log"][0]["done"] is None and r["log"][1]["done"] is None
+
+
+def test_sixty_seconds_of_uninitialized_ends_the_watch_as_absent():
+    r = probe("track_uninitialized_for_60s")
+    assert r["last"]["notFound"] == "absent" and r["last"]["done"] == "terminal"
+    assert r["last"]["at_s"] == 60 and r["statuses"] == []
+    assert probe("track_uninitialized_for_58s")["last"]["done"] is None  # 56 s is still inside the grace
+
+
+def test_a_status_that_recurs_after_an_appeal_is_listed_again_and_the_page_keys_on_position():
+    r = probe("track_appeal_recurrence")
+    assert r["statuses"] == ["PENDING", "COMMITTING", "APPEAL_COMMITTING", "COMMITTING", "FINALIZED"]
+    page = (ROOT / "web" / "src" / "pages" / "Witness.tsx").read_text(encoding="utf-8")
+    assert "key={`${i}-${o.status}`}" in page and "key={o.status}" not in page
+
+
+def test_the_nav_says_genlayer_evidence_witness_everywhere():
+    chrome = (ROOT / "web" / "src" / "components" / "Chrome.tsx").read_text(encoding="utf-8")
+    assert 'link("/witness/", "GenLayer Evidence Witness"' in chrome
+    assert '"GenLayer Witness"' not in chrome
+
+
+def test_the_helper_docstring_names_the_real_test_file():
+    src = (ROOT / "web" / "src" / "witnessView.js").read_text(encoding="utf-8")
+    assert "test_witness_page_helpers" not in src and "tests/test_witness_page.py" in src
+
+
 # ---------------------------------------------------------------- pins
 
 def test_genlayer_js_is_pinned_to_an_exact_version_and_the_lockfile_agrees():

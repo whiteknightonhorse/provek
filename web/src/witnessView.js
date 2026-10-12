@@ -1,7 +1,7 @@
 /**
  * Pure helpers for the GenLayer Evidence Witness page (`pages/Witness.tsx`, route `/witness/`).
  * Plain JavaScript, not `.ts`, by the precedent `slug.js` and `formatObservation.js` set: the gate
- * that guards this (`tests/test_witness_page_helpers.py`, via `tests/witness_view_probe.mjs`) runs
+ * that guards this (`tests/test_witness_page.py`, via `tests/witness_view_probe.mjs`) runs
  * these bytes directly under Node, and Node on this host is v20 and cannot strip types.
  *
  * NAMING. This is NOT Provek's own WitnessRecord (`/w/<id>/`). Everything here is the GenLayer
@@ -14,7 +14,7 @@
  * showing a number nobody measured.
  */
 
-/** The deployed contract - the single place in `web/` that names it. `tests/test_witness_page_helpers.py`
+/** The deployed contract - the single place in `web/` that names it. `tests/test_witness_page.py`
  *  compares these against `integrations/genlayer-witness/deploy/deployment.json`. */
 export const CONTRACT_ADDRESS = "0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6";
 export const CHAIN_ID = 4221;
@@ -141,6 +141,36 @@ export function observe(lifecycle, statusName, atMs) {
 
 export function isTerminal(statusName) {
   return TERMINAL_STATUSES.includes(statusName);
+}
+
+/** A hash the relay has just returned may not be indexed by Bradbury yet. For this long after the
+ *  first poll, UNINITIALIZED means "not indexed yet" and the watch goes on; after it, the hash is
+ *  reported as unknown. */
+export const NOT_INDEXED_GRACE_MS = 60 * 1000;
+/** The watch stops after this long even if no terminal status arrived. */
+export const WATCH_LIMIT_MS = 15 * 60 * 1000;
+
+/**
+ * One poll of the tracker. `prev` is `{ startedAt, lifecycle }` (`startedAt` = the first poll),
+ * `read` is a `summariseTx` result (an `{ ok: false, why }` is a failed read, shown and retried).
+ * Returns what the page shows and `done`: "terminal" | "limit" | null. UNINITIALIZED inside the
+ * grace window is `notFound: "not_indexed_yet"` and does NOT end the watch; past it, `"absent"`
+ * does.
+ */
+export function trackStep(prev, read, nowMs, limitMs = WATCH_LIMIT_MS) {
+  let lifecycle = prev.lifecycle;
+  let tx = null;
+  let notFound = null;
+  let error = null;
+  const waitedMs = nowMs - prev.startedAt;
+  if (!read.ok) error = read.why;
+  else if (read.found) {
+    tx = read;
+    if (tx.status) lifecycle = observe(lifecycle, tx.status, nowMs);
+  } else notFound = waitedMs < NOT_INDEXED_GRACE_MS ? "not_indexed_yet" : "absent";
+  const terminal = !!(tx && tx.status && isTerminal(tx.status));
+  const done = terminal ? "terminal" : waitedMs > limitMs ? "limit" : notFound === "absent" ? "terminal" : null;
+  return { lifecycle, tx, notFound, notIndexedSeconds: notFound ? Math.floor(waitedMs / 1000) : null, error, done };
 }
 
 /**

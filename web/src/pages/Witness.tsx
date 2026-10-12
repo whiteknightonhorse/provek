@@ -18,14 +18,12 @@ import { Page, Strip } from "../components/Chrome";
 import { readTransaction, readView } from "../witnessChain";
 import {
   CONTRACT_ADDRESS, DEFAULT_SUBJECT, NETWORK_LABEL, UNDETERMINED_EXPLANATION,
-  explorerAddressUrl, explorerTxUrl, expectedLabel, isTerminal, matchRecords, observe, parseIdList,
-  parseTxHash, readableError, resultCard, safeHref, summariseTx, txFromQuery,
+  explorerAddressUrl, explorerTxUrl, expectedLabel, matchRecords, parseIdList,
+  parseTxHash, readableError, resultCard, safeHref, summariseTx, trackStep, txFromQuery,
 } from "../witnessView.js";
-import type { Match, Observed, ResultCard, TxFound } from "../witnessView.js";
+import type { Match, Observed, ResultCard, TxFound, TxSummary } from "../witnessView.js";
 
 const POLL_MS = 4000;
-/** The watch stops after this long even if no terminal status arrived - and says so. */
-const WATCH_LIMIT_MS = 15 * 60 * 1000;
 
 type Cards = Extract<ResultCard, { ok: true }>;
 
@@ -186,7 +184,8 @@ type Track = {
   hash: string;
   lifecycle: Observed[];
   tx: TxFound | null;
-  notFound: boolean;
+  notFound: "not_indexed_yet" | "absent" | null;
+  notIndexedSeconds: number | null;
   error: string | null;
   done: "terminal" | "limit" | null;
   match: Match | null;
@@ -216,26 +215,20 @@ function Tracker() {
     const startedAt = Date.now();
     let lifecycle: Observed[] = [];
     let matched = false;
-    setTrack({ hash, lifecycle, tx: null, notFound: false, error: null, done: null, match: null, matchError: null });
+    setTrack({ hash, lifecycle, tx: null, notFound: null, notIndexedSeconds: null, error: null, done: null, match: null, matchError: null });
 
     const tick = async () => {
-      let tx: TxFound | null = null;
-      let notFound = false;
-      let error: string | null = null;
+      let read: TxSummary;
       try {
-        const s = summariseTx(await readTransaction(hash));
-        if (!s.ok) error = s.why;
-        else if (s.found) tx = s;
-        else notFound = true;
+        read = summariseTx(await readTransaction(hash));
       } catch (e) {
-        error = readableError(e);
+        read = { ok: false, why: readableError(e) };
       }
       if (mine !== gen.current) return;
-      if (tx && tx.status) lifecycle = observe(lifecycle, tx.status, Date.now());
-      const terminal = !!(tx && tx.status && isTerminal(tx.status));
-      const limit = Date.now() - startedAt > WATCH_LIMIT_MS;
-      const done = terminal ? "terminal" : limit ? "limit" : notFound ? "terminal" : null;
-      setTrack((t) => (t ? { ...t, lifecycle, tx: tx ?? t.tx, notFound, error, done: done ?? null } : t));
+      const step = trackStep({ startedAt, lifecycle }, read, Date.now());
+      lifecycle = step.lifecycle;
+      const { tx, done } = step;
+      setTrack((t) => (t ? { ...t, lifecycle, tx: tx ?? t.tx, notFound: step.notFound, notIndexedSeconds: step.notIndexedSeconds, error: step.error, done } : t));
 
       if (tx && tx.succeeded && tx.forThisContract && !matched) {
         matched = true;
@@ -290,15 +283,18 @@ function Tracker() {
               </a>
             </p>
             {t.error && <Strip tone="warn"><strong>The last read failed.</strong> {t.error}{t.done ? "" : " Retrying."}</Strip>}
-            {t.notFound && (
-              <Strip tone="info">Bradbury has no transaction with this hash (it answered UNINITIALIZED). It may not have been submitted yet, or the hash is wrong.</Strip>
+            {t.notFound === "not_indexed_yet" && (
+              <Strip tone="info">Bradbury has not indexed this transaction yet ({t.notIndexedSeconds} s); it answered UNINITIALIZED. A hash that was only just submitted can take a moment to appear. Still watching.</Strip>
+            )}
+            {t.notFound === "absent" && (
+              <Strip tone="info">Bradbury has no transaction with this hash (it answered UNINITIALIZED for over a minute). It may not have been submitted, or the hash is wrong.</Strip>
             )}
             {t.lifecycle.length > 0 && (
               <div>
                 <h3 className="text-sm font-semibold">Observed lifecycle</h3>
                 <ol className="mt-1 text-sm list-decimal pl-5 space-y-0.5">
-                  {t.lifecycle.map((o) => (
-                    <li key={o.status}><span className="font-mono text-xs">{o.status}</span> <span className="text-[var(--color-ink-3)]">first seen {o.at}</span></li>
+                  {t.lifecycle.map((o, i) => (
+                    <li key={`${i}-${o.status}`}><span className="font-mono text-xs">{o.status}</span> <span className="text-[var(--color-ink-3)]">first seen {o.at}</span></li>
                   ))}
                 </ol>
               </div>

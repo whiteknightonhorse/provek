@@ -42,3 +42,12 @@ export type Match =
   | { kind: "one"; card: Extract<ResultCard, { ok: true }> }
   | { kind: "several"; cards: Extract<ResultCard, { ok: true }>[] };
 export declare function matchRecords(call: WitnessCall | null, cards: ResultCard[]): Match;
+export declare const NOT_INDEXED_GRACE_MS: number;
+export declare const WATCH_LIMIT_MS: number;
+export type TrackStepResult = {
+  lifecycle: Observed[]; tx: TxFound | null; notFound: "not_indexed_yet" | "absent" | null;
+  notIndexedSeconds: number | null; error: string | null; done: "terminal" | "limit" | null;
+};
+export declare function trackStep(
+  prev: { startedAt: number; lifecycle: Observed[] }, read: TxSummary, nowMs: number, limitMs?: number,
+): TrackStepResult;
