@@ -1,0 +1,216 @@
+MEASURED-015 - T-PW-01: read-only Bradbury reads, CORS, tx lifecycle shape and explorer route for the /witness/ page
+# tree: c52b93b11c60ec6d285313d55d979915e4513162 (dirty)
+# Raw output of the scripts named inline; nothing below is typed by hand except lines starting '# ----' and '# findings'.
+
+# MEASURED-015 PW-01: read-only Bradbury reads via genlayer-js 1.1.8 createClient({chain: testnetBradbury}), no account
+# date -u: Mon Oct 12 04:56:36 AM UTC 2026
+# node: v20.20.2; script: readContract list_by_subject/get_result/supported_criteria/get_operator + get_result('nope')
+
+endpoint [ 'https://rpc-bradbury.genlayer.com' ]
+list_by_subject: "[\"0645571a8dea1e2601e441eb3c451b3eb6ab60f2f1c5af68c70129c03ae13453\", \"cfa668c12868beb9e0e211c3b5d3179dae39ff699a9747d1f2600305e5c84521\", \"ca1f8567919cf99f1cde6fcb464971920e5ea122f3eea8c7fb019d6fa7c97e1f\"]"
+typeof string
+get_result: {
+ "checked_at": "2026-09-28T06:51:33Z",
+ "criterion": "artifact_hash",
+ "evidence_digest": "c61e9a12ff00f711d1d42a15430de1f7191c369adcc20cab7d33e7c1cbcf8660",
+ "evidence_url": "https://raw.githubusercontent.com/whiteknightonhorse/provek/5e28d5f933329c124c058996da28b2abd4da5d37/LICENSE",
+ "expected": "c61e9a12ff00f711d1d42a15430de1f7191c369adcc20cab7d33e7c1cbcf8660",
+ "observation": "status=200",
+ "result": "PASS",
+ "subject_id": "git:whiteknightonhorse/provek"
+}
+supported_criteria: [
+ "artifact_hash",
+ "url_reachable"
+]
+get_operator: "0x2c111fcd3082083c9b287dd9da5995f190968ef9"
+unknown id error: InvalidInputRpcError Missing or invalid parameters.
+Double check you have provided the correct parameters.
+
+# ---- CORS ----
+# date -u: Mon Oct 12 04:56:42 AM UTC 2026
+$ curl -si -X OPTIONS preflight, Origin https://provek.dev
+HTTP/2 204 
+date: Mon, 12 Oct 2026 04:56:42 GMT
+access-control-allow-headers: Content-Type
+access-control-allow-methods: HEAD,POST
+access-control-allow-origin: *
+allow: OPTIONS, POST
+vary: Origin
+vary: Access-Control-Request-Method
+vary: Access-Control-Request-Headers
+cf-cache-status: DYNAMIC
+server: cloudflare
+cf-ray: a4938502d9dd6192-PDX
+alt-svc: h3=":443"; ma=86400
+
+
+$ curl -si POST gen_call
+HTTP/2 200 
+date: Mon, 12 Oct 2026 04:56:43 GMT
+content-type: application/json
+content-length: 43
+access-control-allow-origin: *
+vary: Origin
+cf-cache-status: DYNAMIC
+server: cloudflare
+cf-ray: a4938504180b5ed3-PDX
+alt-svc: h3=":443"; ma=86400
+
+{"jsonrpc":"2.0","result":"0x107d","id":1}
+
+# ---- getTransaction (consensus data contract read via eth_call; genlayer-js 1.1.8) ----
+# date -u: Mon Oct 12 05:01:48 AM UTC 2026
+# tx hashes are printed WITHOUT their 0x prefix: scripts/secret_scan.sh blocks the literal 0x+64hex (see deployment.json _note_tx_hashes).
+{
+ "currentTimestamp": "1791781309",
+ "sender": "0x2c111FCD3082083C9B287DD9DA5995f190968Ef9",
+ "recipient": "0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6",
+ "initialRotations": "3n",
+ "txSlot": "1",
+ "createdTimestamp": "1790578293",
+ "lastVoteTimestamp": "1790578302",
+ "randomSeed": "f5d23945278efd9f2b98eb2e5b4fce9b69318d8826d9725f041c48a1a47d98bb",
+ "result": 1,
+ "txExecutionHash": "e23e8aaf27dd412aec2a18d29608767e143d4e1e37b06e110fcc61a61bc24bc4",
+ "txCalldata": "f8f6b8f316046172677325ec016769743a77686974656b6e696768746f6e686f7273652f70726f76656b6c61727469666163745f68617368e40668747470733a2f2f7261772e67697468756275736572636f6e74656e742e636f6d2f77686974656b6e696768746f6e686f7273652f70726f76656b2f356532386435663933333332396331323463303538393936646132386232616264346461356433372f4c4943454e5345840463363165396131326666303066373131643164343261313534333064653166373139316333363961646363323063616237643333653763316362636638363630066d6574686f643c7769746e65737380",
+ "eqBlocksOutputs": "f8e5b8dc002e0b626f64795f7368613235368404633631653961313266663030663731316431643432613135343330646531663731393163333639616463633230636162376433336537633163626366383636300562797465739957056665746368146f6b06737461747573c10c0375726ce40668747470733a2f2f7261772e67697468756275736572636f6e74656e742e636f6d2f77686974656b6e696768746f6e686f7273652f70726f76656b2f356532386435663933333332396331323463303538393936646132386232616264346461356433372f4c4943454e534586706164646564",
+ "messages": [],
+ "queueType": 0,
+ "queuePosition": "0",
+ "activator": "0x9D998aD7C7f9Cc448A4DbDf49edD7CADBe3d57B6",
+ "lastLeader": "0x0c526A6af46A038E31dA21C123756Ab2D75f06Bc",
+ "status": 7,
+ "txId": "45388e3b02dba0295c5960a7aabefadf4175198a1d71b90008689772dfd68c7a",
+ "readStateBlockRange": {
+  "activationBlock": "23056590",
+  "processingBlock": "23056590",
+  "proposalBlock": "23056591"
+ },
+ "numOfRounds": "0",
+ "lastRound": {
+  "round": "0",
+  "leaderIndex": "3",
+  "votesCommitted": "5",
+  "votesRevealed": "5",
+  "appealBond": "0",
+  "rotationsLeft": "3",
+  "result": 1,
+  "roundValidators": [
+   "0xb4Fb7ADc6877a6A16bd131c7c9270834bD3DEf34",
+   "0x3f5cAED686336ED9cF3Dede61154B0Cd67Fb9bD7",
+   "0x470AAa7DE37ff3E1C2b38eD9096263ca0d541F21",
+   "0x0c526A6af46A038E31dA21C123756Ab2D75f06Bc",
+   "0xF01877B6Ac60861CA3b134e0E483C482679b4682"
+  ],
+  "validatorVotes": [
+   1,
+   1,
+   1,
+   1,
+   1
+  ],
+  "validatorVotesHash": [
+   "b4ab33fc6aa999ca412069af9480d5547b67fd9437e3357bfc0ac188e16f259c",
+   "85be97d9e9e4999999d15d72aa2bcfb00850fdd6b283ffcf359cab8d3c56e133",
+   "00e4f2c4f8405eb0ef386ab63ac6af16f5da0bb256b50b3991104d76d0f0bd28",
+   "cbfbc8c4397ae0002f09b3a6f9160a7ef0b3421a52d5bb12c7703ae24b468158",
+   "f04fc2d5f3bd1308d1267caf98a88fa4974f7413f865340fdb1027941c32f0ca"
+  ],
+  "validatorResultHash": [
+   "263776f2fd20a2bfd8843d86d5c3b74a837cda3a07b06152cf2a9b405c279a50",
+   "263776f2fd20a2bfd8843d86d5c3b74a837cda3a07b06152cf2a9b405c279a50",
+   "263776f2fd20a2bfd8843d86d5c3b74a837cda3a07b06152cf2a9b405c279a50",
+   "263776f2fd20a2bfd8843d86d5c3b74a837cda3a07b06152cf2a9b405c279a50",
+   "263776f2fd20a2bfd8843d86d5c3b74a837cda3a07b06152cf2a9b405c279a50"
+  ],
+  "validatorVotesName": [
+   "AGREE",
+   "AGREE",
+   "AGREE",
+   "AGREE",
+   "AGREE"
+  ]
+ },
+ "consumedValidators": [
+  "0xb4Fb7ADc6877a6A16bd131c7c9270834bD3DEf34",
+  "0x3f5cAED686336ED9cF3Dede61154B0Cd67Fb9bD7",
+  "0x470AAa7DE37ff3E1C2b38eD9096263ca0d541F21",
+  "0x0c526A6af46A038E31dA21C123756Ab2D75f06Bc",
+  "0xF01877B6Ac60861CA3b134e0E483C482679b4682"
+ ],
+ "txExecutionResult": 1,
+ "txData": "f8f6b8f316046172677325ec016769743a77686974656b6e696768746f6e686f7273652f70726f76656b6c61727469666163745f68617368e40668747470733a2f2f7261772e67697468756275736572636f6e74656e742e636f6d2f77686974656b6e696768746f6e686f7273652f70726f76656b2f356532386435663933333332396331323463303538393936646132386232616264346461356433372f4c4943454e5345840463363165396131326666303066373131643164343261313534333064653166373139316333363961646363323063616237643333653763316362636638363630066d6574686f643c7769746e65737380",
+ "txDataDecoded": {
+  "callData": {},
+  "leaderOnly": false,
+  "type": "call"
+ },
+ "numOfInitialValidators": "3",
+ "statusName": "FINALIZED",
+ "resultName": "AGREE",
+ "txExecutionResultName": "FINISHED_WITH_RETURN"
+}
+KEYS [
+  'currentTimestamp',       'sender',
+  'recipient',              'initialRotations',
+  'txSlot',                 'createdTimestamp',
+  'lastVoteTimestamp',      'randomSeed',
+  'result',                 'txExecutionHash',
+  'txCalldata',             'eqBlocksOutputs',
+  'messages',               'queueType',
+  'queuePosition',          'activator',
+  'lastLeader',             'status',
+  'txId',                   'readStateBlockRange',
+  'numOfRounds',            'lastRound',
+  'consumedValidators',     'txExecutionResult',
+  'txData',                 'txDataDecoded',
+  'numOfInitialValidators', 'statusName',
+  'resultName',             'txExecutionResultName'
+]
+receipt keys [
+  'currentTimestamp',      'sender',
+  'recipient',             'initialRotations',
+  'txSlot',                'createdTimestamp',
+  'lastVoteTimestamp',     'randomSeed',
+  'result',                'txExecutionHash',
+  'txCalldata',            'eqBlocksOutputs',
+  'queueType',             'queuePosition',
+  'activator',             'lastLeader',
+  'status',                'txId',
+  'readStateBlockRange',   'numOfRounds',
+  'lastRound',             'consumedValidators',
+  'txExecutionResult',     'txData',
+  'txDataDecoded',         'numOfInitialValidators',
+  'status_name',           'resultName',
+  'txExecutionResultName'
+] status undefined FINISHED_WITH_RETURN undefined
+
+# ---- calldata of that tx, decoded by genlayer-js (txDataDecoded.callData, a Map) ----
+{"args":["git:whiteknightonhorse/provek","artifact_hash","https://raw.githubusercontent.com/whiteknightonhorse/provek/5e28d5f933329c124c058996da28b2abd4da5d37/LICENSE","c61e9a12ff00f711d1d42a15430de1f7191c369adcc20cab7d33e7c1cbcf8660"],"method":"witness"}
+
+# ---- explorer path format ----
+# date -u: Mon Oct 12 05:01:50 AM UTC 2026
+entry script: /_nuxt/C0_R-Ihl.js
+name:"tx-hash",path:"/tx/:hash()"
+(the explorer is a Nuxt SPA, so an HTTP 200 for any path proves nothing; the route table above is the evidence: /tx/:hash)
+
+# ---- the page's own helpers (web/src/witnessView.js) run against the live chain ----
+# date -u: Mon Oct 12 05:01:50 AM UTC 2026
+supported_criteria: ["artifact_hash","url_reachable"]
+ids: {"ok":true,"ids":["0645571a8dea1e2601e441eb3c451b3eb6ab60f2f1c5af68c70129c03ae13453","cfa668c12868beb9e0e211c3b5d3179dae39ff699a9747d1f2600305e5c84521","ca1f8567919cf99f1cde6fcb464971920e5ea122f3eea8c7fb019d6fa7c97e1f"]}
+card: PASS artifact_hash status=200 2026-09-28T06:51:33Z 0645571a8dea1e2601e441eb3c451b3eb6ab60f2f1c5af68c70129c03ae13453
+card: PASS url_reachable status=200 2026-09-28T06:51:50Z cfa668c12868beb9e0e211c3b5d3179dae39ff699a9747d1f2600305e5c84521
+card: FAIL artifact_hash sha256 mismatch 2026-09-28T06:52:07Z ca1f8567919cf99f1cde6fcb464971920e5ea122f3eea8c7fb019d6fa7c97e1f
+empty subject: {"ok":true,"ids":[]}
+unknown id -> The contract answered: unknown witness_id 'nope'
+tx 45388e3b02dba0295c5960a7aabefadf4175198a1d71b90008689772dfd68c7a status FINALIZED exec FINISHED_WITH_RETURN succeeded true forThisContract true -> match one (equals deployment.json witness_id)
+tx 46986cb115b20fd0b4c81a823b5aefea1e754e785080df459d67ce9ced5fa566 status FINALIZED exec FINISHED_WITH_RETURN succeeded true forThisContract true -> match one (equals deployment.json witness_id)
+tx 4973f49c975270b4550623e5ee4cfd7ee4f75cddd60591c3d0bb12cb9e36234f status FINALIZED exec FINISHED_WITH_RETURN succeeded true forThisContract true -> match one (equals deployment.json witness_id)
+unknown hash: {"ok":true,"found":false}
+
+# ---- findings ----
+# 1. CORS: preflight 204 and POST 200 both carry access-control-allow-origin: * -> no forwarding function (task step 2 branch not taken).
+# 2. The transaction RETURN VALUE (witness id) is not exposed by genlayer-js on Bradbury (eqBlocksOutputs is an undecoded blob); the page finds the record by matching the decoded call arguments against list_by_subject. Exactly one match for each of the 3 live txs.
+# 3. get_result for an unknown id fails with a viem InvalidInputRpcError whose Details carry the contract's message as ReturnData bytes; the page decodes it ('unknown witness_id').
+# 4. An unknown tx hash answers statusName UNINITIALIZED with a zero recipient (not an error).

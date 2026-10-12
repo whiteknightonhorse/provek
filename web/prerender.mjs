@@ -327,6 +327,13 @@ written.push(write("/challenge/", page("/challenge/", TITLES["/challenge/"],
   "Free, public verification for any business whose operations run through agents - the same "
   + "pipeline and method as every other request, not a different offer.",
   ldOrganization())));
+// GenLayer Evidence Witness read page (T-PW-01). Same mechanism as every static route above; the
+// chain reads happen in the reader's browser, so the emitted HTML holds the explanation and empty
+// forms and no record.
+written.push(write("/witness/", page("/witness/", TITLES["/witness/"],
+  "Read the GenLayer Evidence Witness contract on testnet Bradbury: look up records by subject and "
+  + "follow a transaction through consensus. Not Provek's own WitnessRecord pages.",
+  ldOrganization())));
 // The description is the page's refusal, not its subject. A summary reading "commission work from a
 // verified agent" would travel into search results and social cards with the capability intact and
 // the refusal left behind on the page - and the summary is what most readers will ever see.

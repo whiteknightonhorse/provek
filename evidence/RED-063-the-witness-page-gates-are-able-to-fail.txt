@@ -1,0 +1,102 @@
+# RED-063 - the /witness/ page gates are able to fail
+#
+# tree: c52b93b11c60ec6d285313d55d979915e4513162 (dirty)
+#
+# Produced by evidence/RED-063-generator.py, checked in beside this file so every run below can be
+# repeated rather than believed. Three plants against the real tree, each reverted and verified
+# byte-identical before the next.
+
+====================================================================================================
+PLANT 1 - web/src/witnessView.js: `succeeded` ignores the execution result (consensus status alone counts as success).
+SUBJECT: tests/test_witness_page.py::test_accepted_with_a_failed_execution_is_not_success
+====================================================================================================
+
+--- before the plant, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.07s
+
+--- with the plant in place, exit 1 ---
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_____________ test_accepted_with_a_failed_execution_is_not_success _____________
+
+    def test_accepted_with_a_failed_execution_is_not_success():
+        s = probe("tx_accepted_but_failed")
+>       assert s["status"] == "ACCEPTED" and s["succeeded"] is False and s["settledButFailed"] is True
+E       AssertionError: assert ('ACCEPTED' == 'ACCEPTED'
+E         
+E           ACCEPTED and True is False)
+
+tests/test_witness_page.py:148: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_witness_page.py::test_accepted_with_a_failed_execution_is_not_success
+1 failed in 0.09s
+
+--- plant reverted, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.06s
+
+====================================================================================================
+PLANT 2 - web/dist/witness/index.html: the contract address is removed from the emitted page.
+SUBJECT: tests/test_witness_page.py::test_the_emitted_page_names_the_contract_network_and_explorer
+====================================================================================================
+
+--- before the plant, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.03s
+
+--- with the plant in place, exit 1 ---
+F                                                                        [100%]
+=================================== FAILURES ===================================
+________ test_the_emitted_page_names_the_contract_network_and_explorer _________
+
+    def test_the_emitted_page_names_the_contract_network_and_explorer():
+        html = _page()
+>       assert DEPLOYMENT["contract_address"] in html
+E       assert '0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6' in '<!doctype html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <meta name="viewport" content="width=d...e_url":null,"service_reachable":null,"issued_at":"2026-10-07T03:43:05.383155+00:00"}]}}</script>\n  </body>\n</html>\n'
+
+tests/test_witness_page.py:228: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_witness_page.py::test_the_emitted_page_names_the_contract_network_and_explorer
+1 failed in 0.04s
+
+--- plant reverted, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.03s
+
+====================================================================================================
+PLANT 3 - web/dist/witness/index.html: a real witness id is written into the static html.
+SUBJECT: tests/test_witness_page.py::test_the_emitted_page_carries_no_record_value
+====================================================================================================
+
+--- before the plant, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.03s
+
+--- with the plant in place, exit 1 ---
+F                                                                        [100%]
+=================================== FAILURES ===================================
+________________ test_the_emitted_page_carries_no_record_value _________________
+
+    def test_the_emitted_page_carries_no_record_value():
+        """Every record on this page comes from an RPC response in the reader's session. A witness id,
+        an evidence digest or a PASS/FAIL badge in the STATIC html would be data nobody read."""
+        html = _page()
+        for r in DEPLOYMENT["live_records"]:
+>           assert r["witness_id"] not in html
+E           assert '0645571a8de...29c03ae13453' not in '<!doctype h...>\n</html>\n'
+E             
+E             '0645571a8dea1e2601...f68c70129c03ae13453' is contained here:
+E             ?           ^^^^^^^^^^^^^^^^^^^^^^^^
+E               ></div><p>0645571a8dea1e2601e441eb3c451b3eb6ab60f2f1c5af68c70129c03ae13453</p></main></div><footer class="mt-16 border-t border-[var(--color-line)] bg-[var(--color-paper)]"><div class="mx-auto max-w-[1180px] px-5 py-8"><div class="grid gap-10 md:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] md:gap-16"><div class="grid gap-8 sm:grid-cols-2"><div><h2 class="border-b border-[var(--color-line)] pb-1.5 text-xs uppercase tracking-wide text-[var(--color-ink-3)]">The score</h2><p cla...
+E             
+E             ...Full output truncated (5 lines hidden), use '-vv' to show
+
+tests/test_witness_page.py:239: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_witness_page.py::test_the_emitted_page_carries_no_record_value
+1 failed in 0.05s
+
+--- plant reverted, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.03s

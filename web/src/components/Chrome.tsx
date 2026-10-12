@@ -33,6 +33,7 @@ export function Masthead({ route }: { route: string }) {
           {link("/registry/", "Registry", route.startsWith("/registry") || route.startsWith("/p/"))}
           {link("/method/", "Method", route === "/method/")}
           {link("/build/", "Build", route.startsWith("/build/"))}
+          {link("/witness/", "GenLayer Witness", route === "/witness/")}
           {/* PHASE 2 SLOT - reserved, disabled, and NOT described as a coming feature.
 
               THE UNAVAILABILITY IS TEXT, NOT AN ARIA ATTRIBUTE, and that is a correction rather

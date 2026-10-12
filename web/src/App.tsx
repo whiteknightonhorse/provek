@@ -23,6 +23,7 @@ import Method from "./pages/Method";
 import Phase2 from "./pages/Phase2";
 import Corrections from "./pages/Corrections";
 import Build from "./pages/Build";
+import Witness from "./pages/Witness";
 import BuildTemplate from "./pages/BuildTemplate";
 import type { Passport, Registry as R, Template, TemplateSummary, TemplateVideo } from "./types";
 import { isSafeSlug } from "./slug";
@@ -206,6 +207,8 @@ export const TITLES: Record<string, string> = {
   // what a browser tab, a bookmark and a search result show, and it names the thing truthfully:
   // a library of templates, not a promise the templates themselves cannot keep.
   "/build/": "Build an AI agent from a template - Provek",
+  // Named "GenLayer Evidence Witness" so it is never read as Provek's own WitnessRecord (`/w/<id>/`).
+  "/witness/": "GenLayer Evidence Witness - Provek",
 };
 
 /** The one place that decides what a route renders — shared by the browser and by the build-time
@@ -274,6 +277,7 @@ export function Body({
   }
   if (route === "/apply/") return <Apply />;
   if (route === "/challenge/") return <Challenge />;
+  if (route === "/witness/") return <Witness />;
   if (route === "/method/") return <Method />;
   if (route === "/phase-2/") return <Phase2 />;
   if (route === "/registry/corrections/") return <Corrections />;
