@@ -210,6 +210,38 @@ def test_the_helper_docstring_names_the_real_test_file():
     assert "test_witness_page_helpers" not in src and "tests/test_witness_page.py" in src
 
 
+def test_the_form_shows_the_relays_own_message_for_400_429_and_502_and_follows_only_a_real_hash():
+    h = "0x" + "ab" * 32
+    assert probe("relay_202") == {"ok": True, "hash": h}
+    assert probe("track_url") == f"/witness/?tx={h}"
+    assert probe("relay_202_without_hash")["ok"] is False
+    for case, status, text in (
+        ("relay_400", 400, "evidence_url: evidence_url must name a host"),
+        ("relay_429", 429, "Rate limit reached: at most 3 requests per client per hour. Try again in 2670 seconds."),
+        ("relay_502", 502, "The GenLayer network refused the request: boom"),
+    ):
+        r = probe(case)
+        assert r == {"ok": False, "status": status, "message": text}, case
+    assert "without a message" in probe("relay_503_not_json")["message"]
+
+
+def test_the_form_source_posts_to_the_relay_and_carries_the_required_texts():
+    page = (ROOT / "web" / "src" / "pages" / "Witness.tsx").read_text(encoding="utf-8")
+    assert '"/api/witness-submit"' in page and 'method: "POST"' in page
+    for text in (
+        "Request a check",
+        "Requests are signed by the Provek operator key through a rate-limited relay because the contract",
+        "only accepts the operator as caller; results are produced by GenLayer validators and read",
+        "directly from the chain.",
+        "sha256 of the exact bytes at the URL, 64 hex",
+        "Submissions are temporarily disabled",
+    ):
+        assert text in page, text
+    # the digest field exists only for artifact_hash, and the criteria come from the contract, not a literal list
+    assert 'needsExpected = chosen === "artifact_hash"' in page and "{needsExpected && (" in page
+    assert 'readView("supported_criteria")' in page and 'value="url_reachable"' not in page
+
+
 # ---------------------------------------------------------------- pins
 
 def test_genlayer_js_is_pinned_to_an_exact_version_and_the_lockfile_agrees():
@@ -286,6 +318,12 @@ def test_the_page_prerenders_once_and_has_unique_ids():
     html = _page()
     ids = re.findall(r'\sid="([^"]+)"', html)
     assert len(ids) == len(set(ids)), sorted({i for i in ids if ids.count(i) > 1})
+
+
+def test_the_emitted_page_has_the_request_form_and_the_relay_note_but_no_enabled_state():
+    html = _page()
+    assert "Request a check" in html and "rate-limited relay" in html
+    assert "temporarily disabled" not in html  # relay state is read in the browser, never baked in
 
 
 def test_the_chain_client_is_not_in_the_entry_bundle():

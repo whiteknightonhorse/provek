@@ -11,7 +11,9 @@
  * example row. Every value in a result card, the criteria list and the lifecycle comes from an RPC
  * response received in this session, and a failed read shows the RPC's own error text.
  *
- * THE WRITE PATH IS NOT HERE. `witness(...)` is operator-only (T-PW-02); this page only reads. */
+ * THE PAGE HOLDS NO KEY AND SIGNS NOTHING. `witness(...)` is operator-only on the contract, so the
+ * "Request a check" form posts to `/api/witness-submit`, a rate-limited relay that signs with the
+ * Provek operator key on the server. Everything the page then shows is still read from the chain. */
 
 import { useEffect, useRef, useState } from "react";
 import { Page, Strip } from "../components/Chrome";
@@ -19,7 +21,7 @@ import { readTransaction, readView } from "../witnessChain";
 import {
   CONTRACT_ADDRESS, DEFAULT_SUBJECT, NETWORK_LABEL, UNDETERMINED_EXPLANATION,
   explorerAddressUrl, explorerTxUrl, expectedLabel, matchRecords, parseIdList,
-  parseTxHash, readableError, resultCard, safeHref, summariseTx, trackStep, txFromQuery,
+  parseTxHash, readableError, relayOutcome, resultCard, safeHref, summariseTx, trackStep, trackUrl, txFromQuery,
 } from "../witnessView.js";
 import type { Match, Observed, ResultCard, TxFound, TxSummary } from "../witnessView.js";
 
@@ -368,8 +370,11 @@ function MatchView({ t, call }: { t: Track; call: TxFound["call"] }) {
   );
 }
 
-function Criteria() {
-  const [state, setState] = useState<{ s: "loading" } | { s: "error"; why: string } | { s: "ready"; list: string[] }>({ s: "loading" });
+type CriteriaState = { s: "loading" } | { s: "error"; why: string } | { s: "ready"; list: string[] };
+
+/** `supported_criteria()` read from the contract once per page load, shared by the list and the form. */
+function useCriteria(): CriteriaState {
+  const [state, setState] = useState<CriteriaState>({ s: "loading" });
   useEffect(() => {
     readView("supported_criteria")
       .then((v) => {
@@ -378,12 +383,125 @@ function Criteria() {
       })
       .catch((e) => setState({ s: "error", why: readableError(e) }));
   }, []);
+  return state;
+}
+
+function Criteria({ state }: { state: CriteriaState }) {
   if (state.s === "loading") return <span className="text-[var(--color-ink-3)]">read live from the contract when this page loads...</span>;
   if (state.s === "error") return <span>not read: {state.why}</span>;
   return <>{state.list.map((c, i) => <span key={c}>{i ? ", " : ""}<code className="font-mono text-xs">{c}</code></span>)}</>;
 }
 
+type Relay = { state: "unknown" } | { state: "enabled" } | { state: "disabled"; why: string } | { state: "unreachable"; why: string };
+
+/** Whether the relay accepts submissions (`GET /api/witness-submit`); the read path never depends on it. */
+function useRelay(): Relay {
+  const [relay, setRelay] = useState<Relay>({ state: "unknown" });
+  useEffect(() => {
+    fetch("/api/witness-submit", { headers: { accept: "application/json" } })
+      .then(async (r) => {
+        const b = await r.json().catch(() => null);
+        if (!r.ok || !b || typeof b.enabled !== "boolean") throw new Error(`the relay answered HTTP ${r.status} without a status object`);
+        setRelay(b.enabled ? { state: "enabled" } : { state: "disabled", why: typeof b.reason === "string" ? b.reason : "no reason given" });
+      })
+      .catch((e) => setRelay({ state: "unreachable", why: e instanceof Error ? e.message : String(e) }));
+  }, []);
+  return relay;
+}
+
+type Sending = { s: "idle" } | { s: "sending" } | { s: "failed"; message: string };
+
+function RequestCheck({ criteria }: { criteria: CriteriaState }) {
+  const relay = useRelay();
+  const [subject, setSubject] = useState(DEFAULT_SUBJECT);
+  const [criterion, setCriterion] = useState("");
+  const [url, setUrl] = useState("");
+  const [expected, setExpected] = useState("");
+  const [sending, setSending] = useState<Sending>({ s: "idle" });
+
+  const list = criteria.s === "ready" ? criteria.list : [];
+  const chosen = criterion || list[0] || "";
+  const needsExpected = chosen === "artifact_hash";
+  const disabled = relay.state === "disabled" || criteria.s !== "ready" || sending.s === "sending";
+
+  const submit = async (e: { preventDefault(): void }) => {
+    e.preventDefault();
+    if (disabled) return;
+    setSending({ s: "sending" });
+    try {
+      const r = await fetch("/api/witness-submit", {
+        method: "POST",
+        headers: { "content-type": "application/json", accept: "application/json" },
+        body: JSON.stringify({ subject_id: subject, criterion: chosen, evidence_url: url, expected: needsExpected ? expected : "" }),
+      });
+      const body = await r.json().catch(() => null);
+      const outcome = relayOutcome(r.status, body);
+      if (outcome.ok) window.location.assign(trackUrl(outcome.hash));
+      else setSending({ s: "failed", message: `${outcome.status}: ${outcome.message}` });
+    } catch (err) {
+      setSending({ s: "failed", message: `The request did not reach the relay: ${err instanceof Error ? err.message : String(err)}` });
+    }
+  };
+
+  const input = "w-full border border-[var(--color-line-2)] bg-[var(--color-paper)] px-3 min-h-11 font-mono text-sm";
+  return (
+    <section aria-labelledby="request-h" className="mt-10">
+      <h2 id="request-h" className="text-lg font-semibold tracking-tight">Request a check</h2>
+      <p className="mt-1 text-sm text-[var(--color-ink-2)]">
+        Asks the contract&apos;s validators to fetch an evidence URL and agree on PASS or FAIL. When
+        the request is accepted you are taken to its lifecycle below.
+      </p>
+      <p className="mt-1 text-xs text-[var(--color-ink-3)]">
+        Requests are signed by the Provek operator key through a rate-limited relay because the contract
+        only accepts the operator as caller; results are produced by GenLayer validators and read
+        directly from the chain.
+      </p>
+      {relay.state === "disabled" && (
+        <div className="mt-3"><Strip tone="warn"><strong>Submissions are temporarily disabled.</strong> {relay.why}. Looking up and tracking still work.</Strip></div>
+      )}
+      {relay.state === "unreachable" && (
+        <div className="mt-3"><Strip tone="info">The relay&apos;s status could not be read ({relay.why}). You can still try to submit; its answer will be shown here.</Strip></div>
+      )}
+      {criteria.s === "error" && (
+        <div className="mt-3"><Strip tone="warn"><strong>The supported criteria could not be read</strong>, so the form is off: {criteria.why}</Strip></div>
+      )}
+      <form className="mt-3 space-y-3" onSubmit={submit}>
+        <div>
+          <label htmlFor="wit-req-subject" className="text-xs text-[var(--color-ink-3)]">Subject id (1 to 256 characters)</label>
+          <input id="wit-req-subject" value={subject} onInput={(e) => setSubject((e.target as HTMLInputElement).value)} className={input} spellCheck={false} autoComplete="off" required maxLength={256} />
+        </div>
+        <div>
+          <label htmlFor="wit-req-criterion" className="text-xs text-[var(--color-ink-3)]">Criterion</label>
+          <select id="wit-req-criterion" value={chosen} onChange={(e) => setCriterion((e.target as HTMLSelectElement).value)} className={input} disabled={criteria.s !== "ready"}>
+            {criteria.s === "loading" && <option value="">reading the contract...</option>}
+            {criteria.s === "error" && <option value="">not read</option>}
+            {list.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="wit-req-url" className="text-xs text-[var(--color-ink-3)]">Evidence URL (http or https, at most 2048 characters)</label>
+          <input id="wit-req-url" type="url" value={url} onInput={(e) => setUrl((e.target as HTMLInputElement).value)} className={input} placeholder="https://provek.dev/" spellCheck={false} autoComplete="off" required maxLength={2048} />
+        </div>
+        {needsExpected && (
+          <div>
+            <label htmlFor="wit-req-expected" className="text-xs text-[var(--color-ink-3)]">Expected digest</label>
+            <input id="wit-req-expected" value={expected} onInput={(e) => setExpected((e.target as HTMLInputElement).value)} className={input} spellCheck={false} autoComplete="off" required aria-describedby="wit-req-expected-hint" />
+            <p id="wit-req-expected-hint" className="mt-1 text-xs text-[var(--color-ink-3)]">sha256 of the exact bytes at the URL, 64 hex</p>
+          </div>
+        )}
+        <button type="submit" disabled={disabled} className="text-sm border border-[var(--color-line-2)] px-3.5 min-h-11 hover:bg-[var(--color-paper-2)] disabled:opacity-50">
+          {sending.s === "sending" ? "Sending..." : "Request check"}
+        </button>
+      </form>
+      <div className="mt-3" aria-live="polite">
+        {sending.s === "failed" && <Strip tone="warn"><strong>The request was not accepted.</strong> {sending.message}</Strip>}
+      </div>
+    </section>
+  );
+}
+
 export default function Witness() {
+  const criteria = useCriteria();
   return (
     <Page>
       <div className="max-w-[46rem]">
@@ -391,7 +509,7 @@ export default function Witness() {
         <p className="mt-2 text-sm text-[var(--color-ink-2)]">
           An Intelligent Contract on GenLayer. Each validator independently fetches an evidence URL
           and the validators must agree on PASS or FAIL before a record is written. This page reads
-          that contract and shows what it holds; it writes nothing.
+          that contract, shows what it holds, and can request a new check through a relay.
         </p>
         <p className="mt-2 text-xs text-[var(--color-ink-3)]">
           Not to be confused with Provek&apos;s own WitnessRecord pages under{" "}
@@ -404,15 +522,16 @@ export default function Witness() {
             <a href={explorerAddressUrl(CONTRACT_ADDRESS)} target="_blank" rel="noopener noreferrer" className="text-[var(--color-accent)] hover:underline text-xs">explorer</a>
           </Field>
           <Field label="Network">{NETWORK_LABEL}</Field>
-          <Field label="Supported criteria"><Criteria /></Field>
+          <Field label="Supported criteria"><Criteria state={criteria} /></Field>
         </dl>
 
+        <RequestCheck criteria={criteria} />
         <LookUp />
         <Tracker />
 
         <p className="mt-10 text-xs text-[var(--color-ink-3)]">
           Reads go directly from your browser to the Bradbury RPC (rpc-bradbury.genlayer.com); there
-          is no Provek server in between. Bradbury is a test network: a record here is a testnet
+          is no Provek server in between. Only a request for a new check goes through Provek&apos;s relay. Bradbury is a test network: a record here is a testnet
           fact, not a Provek score.
         </p>
       </div>

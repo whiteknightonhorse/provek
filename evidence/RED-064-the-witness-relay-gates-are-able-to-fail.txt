@@ -1,0 +1,238 @@
+# RED-064 - the witness relay gates are able to fail
+#
+# tree: 5546d30ba252143f668c662def1460927f099b83 (dirty)
+#
+# Produced by evidence/RED-064-generator.py, checked in beside this file so every run below can be
+# repeated rather than believed. Six plants against the real tree, each reverted and verified
+# byte-identical before the next.
+
+====================================================================================================
+PLANT 1 - witnessRelay.js: the per-client limit uses `>` so a fourth request in the hour passes.
+SUBJECT: tests/test_witness_relay.py::test_the_fourth_request_from_one_client_in_an_hour_is_429_with_retry_after
+====================================================================================================
+
+--- before the plant, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.10s
+
+--- with the plant in place, exit 1 ---
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__ test_the_fourth_request_from_one_client_in_an_hour_is_429_with_retry_after __
+
+    def test_the_fourth_request_from_one_client_in_an_hour_is_429_with_retry_after():
+        r = probe("rate_per_ip")
+>       assert r["result"]["statuses"] == [202, 202, 202, 429]
+E       assert [202, 202, 202, 202] == [202, 202, 202, 429]
+E         
+E         At index 3 diff: 202 != 429
+E         Use -v to get more diff
+
+tests/test_witness_relay.py:206: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_witness_relay.py::test_the_fourth_request_from_one_client_in_an_hour_is_429_with_retry_after
+1 failed in 0.12s
+
+--- plant reverted, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.11s
+
+====================================================================================================
+PLANT 2 - witnessRelay.js: the upstream error is returned without `sanitise`.
+SUBJECT: tests/test_witness_relay.py::test_an_upstream_failure_is_502_with_the_message_and_without_key_material
+====================================================================================================
+
+--- before the plant, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.19s
+
+--- with the plant in place, exit 1 ---
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__ test_an_upstream_failure_is_502_with_the_message_and_without_key_material ___
+
+    def test_an_upstream_failure_is_502_with_the_message_and_without_key_material():
+        for r in probe("upstream_error_with_the_key_inside")["result"]:
+            assert r["status"] == 502 and "The GenLayer network refused the request" in r["text"]
+>       no_key_in(probe("upstream_error_with_the_key_inside"))
+
+tests/test_witness_relay.py:145: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+obj = {'scenario': 'upstream_error_with_the_key_inside', 'result': [{'status': 502, 'text': '{"ok":false,"error":"The GenLay... 'witness-submit upstream failure: a hash <64-hex> somewhere']}
+
+    def no_key_in(obj) -> None:
+        blob = json.dumps(obj)
+        bare = FAKE_KEY[2:]
+        for form in (FAKE_KEY, bare, FAKE_KEY.upper(), bare.upper()):
+>           assert form not in blob, "the operator key reached an output"
+E           AssertionError: the operator key reached an output
+E           assert '0xab12ab12a...ab12ab12ab12' not in '{"scenario"...somewhere"]}'
+E             
+E             '0xab12ab12ab12ab12...b12ab12ab12ab12ab12' is contained here:
+E               d for key <64-hex>\"}"}, {"status": 502, "text": "{\"ok\":false,\"error\":\"The GenLayer network refused the request: bad key <64-hex>\"}"}, {"status": 502, "text": "{\"ok\":false,\"error\":\"The GenLayer network refused the request: bad key <64-hex>\"}"}, {"status": 502, "text": "{\"ok\":false,\"error\":\"The GenLayer network refused the re...
+E             
+E             ...Full output truncated (2 lines hidden), use '-vv' to show
+
+tests/test_witness_relay.py:54: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_witness_relay.py::test_an_upstream_failure_is_502_with_the_message_and_without_key_material
+1 failed in 0.13s
+
+--- plant reverted, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.17s
+
+====================================================================================================
+PLANT 3 - witnessRelay.js: the `no userinfo` URL rule is dropped.
+SUBJECT: tests/test_witness_relay.py::test_every_url_rule_gives_the_contracts_own_answer_on_the_same_cases
+====================================================================================================
+
+--- before the plant, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.08s
+
+--- with the plant in place, exit 1 ---
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_____ test_every_url_rule_gives_the_contracts_own_answer_on_the_same_cases _____
+
+    def test_every_url_rule_gives_the_contracts_own_answer_on_the_same_cases():
+        validate, user_error = _contract_validate_url()
+        ours = probe("url_matrix")["result"]
+        assert set(ours) == set(URL_CASES)
+        for name, url in URL_CASES.items():
+            try:
+                validate(url)
+                theirs = None
+            except user_error as e:
+                theirs = str(e)
+>           assert ours[name] == theirs, f"{name}: relay says {ours[name]!r}, the contract says {theirs!r}"
+E           AssertionError: userinfo: relay says None, the contract says 'evidence_url must not carry userinfo'
+E           assert None == 'evidence_url must not carry userinfo'
+
+tests/test_witness_relay.py:85: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_witness_relay.py::test_every_url_rule_gives_the_contracts_own_answer_on_the_same_cases
+1 failed in 0.10s
+
+--- plant reverted, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.07s
+
+====================================================================================================
+PLANT 4 - witnessRelay.js: the disabled check is skipped, so a missing secret reaches the signer.
+SUBJECT: tests/test_witness_relay.py::test_without_the_secret_health_says_disabled_and_post_is_503_and_nothing_is_derived
+====================================================================================================
+
+--- before the plant, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.18s
+
+--- with the plant in place, exit 1 ---
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_without_the_secret_health_says_disabled_and_post_is_503_and_nothing_is_derived _
+
+    def test_without_the_secret_health_says_disabled_and_post_is_503_and_nothing_is_derived():
+        h = probe("health_no_secret")
+        assert h["result"]["body"]["enabled"] is False and h["result"]["body"]["operator"] is None
+>       p = probe("post_missing_secret")
+
+tests/test_witness_relay.py:182: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+scenario = 'post_missing_secret'
+
+    def probe(scenario: str) -> dict:
+        if scenario not in CACHE:
+            p = subprocess.run(["node", str(PROBE), scenario], capture_output=True, text=True, timeout=60, check=False)
+>           assert p.returncode == 0, f"probe {scenario!r} exited {p.returncode}: {p.stderr}"
+E           AssertionError: probe 'post_missing_secret' exited 1: file:///home/incubator/incubator-worktrees/T-PW-02/tests/witness_relay_probe.mjs:283
+E             process.stdout.write(JSON.stringify({ scenario: name, ...result }));
+E                                       ^
+E             
+E             TypeError: Do not know how to serialize a BigInt
+E                 at JSON.stringify (<anonymous>)
+E                 at file:///home/incubator/incubator-worktrees/T-PW-02/tests/witness_relay_probe.mjs:283:27
+E             
+E             Node.js v20.20.2
+E             
+E           assert 1 == 0
+E            +  where 1 = CompletedProcess(args=['node', '/home/incubator/incubator-worktrees/T-PW-02/tests/witness_relay_probe.mjs', 'post_miss...n    at file:///home/incubator/incubator-worktrees/T-PW-02/tests/witness_relay_probe.mjs:283:27\n\nNode.js v20.20.2\n').returncode
+
+tests/test_witness_relay.py:43: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_witness_relay.py::test_without_the_secret_health_says_disabled_and_post_is_503_and_nothing_is_derived
+1 failed in 0.20s
+
+--- plant reverted, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.17s
+
+====================================================================================================
+PLANT 5 - witnessRelay.js: the key is appended to the upstream-failure log line.
+SUBJECT: tests/test_witness_relay.py::test_the_source_never_writes_the_key_to_a_log_or_a_response
+====================================================================================================
+
+--- before the plant, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.03s
+
+--- with the plant in place, exit 1 ---
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_________ test_the_source_never_writes_the_key_to_a_log_or_a_response __________
+
+    def test_the_source_never_writes_the_key_to_a_log_or_a_response():
+        src = (ROOT / "web" / "functions" / "_lib" / "witnessRelay.js").read_text(encoding="utf-8")
+        code = re.sub(r"/\*.*?\*/", "", src, flags=re.S)
+        code = "\n".join(re.sub(r"(^|\s)//.*$", "", ln) for ln in code.splitlines())
+        for line in code.splitlines():
+            if "console." in line:
+>               assert "cfg.key" not in line and "env." not in line and "GL_OPERATOR_KEY" not in line, line
+E               AssertionError:     console.error(`witness-submit upstream failure: ${message} ${cfg.key}`);
+E               assert ('cfg.key' not in '    console...{cfg.key}`);'
+E                 
+E                 'cfg.key' is contained here:
+E                   essage} ${cfg.key}`);
+E                 ?           +++++++)
+
+tests/test_witness_relay.py:275: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_witness_relay.py::test_the_source_never_writes_the_key_to_a_log_or_a_response
+1 failed in 0.04s
+
+--- plant reverted, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.03s
+
+====================================================================================================
+PLANT 6 - witnessView.js: UNINITIALIZED is never 'not indexed yet', so a fresh hash is called nonexistent.
+SUBJECT: tests/test_witness_page.py::test_a_just_submitted_hash_is_not_called_nonexistent_while_bradbury_has_not_indexed_it
+====================================================================================================
+
+--- before the plant, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.07s
+
+--- with the plant in place, exit 1 ---
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_a_just_submitted_hash_is_not_called_nonexistent_while_bradbury_has_not_indexed_it _
+
+    def test_a_just_submitted_hash_is_not_called_nonexistent_while_bradbury_has_not_indexed_it():
+        """A1.1: the relay returns a hash Bradbury may not know for a few seconds. UNINITIALIZED inside
+        the first 60 s is 'not indexed yet', the 4 s cadence goes on, and the lifecycle reaches FINALIZED."""
+        r = probe("track_not_indexed_then_finalized")
+>       assert r["statuses"][-1] == "FINALIZED" and r["last"]["done"] == "terminal"
+E       IndexError: list index out of range
+
+tests/test_witness_page.py:182: IndexError
+=========================== short test summary info ============================
+FAILED tests/test_witness_page.py::test_a_just_submitted_hash_is_not_called_nonexistent_while_bradbury_has_not_indexed_it
+1 failed in 0.09s
+
+--- plant reverted, exit 0 ---
+.                                                                        [100%]
+1 passed in 0.07s

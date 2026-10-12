@@ -28,6 +28,88 @@ it. This README does not repeat those documents' reasoning in full — it states
 externally-visible behaviour, points at the source of record for each design choice, and gives the
 commands to reproduce every claim made here.
 
+## GenLayer Evidence Witness — live app
+
+**What it does.** A web page, [https://provek.dev/witness/](https://provek.dev/witness/), for the
+GenLayer Intelligent Contract described in this repository's witness integration
+(`integrations/genlayer-witness/`). A visitor can look up the records the contract holds for a
+subject, request a new check, and watch that request go through GenLayer consensus until it is
+`FINALIZED` and a `PASS` or `FAIL` record exists. Two criteria exist: `url_reachable` (does the URL
+answer) and `artifact_hash` (do the exact bytes at the URL hash to a declared sha256). It is not
+Provek's own WitnessRecord pages under `/w/`; the nav and every heading say "GenLayer Evidence
+Witness" so the two are never confused.
+
+| | |
+|---|---|
+| Page | https://provek.dev/witness/ |
+| Contract | `0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6` |
+| Explorer | https://explorer-bradbury.genlayer.com/address/0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6 |
+| Network | GenLayer testnet Bradbury (chain 4221), RPC `https://rpc-bradbury.genlayer.com` |
+| Client library | `genlayer-js` 1.1.8, an exact pin in `web/package.json` and `web/package-lock.json` |
+
+**Design: reads go straight to the chain, writes go through an operator relay.**
+
+- *Reads* (look-up, supported criteria, transaction tracking) run in the visitor's browser against
+  the Bradbury RPC, which allows browser origins, so no Provek server sits in between and nothing on
+  the page is a stored copy: every record shown is an RPC answer received in that session.
+- *Writes* need a relay. The contract's `witness(...)` accepts only the operator as caller
+  (`only the operator may request a witness check`), so a visitor's wallet cannot submit. The page's
+  "Request a check" form therefore posts to `/api/witness-submit` (a Cloudflare Pages Function,
+  `web/functions/api/witness-submit.js`), which validates the request exactly as the contract does
+  (a bad request is a `400` naming the field, never a wasted transaction), applies rate limits,
+  signs with the operator key held as the Pages secret `GL_OPERATOR_KEY`, and answers `202` with
+  `{tx_hash, explorer_url, track_url}`. The page then opens `/witness/?tx=<hash>` and follows the
+  lifecycle by reading the chain. The relay only signs and sends; the verdict is produced by GenLayer
+  validators, each fetching the evidence URL on its own, and is read back from the chain.
+- *Limits*: 3 requests per client per hour and 50 per UTC day for the whole service (`429` with
+  `Retry-After`). Counters live in the KV binding `WITNESS_RL`; they hold counts only, never a request
+  body, and the client key is a keyed hash of the address under a per-day message, never the address.
+  KV has no atomic increment, so the daily cap is exact to within a few simultaneous requests.
+- *Failure modes*: no secret (or a malformed one) means `GET /api/witness-submit` reports
+  `{"enabled": false, ...}`, `POST` answers `503`, and the page shows "submissions temporarily
+  disabled" while the read path keeps working. An upstream failure is a `502` carrying the upstream
+  message with any key material removed. The key is never logged and never present in a response.
+
+**How a reviewer reproduces the whole workflow** (no wallet needed):
+
+1. Open https://provek.dev/witness/. The supported criteria are read live from the contract.
+2. Under "Look up records for a subject" the subject `git:whiteknightonhorse/provek` is pre-filled;
+   the records it lists were written by earlier checks.
+3. Under "Request a check" choose `url_reachable`, enter `https://provek.dev/` and submit. The page
+   moves to `/witness/?tx=<hash>`.
+4. Watch the observed lifecycle (for example `PENDING`, `PROPOSING`, `COMMITTING`, `REVEALING`,
+   `ACCEPTED`) until `FINALIZED`. A just-submitted hash may show "not indexed yet" for up to a minute.
+5. The matching record appears with `PASS`, its observation, evidence digest and a link to the
+   transaction in the explorer.
+6. For a `FAIL`: request `artifact_hash` for `https://provek.dev/` with an expected digest of 64
+   zeros. The validators fetch the bytes, compute the real sha256, find it differs from the
+   declaration, and the record reads `FAIL` with the digest they computed.
+7. `UNDETERMINED` is a possible honest outcome (validators could not agree, typically because the
+   URL was unavailable to them); the page says so and claims no record.
+
+**Tests** (from the Provek repository root; no network, no real key):
+
+```bash
+(cd web && npm ci && npm run build)
+python3 -m pytest tests/test_witness_relay.py tests/test_witness_page.py -q
+./scripts/push.sh --gates-only
+```
+
+`tests/test_witness_relay.py` runs the relay under Node with a mocked `genlayer-js` client and a
+fake key. It compares the relay's URL rules, case by case, with the contract's own `_validate_url`,
+and asserts that the key appears in no response, header, log line or stored value.
+
+**Deployment notes.**
+
+- Create a KV namespace and put its id in the `WITNESS_RL` entry of `web/wrangler.toml` (the
+  committed id is a placeholder).
+- Set the secret `GL_OPERATOR_KEY` (hex private key of the contract's operator) on the Pages project
+  from standard input, never on a command line, and never commit it.
+- After deploying, `GET https://provek.dev/api/witness-submit` must report `enabled: true` and an
+  `operator` address equal to the contract's `get_operator()`.
+- The Workers runtime is not exercised by the tests; the first live submission after a deploy is the
+  runtime check.
+
 ## Directory layout
 
 ```

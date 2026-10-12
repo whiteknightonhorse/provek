@@ -234,3 +234,22 @@ export function matchRecords(call, cards) {
   if (hits.length === 1) return { kind: "one", card: hits[0] };
   return { kind: "several", cards: hits };
 }
+
+/**
+ * The relay's answer (`/api/witness-submit`) -> what the form does. A 202 must carry a usable hash;
+ * every other status shows the relay's own `error` text verbatim (400 names the field, 429 the wait,
+ * 502 the upstream message), or says that there was none - it never substitutes a friendlier reason.
+ */
+export function relayOutcome(status, body) {
+  if (status === 202) {
+    const hash = body && typeof body === "object" ? parseTxHash(body.tx_hash) : null;
+    return hash ? { ok: true, hash } : { ok: false, status, message: "The relay answered 202 without a usable transaction hash." };
+  }
+  const msg = body && typeof body === "object" && typeof body.error === "string" && body.error !== "" ? body.error : null;
+  return { ok: false, status, message: msg ?? `The relay answered HTTP ${status} without a message.` };
+}
+
+/** Where the tracker for a hash lives. */
+export function trackUrl(hash) {
+  return `/witness/?tx=${hash}`;
+}

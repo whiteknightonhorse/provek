@@ -51,3 +51,5 @@ export type TrackStepResult = {
 export declare function trackStep(
   prev: { startedAt: number; lifecycle: Observed[] }, read: TxSummary, nowMs: number, limitMs?: number,
 ): TrackStepResult;
+export declare function relayOutcome(status: number, body: unknown): { ok: true; hash: string } | { ok: false; status: number; message: string };
+export declare function trackUrl(hash: string): string;

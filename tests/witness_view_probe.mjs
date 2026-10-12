@@ -65,6 +65,13 @@ const CASES = {
   track_uninitialized_for_60s: () => runTrack(Array(40).fill("UNINITIALIZED"), 4000),
   track_uninitialized_for_58s: () => runTrack(Array(15).fill("UNINITIALIZED"), 4000),
   track_appeal_recurrence: () => runTrack(["PENDING", "COMMITTING", "APPEAL_COMMITTING", "COMMITTING", "FINALIZED"], 4000),
+  relay_202: () => v.relayOutcome(202, { tx_hash: "0x" + "ab".repeat(32), track_url: "/x" }),
+  relay_202_without_hash: () => v.relayOutcome(202, { tx_hash: "nope" }),
+  relay_400: () => v.relayOutcome(400, { ok: false, field: "evidence_url", error: "evidence_url: evidence_url must name a host" }),
+  relay_429: () => v.relayOutcome(429, { ok: false, error: "Rate limit reached: at most 3 requests per client per hour. Try again in 2670 seconds." }),
+  relay_502: () => v.relayOutcome(502, { ok: false, error: "The GenLayer network refused the request: boom" }),
+  relay_503_not_json: () => v.relayOutcome(503, null),
+  track_url: () => v.trackUrl("0x" + "ab".repeat(32)),
   undetermined_text: () => v.UNDETERMINED_EXPLANATION,
 };
 
