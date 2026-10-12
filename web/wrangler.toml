@@ -13,4 +13,4 @@ id = "5d93877f53d94f3fbc4863a0195fc9a4"
 # THE ID BELOW IS A PLACEHOLDER: the dispatcher creates the namespace and replaces it before deploy.
 [[kv_namespaces]]
 binding = "WITNESS_RL"
-id = "00000000000000000000000000000000"
+id = "fd596e3a7a0b4f6092ec694bb1e9d68f"
