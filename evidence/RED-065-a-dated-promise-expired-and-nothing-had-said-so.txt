@@ -1,0 +1,20 @@
+# tree: f60f0bc654bf6e3841cb02e7620770f466be0679 (dirty)
+# (taken against local main f60f0bc plus this branch's uncommitted edits)
+
+$ date -u
+Mon Oct 19 01:56:55 AM UTC 2026
+
+# fixture: a workflow carrying ADVISORY-UNTIL: 2026-10-15 (the found state)
+$ cat fixture
+jobs:
+  lint:
+    steps:
+      - name: mypy
+        run: |
+          # ADVISORY-UNTIL: 2026-10-15 - see README
+          mypy src
+
+$ python3 scripts/dated_promises.py --file fixture --today 2026-10-19
+mypy: until 2026-10-15, expired 4 days ago, stage=EXPIRED
+remedy, BEFORE the door goes red: ratify a new date in DECISIONS.md with the count that justifies it, or make the step blocking and add it to scripts/push.sh in the same commit
+rc=1

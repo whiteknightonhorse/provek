@@ -4001,3 +4001,50 @@ are recorded by GL-07c; this entry records only the preparation.
 Live, 2026-10-05T10:18:07Z: mirror main = 334902eb0c261bb443de281d1ed5746656747a66, CI run
 https://github.com/whiteknightonhorse/provek-genlayer-witness/actions/runs/37295173624 success,
 `evidence/MEASURED-014-gl-07-mirror-live-checks.txt`.
+
+
+## D-65. The mypy advisory is re-dated once, to 2026-12-14, with the count that justifies it — and the second extension carries a ceiling
+
+**Source.** Fable ruling PROVEK-STALE-1018 q-1 (2026-10-19) and `T-MY-01-advisory-redated.ruling-1`;
+measured in `evidence/MEASURED-016-mypy-count-before-the-second-date.txt`.
+
+**What happened.** The advisory deadline (2026-10-15, armed 2026-08-20) fired as designed:
+`tests/test_door_matches_ci.py::test_the_mypy_advisory_state_has_not_expired` went red at the door on
+2026-10-16 (1 failed, 1273 passed). The nightly commit stayed unpushed and `scripts/sync_main.sh`
+refused every night after it ("local ahead by 1"); the live registry stayed at 2026-10-15.
+
+**The readings.** Four, because the instrument changed between them:
+
+1. 28 errors in 7 files, 2026-08-20 (mypy version not recorded in the README).
+2. 40 errors under mypy 2.3.1 on the D-30 day (GREEN-005).
+3. 43 errors under mypy 2.3.1 today — the CONTROL in MEASURED-016, same tree, same flags.
+4. **43 errors in 8 files under the pinned `mypy==2.4.0`** (`requirements/ci-lint.txt:205`,
+   Dependabot #40, 4f1ba37) today. This is the number the decision ratifies.
+
+Readings 3 and 4 are equal, so the instrument contributes nothing to the difference: 40 → 43 is the
+code. **The backlog grew under the advisory** (28 → 40 → 43), by the same defect class — `None`
+reaching a comparison or an attribute access — 26 of the 43 in `src/liveness/commitments.py`.
+
+**Decision.**
+
+1. The date moves **once**, to **2026-12-14** (56 days from 2026-10-19, the same L-19 bound as
+   before), in all four places it is stated: `tests/test_door_matches_ci.py`, `gates.yml`,
+   `.github/workflows/README.md`, `scripts/push.sh`.
+2. **Why not blocking now.** N = 43 > 0, so a blocking step would be red on day one, and it would
+   couple a repair of 43 errors to an outage recovery that needs a green door tonight.
+3. **The second extension carries a ceiling.** T-MY-02 makes the CI step red when the count exceeds
+   43 and puts mypy through `scripts/push.sh` in the same commit. The ceiling is bound to the pinned
+   mypy version, not to a bare integer: a pin change must invalidate the constant or re-measure it
+   in the same commit.
+4. **Correction of D-22.** D-22 says mypy is "absent on the audit host". That has been false since
+   GREEN-005: mypy 2.3.1 is in `~/.local`. The pin has since moved to 2.4.0, so host and pin differ
+   until T-MY-02. Local readings are taken with a hash-pinned throwaway install, as MEASURED-016 does.
+   D-22's own text is left as written.
+5. `scripts/dated_promises.py` reads every `ADVISORY-UNTIL:` sentinel in `gates.yml` and reports days
+   left, using `RENEWAL_MARGIN` — so the next deadline is visible before the door goes red
+   (RED-065).
+
+**What the deadline exposed.** A red door after the data commit deadlocks the nightly at
+`sync_main.sh`. That is closed by T-NM-04 in `~/orchestra`; it is named here and not fixed here.
+
+**What is NOT done.** The 43 errors are not fixed. No new LAW- is added.

@@ -238,7 +238,7 @@ jobs:
         # The DATE below is held by tests/test_door_matches_ci.py, which runs at the door and on
         # this workflow's daily schedule, so it goes red on its own once the date passes.
         run: |
-          # ADVISORY-UNTIL: 2026-10-15 - see .github/workflows/README.md
+          # ADVISORY-UNTIL: 2026-12-14 - see .github/workflows/README.md
           set +e
           mypy src --ignore-missing-imports --no-error-summary > mypy.out 2>&1
           rc=$?

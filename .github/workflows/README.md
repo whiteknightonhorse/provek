@@ -158,7 +158,7 @@ including the original file read by both gates side by side, is
 analysis completed, not that it found nothing — findings live in the Security tab, and a badge that
 implied otherwise would be a claim stronger than its artefact.
 
-### `mypy` is advisory until **2026-10-15**, and the deadline is armed
+### `mypy` is advisory until **2026-12-14**, and the deadline is armed
 
 The reasoning is unchanged: the codebase has no type-checking baseline, and a gate that fails on
 day one gets disabled by whoever meets it. What changed is that the promise is now executable.
@@ -175,15 +175,18 @@ exactly that. Three things hold it now:
   start is `not_measured` and fails. That last state is why `|| true` had to go — an instrument
   that could not run printed precisely what a clean baseline prints, so the one reading that could
   end the advisory state was indistinguishable from a crash.
-- **The condition cannot be measured locally, and is not faked.** mypy is not installed on the
-  audit host, so a local "zero errors" would be the instrument's absence wearing the shape of a
-  result (L-1, and L-11's sharper form). The reading is taken only in CI, which installs it.
+- **The condition is measured with the pinned mypy, never with whatever the host has.** mypy has
+  been on the audit host since GREEN-005 (2.3.1 in `~/.local`), but the pin has since moved to
+  `mypy==2.4.0`, so host and pin differ until T-MY-02 puts mypy through `scripts/push.sh` (D-65).
+  Local readings are therefore taken in a throwaway `--require-hashes` install of
+  `requirements/ci-lint.txt`, as `evidence/MEASURED-016-*` does; a count from any other mypy would be
+  a second clock for the same promise (L-2).
 - **The advisory state expires on its own.** `tests/test_door_matches_ci.py` goes red once the date
   passes, and it runs both at the door and on this workflow's daily `schedule:` — so it fires in
   the world where nobody pushes, which is the world where a forgotten promise survives (L-19). The
-  date is 56 days from 2026-08-20, chosen to land inside the sixty after which GitHub disables a
-  public repository's schedule: a deadline past that is unreachable by the clock in the exact state
-  it exists for.
+  date is 56 days from 2026-10-19 (the first, 2026-10-15, was 56 days from 2026-08-20), chosen to
+  land inside the sixty after which GitHub disables a public repository's schedule: a deadline past
+  that is unreachable by the clock in the exact state it exists for.
 
 **The baseline, measured 2026-08-20:** `mypy src --ignore-missing-imports` reports **28 errors
 across 7 files**, nearly all of them `None` reaching a comparison or an attribute access. That is
@@ -191,8 +194,14 @@ not an incidental backlog — it is invariant 1's own defect class, which is the
 expiry rather than an indefinite advisory. The count is recorded so the next reader can tell a
 baseline that is nearly clean from one that is not.
 
+**The second reading, measured 2026-10-19 under the pinned `mypy==2.4.0`:** **43 errors across 8
+files** (`evidence/MEASURED-016-*`; the host's 2.3.1 gives the same 43). The backlog did not shrink
+under the advisory — it grew from 28 — and D-65 therefore pairs the new date with a ceiling.
+
 The date can be moved. Doing so requires ratifying it in `DECISIONS.md` with the count that
 justifies it, which is a decision; drift is what the deadline removes, not deliberate extension.
+`scripts/dated_promises.py` reads every `ADVISORY-UNTIL:` sentinel in `gates.yml` and says how many
+days are left, so the renewal-or-blocking decision is visible before the door goes red.
 
 ## A dated condition that expired, kept as a record
 
@@ -205,3 +214,13 @@ rather than assumed — `/repos/whiteknightonhorse/provek/actions/runs` reported
 It is written down instead of deleted because a stale condition in a CI document is how a pipeline
 comes to be described as dead while it is running, and the next person to read a confident date in
 here should know this one was wrong.
+
+## A mypy deadline that fired, kept as a record
+
+The first mypy deadline, **2026-10-15**, fired exactly as designed: `tests/test_door_matches_ci.py`
+went red at the door on 2026-10-16 (1 failed, 1273 passed). What it cost: the nightly data commit
+stayed unpushed, `scripts/sync_main.sh` refused every night after it ("local ahead by 1"), and the
+published registry stayed at 2026-10-15 for four nights. The date moved **once**, to 2026-12-14,
+ratified in D-65 with a count (43 errors in 8 files, up from 28 in 7). It is written down here so the
+next reader knows a dated promise in this file has already fired once, and that the way past it is a
+decision with a count, never a quiet edit.

@@ -1,0 +1,130 @@
+# tree: f60f0bc654bf6e3841cb02e7620770f466be0679 (dirty)
+# (taken against local main f60f0bc plus this branch's uncommitted edits)
+
+$ date -u
+Mon Oct 19 01:55:17 AM UTC 2026
+
+$ grep -n 'mypy==' requirements/ci-lint.txt
+205:mypy==2.4.0 \
+rc=0
+
+## HOST INSTALL (stale against the pin) - NOT the instrument
+
+$ python3 -m mypy --version
+mypy 2.3.1 (compiled: yes)
+rc=0
+
+## INSTRUMENT: throwaway venv, hash-pinned install
+
+$ python3 -m venv /tmp/t-my-01-venv
+rc=0
+
+$ /tmp/t-my-01-venv/bin/pip install --require-hashes --only-binary=:all: -r requirements/ci-lint.txt
+Collecting ast-serialize==0.12.1
+  Downloading ast_serialize-0.12.1-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (1.3 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 83.8 MB/s eta 0:00:00
+Collecting librt==0.16.0
+  Downloading librt-0.16.0-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (515 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 515.5/515.5 KB 86.6 MB/s eta 0:00:00
+Collecting mypy==2.4.0
+  Downloading mypy-2.4.0-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (15.5 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 15.5/15.5 MB 60.2 MB/s eta 0:00:00
+Collecting mypy-extensions==1.1.0
+  Using cached mypy_extensions-1.1.0-py3-none-any.whl (5.0 kB)
+Collecting pathspec==1.1.1
+  Using cached pathspec-1.1.1-py3-none-any.whl (57 kB)
+Collecting ruff==0.17.0
+  Downloading ruff-0.17.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (10.4 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.4/10.4 MB 141.0 MB/s eta 0:00:00
+Collecting tomli==2.4.1
+  Using cached tomli-2.4.1-py3-none-any.whl (14 kB)
+Collecting typing-extensions==4.16.0
+  Using cached typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+Installing collected packages: typing-extensions, tomli, ruff, pathspec, mypy-extensions, librt, ast-serialize, mypy
+Successfully installed ast-serialize-0.12.1 librt-0.16.0 mypy-2.4.0 mypy-extensions-1.1.0 pathspec-1.1.1 ruff-0.17.0 tomli-2.4.1 typing-extensions-4.16.0
+rc=0
+
+$ /tmp/t-my-01-venv/bin/python -m mypy --version
+mypy 2.4.0 (compiled: yes)
+rc=0
+
+## COUNTS with the pinned mypy
+
+$ /tmp/t-my-01-venv/bin/python -m mypy src --ignore-missing-imports --no-error-summary
+src/abs_profile/measured.py:81: error: Unsupported operand types for <= ("float" and "None")  [operator]
+src/abs_profile/measured.py:81: note: Left operand is of type "float | int | None"
+src/governance/thresholds.py:71: error: Unsupported operand types for > ("int" and "None")  [operator]
+src/governance/thresholds.py:71: note: Left operand is of type "float | int | None"
+src/governance/thresholds.py:82: error: Unsupported operand types for > ("int" and "None")  [operator]
+src/governance/thresholds.py:82: note: Left operand is of type "float | int | None"
+src/governance/thresholds.py:92: error: Unsupported operand types for <= ("int" and "None")  [operator]
+src/governance/thresholds.py:92: note: Left operand is of type "float | int | None"
+src/governance/thresholds.py:95: error: Unsupported operand types for <= ("int" and "None")  [operator]
+src/governance/thresholds.py:95: note: Left operand is of type "float | int | None"
+src/governance/thresholds.py:101: error: Argument 1 to "int" has incompatible type "float | int | None"; expected "str | Buffer | SupportsInt | SupportsIndex | SupportsTrunc"  [arg-type]
+src/collector/github.py:101: error: Unsupported operand types for < ("int" and "None")  [operator]
+src/collector/github.py:101: note: Left operand is of type "float | int | None"
+src/transport/erc8004.py:73: error: List item 10 has incompatible type "str | None"; expected "str | bytes | PathLike[str] | PathLike[bytes]"  [list-item]
+src/transport/erc8004.py:102: error: Argument 2 to "_eth_call" has incompatible type "str | None"; expected "str"  [arg-type]
+src/transport/erc8004.py:107: error: Argument 2 to "_eth_call" has incompatible type "str | None"; expected "str"  [arg-type]
+src/transport/erc8004.py:111: error: Incompatible types in assignment (expression has type "tuple[str, ...]", variable has type "tuple[()] | tuple[str]")  [assignment]
+src/liveness/commitments.py:210: error: Argument 2 to "TargetWatch" has incompatible type "**dict[str, tuple[str, ...] | str | datetime | None]"; expected "datetime | None"  [arg-type]
+src/liveness/commitments.py:210: error: Argument 2 to "TargetWatch" has incompatible type "**dict[str, tuple[str, ...] | str | datetime | None]"; expected "TargetState | None"  [arg-type]
+src/liveness/commitments.py:210: error: Argument 2 to "TargetWatch" has incompatible type "**dict[str, tuple[str, ...] | str | datetime | None]"; expected "tuple[str, ...]"  [arg-type]
+src/liveness/commitments.py:210: error: Argument 2 to "TargetWatch" has incompatible type "**dict[str, tuple[str, ...] | str | datetime | None]"; expected "str | None"  [arg-type]
+src/liveness/commitments.py:213: error: Argument 3 to "TargetWatch" has incompatible type "**dict[str, tuple[str, ...] | str | datetime | None]"; expected "TargetState | None"  [arg-type]
+src/liveness/commitments.py:213: error: Argument 3 to "TargetWatch" has incompatible type "**dict[str, tuple[str, ...] | str | datetime | None]"; expected "tuple[str, ...]"  [arg-type]
+src/liveness/commitments.py:213: error: Argument 3 to "TargetWatch" has incompatible type "**dict[str, tuple[str, ...] | str | datetime | None]"; expected "str | None"  [arg-type]
+src/liveness/commitments.py:213: error: Argument 3 to "TargetWatch" has incompatible type "**dict[str, tuple[str, ...] | str | datetime | None]"; expected "datetime | None"  [arg-type]
+src/liveness/commitments.py:519: error: Unsupported operand types for > ("datetime" and "None")  [operator]
+src/liveness/commitments.py:519: error: Unsupported operand types for < ("datetime" and "None")  [operator]
+src/liveness/commitments.py:519: error: Unsupported left operand type for > ("None")  [operator]
+src/liveness/commitments.py:519: note: Both left and right operands are unions
+src/liveness/commitments.py:522: error: Item "None" of "datetime | None" has no attribute "isoformat"  [union-attr]
+src/liveness/commitments.py:523: error: Item "None" of "datetime | None" has no attribute "isoformat"  [union-attr]
+src/liveness/commitments.py:525: error: Unsupported operand types for < ("datetime" and "None")  [operator]
+src/liveness/commitments.py:525: error: Unsupported operand types for > ("datetime" and "None")  [operator]
+src/liveness/commitments.py:525: error: Unsupported left operand type for < ("None")  [operator]
+src/liveness/commitments.py:525: note: Both left and right operands are unions
+src/liveness/commitments.py:539: error: Item "None" of "datetime | None" has no attribute "isoformat"  [union-attr]
+src/liveness/commitments.py:540: error: Item "None" of "datetime | None" has no attribute "isoformat"  [union-attr]
+src/liveness/commitments.py:567: error: Unsupported operand types for + ("None" and "timedelta")  [operator]
+src/liveness/commitments.py:567: note: Left operand is of type "datetime | None"
+src/liveness/commitments.py:569: error: Unsupported operand types for + ("None" and "timedelta")  [operator]
+src/liveness/commitments.py:569: note: Left operand is of type "datetime | None"
+src/liveness/commitments.py:570: error: Item "None" of "datetime | None" has no attribute "isoformat"  [union-attr]
+src/liveness/commitments.py:571: error: Item "timedelta" of "datetime | timedelta" has no attribute "isoformat"  [union-attr]
+src/liveness/commitments.py:572: error: Item "None" of "datetime | None" has no attribute "isoformat"  [union-attr]
+src/liveness/commitments.py:576: error: Item "None" of "TargetState | None" has no attribute "value"  [union-attr]
+src/liveness/commitments.py:577: error: Item "None" of "datetime | None" has no attribute "isoformat"  [union-attr]
+src/liveness/commitments.py:577: error: Item "timedelta" of "datetime | timedelta" has no attribute "isoformat"  [union-attr]
+src/passport/passport.py:378: error: Item "None" of "NotMeasured | None" has no attribute "value"  [union-attr]
+src/collector/reachability.py:174: error: Argument 1 to "probe_reachable" has incompatible type "object"; expected "str"  [arg-type]
+src/pipeline.py:97: error: Unsupported operand types for <= ("float" and "None")  [operator]
+src/pipeline.py:97: note: Left operand is of type "float | int | None"
+src/pipeline.py:99: error: Unsupported operand types for >= ("int" and "None")  [operator]
+src/pipeline.py:99: note: Left operand is of type "float | int | None"
+src/pipeline.py:205: error: Argument "service_url" to "Row" has incompatible type "object"; expected "str | None"  [arg-type]
+src/pipeline.py:207: error: Argument "service_reachable" to "Row" has incompatible type "object"; expected "bool | None"  [arg-type]
+rc=1
+
+$ /tmp/t-my-01-venv/bin/python -m mypy src --ignore-missing-imports --no-error-summary | grep -c ': error:'
+43
+rc=0
+
+$ /tmp/t-my-01-venv/bin/python -m mypy src --ignore-missing-imports --no-error-summary | grep ': error:' | cut -d: -f1 | sort | uniq -c | sort -rn
+     26 src/liveness/commitments.py
+      5 src/governance/thresholds.py
+      4 src/transport/erc8004.py
+      4 src/pipeline.py
+      1 src/passport/passport.py
+      1 src/collector/reachability.py
+      1 src/collector/github.py
+      1 src/abs_profile/measured.py
+rc=0
+
+## CONTROL - host mypy 2.3.1, same tree, same flags - bridges GREEN-005s 40
+
+$ python3 -m mypy src --ignore-missing-imports --no-error-summary | grep -c ': error:'
+43
+rc=0

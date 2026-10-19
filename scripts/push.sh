@@ -74,7 +74,7 @@ echo "7/9 tests";    python3 -m pytest tests -q --cov=src --cov-fail-under=70 | 
 
 # MYPY IS NOT HERE, AND THAT IS THE MEASURED ANSWER RATHER THAN AN OVERSIGHT.
 # It runs in CI with its findings suppressed, so it cannot turn `main` red and the door omitting it
-# creates no asymmetry. Its advisory state expires on 2026-10-15; when it becomes blocking, the
+# creates no asymmetry. Its advisory state expires on 2026-12-14 (re-dated once from 2026-10-15, D-65); when it becomes blocking, the
 # comparison above fails until mypy is added here, in that same commit.
 
 # T-63: A GREEN "7/9 tests" ABOVE DOES NOT MEAN A READER'S FIRST RUN WORKS.

@@ -70,12 +70,14 @@ WORKFLOW_README = ROOT / ".github" / "workflows" / "README.md"
 # copied constant honest.
 #
 # WHY THIS DATE, since a number nobody can derive is the kind that quietly gets moved. It is 56 days
-# from 2026-08-20, when the promise was armed, and the bound that chose it is L-19's: GitHub
-# disables a public repository's `schedule:` after sixty days without repository activity, and that
-# schedule is what runs this suite in the world where nobody pushes. A deadline set past the sixty
-# would be unreachable by the clock in exactly the state it exists for - an expiry that expires
-# only if somebody turns up to watch it.
-ADVISORY_UNTIL = date(2026, 10, 15)
+# from 2026-10-19, the day the first deadline was re-dated, and the bound that chose it is L-19's:
+# GitHub disables a public repository's `schedule:` after sixty days without repository activity,
+# and that schedule is what runs this suite in the world where nobody pushes. A deadline set past
+# the sixty would be unreachable by the clock in exactly the state it exists for - an expiry that
+# expires only if somebody turns up to watch it. The FIRST deadline, 2026-10-15 (56 days from
+# 2026-08-20), fired as designed at the door on 2026-10-16 and stopped the nightly chain; the date
+# moved once, with a count - see D-65. Moving it again needs a decision of its own.
+ADVISORY_UNTIL = date(2026, 12, 14)
 
 # The measured baseline on the day the promise was armed, kept so the next reader can tell a
 # baseline that is nearly clean from one that is not: `mypy src --ignore-missing-imports` reported
@@ -83,6 +85,9 @@ ADVISORY_UNTIL = date(2026, 10, 15)
 # attribute access. That is not an incidental backlog - it is invariant 1's own defect class, which
 # is the argument for the expiry rather than an indefinite advisory.
 BASELINE_2026_08_20 = (28, 7)
+
+# The second reading, taken the day the date was moved: 43 errors in 8 files.
+COUNT_2026_10_19 = (43, 8)   # under the pinned mypy==2.4.0, evidence/MEASURED-016
 
 SENTINEL = "ADVISORY-UNTIL:"
 
@@ -758,8 +763,8 @@ def test_the_mypy_advisory_state_has_not_expired():
         f"mypy has been advisory past {ADVISORY_UNTIL.isoformat()}. Either it is clean and the "
         "step becomes blocking (and joins scripts/push.sh in the same commit), or the baseline is "
         f"still dirty - it was {BASELINE_2026_08_20[0]} errors in {BASELINE_2026_08_20[1]} files "
-        "on 2026-08-20 - and a new date is ratified in DECISIONS.md with the count that justifies "
-        "it. Moving the date silently is the failure this test exists to prevent.")
+        f"on 2026-08-20 and {COUNT_2026_10_19[0]} in {COUNT_2026_10_19[1]} on 2026-10-19 - and a "
+        "new date is ratified in DECISIONS.md with the count that justifies it. Moving the date silently is the failure this test exists to prevent.")
 
 
 def test_the_date_is_stated_identically_everywhere_it_is_stated():

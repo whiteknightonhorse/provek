@@ -170,6 +170,7 @@ scripts/verify_action_pins.py:    [ABI-32-1, ABI-16-11]
 # the load-bearing part is again a state rather than a comparison - a workflow or a set that cannot
 # be READ stays unmeasured here instead of counting as no violations found.
 scripts/verify_pip_pins.py:       [ABI-32-1, ABI-16-11]
+scripts/dated_promises.py:        [ABI-16-11, ABI-33-4]
 
 # T-S7, and the same pair a third time because it is the same door asked its FIRST question rather
 # than a later one. The two modules above judge what a workflow NAMES; this one asks whether the
