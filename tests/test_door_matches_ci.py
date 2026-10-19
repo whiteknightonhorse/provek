@@ -54,7 +54,11 @@ by this: it reads `scripts/push.sh`, a shell script, and PyYAML has nothing to s
 """
 from __future__ import annotations
 
+import importlib.util
+import os
 import re
+import subprocess
+import sys
 from datetime import date, datetime, timezone
 from pathlib import Path
 
@@ -110,8 +114,17 @@ class Advisory:
         self.until = until
 
 
+class Capped:
+    """This CI step can fail the build on findings above a ceiling, and says until when it stays
+    advisory below it. So the door must run it (`must_appear`) AND the sentinel must be held."""
+
+    def __init__(self, until: date, must_appear: str) -> None:
+        self.until = until
+        self.must_appear = must_appear
+
+
 # THE CORRESPONDENCE. Keyed by the step's `name:` in gates.yml.
-CI_GATES: dict[str, Door | Advisory] = {
+CI_GATES: dict[str, Door | Advisory | Capped] = {
     "scope - every module bound to an ABI requirement": Door("scripts/ratchet_scope.py"),
     "laws - no law without an armed gate and test": Door("scripts/ratchet_decisions.py"),
     "language - the GitHub surface is English only": Door("scripts/ratchet_language.py"),
@@ -137,7 +150,7 @@ CI_GATES: dict[str, Door | Advisory] = {
     "build the site": Door("npm run build"),
     "gates that read the emitted artefact": Door("-m pytest"),
     "ruff": Door("-m ruff"),
-    "mypy": Advisory(until=ADVISORY_UNTIL),
+    "mypy": Capped(ADVISORY_UNTIL, "check_mypy_ceiling.py"),
     "repository secret scan": Door("scripts/secret_scan.sh"),
     # T-63. The marker is the env var that arms tests/test_reproduce_readme.py - it skips by
     # default (see its own docstring: unguarded, it would clone and run the whole suite, itself
@@ -424,11 +437,15 @@ def divergences(workflow: str, door: str) -> list[str]:
             problems.append(
                 f"{job}: CI step '{name}' has NO ROW in CI_GATES. It can turn `main` red while "
                 "the door knows nothing about it - which is the defect this table exists for.")
-        elif isinstance(rule, Door):
+        elif isinstance(rule, (Door, Capped)):
             if rule.must_appear not in door:
                 problems.append(
                     f"{job}: CI step '{name}' is blocking, but scripts/push.sh does not contain "
                     f"`{rule.must_appear}` - the door checks LESS than the arbiter.")
+            if isinstance(rule, Capped) and SENTINEL not in run:
+                problems.append(
+                    f"{job}: CI step '{name}' is declared advisory below a ceiling, but its body "
+                    f"carries no `{SENTINEL}` - an advisory gate with no expiry is a permanent one.")
         elif SENTINEL not in run:
             problems.append(
                 f"{job}: CI step '{name}' is declared advisory, but its body carries no "
@@ -534,6 +551,13 @@ def test_the_comparison_is_able_to_fail():
     # gap. Without it, an assertion that merely finds a substring passes on a checker that reports
     # every step as missing, and the fire it demonstrates would be indiscriminate rather than real.
     assert not door_gap(divergences(blocking, "python3 -m ruff check src\n"))
+
+    # T-MY-02: a Capped row is Door for `must_appear`. The same workflow against a door without the
+    # script fires; against a door that runs it, it does not.
+    capped = ("jobs:\n  j:\n    steps:\n      - name: mypy\n        run: |\n"
+              "          # ADVISORY-UNTIL: 2026-12-14\n          python scripts/check_mypy_ceiling.py\n")
+    assert door_gap(divergences(capped, "python3 -m ruff check src\n"))
+    assert not door_gap(divergences(capped, "python3 scripts/check_mypy_ceiling.py\n"))
 
     untabled = ("jobs:\n  j:\n    steps:\n      - name: a gate nobody told the door about\n"
                 "        run: bandit -r src\n")
@@ -778,34 +802,101 @@ def test_the_date_is_stated_identically_everywhere_it_is_stated():
 
 
 def test_mypy_is_advisory_about_its_findings_and_never_about_whether_it_ran():
-    """The three states `|| true` collapsed into one.
+    """The interpretation lives in ONE program (L-2), and the step only calls it.
 
     `mypy ... || true` suppressed the findings, which was intended; it also suppressed mypy failing
-    to start, which was not. An instrument that did not run reported exactly what a clean baseline
-    reports, and the clean baseline is the trigger for ending the advisory state - so the one shape
-    that could have moved this gate forward was indistinguishable from a crash.
+    to start, which was not. The four states are now `scripts/check_mypy_ceiling.py`'s, run
+    identically by CI and the door; the step must neither re-interpret nor swallow its exit code.
     """
     body = _mypy_step()["run"]
+    assert "check_mypy_ceiling.py" in body
+    assert SENTINEL in body
     assert "|| true" not in body, "`|| true` cannot tell a clean run from a broken one"
-    assert "set +e" in body, (
-        "GitHub runs `run:` under `bash -e`, so mypy exiting 1 would fail the step; the advisory "
-        "state depends on -e being lifted deliberately rather than by accident")
-    assert "not_measured" in body, "the exit>=2 branch must name the state it is reporting"
-    for branch in ('"$rc" -ge 2', '"$rc" -eq 0'):
-        assert branch in body, f"the {branch} branch is missing: the three states are not separated"
+    assert not re.search(r"(?m)^\s*mypy src", body), (
+        "a bare `mypy src` re-interprets mypy outside the one program that owns the verdict")
 
 
 def test_the_clean_baseline_ends_the_advisory_state_rather_than_being_reported_as_success():
-    """The condition is armed where it can be measured, and only there.
+    """The condition is armed where it can be measured: the script, with the pinned instrument.
 
-    mypy is not installed on the audit host, so a local reading of "zero errors" would be the
-    instrument's absence returning as a measurement - L-1, and L-11's sharper form, where the
-    refusal arrives wearing the shape of a result. The condition is therefore evaluated in CI,
-    which installs mypy, and what is checked HERE is that the workflow does the trip: a clean run
-    fails the step and says what to do about it, rather than passing quietly for another year.
+    mypy 2.3.1 sits in the host's `~/.local`, but the pin is 2.4.0, so a local reading from there
+    would be a count from a different instrument (L-1). The door's instrument is
+    `~/orchestra/lintenv`, a hash-pinned install of requirements/ci-lint.txt, and the script refuses
+    any mypy that is not the pin. What is checked HERE is that the script trips on a clean run.
     """
-    body = _mypy_step()["run"]
-    assert "exit 1" in body, "no branch of an advisory step ends the advisory state"
-    assert "push.sh" in body, (
-        "the step that trips must name the door, because becoming blocking without joining "
-        "scripts/push.sh recreates the divergence this whole file is about")
+    text = (ROOT / "scripts" / "check_mypy_ceiling.py").read_text(encoding="utf-8")
+    assert "mypy is CLEAN" in text and "return 1" in text, (
+        "no branch of an advisory step ends the advisory state")
+    assert "fully blocking" in text
+
+
+def _load_ceiling_script():
+    spec = importlib.util.spec_from_file_location(
+        "check_mypy_ceiling", ROOT / "scripts" / "check_mypy_ceiling.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_the_ceiling_is_keyed_by_the_pinned_mypy():
+    mod = _load_ceiling_script()
+    pin = mod.pinned_version(ROOT / "requirements" / "ci-lint.txt")
+    assert pin in mod.CEILING, (
+        f"the mypy pin moved to {pin} and no ceiling is measured under it: measure, add the row "
+        "and a COUNT_<date> constant here, same commit (D-65 Decision 3)")
+    assert mod.CEILING["2.4.0"] <= COUNT_2026_10_19[0]
+
+
+STUB_MAIN = """\
+import os, sys
+if "--version" in sys.argv:
+    print("mypy " + os.environ["STUB_VERSION"])
+    sys.exit(0)
+for _ in range(int(os.environ["STUB_ERRORS"])):
+    print("x.py:1: error: e  [misc]")
+sys.exit(int(os.environ["STUB_RC"]))
+"""
+
+
+def _run_ceiling(tmp_path, *, pin="2.4.0", version="2.4.0", errors=0, rc=1):
+    stub = tmp_path / "stub" / "mypy"
+    stub.mkdir(parents=True)
+    (stub / "__init__.py").write_text("", encoding="utf-8")
+    (stub / "__main__.py").write_text(STUB_MAIN, encoding="utf-8")
+    req = tmp_path / "req.txt"
+    req.write_text(f"mypy=={pin} \\\n    --hash=sha256:00\n", encoding="utf-8")
+    env = {**os.environ, "PYTHONPATH": str(tmp_path / "stub"), "STUB_VERSION": version,
+           "STUB_ERRORS": str(errors), "STUB_RC": str(rc)}
+    r = subprocess.run([sys.executable, str(ROOT / "scripts" / "check_mypy_ceiling.py"),
+                        "--requirements", str(req)], env=env, capture_output=True, text=True)
+    return r.returncode, r.stdout + r.stderr
+
+
+def test_a_stale_instrument_is_not_measured(tmp_path):
+    rc, out = _run_ceiling(tmp_path, version="2.3.1", errors=5)
+    assert rc == 2 and "instrument mismatch: running mypy 2.3.1, pin is 2.4.0" in out
+
+
+def test_a_pin_with_no_ceiling_is_not_measured(tmp_path):
+    rc, out = _run_ceiling(tmp_path, pin="9.9.9", version="9.9.9", errors=1)
+    assert rc == 2 and "no ceiling is measured under it" in out
+
+
+def test_mypy_that_did_not_run_is_not_a_clean_baseline(tmp_path):
+    rc, out = _run_ceiling(tmp_path, rc=3)
+    assert rc == 2 and "DID NOT RUN (exit 3)" in out
+
+
+def test_a_clean_run_ends_the_advisory_state(tmp_path):
+    rc, out = _run_ceiling(tmp_path, errors=0, rc=0)
+    assert rc == 1 and "CLEAN" in out
+
+
+def test_growth_past_the_ceiling_is_red(tmp_path):
+    rc, out = _run_ceiling(tmp_path, errors=44, rc=1)
+    assert rc == 1 and "backlog grew: 44 > ceiling 43 under mypy 2.4.0 (D-65)" in out
+
+
+def test_the_count_at_the_ceiling_is_advisory(tmp_path):
+    rc, out = _run_ceiling(tmp_path, errors=43, rc=1)
+    assert rc == 0 and "mypy: 43 errors - advisory under ceiling 43 (mypy 2.4.0, pinned)" in out

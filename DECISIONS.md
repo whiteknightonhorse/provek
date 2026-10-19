@@ -4048,3 +4048,10 @@ reaching a comparison or an attribute access — 26 of the 43 in `src/liveness/c
 `sync_main.sh`. That is closed by T-NM-04 in `~/orchestra`; it is named here and not fixed here.
 
 **What is NOT done.** The 43 errors are not fixed. No new LAW- is added.
+
+**Addendum (T-MY-02, 2026-10-19).** The instrument on both sides of the door is a hash-pinned install
+of `requirements/ci-lint.txt`: in CI the interpreter that ran the install, at the door
+`~/orchestra/lintenv` (built with the same command). `scripts/check_mypy_ceiling.py` checks the running
+mypy against the pin before it believes a count, and the ceiling (`CEILING = {"2.4.0": 43}`) is keyed by
+that pin. The operator's 5.3 answer ("mypy in ~/.local") was given under the belief that host == pin and
+is superseded; the 2.3.1 in `~/.local` stays where it is and is not an instrument.

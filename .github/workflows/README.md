@@ -11,7 +11,7 @@ Five jobs, mirroring `scripts/push.sh` so that the checks stop depending on who 
 | `ratchets` | a module with no ABI requirement; a law with no armed gate; Cyrillic on the GitHub surface |
 | `tests` | any test failing, or coverage under 70% |
 | `shipped` | the site failing to build; a dangling link in a page the build emitted |
-| `lint` | ruff findings (mypy is advisory — see below) |
+| `lint` | ruff findings; mypy above the D-65 ceiling or not running (see below) |
 | `secrets` | a secret-shaped string anywhere in the tree |
 
 The table said **four** and omitted `shipped` from the day that job was added — the one job that
@@ -175,18 +175,25 @@ exactly that. Three things hold it now:
   start is `not_measured` and fails. That last state is why `|| true` had to go — an instrument
   that could not run printed precisely what a clean baseline prints, so the one reading that could
   end the advisory state was indistinguishable from a crash.
-- **The condition is measured with the pinned mypy, never with whatever the host has.** mypy has
-  been on the audit host since GREEN-005 (2.3.1 in `~/.local`), but the pin has since moved to
-  `mypy==2.4.0`, so host and pin differ until T-MY-02 puts mypy through `scripts/push.sh` (D-65).
-  Local readings are therefore taken in a throwaway `--require-hashes` install of
-  `requirements/ci-lint.txt`, as `evidence/MEASURED-016-*` does; a count from any other mypy would be
-  a second clock for the same promise (L-2).
+- **The condition is measured with the pinned mypy, never with whatever the host has.** The host's
+  `~/.local` carries mypy 2.3.1 while the pin is `mypy==2.4.0`; since T-MY-02 the door runs
+  `scripts/check_mypy_ceiling.py` with `~/orchestra/lintenv`, a venv built from the hashed
+  `requirements/ci-lint.txt`, exactly as `evidence/MEASURED-016-*` measured it (D-65). A count from
+  any other mypy would be a second clock for the same promise (L-2).
 - **The advisory state expires on its own.** `tests/test_door_matches_ci.py` goes red once the date
   passes, and it runs both at the door and on this workflow's daily `schedule:` — so it fires in
   the world where nobody pushes, which is the world where a forgotten promise survives (L-19). The
   date is 56 days from 2026-10-19 (the first, 2026-10-15, was 56 days from 2026-08-20), chosen to
   land inside the sixty after which GitHub disables a public repository's schedule: a deadline past
   that is unreachable by the clock in the exact state it exists for.
+
+**The ceiling.** While the advisory lasts, the backlog may not grow: 43 errors under mypy 2.4.0
+(`CEILING` in `scripts/check_mypy_ceiling.py`, D-65 Decision 3). The ceiling is keyed by the pinned
+version, so a Dependabot bump of mypy is red in the `lint` job until a count is measured under the
+new pin and added in the same commit — automerge waits, by design. CI runs the script with the
+interpreter that installed `requirements/ci-lint.txt`; the door runs it with `~/orchestra/lintenv`
+and the script refuses any mypy that is not the pin. Rebuild after a pin change:
+`python3 -m venv ~/orchestra/lintenv && ~/orchestra/lintenv/bin/pip install --quiet --require-hashes --only-binary=:all: -r requirements/ci-lint.txt`.
 
 **The baseline, measured 2026-08-20:** `mypy src --ignore-missing-imports` reports **28 errors
 across 7 files**, nearly all of them `None` reaching a comparison or an attribute access. That is

@@ -31,6 +31,11 @@ echo "4/9 language"; python3 scripts/ratchet_language.py
 # are a rule written in more than one place (L-2), and this one had already survived its own
 # repeal: the header asserting the lists were identical stayed correct-sounding while they drifted.
 echo "5/9 lint";     python3 -m ruff check src tests scripts
+if [ ! -x ~/orchestra/lintenv/bin/python ]; then
+  echo "REFUSED: ~/orchestra/lintenv (the hash-pinned lint venv built from requirements/ci-lint.txt, T-MY-02) is missing - a missing venv is RED, not skip." >&2
+  exit 1
+fi
+~/orchestra/lintenv/bin/python scripts/check_mypy_ceiling.py
 
 # THE SAME DIVERGENCE, TWICE MORE, FOUND BY WRITING THE TWO LISTS OUT SIDE BY SIDE.
 #
@@ -72,10 +77,16 @@ echo "5/9 lint";     python3 -m ruff check src tests scripts
 echo "6/9 site";     ( cd web && npm run build >/dev/null )
 echo "7/9 tests";    python3 -m pytest tests -q --cov=src --cov-fail-under=70 | tail -3
 
-# MYPY IS NOT HERE, AND THAT IS THE MEASURED ANSWER RATHER THAN AN OVERSIGHT.
-# It runs in CI with its findings suppressed, so it cannot turn `main` red and the door omitting it
-# creates no asymmetry. Its advisory state expires on 2026-12-14 (re-dated once from 2026-10-15, D-65); when it becomes blocking, the
-# comparison above fails until mypy is added here, in that same commit.
+# MYPY IS HERE SINCE T-MY-02, in step 5 above, through the same program CI runs
+# (scripts/check_mypy_ceiling.py): it goes red when the advisory backlog grows past the D-65
+# ceiling or when mypy does not run. The advisory state still expires on 2026-12-14 (D-65).
+#
+# THE INSTRUMENT IS ~/orchestra/lintenv, NOT ~/.local. The host's user-site carried mypy 2.3.1
+# against a `mypy==2.4.0` pin (measured 2026-10-19); a shared user-site is not an instrument. The
+# venv is built from the hashed file with CI's own command, and the script refuses a mypy that is
+# not the pin. When the pin moves, rebuild it:
+#   python3 -m venv ~/orchestra/lintenv && ~/orchestra/lintenv/bin/pip install --quiet \
+#     --require-hashes --only-binary=:all: -r requirements/ci-lint.txt
 
 # T-63: A GREEN "7/9 tests" ABOVE DOES NOT MEAN A READER'S FIRST RUN WORKS.
 #

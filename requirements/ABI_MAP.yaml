@@ -172,6 +172,11 @@ scripts/verify_action_pins.py:    [ABI-32-1, ABI-16-11]
 scripts/verify_pip_pins.py:       [ABI-32-1, ABI-16-11]
 scripts/dated_promises.py:        [ABI-16-11, ABI-33-4]
 
+# T-MY-02. The advisory mypy backlog may not grow. ABI-16-11 because a mypy that did not run, or ran
+# as the wrong version, is not_measured and never a clean baseline; ABI-33-4 because the verdict is
+# taken by code from a measured count against a ceiling keyed by the pinned version.
+scripts/check_mypy_ceiling.py:    [ABI-16-11, ABI-33-4]
+
 # T-S7, and the same pair a third time because it is the same door asked its FIRST question rather
 # than a later one. The two modules above judge what a workflow NAMES; this one asks whether the
 # file naming it is a file GitHub can open at all. ABI-32-1 because a workflow that never parses
