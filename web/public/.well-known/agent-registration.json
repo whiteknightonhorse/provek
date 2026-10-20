@@ -1,0 +1,10 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Provek",
+  "description": "Verification of claims about AI agents and projects. Evidence is checked by GenLayer validators through the Provek Evidence Witness Intelligent Contract (accepted as a GenLayer Project on 2026-10-05).",
+  "image": "https://provek.dev/apple-touch-icon.png",
+  "endpoints": [
+    { "name": "web", "endpoint": "https://provek.dev" },
+    { "name": "GenLayer contract", "endpoint": "https://explorer-bradbury.genlayer.com/address/0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6" }
+  ]
+}
