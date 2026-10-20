@@ -5,6 +5,7 @@ witness suite, direct mode writes the LEADER's result to state with no simulated
 validator's agree/disagree behaviour is tested afterwards via `direct_vm.run_validator()` against
 swapped mocks.
 """
+import ast
 import copy
 import hashlib
 import json
@@ -320,3 +321,57 @@ def test_parse_transfers_golden_vector(contract_module):
     ]]
     assert int("0xf4240", 16) == 1_000_000
     assert contract_module._parse_transfers(logs, "0x" + "00" * 20) == []
+
+
+# --- Gas-cap gates (GA-DEPLOY-GAS-1020, D-67): a size ceiling for every deployable contract, and a proof
+# that shortening this contract changed documentation only. Pure `ast` and `git`; the reference for the
+# docs-only comparison is a byte copy of the contract at the accepted commit 774a184 (fixture, sha256
+# asserted below; the CI genlayer job is a depth-1 clone, so `git show` is not available there).
+ATTEST = Path(__file__).resolve().parent.parent.parent / "contracts" / "apibase_receipt_attest.py"
+ROOT = ATTEST.parents[3]
+CONTRACT_FILES = sorted((ROOT / "integrations").glob("*/contracts/*.py"))
+
+REFERENCE = Path(__file__).resolve().parent.parent / "fixtures" / "apibase_receipt_attest.774a184.py.txt"
+REFERENCE_SHA256 = "1203e946c6082bc8e85c9a3deeb43f2e5f37e88e3c55afadde8e2c49b14836a8"
+MAX_CONTRACT_BYTES = 19_000
+
+
+def _strip_docstrings(tree: ast.AST) -> ast.AST:
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+            body = node.body
+            if (body and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant)
+                    and isinstance(body[0].value.value, str)):
+                node.body = body[1:] or [ast.Pass()]
+    return tree
+
+
+def test_contract_sizes():
+    assert ATTEST in CONTRACT_FILES and len(CONTRACT_FILES) >= 2, CONTRACT_FILES
+    too_big = {str(p.relative_to(ROOT)): p.stat().st_size for p in CONTRACT_FILES
+               if p.stat().st_size > MAX_CONTRACT_BYTES}
+    assert not too_big, f"over {MAX_CONTRACT_BYTES} bytes (Bradbury per-tx gas cap): {too_big}"
+
+
+def test_attest_docs_only_change():
+    raw = REFERENCE.read_bytes()
+    assert hashlib.sha256(raw).hexdigest() == REFERENCE_SHA256, "reference is not the 774a184 file"
+    reference = raw.decode("utf-8")
+    before = _strip_docstrings(ast.parse(reference))
+    after = _strip_docstrings(ast.parse(ATTEST.read_text(encoding="utf-8")))
+    assert ast.dump(before, include_attributes=False) == ast.dump(after, include_attributes=False)
+
+
+def test_attest_module_docstring():
+    tree = ast.parse(ATTEST.read_text(encoding="utf-8"))
+    doc = ast.get_docstring(tree)
+    assert doc, "module docstring missing"
+    assert len(doc.encode("utf-8")) <= 600 and len(doc.splitlines()) <= 8
+    for needle in ("apibase.pro/r/", "Base", "README"):
+        assert needle in doc, needle
+    cls = next(n for n in tree.body if isinstance(n, ast.ClassDef) and n.name == "ApibaseReceiptAttest")
+    public = [n for n in cls.body if isinstance(n, ast.FunctionDef) and not n.name.startswith("_")]
+    assert len(public) == 6, [n.name for n in public]
+    for fn in public:
+        text = ast.get_docstring(fn)
+        assert text and len(text.encode("utf-8")) <= 100, (fn.name, text)

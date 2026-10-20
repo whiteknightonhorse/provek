@@ -4092,3 +4092,5 @@ distinct from `FAIL`.
 **Not decided here.** Deployment and the mirror `whiteknightonhorse/apibase-genlayer-attest` are
 T-GA-02; the live receipt needs one real paid call, which the dispatcher makes; the Builder-programme
 Project submission waits for the live page and at least two live attestations.
+
+## D-67. Deployed Intelligent Contract bytes equal the committed file bytes at the deploy commit; no minified or generated deploy form. Every contract file <= 19 000 bytes because the Bradbury per-transaction gas cap is 16 777 216 (about 778 gas per byte, measured 2026-10-20). Long prose lives in the README, docstrings stay short. Ruling GA-DEPLOY-GAS-1020; see D-66.

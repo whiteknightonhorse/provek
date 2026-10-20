@@ -129,3 +129,126 @@ operator who points a chain at a node that lies can make it attest a transfer th
 The URL is public (`get_chain`), which makes the assumption auditable; letting each validator choose its
 own node would remove it and is a different, later design. At deployment the Base endpoint is
 `https://mainnet.base.org`.
+
+## ApibaseReceiptAttest — contract reference
+
+The contract file keeps short docstrings (gas, see the last paragraph of this section). The text below is the original
+documentation from commit `774a184`, verbatim.
+
+### Narrative
+
+```text
+APIbase Receipt Attest — a GenLayer Intelligent Contract.
+
+WHAT THIS IS. A consensus-backed check that an APIbase paid-call receipt tells the truth about the
+money. APIbase publishes, for each paid tool call, a small JSON receipt (`apibase-receipt/1`, see
+README.md) that names a payer, a payee, an amount of USDC and the Base transaction that moved it.
+Anyone may ask this contract about a receipt id (`attest(receipt_id)`); the leader fetches the
+receipt from `receipt_base_url`, asks the configured Base JSON-RPC for that transaction's receipt,
+and reports whether the chain holds a USDC `Transfer(payer -> payee, amount)` inside it. Validators
+repeat both fetches themselves and agree only if they saw the same thing. The verdict is written
+to storage as an `Attestation` nobody can edit afterwards.
+
+WHAT THIS IS NOT. There is no LLM anywhere in this contract. It never makes a paid call to APIbase
+and never spends anything: it reads one static JSON document and asks a chain node for one
+transaction receipt. It does not attest that the tool's response was good, only that the payment
+the receipt claims is the payment on the chain; `response_sha256` is carried into the record so a
+holder of the response can check it themselves, nothing more. v0 covers ONE rail (`x402-base`) and
+BILLED calls only (`billed is true`); an MPP/Tempo receipt, or a call that was not billed, is
+refused with a named reason rather than attested as something it is not.
+
+TRUST ASSUMPTION, STATED. The chain is reached through ONE JSON-RPC URL per chain id, held in
+storage and updatable by the operator alone (`set_chain`). Every validator asks that same URL, so
+the contract proves "the configured node says so", not "the chain says so": an operator who points
+`rpc_url` at a node that lies can make the contract attest a transfer that did not happen. The
+URL is public (`get_chain`) so the assumption is auditable; removing it would mean validators each
+choosing their own node, which is a different and later design.
+
+WHY A CUSTOM VALIDATOR, NOT `strict_eq`. `strict_eq` compares the leader's whole output to the
+validator's byte for byte. The receipt observation carries fields that can legitimately differ
+between two honest nodes reading the same chain (a log list that includes unrelated contracts'
+events, RPC extras) and, worse, it cannot distinguish "the validator saw something different" from
+"the validator could not see anything". `_judge` below is the one deterministic function leader
+and validator both call, so the verdict rule lives in exactly one place; the validator agrees iff
+`_judge` gives the same answer on its own fetches, the receipt body hashes match, and the matched
+transfer tuple is the same.
+
+CONSENSUS SEMANTICS, NAMED EXPLICITLY. Three different outcomes must not be confused
+(CLAUDE.md invariant 1: a missing measurement is never a pass, and never silently a fail):
+
+* `FAIL` means the instrument worked and the claim is false: the transaction exists but reverted
+  (`tx_reverted`), or it succeeded and holds no matching USDC transfer (`no_matching_transfer`).
+* `NOT_FOUND` means the node answered and does not know the transaction (`tx_not_found`). It is
+  recorded, not hidden: a payment that the configured node cannot see is evidence of its own.
+* A revert (no record) means there is nothing to attest: the receipt is not readable at APIbase,
+  or it is a shape this v0 contract refuses (`unsupported rail`, `not billed`, `chain not
+  configured`, `malformed receipt`). Nobody is told "the payment is false" about a receipt that was
+  never in scope.
+
+Separately, a validator whose OWN fetch raises returns `False` without constructing any verdict:
+"nobody could check" must not be turned into "the claim is false", and GenVM rotates the leader.
+
+FIELD NAME NOTE. `genlayer.gl.nondet.web.Response` has `status`, not `status_code` (the same
+finding as the witness contract next door; running its direct tests against the pinned SDK is
+what showed it). This contract uses `response.status`.
+```
+
+### Storage
+
+```text
+See the module docstring. Storage: `operator` (fixed at construction), `receipt_base_url`
+(receipts live at `{receipt_base_url}{receipt_id}.json`), `chains` (chain id -> `ChainConfig`,
+operator-updatable), `records` (attest_id -> `Attestation`, append-only), `index`
+(receipt_id -> JSON list of attest_ids; a list inside a `TreeMap` is kept as a JSON string, the
+same workaround the witness contract uses).
+```
+
+### `set_chain`
+
+```text
+Operator-only: configure (or replace) the JSON-RPC endpoint and USDC address for a
+chain id. `usdc` is stored lowercased.
+```
+
+### `attest`
+
+```text
+Request one consensus-backed attestation. PERMISSIONLESS: any sender may ask, and the
+question has one answer per receipt, so who asks adds nothing. Reverts before consensus for
+a malformed `receipt_id` or a duplicate `attest_id`; after consensus for the cases the
+module docstring lists. Returns the `attest_id`.
+```
+
+### `get_attestation`
+
+```text
+The published record for `attest_id`; reverts for an unknown id — a missing record is a
+caller error to surface, not an empty value to fabricate.
+```
+
+### `list_by_receipt`
+
+```text
+JSON list of every `attest_id` published for `receipt_id`, in request order, or `"[]"`.
+```
+
+### `get_chain`
+
+```text
+The configured endpoint and USDC address for `chain_id`; reverts for an unknown chain.
+```
+
+### `get_config`
+
+```text
+JSON: operator, receipt_base_url, configured chain ids (sorted).
+```
+
+### Deployed code is the file
+
+The deployed bytes are the committed file bytes at the deploy commit, verifiable with `sha256sum
+integrations/genlayer-apibase-attest/contracts/apibase_receipt_attest.py` at that commit against the code shown by the
+explorer. The Bradbury per-transaction gas cap is 16 777 216 (measured 2026-10-20) and gas is about 778 per byte, so
+every contract file in this repo is kept at or under 19 000 bytes and the deploy gate is `eth_estimateGas` <= 16 000 000
+with the exact deploy arguments. `tests/direct/test_apibase_receipt_attest.py` holds the size ceiling, the docs-only AST
+comparison against `774a184`, and the docstring limits.

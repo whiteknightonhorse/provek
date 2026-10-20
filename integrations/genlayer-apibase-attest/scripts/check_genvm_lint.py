@@ -58,8 +58,8 @@ EXPECTED_WARNINGS = [
     {"code": "E010", "line": line,
      "msg": f"gl.nondet.* call in 'ApibaseReceiptAttest.attest.<locals>.{closure}' "
             "not reachable from equivalence principle block"}
-    for closure, line in (("leader_fn", 363), ("leader_fn", 366),
-                          ("validator_fn", 381), ("validator_fn", 384))
+    for closure, line in (("leader_fn", 313), ("leader_fn", 316),
+                          ("validator_fn", 331), ("validator_fn", 334))
 ]
 
 
