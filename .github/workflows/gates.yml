@@ -325,22 +325,31 @@ jobs:
             exit 1
           fi
 
+      # T-GA-01 (D-66): the three steps below run for BOTH GenLayer contracts. The `for` line is the
+      # same text in scripts/push.sh's door step 9 (L-2); a subshell per directory keeps one
+      # contract's `cd` from leaking into the next, and `bash -e` fails the step on the first red.
       - name: genvm-lint - the contract passes the GenVM linter
-        working-directory: integrations/genlayer-witness
         # `genvm-lint check` itself has no baseline/allowlist flag, so a bare invocation would be
-        # permanently red over two confirmed false-positive warnings this project has decided to
-        # keep (see this directory's README.md and `scripts/check_genvm_lint.py`'s own module
+        # permanently red over confirmed false-positive warnings this project has decided to
+        # keep (see each directory's README.md and `scripts/check_genvm_lint.py`'s own module
         # docstring for why). This script is the one place that logic lives - `scripts/push.sh`'s
         # door step 9 runs the identical command (L-2).
-        run: python3 scripts/check_genvm_lint.py
+        run: |
+          for d in integrations/genlayer-witness integrations/genlayer-apibase-attest; do
+            ( cd "$d" && python3 scripts/check_genvm_lint.py )
+          done
 
-      - name: direct tests - the witness contract in-process
-        working-directory: integrations/genlayer-witness
-        run: python3 -m pytest tests/direct -q
+      - name: direct tests - both GenLayer contracts in-process
+        run: |
+          for d in integrations/genlayer-witness integrations/genlayer-apibase-attest; do
+            ( cd "$d" && python3 -m pytest tests/direct -q )
+          done
 
       - name: integration tests collect cleanly - not run, just imported (T-GL-05 runs them live)
-        working-directory: integrations/genlayer-witness
-        run: python3 -m pytest --collect-only -q tests/integration
+        run: |
+          for d in integrations/genlayer-witness integrations/genlayer-apibase-attest; do
+            ( cd "$d" && python3 -m pytest --collect-only -q tests/integration )
+          done
 
   secrets:
     name: secret scan

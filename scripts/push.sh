@@ -136,10 +136,14 @@ if [ "$got" != "$want" ]; then
   echo "truncated release asset is RED here, never silently trusted." >&2
   exit 1
 fi
-( cd integrations/genlayer-witness \
-  && ~/orchestra/glenv/bin/python3 scripts/check_genvm_lint.py \
-  && ~/orchestra/glenv/bin/python3 -m pytest tests/direct -q \
-  && ~/orchestra/glenv/bin/python3 -m pytest --collect-only -q tests/integration )
+# T-GA-01 (D-66): two contracts, one toolchain, one loop. The directory list is the same text in
+# gates.yml's `genlayer` job; `tests/test_door_matches_ci.py` holds the steps, this loop is the list.
+for d in integrations/genlayer-witness integrations/genlayer-apibase-attest; do
+  ( cd "$d" \
+    && ~/orchestra/glenv/bin/python3 scripts/check_genvm_lint.py \
+    && ~/orchestra/glenv/bin/python3 -m pytest tests/direct -q \
+    && ~/orchestra/glenv/bin/python3 -m pytest --collect-only -q tests/integration )
+done
 
 # Gates-only mode. The orchestra must judge the tree after EVERY task, not just before a push,
 # and a second copy of the gate list would drift from this one the first time the list changed.

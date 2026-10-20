@@ -21,8 +21,12 @@ from __future__ import annotations
 import ast
 import pathlib
 
+import pytest
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SCAN_DIRS = ("src", "scripts")
+# T-GA-01 (D-66): the second contract is held to the same isolation as the first.
+INTEGRATIONS = ("genlayer-witness", "genlayer-apibase-attest")
 
 
 def _imported_module_names(tree: ast.AST) -> list[str]:
@@ -52,6 +56,22 @@ def test_src_and_scripts_import_nothing_from_integrations():
             for name in _imported_modules(path):
                 if name.split(".")[0] == "integrations":
                     offenders.append(f"{path.relative_to(ROOT)} imports {name!r}")
+    assert offenders == [], "\n".join(offenders)
+
+
+@pytest.mark.parametrize("integration", INTEGRATIONS)
+def test_each_integration_imports_nothing_from_this_repository(integration):
+    """The reverse direction, for each GenLayer integration: nothing under it imports `src` or
+    `scripts` (it must be publishable as a mirror on its own, D-64)."""
+    root = ROOT / "integrations" / integration
+    assert (root / "contracts").is_dir(), f"{root.relative_to(ROOT)}/contracts does not exist"
+    offenders: list[str] = []
+    for path in root.rglob("*.py"):
+        if "__pycache__" in path.parts:
+            continue
+        for name in _imported_modules(path):
+            if name.split(".")[0] in ("src", "scripts"):
+                offenders.append(f"{path.relative_to(ROOT)} imports {name!r}")
     assert offenders == [], "\n".join(offenders)
 
 

@@ -241,3 +241,15 @@ integrations/genlayer-witness/tests/integration/__init__.py:              [ABI-1
 integrations/genlayer-witness/tests/integration/fixtures.py:              [ABI-5-3, ABI-16-11]
 integrations/genlayer-witness/tests/integration/test_provek_evidence_witness_live.py: [ABI-16-11]
 integrations/genlayer-witness/scripts/check_genvm_lint.py:                [ABI-16-11]
+#
+# T-GA-01 (D-66): `integrations/genlayer-apibase-attest/` is bound row for row like the witness
+# beside it - same ABI-5-3 (a nondet fetch, here a receipt GET and a JSON-RPC POST, capped by what
+# the code reads, not by the network) and ABI-16-11 (a verdict that fails to be tested reads as a
+# pass) on the same kinds of module.
+integrations/genlayer-apibase-attest/contracts/apibase_receipt_attest.py:  [ABI-5-3, ABI-16-11]
+integrations/genlayer-apibase-attest/tests/direct/conftest.py:             [ABI-5-3, ABI-16-11]
+integrations/genlayer-apibase-attest/tests/direct/test_apibase_receipt_attest.py: [ABI-16-11]
+integrations/genlayer-apibase-attest/tests/integration/__init__.py:        [ABI-16-11]
+integrations/genlayer-apibase-attest/tests/integration/fixtures.py:        [ABI-5-3, ABI-16-11]
+integrations/genlayer-apibase-attest/tests/integration/test_apibase_receipt_attest_live.py: [ABI-16-11]
+integrations/genlayer-apibase-attest/scripts/check_genvm_lint.py:          [ABI-16-11]

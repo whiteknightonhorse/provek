@@ -1,0 +1,14 @@
+# For humans reading this directory, not for CI (CI's hash-pinned set lives in
+# requirements/ci-genlayer.{in,txt} at the repository root — see DECISIONS.md D-63). Versions
+# match ~/orchestra/glenv, the isolated Python 3.12 venv this integration is built and tested
+# against (this host's own Python is 3.10; see GL-harness-notes.md).
+genlayer-py==0.18.0
+genlayer-test==0.29.2
+genvm-linter==0.11.0
+
+# NOTE (GL-harness-notes.md #7a): the genlayer-test==0.29.2 wheel published to PyPI declares a
+# stale `genlayer-py<0.17.0,>=0.13.0` dependency that conflicts with genlayer-py==0.18.0 above.
+# The genlayer-testing-suite@v0.29 source (what this same release is built from) actually requires
+# genlayer-py>=0.18.0,<0.19.0 — the PyPI metadata is wrong, not the pin. Installing with
+# `--no-deps` and installing genlayer-test's real runtime dependencies (pytest, colorama, pyyaml,
+# python-dotenv) alongside genlayer-py==0.18.0 directly is how ~/orchestra/glenv was actually built.

@@ -41,3 +41,4 @@ keypair.json
 # than waiting for the day a live/integration run writes a real compiled-contract artefact into it
 # and the door refuses an otherwise-clean tree over a generated file nobody meant to commit.
 integrations/genlayer-witness/artifacts/
+integrations/genlayer-apibase-attest/artifacts/

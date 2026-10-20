@@ -14,9 +14,13 @@ from __future__ import annotations
 
 import pathlib
 
+import pytest
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 ROOT_COPY = ROOT / "requirements" / "ci-genlayer.txt"
 MIRROR_COPY = ROOT / "integrations" / "genlayer-witness" / "requirements" / "ci-genlayer.txt"
+# T-GA-01 (D-66): the second contract carries its own copy for the same reason, under the same law.
+APIBASE_COPY = ROOT / "integrations" / "genlayer-apibase-attest" / "requirements" / "ci-genlayer.txt"
 
 
 def _read(path: pathlib.Path) -> bytes:
@@ -26,9 +30,18 @@ def _read(path: pathlib.Path) -> bytes:
     return data
 
 
-def test_the_two_copies_of_the_genlayer_pin_set_are_byte_identical():
-    assert _read(ROOT_COPY) == _read(MIRROR_COPY), (
-        "requirements/ci-genlayer.txt and "
-        "integrations/genlayer-witness/requirements/ci-genlayer.txt differ - copy the root file "
-        "over the mirror one (D-64)"
+@pytest.mark.parametrize("copy", [MIRROR_COPY, APIBASE_COPY], ids=lambda p: p.parts[-3])
+def test_every_copy_of_the_genlayer_pin_set_is_byte_identical_to_the_root(copy):
+    assert _read(ROOT_COPY) == _read(copy), (
+        f"requirements/ci-genlayer.txt and {copy.relative_to(ROOT)} differ - copy the root file "
+        "over the integration one (D-64, D-66)"
     )
+
+
+def test_the_apibase_copy_of_the_sha256_and_toolchain_files_matches_the_witness():
+    """`genvm-universal-v0.2.16.sha256`, `gltest.config.yaml` and `pyproject.toml` are copied, not
+    shared; the same law applies to them."""
+    witness = ROOT / "integrations" / "genlayer-witness"
+    apibase = ROOT / "integrations" / "genlayer-apibase-attest"
+    for name in ("genvm-universal-v0.2.16.sha256", "gltest.config.yaml", "pyproject.toml", "requirements.txt"):
+        assert _read(witness / name) == _read(apibase / name), f"{name} drifted between the two integrations"

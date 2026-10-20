@@ -4055,3 +4055,40 @@ of `requirements/ci-lint.txt`: in CI the interpreter that ran the install, at th
 mypy against the pin before it believes a count, and the ceiling (`CEILING = {"2.4.0": 43}`) is keyed by
 that pin. The operator's 5.3 answer ("mypy in ~/.local") was given under the belief that host == pin and
 is superseded; the 2.3.1 in `~/.local` stays where it is and is not an instrument.
+
+## D-66. A second Intelligent Contract is admitted beside the witness, under ADR-0012, without merging the toolchains
+
+**Source.** Fable ruling APIBASE-GENLAYER-1018 q-1 (2026-10-19); operator order 2026-10-18 and the
+operator's approval of all seven points of the ruling's §10 on 2026-10-20; built by `T-GA-01-apibase-receipt-attest-contract`.
+
+**Decision.** `integrations/genlayer-apibase-attest/` holds `ApibaseReceiptAttest`: validators attest
+that an APIbase paid-call receipt (`apibase-receipt/1`) matches the USDC `Transfer` in the Base
+transaction it names. It lives beside `integrations/genlayer-witness/` under ADR-0012 — the same
+isolated Python 3.12 toolchain, the same pins (`requirements/`, the genvm digest, `gltest.config.yaml`,
+`pyproject.toml` are byte copies, held by `tests/test_genlayer_ci_requirements_one_place.py`), the same
+isolation from `src/` and `scripts/` (`tests/test_genlayer_witness_is_isolated.py`, now parametrised
+over both directories). Door step 9 and the CI `genlayer` job loop over both directories with the same
+`for` line. The toolchains are not merged: two contracts share a pin set, not a package.
+
+**Why permissionless where the witness is operator-only.** The witness answers a question only the
+operator has standing to ask (a check on Provek's own subject, "by joint request"). This contract
+answers a question with one answer per receipt: the receipt is public, the chain is public, and who
+asks adds no information. Gating it would make the attestation a service the operator provides rather
+than a fact anyone can obtain, which defeats the purpose. The operator keeps exactly one power, `set_chain`
+(the RPC endpoint and USDC address per chain id), and it is a stated trust assumption: validators all
+ask the configured node, so the contract proves what that node says.
+
+**Why no LLM.** Both inputs are bytes on the wire (a JSON document, a JSON-RPC answer) and the verdict
+is arithmetic over them. An LLM adds latency and an unauditable second source of disagreement and
+nothing a validator could not compute (invariant 2). The contract also never makes a paid call.
+
+**Why v0 excludes MPP and unbilled calls.** One rail (`x402-base`, USDC on Base) has an on-chain
+transfer a validator can read; an MPP/Tempo receipt has no transfer on a chain this contract is
+configured for, and an unbilled call has no payment to match. Both are refused with a named reason
+(a revert, no record) rather than attested as `FAIL` — "outside scope" must not read as "the payment is
+false" (invariant 1). `NOT_FOUND` (the node does not know the transaction) is its own recorded result,
+distinct from `FAIL`.
+
+**Not decided here.** Deployment and the mirror `whiteknightonhorse/apibase-genlayer-attest` are
+T-GA-02; the live receipt needs one real paid call, which the dispatcher makes; the Builder-programme
+Project submission waits for the live page and at least two live attestations.

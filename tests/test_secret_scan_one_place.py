@@ -105,3 +105,13 @@ def test_redaction_still_leaves_ordinary_text_alone():
     t = "the r8 rocket launched at 12:34 near cfa headquarters, pk1 postcode, sk1-rated bunker"
     assert redact(t) == t
     assert not _scan_blocks(t)
+
+
+def test_the_only_exclusion_from_the_scan_is_the_apibase_chain_fixtures():
+    """T-GA-01 (D-66): `0x` plus 64 hex is both a private key's shape and a transaction hash's, so
+    the captured chain data under one fixtures directory is out of scope. Every exclusion is a hole
+    in the gate; this holds the set of holes to exactly one named path."""
+    text = SCAN_SH.read_text(encoding="utf-8")
+    excludes = re.findall(r"':\(exclude\)([^']+)'", text)
+    assert excludes == ["integrations/genlayer-apibase-attest/tests/fixtures"], excludes
+    assert _scan_blocks("0x" + "ab" * 32), "the 0x+64-hex alternative must still block everywhere else"

@@ -1,0 +1,5 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "integration: needs a live GenLayer network (Studionet or Testnet Bradbury) and a funded account; not run at the door or in CI",
+]

@@ -1,0 +1,14 @@
+{
+  "schema": "apibase-receipt/1",
+  "rail": "x402-base",
+  "chain_id": 8453,
+  "payment_tx": "0xa7055e5ec14e8912912c370eb253965c26960aa96ef65d7d85a9f08ed496bf58",
+  "payer": "0x688130810f0bede38742b66e7a443274c01d4213",
+  "payee": "0x781dfd3f2687f8e5656313b2179fdefdf99d339d",
+  "asset": "USDC",
+  "amount_atomic": "1000000",
+  "billed": true,
+  "tool": "example.tool",
+  "upstream_status": 200,
+  "response_sha256": "c13f8fa911574eb7721c9784f96b4f26916a72ea8b6fe8aeed66696b2de150c9"
+}

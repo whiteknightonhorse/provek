@@ -168,7 +168,7 @@ CI_GATES: dict[str, Door | Advisory | Capped] = {
     # (see `integrations/genlayer-witness/README.md`) - `check_genvm_lint.py` is the one place that
     # interpretation lives, run identically by both sides (L-2).
     "genvm-lint - the contract passes the GenVM linter": Door("check_genvm_lint.py"),
-    "direct tests - the witness contract in-process": Door("pytest tests/direct -q"),
+    "direct tests - both GenLayer contracts in-process": Door("pytest tests/direct -q"),
     # T-GL-03c-collect (GL-05-harness-import.ruling-1.md). A relative import inside
     # `tests/integration/` can fail before any network call is even attempted (the door's own
     # transcript against studionet: `ImportError` at collection, rc=2) - this step measures exactly

@@ -1,0 +1,62 @@
+# tree: 0c2959b11c67b021b5f2742a879b6989484ed175 (dirty)
+# (taken against origin/main 0c2959b plus this branch's uncommitted edits; the mutants below are temporary files tests/direct/test_red067_mutants.py, deleted after the run)
+
+$ date -u
+Tue Oct 20 04:04:46 AM UTC 2026
+
+# (a) the PASS fixture with amount_atomic changed by one, asserted PASS -> must be RED
+$ cd integrations/genlayer-apibase-attest && ~/orchestra/glenv/bin/python3 -m pytest tests/direct/test_red067_mutants.py -q -k RED067_a
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___________________ test_RED067_a_wrong_amount_asserted_PASS ___________________
+
+direct_vm = VMContext(_sender=b'\xdc\x18\xaa=\xb8\xbc\x91\xa6\xe3\x90\xa3^}\x08\x11$o\xf3\xab\x01', _origin=None, _contract_addres...m_mocks_hit=set(), _live_web_handler=None, _live_llm_handler=None, _gl_call_hook=None, _traces=[], _trace_enabled=True)
+attest_contract = <CalldataProxy for <_contract_apibase_receipt_attest.ApibaseReceiptAttest object at 0x7f01aeb34770>>
+
+    def test_RED067_a_wrong_amount_asserted_PASS(direct_vm, attest_contract):
+        receipt = _load("receipt_pass.json")
+        receipt["amount_atomic"] = str(int(receipt["amount_atomic"]) + 1)
+        _world(direct_vm, receipt=receipt)
+        record = _attest(attest_contract)
+>       assert record.result == "PASS"  # the wrong claim; the contract must say FAIL/no_matching_transfer
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: assert 'FAIL' == 'PASS'
+E         
+E         - PASS
+E         + FAIL
+
+tests/direct/test_red067_mutants.py:50: AssertionError
+=========================== short test summary info ============================
+FAILED tests/direct/test_red067_mutants.py::test_RED067_a_wrong_amount_asserted_PASS
+1 failed, 1 deselected in 0.11s
+rc=1
+
+# (b) the validator swap-world test with the swap removed -> must be RED
+$ ~/orchestra/glenv/bin/python3 -m pytest tests/direct/test_red067_mutants.py -q -k RED067_b
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_____________________ test_RED067_b_validator_swap_removed _____________________
+
+direct_vm = VMContext(_sender=b'\xdc\x18\xaa=\xb8\xbc\x91\xa6\xe3\x90\xa3^}\x08\x11$o\xf3\xab\x01', _origin=None, _contract_addres...m_mocks_hit=set(), _live_web_handler=None, _live_llm_handler=None, _gl_call_hook=None, _traces=[], _trace_enabled=True)
+attest_contract = <CalldataProxy for <_contract_apibase_receipt_attest.ApibaseReceiptAttest object at 0x7fe70ed2a150>>
+
+    def test_RED067_b_validator_swap_removed(direct_vm, attest_contract):
+        _world(direct_vm)
+        attest_contract.attest(RECEIPT_ID)
+        # the swap of the RPC mock is REMOVED: the validator sees the leader's world
+>       assert direct_vm.run_validator() is False
+E       AssertionError: assert True is False
+E        +  where True = run_validator()
+E        +    where run_validator = VMContext(_sender=b'\xdc\x18\xaa=\xb8\xbc\x91\xa6\xe3\x90\xa3^}\x08\x11$o\xf3\xab\x01', _origin=None, _contract_addres...m_mocks_hit=set(), _live_web_handler=None, _live_llm_handler=None, _gl_call_hook=None, _traces=[], _trace_enabled=True).run_validator
+
+tests/direct/test_red067_mutants.py:57: AssertionError
+=========================== short test summary info ============================
+FAILED tests/direct/test_red067_mutants.py::test_RED067_b_validator_swap_removed
+1 failed, 1 deselected in 0.07s
+rc=1
+
+# (c) GREEN control: the real tests for exactly these two properties, same tree
+$ ~/orchestra/glenv/bin/python3 -m pytest tests/direct -q -k "off_by_one or rpc_value_changes"
+..                                                                       [100%]
+2 passed, 40 deselected in 0.11s
+rc=0

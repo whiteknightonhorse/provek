@@ -1,0 +1,10 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "status": "0x0",
+    "transactionHash": "0xa7055e5ec14e8912912c370eb253965c26960aa96ef65d7d85a9f08ed496bf58",
+    "blockNumber": "0x3227480",
+    "logs": []
+  }
+}
