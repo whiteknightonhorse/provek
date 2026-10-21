@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-10-20T03:43:05.820743+00:00",
-    "valid_until": "2026-11-19T03:43:05.820743+00:00",
+    "issued_at": "2026-10-21T03:43:05.548827+00:00",
+    "valid_until": "2026-11-20T03:43:05.548827+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -61,7 +61,7 @@
           "absent_reason": null
         },
         "workflow_runs": {
-          "value": 536,
+          "value": 550,
           "measured": true,
           "absent_reason": null
         },
@@ -71,7 +71,7 @@
           "absent_reason": null
         },
         "unlinked_commit_share": {
-          "value": 0.949,
+          "value": 0.957,
           "measured": true,
           "absent_reason": null
         },
@@ -80,7 +80,7 @@
           "measured": true,
           "absent_reason": null
         },
-        "head_sha": "094e8fba020d6ae4d1dcbd40f7ac97da724d0653"
+        "head_sha": "3691ee3d02f873b1db5ab1ab1c6ef12e37b5d4b1"
       },
       "control_map_valid": true,
       "control_map_cap": 5,
@@ -103,7 +103,7 @@
       "private": false,
       "declaration": {
         "present": true,
-        "pinned_sha": "094e8fba020d6ae4d1dcbd40f7ac97da724d0653",
+        "pinned_sha": "3691ee3d02f873b1db5ab1ab1c6ef12e37b5d4b1",
         "schema_version": "1.0.0"
       }
     },
