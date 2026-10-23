@@ -56,6 +56,21 @@ EXPECTED_03SEP = (
     "operator owns carries anything else."
 )
 
+# The fourth entry (T-WB-02): a change of record for 2026-09-01 (commit b0a5d66, re-measure of
+# APIbase, 60 to 40) that was never given a notice. Facts are the passport diff of that commit:
+# head 1eeeccb -> 5ef9826, identity_window_closed true -> false, unlinked_commit_share 0.0 -> 0.009,
+# unlinked_key_count 0 -> 1, development_initiation L3 -> L2.
+EXPECTED_01SEP = (
+    "Correction, 2026-09-01. APIbase\u2019s autonomy projection moved from 60 to 40 and its "
+    "development-initiation level from L3 to L2 when it was re-measured that day. No defect in the "
+    "rule or in the earlier data was found: between the two measurements the repository\u2019s head "
+    "moved, and the 30-day window then held a commit whose author the platform did not attribute to "
+    "an account (unlinked commit share 0.0 to 0.009; one unlinked key). Under platform closure "
+    "\u2014 an author count is a count only when every non-bot commit in the window is attributed "
+    "\u2014 an open identity window floors the level at L2. The earlier figure was a true reading of "
+    "the window it was taken from, and is superseded."
+)
+
 emitted = pytest.mark.skipif(not CORRECTIONS_PAGE.exists(), reason="site not built in this checkout")
 
 
@@ -68,15 +83,16 @@ def _main_text(html_path: Path) -> str:
 
 
 @emitted
-def test_all_three_errata_are_preserved_byte_for_byte_on_the_corrections_page():
+def test_all_four_corrections_are_preserved_byte_for_byte_on_the_corrections_page():
     text = _main_text(CORRECTIONS_PAGE)
     assert EXPECTED_25AUG in text, "the 2026-08-25 erratum's text drifted from what was moved here"
     assert EXPECTED_31AUG in text, "the 2026-08-31 erratum's text drifted from what was moved here"
     assert EXPECTED_03SEP in text, "the 2026-09-03 erratum's text drifted from what was published"
+    assert EXPECTED_01SEP in text, "the 2026-09-01 correction's text drifted from what was published"
 
 
 @pytest.mark.skipif(not CORRECTIONS_MD.exists(), reason="markdown sibling not built in this checkout")
-def test_all_three_errata_survive_into_the_no_js_markdown_sibling():
+def test_all_four_corrections_survive_into_the_no_js_markdown_sibling():
     """"prerender, no JS" is the whole point of moving this content to its own page - the markdown
     twin `web/markdown.mjs` derives from every page is what proves a reader (or a crawler) with no
     JavaScript still gets the exact same words."""
@@ -87,6 +103,7 @@ def test_all_three_errata_survive_into_the_no_js_markdown_sibling():
     assert EXPECTED_25AUG in text
     assert EXPECTED_31AUG in text
     assert EXPECTED_03SEP in text
+    assert EXPECTED_01SEP in text
 
 
 @emitted
@@ -98,6 +115,7 @@ def test_the_full_erratum_text_no_longer_lives_on_the_registry_page():
     assert EXPECTED_25AUG not in text
     assert EXPECTED_31AUG not in text
     assert EXPECTED_03SEP not in text
+    assert EXPECTED_01SEP not in text
     assert "will be re-issued together" not in text
     assert "signature share the published" not in text
     assert "verification of the operator's own project" not in text
@@ -109,8 +127,9 @@ def test_registry_carries_exactly_one_correction_line():
     assert text.count("Erratum, 2026-08-25.") == 0
     assert text.count("Erratum, 2026-08-31.") == 0
     assert text.count("Erratum, 2026-09-03.") == 0
-    assert text.count("Three corrections are on record for this registry.") == 1
-    assert text.count("All corrections (3)") == 1
+    assert text.count("Correction, 2026-09-01.") == 0
+    assert text.count("Four corrections are on record for this registry.") == 1
+    assert text.count("All corrections (4)") == 1
     links = re.findall(r'<a\b[^>]*href="([^"]+)"[^>]*>\s*All corrections',
                        REGISTRY_PAGE.read_text(encoding="utf-8"))
     assert links == ["/registry/corrections/"]

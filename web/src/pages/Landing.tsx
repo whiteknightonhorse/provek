@@ -4,7 +4,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Page } from "../components/Chrome";
 import { AbsentMark, REASON_TEXT } from "../components/Measured";
-import { orderLinkUrl, slug } from "../types";
+import { operationsMeasuredNote, orderLinkUrl, slug } from "../types";
 import type { Registry as R, TemplateSummary } from "../types";
 import { FUNNEL_SENTENCE } from "../copy";
 
@@ -434,6 +434,9 @@ export default function Landing({
                       <>
                         {s2.projection}
                         <span className="text-[var(--color-ink-3)]"> / 100</span>
+                        {operationsMeasuredNote(s2) && (
+                          <span className="text-xs text-[var(--color-ink-3)]"> &middot; {operationsMeasuredNote(s2)}</span>
+                        )}
                       </>
                     )}
                   </span>

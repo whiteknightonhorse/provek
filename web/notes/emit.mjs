@@ -507,6 +507,9 @@ function ladderSentence() {
 }
 
 export function notesIndexArticle(notes) {
+  // The count, the ceiling and the ladder are the build's business, not the reader's: they stay in
+  // the build log and out of the public index.
+  console.log(`notes: there are ${notes.length}, and at most ${NOTE_CEILING} may stand. ${ladderSentence().replace(/<[^>]+>/g, "")}`);
   const rows = notes.map((n) =>
     `<li class="border-t border-[var(--color-line)] py-4">
        <a href="/method/notes/${n.front.slug}/" class="text-[var(--color-accent)] hover:underline font-medium">${esc(n.front.h1)}</a>
@@ -521,8 +524,6 @@ export function notesIndexArticle(notes) {
   this instrument: a term it uses, a state it distinguishes, or a thing the standard underneath it
   does not settle. They document what is measured and what cannot be, and none of them advises
   anybody on what to do about it.</p>
-  <p class="mt-4 text-sm text-[var(--color-ink-2)]">There are ${notes.length}, and at most
-  ${NOTE_CEILING} may stand. ${ladderSentence()}</p>
   <ul class="mt-6">${rows}</ul>
 </article>`;
 }

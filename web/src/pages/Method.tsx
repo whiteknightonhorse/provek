@@ -34,7 +34,7 @@ export default function Method() {
       <div className="max-w-[46rem]">
         <h1 className="text-2xl font-semibold tracking-tight">Method</h1>
         <p className="mt-2 text-sm text-[var(--color-ink-2)]">
-          Published in full. A verdict that only we can reproduce would be a brand, not a standard.
+          Published as far as it is ratified; what is measured but not yet published as a rule is listed under Open items below. A verdict that only we can reproduce would be a brand, not a standard.
         </p>
 
         {/* THE ONLY REFERENCE to the provenance corpus, and it sits here rather than at the foot of
@@ -56,7 +56,7 @@ export default function Method() {
             >
               github.com/whiteknightonhorse/provek
             </a>
-            , licensed for reuse, so any verdict can be recomputed from the same inputs. The
+            , licensed for reuse, so every published rule can be recomputed from the same inputs. The
             operating documents that produced this instrument are recorded separately at{" "}
             <a
               href="https://github.com/whiteknightonhorse/provek-method"
@@ -136,8 +136,9 @@ export default function Method() {
 
         <h2 className="mt-8 text-lg font-semibold">Not measured is a state, not a zero</h2>
         <p className="mt-1 text-sm text-[var(--color-ink-2)]">
-          Three absences are distinguished and never collapsed: the check ran and nothing qualified;
-          the check did not run; the source could not be read. A missing measurement is not a
+          Four absences are distinguished and never collapsed: the check ran and nothing qualified;
+          the check did not run; the source could not be read; the wrong source was asked, so an
+          endpoint that cannot see the quantity answered with an empty list. A missing measurement is not a
           violation, and a verifier that suspended a subject for its own blindness would be
           punishing someone for its own failure.
         </p>
@@ -165,9 +166,9 @@ export default function Method() {
             `database` already say why they are unreached. */}
         <h2 className="mt-8 text-lg font-semibold">What "deployment" means on a passport today</h2>
         <p className="mt-1 text-sm text-[var(--color-ink-2)]">
-          The `github` channel is inspected for commits and authorship only. No collector queries
+          The <code className="font-mono">github</code> channel is inspected for commits and authorship only. No collector queries
           deployment history &mdash; not even GitHub's own Deployments records, which are public.
-          Every passport now states this plainly, in `coverage.out_of_reach`, with the reason
+          Every passport now states this plainly, in <code className="font-mono">coverage.out_of_reach</code>, with the reason
           "collector not implemented" &mdash; a declared absence of collection, never a probe that
           ran and found nothing.
         </p>
@@ -290,13 +291,13 @@ export default function Method() {
         </p>
         <ul className="mt-2 text-sm text-[var(--color-ink-2)] list-disc pl-5 space-y-1">
           <li>the rules for L0, L1, L2 and L5 &mdash; only L3 and L4's thresholds are stated above</li>
-          <li>the denominator `signed_commit_share` is a share OF &mdash; which commits are counted
+          <li>the denominator <code className="font-mono">signed_commit_share</code> is a share OF &mdash; which commits are counted
             in it</li>
           <li>the comparison operators used at each threshold (&ge;, &le;, or ==)</li>
-          <li>whether any level above L4 is reachable at all under `SOLE_AUTHOR`</li>
+          <li>whether any level above L4 is reachable at all under <code className="font-mono">SOLE_AUTHOR</code></li>
           <li>the full list of limiters O1-O3 and what each one does to a verdict</li>
-          <li>the inputs `identity_window_closed`, `has_runtime_trace`, the `unlinked_*` measures,
-            and `control_map_cap`</li>
+          <li>the inputs <code className="font-mono">identity_window_closed</code>, <code className="font-mono">has_runtime_trace</code>, the <code className="font-mono">unlinked_*</code> measures,
+            and <code className="font-mono">control_map_cap</code></li>
         </ul>
 
       </div>

@@ -1,4 +1,4 @@
-/** The corrections log, in full. All three errata this project has ever published, byte-for-byte.
+/** The corrections log, in full. All four corrections this project has ever published, byte-for-byte.
  *
  * WHY THIS PAGE EXISTS (the corrections-log step of the phase-2 plan). `/registry/` used to carry both errata in full,
  * as two `<Strip>` blocks above the table - honest, and increasingly not what a reader who has
@@ -36,7 +36,7 @@ export default function Corrections() {
 
         <h1 className="text-2xl font-semibold tracking-tight">All corrections</h1>
         <p className="mt-2 text-sm text-[var(--color-ink-2)]">
-          Every erratum this project has published, in full and unabridged. Three exist today.
+          Every erratum this project has published, in full and unabridged. Four exist today.
         </p>
 
         {/* THE MOVE, NAMED. A reader who bookmarked or quoted the original location on `/registry/`
@@ -46,7 +46,8 @@ export default function Corrections() {
           They were moved to this page on 2026-09-02, unabridged, when the registry itself was given
           a single compact line pointing here instead of carrying the full text of every correction
           it has ever needed. The third was published directly here, the address this page has
-          carried since that move.
+          carried since that move. The fourth was added on 2026-10-23, for a change made on 2026-09-01
+          that had no notice of its own.
         </p>
 
         <div className="mt-6 space-y-4">
@@ -90,6 +91,20 @@ export default function Corrections() {
               the operator's own project for the length of that error. It now reads same_owner, the
               passport has been re-issued, and a gate added the same day refuses to publish the
               registry if any subject the operator owns carries anything else.
+            </Strip>
+          </div>
+
+          <div>
+            <Strip tone="warn">
+              <strong>Correction, 2026-09-01.</strong> APIbase&rsquo;s autonomy projection moved from 60
+              to 40 and its development-initiation level from L3 to L2 when it was re-measured that
+              day. No defect in the rule or in the earlier data was found: between the two
+              measurements the repository&rsquo;s head moved, and the 30-day window then held a commit
+              whose author the platform did not attribute to an account (unlinked commit share 0.0 to
+              0.009; one unlinked key). Under platform closure &mdash; an author count is a count only
+              when every non-bot commit in the window is attributed &mdash; an open identity window
+              floors the level at L2. The earlier figure was a true reading of the window it was
+              taken from, and is superseded.
             </Strip>
           </div>
         </div>

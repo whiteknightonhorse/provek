@@ -14,7 +14,9 @@
       "verifier_affiliation": "same_owner",
       "service_url": null,
       "service_reachable": null,
-      "issued_at": "2026-10-23T03:43:06.209732+00:00"
+      "issued_at": "2026-10-23T03:43:06.209732+00:00",
+      "operations_measured": 0,
+      "operations_total": 3
     },
     {
       "subject_id": "git:whiteknightonhorse/AIpush",
@@ -27,7 +29,9 @@
       "verifier_affiliation": "same_owner",
       "service_url": null,
       "service_reachable": null,
-      "issued_at": "2026-10-23T03:43:06.209732+00:00"
+      "issued_at": "2026-10-23T03:43:06.209732+00:00",
+      "operations_measured": 0,
+      "operations_total": 3
     },
     {
       "subject_id": "git:whiteknightonhorse/APIbase",
@@ -40,7 +44,9 @@
       "verifier_affiliation": "same_owner",
       "service_url": "https://apibase.pro/connect",
       "service_reachable": true,
-      "issued_at": "2026-10-23T03:43:06.209732+00:00"
+      "issued_at": "2026-10-23T03:43:06.209732+00:00",
+      "operations_measured": 1,
+      "operations_total": 3
     },
     {
       "subject_id": "git:whiteknightonhorse/audiobook-shorts-series",
@@ -53,7 +59,9 @@
       "verifier_affiliation": "same_owner",
       "service_url": null,
       "service_reachable": null,
-      "issued_at": "2026-10-23T03:43:06.209732+00:00"
+      "issued_at": "2026-10-23T03:43:06.209732+00:00",
+      "operations_measured": 0,
+      "operations_total": 3
     },
     {
       "subject_id": "git:whiteknightonhorse/cryptocardhub-defycard",
@@ -66,7 +74,9 @@
       "verifier_affiliation": "same_owner",
       "service_url": null,
       "service_reachable": null,
-      "issued_at": "2026-10-23T03:43:06.209732+00:00"
+      "issued_at": "2026-10-23T03:43:06.209732+00:00",
+      "operations_measured": 0,
+      "operations_total": 3
     },
     {
       "subject_id": "git:whiteknightonhorse/cryptocardhub-public",
@@ -79,7 +89,9 @@
       "verifier_affiliation": "same_owner",
       "service_url": null,
       "service_reachable": null,
-      "issued_at": "2026-10-23T03:43:06.209732+00:00"
+      "issued_at": "2026-10-23T03:43:06.209732+00:00",
+      "operations_measured": 0,
+      "operations_total": 3
     },
     {
       "subject_id": "git:whiteknightonhorse/gov-auction-report",
@@ -92,7 +104,9 @@
       "verifier_affiliation": "same_owner",
       "service_url": null,
       "service_reachable": null,
-      "issued_at": "2026-10-23T03:43:06.209732+00:00"
+      "issued_at": "2026-10-23T03:43:06.209732+00:00",
+      "operations_measured": 0,
+      "operations_total": 3
     },
     {
       "subject_id": "git:whiteknightonhorse/mcp-protocol-tester",
@@ -105,7 +119,9 @@
       "verifier_affiliation": "same_owner",
       "service_url": null,
       "service_reachable": null,
-      "issued_at": "2026-10-23T03:43:06.209732+00:00"
+      "issued_at": "2026-10-23T03:43:06.209732+00:00",
+      "operations_measured": 1,
+      "operations_total": 3
     },
     {
       "subject_id": "git:whiteknightonhorse/provek",
@@ -118,7 +134,9 @@
       "verifier_affiliation": "same_owner",
       "service_url": null,
       "service_reachable": null,
-      "issued_at": "2026-10-23T03:43:06.209732+00:00"
+      "issued_at": "2026-10-23T03:43:06.209732+00:00",
+      "operations_measured": 1,
+      "operations_total": 3
     },
     {
       "subject_id": "git:whiteknightonhorse/provek-method",
@@ -131,7 +149,9 @@
       "verifier_affiliation": "same_owner",
       "service_url": null,
       "service_reachable": null,
-      "issued_at": "2026-10-23T03:43:06.209732+00:00"
+      "issued_at": "2026-10-23T03:43:06.209732+00:00",
+      "operations_measured": 0,
+      "operations_total": 3
     }
   ]
 }

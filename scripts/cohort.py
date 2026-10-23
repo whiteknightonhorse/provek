@@ -312,7 +312,10 @@ def previous_rows() -> dict:
             # T-76 ruling (Fable, 2026-09-05): carried forward UNCHANGED, same discipline as
             # `service_url` above. A registry.json written before this ruling lacks the key
             # outright - `.get()` reads that as `None`, not a fabricated "measured now".
-            issued_at=(parse_iso_ts(_r["issued_at"]) if _r.get("issued_at") else None))
+            issued_at=(parse_iso_ts(_r["issued_at"]) if _r.get("issued_at") else None),
+            # Same discipline again: absent in an older registry.json, so `.get()` reads `None`.
+            operations_measured=_r.get("operations_measured"),
+            operations_total=_r.get("operations_total"))
     return rows
 
 
@@ -632,7 +635,11 @@ for full in COHORT:
                         # come from the same `now` this loop computed once, but reading it off `p`
                         # keeps the row and the document it links to unable to diverge, the same
                         # discipline `protocol_version` above already has.
-                        issued_at=p.issued_at))
+                        issued_at=p.issued_at,
+                        # Counted off the same operations list the passport publishes.
+                        operations_measured=sum(1 for _o in m["verified"]["operations"]
+                                                if _o["measured"]),
+                        operations_total=len(m["verified"]["operations"])))
 
     op = m["verified"]["operations"][0]
     lim = ",".join(scores[0].limiters_applied) or "-"

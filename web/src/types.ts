@@ -88,6 +88,16 @@ export interface Passport {
   disclaimer: string;
 }
 
+/** "1 of 3 operations measured", from the row's own counts, or `null` when the row carries none (a
+ *  row from a registry.json that predates them) - print nothing then, never a guessed count. */
+export function operationsMeasuredNote(r: {
+  operations_measured?: number | null;
+  operations_total?: number | null;
+}): string | null {
+  const { operations_measured: m, operations_total: t } = r;
+  return typeof m === "number" && typeof t === "number" ? `${m} of ${t} operations measured` : null;
+}
+
 export interface RegistryRow {
   subject_id: string;
   status: string;
@@ -99,6 +109,10 @@ export interface RegistryRow {
   /** Read from the artefact, never printed by the template (Fable, R4). The interface used to
    *  assert `affiliated` on every row, which is true for eight rows and libel on the ninth. */
   verifier_affiliation: string;
+  /** How many of the passport's operations carry a measured level, of how many it lists. `null`/
+   *  absent on a row carried from a registry.json that predates the field: print nothing then. */
+  operations_measured?: number | null;
+  operations_total?: number | null;
   /** Phase 2 (specification 4.2-bis). The subject's declared `order_url`, or `null` if never
    *  declared - read straight off the row, never re-derived from a passport fetch the registry
    *  page does not make. */

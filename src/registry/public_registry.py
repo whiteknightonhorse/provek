@@ -63,6 +63,13 @@ class Row:
     that predates this field (a registry.json written before this ruling) - `.get()` in
     `previous_rows()` reads that as `None` rather than raising, the same discipline `service_url`
     already has."""
+    operations_measured: int | None = None
+    operations_total: int | None = None
+    """How many of the passport's operations carry a measured level, and how many it lists. The
+    Autonomy figure beside them is a projection over the measured ones only (a score over one
+    operation of three is not a score for the company), so a row that printed `40 / 100` alone said
+    more than it measured. `None` for a row carried from a registry.json written before this field
+    existed - the pages then print nothing rather than a count nobody took."""
 
 
 class PublicRegistry:
@@ -100,6 +107,8 @@ class PublicRegistry:
                 "service_url": r.service_url,
                 "service_reachable": r.service_reachable,
                 "issued_at": r.issued_at.isoformat() if r.issued_at else None,
+                "operations_measured": r.operations_measured,
+                "operations_total": r.operations_total,
             })
         return {"generated_at": (generated_at or now).isoformat(), "disclaimer": DISCLAIMER,
                 "count": len(out), "subjects": sorted(out, key=lambda x: x["subject_id"])}

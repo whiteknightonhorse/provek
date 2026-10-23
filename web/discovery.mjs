@@ -139,7 +139,14 @@ export function buildLlmsTxt(entries, site = SITE, templates = []) {
 - [Method](${site}/method/): how a level is assigned to an operation, how evidence is classed, and what the score does not measure.
 - [Build](${site}/build/): AI agent templates - copy one instruction into your own coding agent, get an agent that runs one business operation. Free, no account.
 - [Apply](${site}/apply/): request verification. Free at this stage. Public repositories only.
-- [Phase 2](${site}/phase-2/): specified and not in service - no application taken, no date given.
+- [Phase 2](${site}/phase-2/): live: the Provider Catalog (a verified subject may publish an Order link).
+- [Phase 3](${site}/phase-2/): specified, not in service - no application taken, no date given.
+- [Corrections](${site}/registry/corrections/): every erratum the project has published, in full.
+- [Challenge](${site}/challenge/): the open verification challenge - free, public, open to any business whose operations run through agents.
+- [Witness](${site}/witness/): the GenLayer Evidence Witness - validators independently check an evidence URL and must agree before a record is written.
+- [Autonomy levels L0-L5](${site}/method/notes/autonomy-levels-l0-l5/): what each rung requires as evidence, and which thresholds are assigned rather than measured.
+- [Four states of absence](${site}/method/notes/not-measured-is-not-zero/): why a measurement that is absent is not a zero.
+- [ERC-8004](${site}/method/notes/what-erc-8004-provides-and-what-it-does-not/): what ERC-8004 standardizes, and what it leaves to a validator.
 
 ## Data (JSON)
 

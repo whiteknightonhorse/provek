@@ -201,8 +201,8 @@ function ShareActions({ subjectId, status, validUntil }: { subjectId: string; st
         />
       )}
       <span className="text-xs text-[var(--color-ink-3)]">
-        &mdash; all point to the short summary at <code className="font-mono">/brief</code>, built
-        for your own clients rather than for due diligence.
+        &mdash; all point to this passport&rsquo;s short summary at{" "}
+        <code className="font-mono">/p/{s}/brief</code>, built for your own clients rather than for due diligence.
       </span>
     </div>
   );

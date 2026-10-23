@@ -48,3 +48,15 @@ def test_registry_is_written_as_machine_readable_file():
     import json
     got = json.loads(Path(r.write(NOW)).read_text(encoding="utf-8"))
     assert got["count"] == 1 and got["subjects"][0]["subject_id"] == "git:a/b"
+
+
+def test_a_row_carries_how_many_operations_were_measured_and_defaults_to_nothing():
+    """T-WB-02: the pages print "1 of 3 operations measured" beside the score, from these two
+    fields. A row built without them publishes `None`, never a count nobody took."""
+    r = PublicRegistry(Path(tempfile.mkdtemp()))
+    r.upsert(_row(operations_measured=1, operations_total=3))
+    r.upsert(_row(subject_id="git:c/d"))
+    rows = {s["subject_id"]: s for s in r.to_machine(NOW)["subjects"]}
+    assert (rows["git:a/b"]["operations_measured"], rows["git:a/b"]["operations_total"]) == (1, 3)
+    assert rows["git:c/d"]["operations_measured"] is None
+    assert rows["git:c/d"]["operations_total"] is None

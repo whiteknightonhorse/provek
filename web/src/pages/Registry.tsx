@@ -7,7 +7,7 @@
 import { useMemo, useState } from "react";
 import { Page, Strip } from "../components/Chrome";
 import { AbsentMark } from "../components/Measured";
-import { effectiveStatus, orderAbsentReason, orderLinkUrl, slug } from "../types";
+import { effectiveStatus, operationsMeasuredNote, orderAbsentReason, orderLinkUrl, slug } from "../types";
 import type { Registry as R } from "../types";
 import { FUNNEL_SENTENCE, INCUBATOR_SENTENCE } from "../copy";
 
@@ -57,9 +57,9 @@ export default function Registry({ reg }: { reg: R }) {
           `tests/test_registry_corrections.py`. */}
       <div className="mt-5">
         <Strip tone="warn">
-          Three corrections are on record for this registry.{" "}
+          Four corrections are on record for this registry.{" "}
           <a href="/registry/corrections/" className="text-[var(--color-accent)] hover:underline">
-            All corrections (3) →
+            All corrections (4) →
           </a>
         </Strip>
       </div>
@@ -100,7 +100,7 @@ export default function Registry({ reg }: { reg: R }) {
                   other row's is fresh. Printing only `generated_at` would report a carried-forward
                   row as measured today - a third world beside "verified" and "not measured", and
                   the one this column exists to name honestly rather than silently. */}
-              <th scope="col" className="px-4 py-2.5 font-semibold">Measured</th>
+              <th scope="col" className="px-4 py-2.5 font-semibold">Issued</th>
               <th scope="col" className="px-4 py-2.5 font-semibold">Valid until</th>
               {/* PHASE 2 SLOT (decision D-05), FILLED: the Provider Catalog's "Order" link
                   (specification 4.2-bis point 3). The predicate is `orderLinkUrl` - code, not this
@@ -144,7 +144,12 @@ export default function Registry({ reg }: { reg: R }) {
                   {s.projection === null ? (
                     <AbsentMark reason={s.projection_absent_reason} />
                   ) : (
-                    <span>{s.projection} <span className="text-[var(--color-ink-3)]">/ 100</span></span>
+                    <span>
+                      {s.projection} <span className="text-[var(--color-ink-3)]">/ 100</span>
+                      {operationsMeasuredNote(s) && (
+                        <span className="text-xs text-[var(--color-ink-3)]"> &middot; {operationsMeasuredNote(s)}</span>
+                      )}
+                    </span>
                   )}
                 </td>
                 <td data-label="Verifier" className="px-4 py-2.5">
@@ -157,7 +162,7 @@ export default function Registry({ reg }: { reg: R }) {
                     <span className="text-[var(--color-ink-2)]">independent</span>
                   )}
                 </td>
-                <td data-label="Measured" className="px-4 py-2.5 tabular-nums">
+                <td data-label="Issued" className="px-4 py-2.5 tabular-nums">
                   {/* NOT AbsentMark - `issued_at` missing here means "published before this field
                       existed", not one of the named absence reasons that enum carries. NOT
                       staleness either - `valid_until` already says whether the verdict still

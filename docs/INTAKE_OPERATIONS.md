@@ -72,6 +72,8 @@ index if one is ever wanted. The page `/apply/status/?id=<id>` renders it.
 
 ## The habit — daily for the week the link goes out, weekly after it
 
+*(Historical; the cron performs this.)*
+
 **Sweep KV for every record whose delivery outcome is not `true`, and print the states apart.**
 
 Three drafts of this filter, and the third is what this section is now about. It matched
@@ -543,6 +545,8 @@ withdrawn subject is not silently re-admitted by the next application. Reading t
 Admitting it again is the operator's decision, made by moving the entry out of `withdrawn` by hand.
 
 ## Answering a request
+
+*(Historical; the cron performs the verification step. Declining a request remains the operator's.)*
 
 Verification is by hand at this stage, and the site says so: no queue position, no promised date.
 What the applicant was promised is that **if** their verification runs, the passport appears in the

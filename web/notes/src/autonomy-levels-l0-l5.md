@@ -91,7 +91,7 @@ The ladder defines six rungs of operational autonomy. At L0, a human performs th
 
 At L3, the agent performs and decides, and a human may intervene but routinely does not. At L4, intervention requires a privileged path, and that path is recorded. At L5, no human control path exists for this operation.
 
-The ladder is monotonic: L5 is the top, not a red flag (Operator ruling A-5). It measures autonomy, not desirability.
+The ladder is monotonic: L5 is the top, not a red flag. It measures autonomy, not desirability.
 
 A level is assigned to an operation, never to a company as a whole (ABI-2-3). A single scalar for a company is a marketing number—the exact kind this product exists to replace. A company can be L4 in deployment and L0 in pricing. The [SPEC §3.1](/method/) passport captures each operation's level from the [registry](/registry/) separately, never as a company average.
 
@@ -101,15 +101,15 @@ The ladder measures autonomy; it does not measure decision quality, profitabilit
 
 L0-L5 measures a subject's operational autonomy. The operator's agents carry permissions P0-P5: observe, recommend, prepare, execute low-risk, autonomous, and self-optimizing. Using one letter for two quantities is the same defect as a return value with two states of the world. The operator's "AI Agent Fleet" document defines its own L0-L5 differently. Permissions use the letter P to keep them distinct.
 
-Some numbers are assigned rather than measured: the distinct author count (FEW_AUTHORS_FOR_L3 = 2), the signature share for L4 (SIGNED_SHARE_FOR_L4 = 0.9), and the sole author threshold (SOLE_AUTHOR = 1). These represent policy choices, not empirical findings, awaiting operator ratification.
+Some numbers are assigned rather than measured: the distinct author count (FEW_AUTHORS_FOR_L3 = 2), the signature share for L4 (SIGNED_SHARE_FOR_L4 = 0.9), and the sole author threshold (SOLE_AUTHOR = 1). These represent policy choices, not empirical findings, and they have not been ratified.
 
 ## Thresholds assigned, not measured
 
 Each threshold is a policy choice. SOLE_AUTHOR = 1 asserts that one distinct author is the strongest signal no human rota operates behind the commits. It is not proof - which is why a level built on it is capped and marked inferred. SIGNED_SHARE_FOR_L4 = 0.9 sets the signature threshold for sole-author repositories reaching L4. FEW_AUTHORS_FOR_L3 = 2 defines L3 qualification.
 
-These values were bare numbers in comparison logic until 2026-08-20, when task T-THRESHOLD-1 surfaced them. A magic number at the point of comparison cannot be ratified, cannot be found when it needs changing, and cannot be told apart from a measurement. This project paid that cost before, when a cap invented for a cost that did not exist became an outage.
+These values were bare numbers in comparison logic until 2026-08-20, when a review of the code surfaced them. A magic number at the point of comparison cannot be ratified, cannot be found when it needs changing, and cannot be told apart from a measurement. This project paid that cost before, when a cap invented for a cost that did not exist became an outage.
 
-The codebase labels these **assigned, not measured**. They are a stated reading of what commit evidence can support, awaiting operator ratification. Stating that here is the difference between policy and leftover.
+The codebase labels these **assigned, not measured**. They are a stated reading of what commit evidence can support, and they have not been ratified. Stating that here is the difference between policy and leftover.
 
 ## Who counts as an author
 

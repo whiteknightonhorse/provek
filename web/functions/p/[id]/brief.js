@@ -120,6 +120,12 @@ function page(p, slug) {
   const projection = p.verified && typeof p.verified.projection === "number" ? p.verified.projection : null;
   const left = daysUntil(p.valid_until, now);
   const title = `${p.subject_id} - summary - Provek`;
+  // "Verified by Provek" is said only of a passport that is verified now; a lapsed one says so,
+  // and every other status is reported as a status, never as a verification.
+  const provekLink = `<a class="full-link" href="${SITE}/">Provek</a>`;
+  const footerLead = status === "verified" ? `Verified by ${provekLink}.`
+    : status === "stale" ? `Verified by ${provekLink}; the passport has lapsed.`
+    : `Checked by ${provekLink}: ${esc(status)}.`;
   const ops = (p.verified?.operations ?? []).map(opRow).join("\n    ");
 
   const staleStrip = status === "stale" ? `
@@ -178,7 +184,7 @@ function page(p, slug) {
 
   <footer>
     <p><a class="full-link" href="/p/${esc(slug)}/">Full passport, with the evidence behind every number &rarr;</a></p>
-    <p>Verified by <a class="full-link" href="${SITE}/">Provek</a>. The score measures autonomy
+    <p>${footerLead} The score measures autonomy
       only, and does not measure reliability, decision quality, profitability, or the presence of
       an accountable party.</p>
   </footer>

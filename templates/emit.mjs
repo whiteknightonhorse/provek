@@ -257,7 +257,7 @@ const titleCase = (slug) => slug.split("-").map((w) => w[0].toUpperCase() + w.sl
  * SKILL.md file including frontmatter, so a frontmatter edit would mint a new hash and force a
  * fresh witnessed dry run for a display-string typo alone. */
 const DISPLAY_NAME_OVERRIDES = {
-  "youtube-channel-operations-agent": "YouTube channel operations agent",
+  "youtube-channel-operations-agent": "YouTube Channel Operations Agent",
 };
 const displayTitle = (slug) => DISPLAY_NAME_OVERRIDES[slug] ?? titleCase(slug);
 
