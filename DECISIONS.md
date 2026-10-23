@@ -4166,3 +4166,29 @@ is the one party whose claim cannot decide it.
 
 **Not decided here.** Which further owners belong on the list (the operator's question, Q3 of the
 ruling); `intake_cron.py` reading the file (T-IN-01).
+
+## D-71. Consent to updates is unbundled from the request
+
+**Context.** `Apply.tsx` disabled the button until the updates box was ticked, hard-coded
+`consent: true`, and `apply.js` refused anything else. Every stored consent record was therefore
+`true` whatever the applicant felt, which is not evidence of anything by the record's own standard
+(the comment above `CONSENT_VERSION`). Fable ruling PROVEK-QA-1023 q-1, audit H1. The intake log
+(`~/orchestra/logs/intake.jsonl`) also keeps the contact and the privacy list did not say so.
+
+**Decision.** (1) A verification request needs an address to be answered, so the address is stored
+whatever the box says. Product updates are a separate, optional question, unticked by default, and
+the button is gated only by `sending` and native validation. (2) Consent is not freely given when
+the service is refused without it, so the endpoint now requires `consent` to be a boolean (anything
+else is a 400, not coerced) and stores the answer: `true` with `consent_at`, `consent_version` and
+`consent_text`, or `false` with those three `null`. A stored `false` means "was asked, said no or did
+not tick" - measured absence, not a default and not a lost field. `consent_version` is checked only
+for a `true`. The operator's notice gains `updates: yes|no`. (3) The wording changed ("Also send me
+... Optional."), so the version is `updates-1.1.0` on both sides
+(`tests/test_consent_text_is_one_sentence.py`); records written under `updates-1.0.0` keep it and are
+never migrated. (4) The privacy list names the intake-log copy and says the consent is recorded only
+when ticked. `tests/test_consent_is_not_bundled.py` runs the Function and reads the form;
+`evidence/RED-071-an-optional-consent-is-held-by-gates-that-can-fail.txt` shows it fail five ways.
+
+**Not decided here.** Whether any updates are ever sent (there is still no mail sender); reading old
+`consent: true` records as anything other than what they say; shipping the Function and the page
+(the dispatcher's push and deploy steps).

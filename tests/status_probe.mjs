@@ -16,7 +16,7 @@ const SUBMISSION = {
   contact: "applicant@example.com",
   mandate: "passive",
   consent: true,
-  consent_version: "updates-1.0.0",
+  consent_version: "updates-1.1.0",
 };
 
 const PATCHES = {

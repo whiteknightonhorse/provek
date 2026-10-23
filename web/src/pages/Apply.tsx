@@ -48,10 +48,10 @@ import { useState } from "react";
 // exists to be READ BY A PERSON, because the words somebody agrees to have to be on the screen
 // where they agree. Two copies of one sentence is a rule written twice, so
 // tests/test_consent_text_is_one_sentence.py goes red the moment they drift.
-const CONSENT_VERSION = "updates-1.0.0";
+const CONSENT_VERSION = "updates-1.1.0";
 const CONSENT_TEXT =
-  "I agree to receive product updates about Provek at this address: new features, and changes to " +
-  "how verification works. Not shared with anyone else, and you can ask us to stop at any time.";
+  "Also send me product updates about Provek at this address: new features, and changes to how " +
+  "verification works. Optional. Not shared with anyone else; you can ask us to stop at any time.";
 import { Page, Strip } from "../components/Chrome";
 import { FUNNEL_SENTENCE, INCUBATOR_SENTENCE } from "../copy";
 
@@ -83,7 +83,6 @@ const DECISION_LOG =
 
 export default function Apply() {
   const [sent, setSent] = useState<Sent>({ state: "idle" });
-  const [agreed, setAgreed] = useState(false);
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -104,7 +103,8 @@ export default function Apply() {
           website: form.get("website"),
           // The version, not the wording: the endpoint quotes its own text into the record, so
           // this says only WHICH wording was on screen - and it refuses if that is not today's.
-          consent: true,
+          // The box's own answer, `false` when unticked (D-71): the request does not depend on it.
+          consent: form.get("updates") === "on",
           consent_version: CONSENT_VERSION,
           // T-SG-14: "a page and an application flag" - read off the URL at submit time, not off
           // a route param, because this page carries no route state of its own (App.tsx strips the
@@ -342,18 +342,13 @@ export default function Apply() {
             </label>
           </fieldset>
 
-          {/* THE TICK GATES THE BUTTON, AND THE REFUSAL IS VISIBLE.
-              A disabled button with no explanation is a form that looks broken, so the line under
-              it names the action still owed. Browser validation is untouched: once the box is
-              ticked the button is live, and an empty required field then produces the browser's
-              own message rather than silence - the failure that cost a sibling project a day of
-              green-looking dead form. */}
+          {/* THE TICK DOES NOT GATE THE BUTTON (D-71). An address is needed to answer a request;
+              product updates are a separate, optional, unticked question. Browser validation is
+              the only thing between the visitor and the button. */}
           <div className="border-t border-[var(--color-line)] pt-4">
             <label htmlFor="updates" className="flex gap-2.5 items-start cursor-pointer">
               <input
                 id="updates" name="updates" type="checkbox"
-                checked={agreed}
-                onChange={(e) => setAgreed(e.currentTarget.checked)}
                 className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--color-ink)]"
               />
               <span className="text-sm text-[var(--color-ink-2)]">{CONSENT_TEXT}</span>
@@ -362,17 +357,11 @@ export default function Apply() {
 
           <button
             type="submit"
-            disabled={sent.state === "sending" || !agreed}
+            disabled={sent.state === "sending"}
             className="border border-[var(--color-ink)] bg-[var(--color-ink)] text-[var(--color-paper)] px-4 py-2 text-sm disabled:opacity-60"
           >
             {sent.state === "sending" ? "Sending…" : "Submit request"}
           </button>
-          {!agreed && (
-            <p className="text-xs text-[var(--color-ink-3)]" role="status">
-              Tick the box above to enable this button. We ask because we would rather hold your
-              address with permission than without it.
-            </p>
-          )}
           <p className="text-xs text-[var(--color-ink-3)]">
             Nothing is charged. There is no payment step anywhere on this site, in this phase or any
             later one &mdash; money does not pass through us by design.
@@ -398,7 +387,8 @@ export default function Apply() {
                 and the browser string your request arrived with &mdash; plus four fields about the
                 record rather than about you: a random identifier, which mandate you asked for,
                 which one we applied (always the read-only one), and whether our notification to
-                the operator went through. Nothing further, and this form sets no cookie of its own.
+                the operator went through. The operator&rsquo;s intake log on this server also keeps a working copy of your address
+                while the request is processed. Nothing further, and this form sets no cookie of its own.
               </li>
               <li>
                 {/* THE COUNT ABOVE WENT FROM EIGHT TO THIRTEEN, so this entry exists rather than a
@@ -406,8 +396,10 @@ export default function Apply() {
                     once: a list corrected and then left behind by the next change is the same
                     false sentence again, on the site whose product is catching those. */}
                 <strong className="text-[var(--color-ink-2)]">Your consent, as evidence:</strong>{" "}
-                if you tick the updates box we store the tick, the moment you ticked it, the version
-                of the wording, and the wording itself, word for word. The words are stored because
+                only if you tick the optional updates box do we store the tick, the moment you
+                ticked it, the version of the wording, and the wording itself, word for word. An
+                unticked box is recorded as <code>false</code>, with those three left empty, and
+                your request is processed all the same. The words are stored because
                 a consent record is worth what it can later prove, and &ldquo;they agreed&rdquo;
                 proves nothing without what they agreed to. Nothing is being sent yet: there is no
                 mail sender in this project, so today these records only wait for the day a sender exists.
@@ -431,8 +423,8 @@ export default function Apply() {
                     both are the operator's hands. Naming a store and leaving the promise where it
                     was is how a privacy statement quietly becomes partly false. */}
                 <strong className="text-[var(--color-ink-2)]">Deleted:</strong> whenever you ask, by
-                opening an issue or replying to any message from us &mdash; the stored record and
-                the message-channel copy together, both by hand, since nothing here deletes on a
+                opening an issue or replying to any message from us &mdash; the stored record, the
+                intake-log copy and the message-channel copy together, all by hand, since nothing here deletes on a
                 timer. There is nothing to unsubscribe from &mdash; we do not send anything you did
                 not ask for.
               </li>

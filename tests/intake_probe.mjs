@@ -32,7 +32,7 @@ const SUBMISSION = {
   // ordinary browser sends. The refusals themselves are judged by
   // tests/test_consent_text_is_one_sentence.py and by a live check against the deployed site.
   consent: true,
-  consent_version: "updates-1.0.0",
+  consent_version: "updates-1.1.0",
 };
 
 /**
@@ -137,6 +137,13 @@ const CASES = {
   origin_challenge: { refuse: [], body: { ...SUBMISSION, origin: "challenge" } },
   origin_unrecognised: { refuse: [], body: { ...SUBMISSION, origin: "some-other-string" } },
   origin_absent: { refuse: [], body: SUBMISSION },
+  // D-71 / T-IN-05: consent is a separate, optional answer. These five exercise the field itself.
+  consent_false: { refuse: [], body: { ...SUBMISSION, consent: false, consent_version: undefined } },
+  consent_false_notice: { refuse: [], notice: true, body: { ...SUBMISSION, consent: false, consent_version: undefined } },
+  consent_true_notice: { refuse: [], notice: true, body: SUBMISSION },
+  consent_string: { refuse: [], body: { ...SUBMISSION, consent: "true" } },
+  consent_missing: { refuse: [], body: { ...SUBMISSION, consent: undefined } },
+  consent_true_stale_version: { refuse: [], body: { ...SUBMISSION, consent_version: "updates-1.0.0" } },
 };
 
 const name = process.argv[2];
@@ -179,4 +186,5 @@ try {
 }
 result.writes = kv.writes.map((w) => ({ key: w.key, stored: w.stored, value: w.key.startsWith("request-id:") ? w.value : JSON.parse(w.value) }));
 result.notices = wire.sent.length;
+result.notice_texts = wire.sent.map((n) => JSON.parse(n.body).text);
 process.stdout.write(JSON.stringify(result));

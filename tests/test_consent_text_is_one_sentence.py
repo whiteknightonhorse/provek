@@ -81,12 +81,13 @@ def test_the_version_is_identical() -> None:
     )
 
 
-def test_the_endpoint_refuses_an_untitcked_box_and_a_stale_version() -> None:
-    """The boundary is the endpoint, not the button. A greyed-out button is a courtesy to a person
-    using the page; a hand-built POST goes straight past it, and D-21 drew this same line for the
-    mandate after exactly that reasoning."""
+def test_the_endpoint_checks_the_flag_and_a_stale_version_itself() -> None:
+    """The boundary is the endpoint, not the button. D-71 changed WHAT it checks: the flag must be
+    a boolean (a `false` is a recorded answer, not a refusal - tests/test_consent_is_not_bundled.py
+    runs that), and a ticked box must name today's wording. A hand-built POST goes straight past
+    any control on the page, and D-21 drew this same line for the mandate."""
     src = ENDPOINT.read_text(encoding="utf-8")
-    assert "body.consent !== true" in src, (
+    assert "body.consent !== true && body.consent !== false" in src, (
         "the endpoint does not check the consent flag itself, so consent would be asserted by "
         "whatever a client chose to send"
     )

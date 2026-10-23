@@ -1,0 +1,42 @@
+tree: 90399e900b66e8618e05128e20fa578db3782b92 (dirty)
+
+$ pytest tests/test_consent_is_not_bundled.py
+# (control) green on the branch as built
+8 passed in 0.62s
+rc=0
+
+# (a) apply.js: the old gate returns - consent must be true
+$ pytest tests/test_consent_is_not_bundled.py
+FAILED tests/test_consent_is_not_bundled.py::test_an_unticked_box_is_a_recorded_false_and_the_request_goes_through
+FAILED tests/test_consent_is_not_bundled.py::test_the_notice_says_which_way_the_box_went
+FAILED tests/test_consent_is_not_bundled.py::test_the_endpoint_source_no_longer_requires_true
+3 failed, 5 passed in 0.48s
+rc=1
+
+# (b) apply.js: an unticked box still stores the wording
+$ pytest tests/test_consent_is_not_bundled.py
+FAILED tests/test_consent_is_not_bundled.py::test_an_unticked_box_is_a_recorded_false_and_the_request_goes_through
+1 failed, 7 passed in 0.57s
+rc=1
+
+# (c) Apply.tsx: the payload hard-codes consent: true
+$ pytest tests/test_consent_is_not_bundled.py
+FAILED tests/test_consent_is_not_bundled.py::test_the_form_never_hard_codes_consent
+1 failed, 7 passed in 0.53s
+rc=1
+
+# (d) Apply.tsx: the button is gated on the tick again
+$ pytest tests/test_consent_is_not_bundled.py
+FAILED tests/test_consent_is_not_bundled.py::test_the_buttons_disabled_expression_does_not_mention_the_tick
+1 failed, 7 passed in 0.60s
+rc=1
+
+# (e) apply.js: a string "true" is accepted as a boolean
+$ pytest tests/test_consent_is_not_bundled.py
+FAILED tests/test_consent_is_not_bundled.py::test_a_non_boolean_answer_is_refused_not_guessed
+1 failed, 7 passed in 0.51s
+rc=1
+
+# (restored) green again
+8 passed in 0.48s
+rc=0

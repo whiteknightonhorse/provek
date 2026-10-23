@@ -46,10 +46,12 @@ function clean(v) {
 // The version is bumped whenever the WORDING changes, because a stored `updates-1.0.0` has to keep
 // meaning one specific paragraph forever. Old records keep their old version and stay readable;
 // they are not migrated, since what somebody agreed to cannot be edited afterwards.
-export const CONSENT_VERSION = "updates-1.0.0";
+// 1.1.0 (D-71): the box became optional and unticked by default, so the sentence is an offer
+// ("Also send me ... Optional.") rather than an agreement that the request depended on.
+export const CONSENT_VERSION = "updates-1.1.0";
 export const CONSENT_TEXT =
-  "I agree to receive product updates about Provek at this address: new features, and changes to " +
-  "how verification works. Not shared with anyone else, and you can ask us to stop at any time.";
+  "Also send me product updates about Provek at this address: new features, and changes to how " +
+  "verification works. Optional. Not shared with anyone else; you can ask us to stop at any time.";
 
 export async function onRequestPost({ request, env }) {
   let body;
@@ -100,19 +102,23 @@ export async function onRequestPost({ request, env }) {
   if (!/^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(contact))
     return bad("That does not look like an address we could reply to.");
 
-  // CONSENT IS CHECKED HERE, NOT ONLY ON THE FORM - the same boundary D-21 drew for the mandate,
-  // and for the same reason it gave: the form is not the security boundary. A greyed-out button is
-  // a courtesy to a person using the page; a curl POST walks straight past it. Without this line
-  // the stored record would assert that somebody consented because a button happened to be enabled
-  // in a browser we never saw.
-  if (body.consent !== true)
-    return bad("The updates consent box was not ticked, so nothing was recorded. We do not store " +
-               "an address for updates without the tick that asks for them.");
+  // CONSENT IS A BOOLEAN THE APPLICANT ANSWERS, AND IT IS NOT A CONDITION OF THE REQUEST (D-71).
+  // The address is needed to run and answer the request, so it is stored whatever this says; what
+  // the tick adds is permission to write to it about something else. Bundling the two made every
+  // stored `consent: true` a consequence of the button being enabled, which is evidence of nothing.
+  // Not coerced: a string "true" or a missing field is a client we did not understand, and a
+  // guessed answer in this field would be the collapse the field exists to prevent. The check is
+  // here and not only on the form for the reason D-21 gave: a curl POST walks past the form.
+  if (body.consent !== true && body.consent !== false)
+    return bad("The updates field must be true or false - it is your answer to an optional " +
+               "question, and we will not guess it on your behalf.");
+  const consent = body.consent;
   // The version is the applicant's claim about WHICH wording was on screen, and a mismatch means
   // they were shown a page older than the one we serve. Refused rather than accepted-and-
   // relabelled: silently recording agreement to today's words for somebody who read yesterday's is
-  // the precise defect this field exists to prevent.
-  if (clean(body.consent_version) !== CONSENT_VERSION)
+  // the precise defect this field exists to prevent. Checked only for a `true`: a `false` agrees
+  // to nothing, so there is no wording to have been shown stale.
+  if (consent && clean(body.consent_version) !== CONSENT_VERSION)
     return bad("This page is out of date - please reload it and submit again. (The consent wording " +
                "has changed, and we will not record agreement to words you were not shown.)");
 
@@ -136,10 +142,12 @@ export async function onRequestPost({ request, env }) {
     // `user_agent` and the country above are the "from where" half; `consent_at` is deliberately
     // its own timestamp rather than a reuse of `received_at`, because they are different claims
     // even when they are one second apart.
-    consent: true,
-    consent_at: new Date().toISOString(),
-    consent_version: CONSENT_VERSION,
-    consent_text: CONSENT_TEXT,
+    // An unticked box is stored as `consent: false` with the other three `null` - a measured
+    // absence of an agreement, not a default and not a missing key (D-71).
+    consent,
+    consent_at: consent ? new Date().toISOString() : null,
+    consent_version: consent ? CONSENT_VERSION : null,
+    consent_text: consent ? CONSENT_TEXT : null,
     user_agent: request.headers.get("user-agent") || null,
   };
 
@@ -173,7 +181,8 @@ export async function onRequestPost({ request, env }) {
         // reply the operator has to compose - a signed mandate - and a message showing only the
         // applied policy would show `passive` for every request forever and hide exactly that.
         `repo: ${repo}\ncontact: ${contact}\n` +
-        `mandate requested: ${mandate_requested}, applied: ${mandate_applied}\nid: ${id}` +
+        `mandate requested: ${mandate_requested}, applied: ${mandate_applied}\n` +
+        `updates: ${consent ? "yes" : "no"}\nid: ${id}` +
         // T-SG-14: only ever appended, never a fourth line reading "origin: none" for the ordinary
         // case - a human watching this channel every day should not be asked to parse a constant.
         (origin ? `\norigin: ${origin}` : "");
