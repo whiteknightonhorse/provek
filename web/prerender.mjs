@@ -25,7 +25,19 @@ import { pageMarkdown } from "./html_to_markdown.mjs";
 
 const DIST = "dist";
 const SITE = "https://provek.dev";
-const shellRaw = readFileSync(join(DIST, "index.html"), "utf8");
+
+/** HTML comments are stripped from the SHELL ONLY (T-WB-01, audit H2). `web/index.html` keeps its
+ *  comments as the record for whoever edits it, but this file injects the built shell into every
+ *  route and 404.html, so each one would ship the same ~3.7 KB of commit hashes and post-mortems to
+ *  every visitor. Rendered page bodies are NOT stripped: preact-render-to-string emits no marker
+ *  comments (that is React's hydration habit), so nothing legitimate needs protecting - and
+ *  `write()` / the 404 emit throw if a comment still reaches a file, which is what would tell us
+ *  the day a renderer started to. */
+const stripComments = (html) => html.replace(/<!--[\s\S]*?-->/g, "");
+const assertNoComment = (html, route) => {
+  if (/<!--/.test(html)) throw new Error(`comment leaked into ${route}`);
+};
+const shellRaw = stripComments(readFileSync(join(DIST, "index.html"), "utf8"));
 
 /** THE FONTS ARE PRELOADED BECAUSE THE FIRST LONG PAGE ON THIS SITE MEASURED THE COST OF NOT
  *  DOING IT. `@fontsource` ships `font-display: swap`, and the faces are referenced from inside the
@@ -258,6 +270,7 @@ function staticPage(route, title, description, ld, html) {
 
 function write(route, html) {
   const file = join(DIST, route === "/" ? "index.html" : join(route, "index.html"));
+  assertNoComment(html, route);
   mkdirSync(dirname(file), { recursive: true });
   writeFileSync(file, html);
   return route;
@@ -555,6 +568,7 @@ const notFound = page(PRERENDER_ROUTE, "No such page - Provek",
   "Nothing is served at this address.", ldOrganization())
   .replace(/\s*<link rel="canonical"[^>]*>/, "")
   .replace(/\s*<meta property="og:url"[^>]*>/, "");
+assertNoComment(notFound, "404.html");
 writeFileSync(join(DIST, "404.html"), notFound);
 
 // LASTMOD IS EMITTED ONLY WHERE A DATE WAS ACTUALLY MEASURED. AN UNMEASURED ONE IS OMITTED.

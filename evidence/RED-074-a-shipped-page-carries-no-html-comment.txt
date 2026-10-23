@@ -1,0 +1,29 @@
+tree: 97bbd00d9394caa73594800b410e44c851e55304 (dirty)
+
+# (a) before: prerender.mjs as on origin/main a6e3171, fresh build
+$ date -u
+Fri Oct 23 07:56:13 AM UTC 2026
+$ grep -c '<!--' web/dist/index.html web/dist/404.html
+web/dist/index.html:4
+web/dist/404.html:4
+$ wc -c web/dist/index.html
+37461
+$ pytest tests/test_shipped_html_carries_no_comments.py
+tests/test_shipped_html_carries_no_comments.py:46: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_shipped_html_carries_no_comments.py::test_no_shipped_page_contains_an_html_comment
+1 failed, 1 passed in 0.05s
+rc=1
+
+# (b) after: shell comments stripped, fresh build
+$ date -u
+Fri Oct 23 07:56:17 AM UTC 2026
+$ grep -c '<!--' web/dist/index.html web/dist/404.html
+web/dist/404.html:0
+web/dist/index.html:0
+$ wc -c web/dist/index.html
+34185
+$ pytest tests/test_shipped_html_carries_no_comments.py
+..                                                                       [100%]
+2 passed in 0.03s
+rc=0
