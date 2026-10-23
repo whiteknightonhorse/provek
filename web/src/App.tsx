@@ -24,6 +24,7 @@ import Phase2 from "./pages/Phase2";
 import Corrections from "./pages/Corrections";
 import Build from "./pages/Build";
 import Witness from "./pages/Witness";
+import ApplyStatus from "./pages/ApplyStatus";
 import BuildTemplate from "./pages/BuildTemplate";
 import type { Passport, Registry as R, Template, TemplateSummary, TemplateVideo } from "./types";
 import { isSafeSlug } from "./slug";
@@ -195,6 +196,7 @@ export const TITLES: Record<string, string> = {
   "/registry/": "Registry - Provek",
   "/method/": "Method - Provek",
   "/apply/": "Request verification - Provek",
+  "/apply/status/": "Where your request stands - Provek",
   "/challenge/": "Open verification challenge - Provek",
   // Named for what it is. A title reading "Funding tasks - Provek" would put a capability in the
   // browser tab, the bookmark and the search result, where the page's own refusal does not reach.
@@ -276,6 +278,7 @@ export function Body({
     return <TableSkeleton />;
   }
   if (route === "/apply/") return <Apply />;
+  if (route === "/apply/status/") return <ApplyStatus />;
   if (route === "/challenge/") return <Challenge />;
   if (route === "/witness/") return <Witness />;
   if (route === "/method/") return <Method />;

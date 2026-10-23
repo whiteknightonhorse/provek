@@ -150,6 +150,16 @@ export async function onRequestPost({ request, env }) {
   // sweep nothing to key on - and an unwatched durable record is "received" drifting back
   // towards "discarded", which is this project's founding defect in its operational form.
   await env.INTAKE.put(key, JSON.stringify({ ...record, delivered: null }));
+  // The read capability (T-IN-03, D-69): `GET /api/apply/<id>` finds the record through this key.
+  // A DIFFERENT KEY from `key`, so the one-write-per-second same-key limit does not reach it. A
+  // failure here is caught like the write-back below: the record is already durable, and the
+  // applicant is still answered - what they lose is the status page, not the submission.
+  try {
+    await env.INTAKE.put(`request-id:${id}`, key);
+  } catch {
+    // No index, so the status page will say "no such request" for this id until the operator's
+    // sweep rebuilds it. The submission itself is unaffected.
+  }
 
   // The notice. If this fails the submission is already durable, so the visitor is not told the
   // request was lost - but the claim we may make about it changes, and the response says which.

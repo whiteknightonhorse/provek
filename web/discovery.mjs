@@ -9,7 +9,7 @@
  * four resources is typed twice, so there is nothing for a second copy to disagree with.
  *
  * WHAT IS LISTED. Only what exists and answers today: the registry, every passport actually
- * present, the single real endpoint (`/api/apply` - GET 405, empty POST 400, nothing else), and
+ * present, the intake endpoint (`/api/apply` - GET 405, empty POST 400) and its one read (`GET /api/apply/<id>`), and
  * the sitemap. Nothing here describes a capability this project does not have (no OAuth
  * discovery, no MCP server, no skills) - a verdict this project cannot itself reproduce is exactly
  * what it marks other subjects down for claiming. The ARD manifest holds the same three kinds of
@@ -88,7 +88,7 @@ export function buildApiCatalog(entries, site = SITE) {
     {
       href: `${site}/api/apply`,
       type: "text/plain",
-      title: "Submit a subject for verification. This is the only endpoint: GET answers 405, an empty POST answers 400, no other method or path exists.",
+      title: "Submit a subject for verification. GET answers 405, an empty POST answers 400. The one read beside it is GET /api/apply/{id}, which returns the state of one request by its id.",
     },
     {
       href: `${site}/sitemap.xml`,
@@ -133,7 +133,8 @@ ${templateSection}
 ## API
 
 - [API catalog](${site}/.well-known/api-catalog): RFC 9727 linkset of every resource above and the one endpoint below.
-- [/api/apply](${site}/api/apply): the only endpoint on this site. GET -> 405. Empty POST -> 400.
+- [/api/apply](${site}/api/apply): submit a subject for verification. GET -> 405. Empty POST -> 400.
+- \`GET /api/apply/<id>\` -> state of one request, by its id (the id POST /api/apply returned; never the contact).
 `;
 }
 

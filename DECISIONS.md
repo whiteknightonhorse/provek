@@ -4116,3 +4116,24 @@ one run, and an intake run is not a cohort run. A document stamp and a row stamp
 
 **Not decided here.** Whether intake defers while the tree is red is T-IN-01. `POLICY_TOLERANCE`,
 `RENEWAL_MARGIN` and `PASSPORT_VALIDITY` are unchanged.
+
+## D-69. The applicant reads the state of their own request; the form promises a status, not a clock
+
+**Context.** `Apply.tsx` promised "within about fifteen minutes". Measured 2026-10-23 (Fable ruling
+PROVEK-QA-1023 q-1): a refused applicant learns nothing (no row, no mail, no reason), and a deferred
+or stuck one learns nothing either. Nothing on our side keeps a fifteen-minute clock: GitHub's public
+interface is shared, and T-IN-01 defers a request that meets a 403/429 instead of refusing it.
+
+**Decision.** (1) `GET /api/apply/<id>` returns the state of one request by the id the POST returned,
+through a `request-id:<id>` -> key index written beside the record. The id is the read capability.
+`state` is one of five names taken from the record, `unknown_outcome:<value>` otherwise, never a
+default (invariant 1); an unreadable store or an index with no record is a failure of its own, not
+"no such request". The response is an allow-list and never carries `contact`, `user_agent`,
+`source_country` or the consent fields. (2) The form says the run is automatic, usually publishes
+within the hour and can take longer, and links to `/apply/status/?id=<id>` ("Check this request").
+No clock is promised; `tests/test_apply_page_makes_no_clock_promise.py` holds that. (3) A refusal
+reason is shown through a one-sentence-per-code map for the codes T-IN-01 names; an unknown code
+prints itself.
+
+**Not decided here.** Backfilling `request-id:` for records written before this change; shipping the
+Function (the dispatcher's push and deploy steps); the reason codes of any intake run beyond T-IN-01's.

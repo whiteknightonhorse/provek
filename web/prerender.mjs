@@ -321,6 +321,11 @@ written.push(write("/method/", page("/method/", TITLES["/method/"],
 written.push(write("/apply/", page("/apply/", TITLES["/apply/"],
   "Request verification. Free at this stage. Public repositories only.",
   ldOrganization())));
+// T-IN-03: the per-request status page. The id lives in the query string, which no static file can
+// carry, so the emitted HTML is the shell that looks the request up in the browser.
+written.push(write("/apply/status/", page("/apply/status/", TITLES["/apply/status/"],
+  "The state of one verification request, read by its id.",
+  ldOrganization())));
 // T-SG-14: same mechanism as every other static route above (page() + write()), so Body() renders
 // the identical component the browser hydrates - no second static renderer for this surface (D-10).
 written.push(write("/challenge/", page("/challenge/", TITLES["/challenge/"],

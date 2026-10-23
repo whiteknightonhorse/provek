@@ -40,7 +40,8 @@
 ## API
 
 - [API catalog](https://provek.dev/.well-known/api-catalog): RFC 9727 linkset of every resource above and the one endpoint below.
-- [/api/apply](https://provek.dev/api/apply): the only endpoint on this site. GET -> 405. Empty POST -> 400.
+- [/api/apply](https://provek.dev/api/apply): submit a subject for verification. GET -> 405. Empty POST -> 400.
+- `GET /api/apply/<id>` -> state of one request, by its id (the id POST /api/apply returned; never the contact).
 
 ## Full API catalog (RFC 9727 linkset, machine-readable)
 
@@ -108,7 +109,7 @@
         {
           "href": "https://provek.dev/api/apply",
           "type": "text/plain",
-          "title": "Submit a subject for verification. This is the only endpoint: GET answers 405, an empty POST answers 400, no other method or path exists."
+          "title": "Submit a subject for verification. GET answers 405, an empty POST answers 400. The one read beside it is GET /api/apply/{id}, which returns the state of one request by its id."
         },
         {
           "href": "https://provek.dev/sitemap.xml",

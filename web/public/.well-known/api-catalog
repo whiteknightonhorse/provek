@@ -61,7 +61,7 @@
         {
           "href": "https://provek.dev/api/apply",
           "type": "text/plain",
-          "title": "Submit a subject for verification. This is the only endpoint: GET answers 405, an empty POST answers 400, no other method or path exists."
+          "title": "Submit a subject for verification. GET answers 405, an empty POST answers 400. The one read beside it is GET /api/apply/{id}, which returns the state of one request by its id."
         },
         {
           "href": "https://provek.dev/sitemap.xml",

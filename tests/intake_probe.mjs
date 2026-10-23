@@ -54,7 +54,11 @@ function intake(refuse, refuseWith) {
     writes,
     binding: {
       put: async (k, v) => {
-        const refused = refuse.includes(writes.length + 1);
+        // The `request-id:` index (T-IN-03) is recorded but not NUMBERED: `refuse` counts the
+        // record, the write-back and the sentinel, which is what the scenarios below were written
+        // against, and an index write sitting between them would silently move every refusal.
+        const counted = writes.filter((w) => !w.key.startsWith("request-id:")).length;
+        const refused = !k.startsWith("request-id:") && refuse.includes(counted + 1);
         writes.push({ key: k, value: v, stored: !refused });
         if (refused) throw refuseWith();
       },
@@ -173,6 +177,6 @@ try {
   // own repaired defect, which was sitting in this line. Found by Fable.
   result.error = String((err && err.message) || err);
 }
-result.writes = kv.writes.map((w) => ({ key: w.key, stored: w.stored, value: JSON.parse(w.value) }));
+result.writes = kv.writes.map((w) => ({ key: w.key, stored: w.stored, value: w.key.startsWith("request-id:") ? w.value : JSON.parse(w.value) }));
 result.notices = wire.sent.length;
 process.stdout.write(JSON.stringify(result));

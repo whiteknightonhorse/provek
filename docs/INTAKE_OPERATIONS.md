@@ -9,8 +9,9 @@
 > The habit is replaced by `~/orchestra/intake_cron.py`, every five minutes. It reads the store,
 > admits a subject under the rules below, measures it anonymously, publishes the verdict, deploys,
 > confirms the row **on the live site**, and only then marks the record handled. An applicant is
-> told on the form that their entry appears in the registry within about fifteen minutes; measured
-> end to end on the first real run, the whole cycle took sixty-five seconds.
+> told on the form that the run is automatic and usually publishes within the hour (D-69 removed the
+> fifteen-minute promise: nothing kept that clock); measured end to end on the first real run, the
+> whole cycle took sixty-five seconds.
 >
 > **Why this section exists rather than a rewrite.** The reasoning below is still correct and still
 > load-bearing -- particularly the part about `false` and `null` being different findings, which the
@@ -28,6 +29,19 @@
 Intake is machinery plus one human habit. The machinery is described so the habit has something to
 key on; the habit is written down because Fable made the human reply leg conditional on it actually
 being performed rather than intended.
+
+## The applicant reads their own request (T-IN-03, D-69)
+
+`POST /api/apply` returns `{ok:true,id}`; the id is a random UUID only the applicant holds, and it is
+the read capability. The endpoint also writes `request-id:<id>` -> the record's key (a different
+key from the record, so the same-key one-write-per-second limit does not reach it; a failed index
+write is caught and costs the applicant the status page, never the submission). `GET /api/apply/<id>`
+answers `{ok, id, received_at, repo, state, reason, next_attempt_after, registry_url}` with `state`
+one of `received | deferred | refused | published | withdrawn` taken from the record's `provek_*`
+fields, `unknown_outcome:<value>` for anything else, `no-store`, and never `contact`, `user_agent`,
+`source_country` or the consent fields. A record written before the index existed has no
+`request-id:` key and answers 404 `no_such_request`; backfill by listing `request:` and writing the
+index if one is ever wanted. The page `/apply/status/?id=<id>` renders it.
 
 ## What happens without anyone
 

@@ -1,0 +1,55 @@
+# tree: b8698b3a4b1de175c270010d0ff8cc31009676ee (dirty)
+# (taken against b8698b3 plus this branch's uncommitted edits)
+
+$ date -u
+Fri Oct 23 06:18:00 AM UTC 2026
+
+# (control) both tests green on the branch as built
+......................                                                   [100%]
+22 passed in 1.91s
+rc=0
+
+# (a) MUTATION: the status response also returns the applicant contact
+83:    repo: text(rec.repo), contact: rec.contact,
+$ pytest tests/test_apply_status_names_its_states.py
+FAILED tests/test_apply_status_names_its_states.py::test_the_response_never_carries_what_only_the_operator_holds[refused]
+FAILED tests/test_apply_status_names_its_states.py::test_the_response_never_carries_what_only_the_operator_holds[published]
+FAILED tests/test_apply_status_names_its_states.py::test_the_response_never_carries_what_only_the_operator_holds[withdrawn]
+FAILED tests/test_apply_status_names_its_states.py::test_the_response_never_carries_what_only_the_operator_holds[unknown_outcome]
+FAILED tests/test_apply_status_names_its_states.py::test_the_endpoint_names_no_private_field_in_its_source
+7 failed, 12 passed in 1.67s
+rc=1
+
+# (b) the CURRENT file at b8698b3: Apply.tsx as it was before this task
+169:            fifteen minutes, and that entry is the answer &mdash; we do not send mail, so there is
+$ pytest tests/test_apply_page_makes_no_clock_promise.py
+
+tests/test_apply_page_makes_no_clock_promise.py:35: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apply_page_makes_no_clock_promise.py::test_the_form_promises_no_clock
+FAILED tests/test_apply_page_makes_no_clock_promise.py::test_the_form_links_to_the_requests_own_status
+2 failed, 1 passed in 0.18s
+rc=1
+
+# restored; both green again
+......................                                                   [100%]
+22 passed in 1.73s
+rc=0
+ M DECISIONS.md
+ M docs/INTAKE_OPERATIONS.md
+ M tests/intake_probe.mjs
+ M tests/test_apply_names_the_probe_cost.py
+ M web/discovery.mjs
+ M web/functions/api/apply.js
+ M web/prerender.mjs
+ M web/public/.well-known/api-catalog
+ M web/public/llms-full.txt
+ M web/public/llms.txt
+ M web/src/App.tsx
+ M web/src/pages/Apply.tsx
+?? evidence/RED-069-the-status-endpoint-and-the-clock-free-form-are-able-to-fail.txt
+?? tests/status_probe.mjs
+?? tests/test_apply_page_makes_no_clock_promise.py
+?? tests/test_apply_status_names_its_states.py
+?? web/functions/api/apply/
+?? web/src/pages/ApplyStatus.tsx

@@ -553,7 +553,6 @@ PAGE_QUANTITIES = (
     # WAS: "because nothing here has promised one" - the sentence that said no date was promised.
     # A date IS promised now, so the declaration went with the copy: a permission outliving the
     # words it was granted for is a door left open on the page where a stranger decides.
-    "within about fifteen minutes",            # how long until the row appears, not a request count
     "names the one action",                    # the confirmation screen
     "what each one could not measure",         # the registry link
     "the one channel that certainly works",    # the failure notice

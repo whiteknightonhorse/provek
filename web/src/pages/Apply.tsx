@@ -62,7 +62,7 @@ type Sent =
   // and the difference is the applicant's to know: one waits for a verification, the other waits
   // for a document to sign. A single confirmation screen for both would let somebody who asked for
   // probing leave the page believing it had been authorised.
-  | { state: "sent"; delivered: boolean; asked: Mandate }
+  | { state: "sent"; delivered: boolean; asked: Mandate; id: string }
   | { state: "failed"; why: string };
 
 type Mandate = "passive" | "active";
@@ -121,7 +121,7 @@ export default function Apply() {
         setSent({ state: "failed", why: d.error || `HTTP ${r.status}` });
         return;
       }
-      setSent({ state: "sent", delivered: Boolean(d.delivered), asked });
+      setSent({ state: "sent", delivered: Boolean(d.delivered), asked, id: String(d.id || "") });
     } catch (err) {
       setSent({ state: "failed", why: (err as Error).message });
     }
@@ -155,20 +155,31 @@ export default function Apply() {
               )}
             </Strip>
           </div>
-          {/* THIS PARAGRAPH DESCRIBED A HABIT, AND THE HABIT IS GONE. It said runs were
-              performed by hand, that there was no promised date, and that the applicant would be
-              "contacted at the address you gave". Two of those three were true on 2026-08-25 and
-              the third never was: there is no mail channel here, and there was none when the
-              sentence was written. Intake now runs unattended every five minutes, so the page
-              says where the answer appears and how long it takes. The registry entry IS the
-              answer - a public artefact the applicant can check themselves, rather than a message
-              they would have to trust arrived. */}
+          {/* THIS PARAGRAPH PROMISED A CLOCK, AND NOTHING KEPT IT (T-IN-03, D-69). It said the
+              entry appears within a quarter of an hour. Measured 2026-10-23: GitHub's public
+              interface is shared and sometimes busy, a request that meets it is deferred and
+              retried, and a refused applicant saw nothing at all. The page now says what is true
+              - the run is automatic and usually publishes within the hour, and can take longer -
+              and gives the applicant the one thing that does not depend on a clock: a page that
+              reads the state of THEIR request by its id. */}
           <p className="mt-5 text-sm text-[var(--color-ink-2)]">
-            The run is automatic. Your entry appears in the{" "}
-            <a href="/registry/" className="underline underline-offset-2">registry</a> within about
-            fifteen minutes, and that entry is the answer &mdash; we do not send mail, so there is
-            nothing to wait for in an inbox.
+            The run is automatic and usually publishes within the hour. GitHub&rsquo;s public
+            interface is shared and sometimes busy, so it can take longer. Your entry appears in
+            the <a href="/registry/" className="underline underline-offset-2">registry</a>, and we
+            do not send mail, so there is nothing to wait for in an inbox.
           </p>
+          {sent.id && (
+            <p className="mt-3 text-sm">
+              <a href={`/apply/status/?id=${encodeURIComponent(sent.id)}`}
+                 className="text-[var(--color-accent)] hover:underline">
+                Check this request
+              </a>{" "}
+              <span className="text-[var(--color-ink-3)]">
+                &mdash; where it stands, and the reason if it was refused or is waiting. Keep the
+                link: the id in it is the only key to this request.
+              </span>
+            </p>
+          )}
           <p className="mt-3 text-sm text-[var(--color-ink-2)]">
             Appearing is not the same as scoring well. If your repository cannot be read by a
             visitor holding no credentials, your row will say <em>not measured</em> and give the
