@@ -1,0 +1,26 @@
+# tree: e56337903a8d19c7a10fb098f71adfd879b4c5b6 (dirty)
+# (taken against e563379 plus this branch's uncommitted edits)
+$ date -u
+Fri Oct 23 06:57:17 AM UTC 2026
+
+# (control) the real endpoint: the 2100-char repo (stand-in for fuzz request 20's body, the 9d6d3dbb shape), null, text/plain
+$ node tests/intake_probe.mjs repo_2100_chars
+status 400 {'ok': False, 'error': 'That does not look like a public GitHub repository URL.'} writes 0
+$ node tests/intake_probe.mjs body_null
+status 400 {'ok': False, 'error': 'The request body could not be read.'} writes 0
+$ node tests/intake_probe.mjs body_array
+status 400 {'ok': False, 'error': 'The request body could not be read.'} writes 0
+$ node tests/intake_probe.mjs body_text_plain
+status 415 {'ok': False, 'error': 'Send JSON (content-type: application/json).'} writes 0
+$ node tests/intake_probe.mjs contact_tag
+status 400 {'ok': False, 'error': 'That does not look like an address we could reply to.'} writes 0
+$ node tests/intake_probe.mjs repo_dotdot
+status 400 {'ok': False, 'error': 'That does not look like a public GitHub repository URL.'} writes 0
+
+# MUTATION: slice-first clean() + the old [\w.-]+ regexes (tmp copy) -> the 2100-char request is ACCEPTED and stored truncated
+status 200 True stored repo length 2000
+
+# the gate that holds both directions (its mutant test asserts the 200 above, so green here = the mutation is real):
+$ pytest tests/test_apply_validates_before_it_truncates.py
+..............                                                           [100%]
+14 passed in 0.99s

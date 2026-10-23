@@ -189,7 +189,7 @@ ${templateSection}
 ## API
 
 - [API catalog](${site}/.well-known/api-catalog): RFC 9727 linkset of every resource above and the one endpoint below.
-- [/api/apply](${site}/api/apply): submit a subject for verification. GET -> 405. Empty POST -> 400.
+- [/api/apply](${site}/api/apply): submit a subject for verification. GET -> 405. Empty POST -> 400. Non-JSON -> 415.
 - \`GET /api/apply/<id>\` -> state of one request, by its id (the id POST /api/apply returned; never the contact).
 `;
 }

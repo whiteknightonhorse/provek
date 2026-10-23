@@ -30,7 +30,8 @@ import { effectiveStatus } from "../../_lib/status.js";
 import { LIGHT, DARK } from "../../_lib/palette.js";
 import { OP_LABEL, OP_DESC, REASON_TEXT } from "../../_lib/copy.js";
 
-const SLUG = /^[A-Za-z0-9_-]+$/;
+// MIRROR of web/src/slug.js (T-IN-06): byte-identical, held by tests/test_slug_rule_is_one_place.py.
+const SLUG = /^(?!.*\.\.)[A-Za-z0-9_][A-Za-z0-9_.-]*$/;
 const SITE = "https://provek.dev";
 
 function esc(s) {
@@ -210,11 +211,14 @@ function notFound(reason) {
 `;
 }
 
+// Every response carries the open-origin header (T-IN-06, audit L7), errors included.
+const HTML_HEADERS = { "content-type": "text/html; charset=utf-8", "access-control-allow-origin": "*" };
+
 export async function onRequestGet({ request, params, env }) {
   const slug = params.id;
   if (typeof slug !== "string" || !SLUG.test(slug))
     return new Response(notFound("This address is not a subject identifier."),
-      { status: 404, headers: { "content-type": "text/html; charset=utf-8" } });
+      { status: 404, headers: HTML_HEADERS });
 
   let res;
   try {
@@ -224,29 +228,33 @@ export async function onRequestGet({ request, params, env }) {
     res = await env.ASSETS.fetch(assetUrl.toString());
   } catch {
     return new Response(notFound("The record could not be read."),
-      { status: 502, headers: { "content-type": "text/html; charset=utf-8" } });
+      { status: 502, headers: HTML_HEADERS });
   }
   if (!res.ok)
     return new Response(notFound("Nothing has been issued under this identifier."),
-      { status: 404, headers: { "content-type": "text/html; charset=utf-8" } });
+      { status: 404, headers: HTML_HEADERS });
 
   let data;
   try {
     data = await res.json();
   } catch {
     return new Response(notFound("The record could not be read."),
-      { status: 502, headers: { "content-type": "text/html; charset=utf-8" } });
+      { status: 502, headers: HTML_HEADERS });
   }
   const p = data && data.passport;
   if (!p)
     return new Response(notFound("Nothing has been issued under this identifier."),
-      { status: 404, headers: { "content-type": "text/html; charset=utf-8" } });
+      { status: 404, headers: HTML_HEADERS });
 
   return new Response(page(p, slug), {
     status: 200,
     // Short, for the same reason as the badge: a lapse into `stale` needs no new evidence, only
     // the date to pass, and a long cache would go on showing the old word after it has.
-    headers: { "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=300, s-maxage=300" },
+    headers: {
+      "content-type": "text/html; charset=utf-8",
+      "cache-control": "public, max-age=300, s-maxage=300",
+      "access-control-allow-origin": "*",
+    },
   });
 }
 

@@ -21,13 +21,26 @@
  */
 
 const MAX = 2000;
+// The longest string each field's regex could ever accept, so a longer one is refused outright.
+// Repository: "https://github.com/" (19) + owner (39) + "/" (1) + name (100) + trailing "/" (1) = 160.
+// (The brief's 7 + 11 + 39 + 1 + 100 + 1 sums to 159 and drops the "/" after the host, which would
+// refuse the longest valid URL by one character.)
+const REPO_MAX = 19 + 39 + 1 + 100 + 1;
+const CONTACT_MAX = 254;
 
 function bad(reason, status = 400) {
   return Response.json({ ok: false, error: reason }, { status });
 }
 
-function clean(v) {
-  return typeof v === "string" ? v.trim().slice(0, MAX) : "";
+// VALIDATE BEFORE TRUNCATING. This used to `slice(0, MAX)` and the regex ran on the slice, so a
+// 2100-character URL was stored as its first 2000 characters (record 9d6d3dbb…, QA-1023 D-1): a
+// value the applicant never sent, accepted as the one they did. Trimming whitespace stays - a
+// trimmed URL is the one meant - but an over-length value is `null`, never a prefix of itself.
+// `""` is still the answer for a missing or non-string field, so "absent" and "too long" differ.
+function clean(v, max = MAX) {
+  if (typeof v !== "string") return "";
+  const t = v.trim();
+  return t.length > max ? null : t;
 }
 
 // THE CONSENT TEXT LIVES HERE AND NOWHERE ELSE THAT DECIDES.
@@ -54,19 +67,29 @@ export const CONSENT_TEXT =
   "verification works. Optional. Not shared with anyone else; you can ask us to stop at any time.";
 
 export async function onRequestPost({ request, env }) {
+  // `request.json()` ignores the content-type, so a cross-origin `text/plain` POST - which a
+  // browser sends with no preflight - wrote a record (QA-1023 D-5). Refused BEFORE the body is read.
+  const type = request.headers.get("content-type") || "";
+  if (!type.toLowerCase().startsWith("application/json"))
+    return bad("Send JSON (content-type: application/json).", 415);
+
   let body;
   try {
     body = await request.json();
   } catch {
     return bad("The request body could not be read.");
   }
+  // A body of `null` parsed fine and then threw on `body.website` - a Cloudflare 1101 instead of a
+  // sentence (QA-1023 D-4). An array or a scalar would have done the same or read as empty fields.
+  if (!(body && typeof body === "object" && !Array.isArray(body)))
+    return bad("The request body could not be read.");
 
   // Honeypot. A field no human sees and no human fills. Turnstile is deliberately not here yet:
   // it is added if real spam arrives, not in anticipation of it, and it is cookieless when it is.
-  if (clean(body.website)) return Response.json({ ok: true, id: "ignored" });
+  if (clean(body.website) !== "") return Response.json({ ok: true, id: "ignored" });
 
-  const repo = clean(body.repo);
-  const contact = clean(body.contact);
+  const repo = clean(body.repo, REPO_MAX);
+  const contact = clean(body.contact, CONTACT_MAX);
 
   // TWO FIELDS, BECAUSE THEY ARE TWO FACTS (D-23, and the previous version of this comment asked
   // for exactly this change).
@@ -97,9 +120,15 @@ export async function onRequestPost({ request, env }) {
   const mandate_requested = requested;
   const mandate_applied = "passive";
 
-  if (!/^https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/?$/.test(repo))
+  // `null` (over length) fails both checks below. Owner is GitHub's own shape (1-39 characters,
+  // no leading or trailing hyphen); the name keeps `.` because a repository may be called `a.b`,
+  // but `..` never - `../..` matched the old `[\w.-]+` and is a path, not a repository.
+  if (repo === null || repo === "" || repo.includes("..") ||
+      !/^https:\/\/github\.com\/[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?\/[A-Za-z0-9_.-]{1,100}\/?$/.test(repo))
     return bad("That does not look like a public GitHub repository URL.");
-  if (!/^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(contact))
+  // The old pattern took anything without `@` or whitespace, so `<b>@x.y` was a stored address.
+  // Local part is the usual mailbox characters, the domain is dotted labels.
+  if (contact === null || !/^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/.test(contact))
     return bad("That does not look like an address we could reply to.");
 
   // CONSENT IS A BOOLEAN THE APPLICANT ANSWERS, AND IT IS NOT A CONDITION OF THE REQUEST (D-71).

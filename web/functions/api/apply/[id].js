@@ -24,7 +24,9 @@
  */
 
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
-const SLUG = /^[A-Za-z0-9_-]+$/;
+// MIRROR of web/src/slug.js (T-IN-06): a published dotted repository must link to its own passport,
+// not fall back to /registry/. Byte-identical, held by tests/test_slug_rule_is_one_place.py.
+const SLUG = /^(?!.*\.\.)[A-Za-z0-9_][A-Za-z0-9_.-]*$/;
 const HEADERS = { "cache-control": "no-store" };
 
 function answer(body, status) {

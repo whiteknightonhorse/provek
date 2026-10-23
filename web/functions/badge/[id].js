@@ -43,7 +43,8 @@
 import { effectiveStatus } from "../_lib/status.js";
 import { LIGHT, STATUS_COLOR_LIGHT } from "../_lib/palette.js";
 
-const SLUG = /^[A-Za-z0-9_-]+$/;
+// MIRROR of web/src/slug.js (T-IN-06): byte-identical, held by tests/test_slug_rule_is_one_place.py.
+const SLUG = /^(?!.*\.\.)[A-Za-z0-9_][A-Za-z0-9_.-]*$/;
 const SVG_SUFFIX = /\.svg$/i;
 
 function escapeXml(s) {
@@ -120,14 +121,20 @@ const NOINDEX = { "x-robots-tag": "noindex" };
 function svgResponse(body, status = 200, extraHeaders = {}) {
   return new Response(body, {
     status,
-    headers: { "content-type": "image/svg+xml; charset=utf-8", "cache-control": CACHE, ...extraHeaders },
+    headers: {
+      "content-type": "image/svg+xml; charset=utf-8",
+      "cache-control": CACHE,
+      // Open origin like every other route (T-IN-06, audit L7).
+      "access-control-allow-origin": "*",
+      ...extraHeaders,
+    },
   });
 }
 
 export async function onRequestGet({ request, params, env }) {
   const raw = params.id;
   if (typeof raw !== "string" || !SVG_SUFFIX.test(raw))
-    return new Response("Expected /badge/<slug>.svg", { status: 400 });
+    return new Response("Expected /badge/<slug>.svg", { status: 400, headers: { "access-control-allow-origin": "*" } });
   const slug = raw.slice(0, -4);
   if (!SLUG.test(slug)) return svgResponse(unknownSvg("not a subject identifier"));
 

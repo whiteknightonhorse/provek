@@ -20,7 +20,10 @@
  * an import that does not resolve exits non-zero on its own.
  */
 
-import { onRequestPost } from "../web/functions/api/apply.js";
+// argv[3] (optional) names another copy of the endpoint, so a gate can run the same scenario against
+// a MUTATED copy and show the scenario goes red (T-IN-06). Default: the real file.
+const { onRequestPost } = await import(
+  process.argv[3] ? new URL(`file://${process.argv[3]}`).href : "../web/functions/api/apply.js");
 
 const SUBMISSION = {
   repo: "https://github.com/example-org/example-repo",
@@ -144,6 +147,18 @@ const CASES = {
   consent_string: { refuse: [], body: { ...SUBMISSION, consent: "true" } },
   consent_missing: { refuse: [], body: { ...SUBMISSION, consent: undefined } },
   consent_true_stale_version: { refuse: [], body: { ...SUBMISSION, consent_version: "updates-1.0.0" } },
+  // T-IN-06 (QA-1023). `raw` is sent as the body VERBATIM (a string), `type` is the content-type
+  // header (default JSON), so the shapes JSON.stringify cannot make - `null`, `[]`, a text/plain
+  // POST - are reachable.
+  repo_2100_chars: { refuse: [], body: { ...SUBMISSION, repo: "https://github.com/o/" + "r".repeat(2079) } },
+  body_null: { refuse: [], raw: "null" },
+  body_array: { refuse: [], raw: "[]" },
+  body_text_plain: { refuse: [], raw: JSON.stringify(SUBMISSION), type: "text/plain" },
+  contact_tag: { refuse: [], body: { ...SUBMISSION, contact: "<b>@x.y" } },
+  contact_dotted: { refuse: [], body: { ...SUBMISSION, contact: "a.b@c.d" } },
+  repo_dotted_name: { refuse: [], body: { ...SUBMISSION, repo: "https://github.com/o/r.name" } },
+  repo_dotdot: { refuse: [], body: { ...SUBMISSION, repo: "https://github.com/../.." } },
+  repo_dotdot_name: { refuse: [], body: { ...SUBMISSION, repo: "https://github.com/o/.." } },
 };
 
 const name = process.argv[2];
@@ -166,8 +181,8 @@ if (chosen.notice) {
 
 const request = new Request("https://provek.dev/api/apply", {
   method: "POST",
-  headers: { "content-type": "application/json" },
-  body: JSON.stringify(chosen.body),
+  headers: { "content-type": chosen.type || "application/json" },
+  body: chosen.raw !== undefined ? chosen.raw : JSON.stringify(chosen.body),
 });
 
 const result = { scenario: name };

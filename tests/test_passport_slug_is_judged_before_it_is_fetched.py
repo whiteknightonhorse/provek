@@ -33,7 +33,7 @@ WHAT IS NOT ASSERTED, named rather than implied, because a named blind spot is s
     no render that would exercise the real path - and it is written to be specific about position
     rather than about presence, since "the file contains the string `isSafeSlug`" is satisfied by a
     call sitting after the fetch, or inside a comment, or in dead code (L-21);
-  * that `^[A-Za-z0-9_-]+$` is the right rule for identifiers this project does not yet mint. It is
+  * that `^(?!.*\\.\\.)[A-Za-z0-9_][A-Za-z0-9_.-]*$` is the right rule for identifiers this project does not yet mint. It is
     the measured shape of the eight that exist.
 
 The red runs are `evidence/RED-032-a-slug-that-walked-out-of-the-passport-directory.txt`.
@@ -63,7 +63,10 @@ REFUSED = [
     ("", "the empty slug: `/p//` would otherwise request the directory itself"),
     ("abc\n", "a trailing newline - accepted by the same pattern in Python's `re`, refused in JS"),
     ("a\nb", "an embedded newline, in case the anchors were relaxed to multiline"),
-    ("registry.json", "a dot, which is what lets a slug name a file other than a passport"),
+    ("a..b", "two dots in a row - the traversal shape, still refused after T-IN-06 allowed a single `.`"),
+    ("..", "the parent directory itself"),
+    (".hidden", "a leading dot: no subject id starts with one, and a dotfile is not a passport"),
+    ("-x", "a leading hyphen, which no emitted slug has"),
     ("a?cache=1", "a query string, which changes the request without changing the directory"),
     ("a#frag", "a fragment"),
     ("https://evil.example.com/x", "an absolute URL pasted into a path segment"),
@@ -76,7 +79,7 @@ REFUSED = [
 # OBJECT LITERAL (`{...p, [key]: v}`), which defines an own property, where `obj.__proto__ = v`
 # would walk the prototype. If that line is ever rewritten as an assignment, this comment is the
 # thing that was relied on, and it will be wrong.
-ACCEPTED_EXTRA = ["__proto__", "constructor", "a-b_C9", "A"]
+ACCEPTED_EXTRA = ["__proto__", "constructor", "a-b_C9", "A", "git_o_r.name"]
 
 
 def probe(slugs: list[str]) -> list[dict]:

@@ -37,7 +37,14 @@
  * hole if the gate had asserted against a Python copy of the regular expression instead of running
  * this file.
  */
-const SLUG = /^[A-Za-z0-9_-]+$/;
+//
+// AMENDED (T-IN-06, QA-1023): the `.` is allowed. `slugOf` (web/discovery.mjs) keeps it, so a
+// repository named `a.b` had a static passport page and no /brief or badge - the rule refused the
+// emitter's own output. A leading `_` is what `slugOf` yields for `git:`-prefixed ids
+// (`git_owner_name.ext`), so the first character may not be `.` or `-`, and `..` never appears:
+// that is the traversal the dot was excluded for. `registry.json` still passes the class and is
+// still refused by nothing here - it is harmless, since the path built is `<slug>.json`.
+const SLUG = /^(?!.*\.\.)[A-Za-z0-9_][A-Za-z0-9_.-]*$/;
 
 /**
  * True only for a slug safe to interpolate into a passport path.

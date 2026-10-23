@@ -63,7 +63,16 @@ straight to the live check.
 
 ## What happens without anyone
 
-1. A submission is validated at `/api/apply` — repository URL shape, address shape, honeypot.
+1. A submission is validated at `/api/apply` — repository URL shape, address shape, honeypot. The
+   rules (T-IN-06, QA-1023), each judged on what was SENT, never on a truncated prefix:
+
+   | Rule | Refusal |
+   |---|---|
+   | `content-type` starts with `application/json` | 415 `Send JSON (content-type: application/json).` — checked before the body is read, so a cross-origin `text/plain` POST (no preflight) writes nothing |
+   | body is a plain JSON object (not `null`, an array or a scalar) | 400 `The request body could not be read.` |
+   | `repo` ≤ 160 characters, `https://github.com/<owner>/<name>[/]`, owner 1–39 of `A-Za-z0-9-` with no edge hyphen, name 1–100 of `A-Za-z0-9_.-` and no `..` | 400 (a name may contain `.`: `r.name` is a repository) |
+   | `contact` ≤ 254 characters, `local@domain.tld`, local `A-Za-z0-9._%+-`, dotted domain labels | 400 (`<b>@x.y` is refused) |
+   | any field over its length | refused, not stored as its first 2000 characters (record 9d6d3dbb…); surrounding whitespace is still trimmed |
 2. It is written to the `provek-intake` KV namespace **before** anything else, with
    `delivered: null`. A submission survives a failed announcement.
 3. A notice goes to the operator's ops channel.
