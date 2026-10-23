@@ -33,6 +33,30 @@
 - [git:whiteknightonhorse/mcp-protocol-tester](https://provek.dev/data/passports/git_whiteknightonhorse_mcp-protocol-tester.json): autonomy passport, JSON
 - [git:whiteknightonhorse/provek](https://provek.dev/data/passports/git_whiteknightonhorse_provek.json): autonomy passport, JSON
 - [git:whiteknightonhorse/provek-method](https://provek.dev/data/passports/git_whiteknightonhorse_provek-method.json): autonomy passport, JSON
+- [Templates](https://provek.dev/data/templates.json)
+
+## Briefs and badges
+
+- [git:whiteknightonhorse/AI-Property-Sales-Platform brief](https://provek.dev/p/git_whiteknightonhorse_AI-Property-Sales-Platform/brief): one-page brief
+- [git:whiteknightonhorse/AIpush brief](https://provek.dev/p/git_whiteknightonhorse_AIpush/brief): one-page brief
+- [git:whiteknightonhorse/APIbase brief](https://provek.dev/p/git_whiteknightonhorse_APIbase/brief): one-page brief
+- [git:whiteknightonhorse/audiobook-shorts-series brief](https://provek.dev/p/git_whiteknightonhorse_audiobook-shorts-series/brief): one-page brief
+- [git:whiteknightonhorse/cryptocardhub-defycard brief](https://provek.dev/p/git_whiteknightonhorse_cryptocardhub-defycard/brief): one-page brief
+- [git:whiteknightonhorse/cryptocardhub-public brief](https://provek.dev/p/git_whiteknightonhorse_cryptocardhub-public/brief): one-page brief
+- [git:whiteknightonhorse/gov-auction-report brief](https://provek.dev/p/git_whiteknightonhorse_gov-auction-report/brief): one-page brief
+- [git:whiteknightonhorse/mcp-protocol-tester brief](https://provek.dev/p/git_whiteknightonhorse_mcp-protocol-tester/brief): one-page brief
+- [git:whiteknightonhorse/provek brief](https://provek.dev/p/git_whiteknightonhorse_provek/brief): one-page brief
+- [git:whiteknightonhorse/provek-method brief](https://provek.dev/p/git_whiteknightonhorse_provek-method/brief): one-page brief
+- [git:whiteknightonhorse/AI-Property-Sales-Platform badge](https://provek.dev/badge/git_whiteknightonhorse_AI-Property-Sales-Platform.svg): badge, SVG
+- [git:whiteknightonhorse/AIpush badge](https://provek.dev/badge/git_whiteknightonhorse_AIpush.svg): badge, SVG
+- [git:whiteknightonhorse/APIbase badge](https://provek.dev/badge/git_whiteknightonhorse_APIbase.svg): badge, SVG
+- [git:whiteknightonhorse/audiobook-shorts-series badge](https://provek.dev/badge/git_whiteknightonhorse_audiobook-shorts-series.svg): badge, SVG
+- [git:whiteknightonhorse/cryptocardhub-defycard badge](https://provek.dev/badge/git_whiteknightonhorse_cryptocardhub-defycard.svg): badge, SVG
+- [git:whiteknightonhorse/cryptocardhub-public badge](https://provek.dev/badge/git_whiteknightonhorse_cryptocardhub-public.svg): badge, SVG
+- [git:whiteknightonhorse/gov-auction-report badge](https://provek.dev/badge/git_whiteknightonhorse_gov-auction-report.svg): badge, SVG
+- [git:whiteknightonhorse/mcp-protocol-tester badge](https://provek.dev/badge/git_whiteknightonhorse_mcp-protocol-tester.svg): badge, SVG
+- [git:whiteknightonhorse/provek badge](https://provek.dev/badge/git_whiteknightonhorse_provek.svg): badge, SVG
+- [git:whiteknightonhorse/provek-method badge](https://provek.dev/badge/git_whiteknightonhorse_provek-method.svg): badge, SVG
 
 ## Templates
 

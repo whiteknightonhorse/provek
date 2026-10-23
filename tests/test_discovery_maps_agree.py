@@ -399,3 +399,11 @@ def test_the_BUILT_robots_txt_carries_what_the_source_says() -> None:
         "it depends on SITE, so its absence means the generator stopped running - not that the "
         "source changed."
     )
+
+
+def test_llms_txt_lists_every_brief_badge_and_the_templates_data(live_report):
+    """T-WB-03: the per-passport brief page and badge SVG are served but were in neither map."""
+    for slug in live_report["passportIds"]:
+        assert f"{SITE}/p/{slug}/brief" in live_report["llmsTxt"], slug
+        assert f"{SITE}/badge/{slug}.svg" in live_report["llmsTxt"], slug
+    assert f"{SITE}/data/templates.json" in live_report["llmsTxt"]

@@ -1,0 +1,15 @@
+tree: 3ad5da2686275b437ad3997b0bcff64449008d25 (dirty)
+
+RED-076 (T-WB-03) - gates able to fail, run 2026-10-23 on the worktree.
+
+(a) mutation: delete aria-required="true" from the repo input in web/src/pages/Apply.tsx
+    $ python3 -m pytest -q tests/test_apply_form_names_required_fields.py
+    FAILED ...::test_repo_and_contact_are_aria_required_and_autocomplete
+    1 failed, 4 passed
+
+(b) mutation: Expires: 2026-10-01 in web/public/.well-known/security.txt
+    $ python3 -m pytest -q tests/test_security_txt_is_served_and_not_expired.py
+    FAILED ...::test_expires_parses_and_is_in_the_future
+    1 failed, 1 passed
+
+Both mutations restored; ./scripts/push.sh --gates-only -> TREE GREEN (rc=0).

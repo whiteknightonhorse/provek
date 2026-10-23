@@ -587,7 +587,7 @@ const lastmodFor = (route) => {
   const note = noteLastmod.get(route);
   if (note) return note;                                   // manifest: moves with the body hash
   if (route.startsWith("/p/")) {                           // the passport was issued on a date
-    return passports[route.slice(3, -1)]?.issued_at?.slice(0, 10) ?? null;
+    return passports[route.slice(3).replace(/\/(brief)?$/, "")]?.issued_at?.slice(0, 10) ?? null;
   }
   // A WitnessRecord never changes after it is checked, so its own `checked_at` IS its lastmod -
   // never the build clock, which would tell every crawler the record changed on every rebuild.
@@ -618,7 +618,11 @@ const lastmodFor = (route) => {
   return null;                                             // prose we did not date: say nothing
 };
 
-const urls = written.map((route) => {
+// `/p/<slug>/brief` is a served page (a function, not a prerendered file), so it is listed beside
+// the written routes; its lastmod is the passport's issued_at, as for the passport page. The badge
+// SVGs are NOT here: a sitemap lists pages and an SVG is not a page (llms.txt lists them).
+const briefRoutes = written.filter((r) => /^\/p\/[^/]+\/$/.test(r)).map((r) => `${r}brief`);
+const urls = [...written, ...briefRoutes].map((route) => {
   const lastmod = lastmodFor(route);
   const stamp = lastmod ? `\n    <lastmod>${lastmod}</lastmod>` : "";
   return `  <url>\n    <loc>${SITE}${route}</loc>${stamp}\n  </url>`;

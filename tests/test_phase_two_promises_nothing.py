@@ -228,7 +228,7 @@ def test_d05_still_holds_everywhere_else():
     "a rule written in more than one place survives its own repeal" has a mirror image, and this is
     it - a rule repealed in one place quietly repealing itself everywhere."""
     chrome = (ROOT / "web" / "src" / "components" / "Chrome.tsx").read_text(encoding="utf-8")
-    assert 'aria-disabled="true"' in chrome, "the reserved corpus slot stopped being disabled"
+    assert "Corpus" not in chrome, "the reserved corpus slot came back into the navigation"
     assert "/phase-2/" not in chrome, (
         "the phase-2 page reached the navigation - that is an announcement in the one place a "
         "reader reads on every screen, and D-05 still forbids it")

@@ -34,37 +34,6 @@ export function Masthead({ route }: { route: string }) {
           {link("/method/", "Method", route === "/method/")}
           {link("/build/", "Build", route.startsWith("/build/"))}
           {link("/witness/", "GenLayer Evidence Witness", route === "/witness/")}
-          {/* PHASE 2 SLOT - reserved, disabled, and NOT described as a coming feature.
-
-              THE UNAVAILABILITY IS TEXT, NOT AN ARIA ATTRIBUTE, and that is a correction rather
-              than a style. This carried `aria-label="Corpus, not available"` with `aria-disabled`
-              on a bare <span>. A <span> with no role is `generic`, and `aria-label` on a generic
-              element is invalid HTML - the W3C Nu validator returns it as the one error on every
-              emitted page (measured 2026-08-21 on the live /method/) - AND is discarded by
-              assistive technology. So the greyed word said "not available" to sighted readers
-              through its colour and said nothing at all to a screen reader, which is the accessible
-              name silently reading `Corpus`. An attribute that fails validation and is ignored is
-              not a smaller version of the information; it is its absence, dressed as care.
-
-              `sr-only` puts the fact in the document as text, where nothing has to honour an ARIA
-              contract for it to arrive - the same construction `Measured.tsx` already uses for
-              `not measured`, which is this project's own rule about an absence being a state
-              applied to the one reader who cannot see the colour.
-
-              `aria-disabled` STAYS, and dropping it was a separate change riding on the first
-              one's reasoning. The paragraph above indicts `aria-label`, and only `aria-label`:
-              re-measured 2026-08-24 against the Nu validator on the live /method/, the page
-              returns exactly one error, it names `aria-label`, and `aria-disabled="true"` sits
-              inside that same error's extract unflagged. It is the attribute D-05 is enforced
-              through - tests/test_phase_two_promises_nothing.py reads it - so removing it
-              repealed the invariant in order to fix something it was not accused of. The
-              accessible name and the disabled state are two facts, and this slot owes both. */}
-          <span
-            className="px-3 py-2.5 min-h-11 inline-flex items-center text-sm text-[var(--color-ink-disabled)] cursor-default select-none"
-            aria-disabled="true"
-          >
-            Corpus<span className="sr-only">, not available</span>
-          </span>
         </nav>
       </div>
     </header>

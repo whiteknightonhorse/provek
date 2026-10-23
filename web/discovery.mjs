@@ -121,6 +121,14 @@ export function buildLlmsTxt(entries, site = SITE, templates = []) {
   const passportLines = entries
     .map(({ slug, subjectId }) => `- [${subjectId}](${site}/data/passports/${slug}.json): autonomy passport, JSON`)
     .join("\n");
+  // The brief pages and badge SVGs are served per passport; a sitemap lists pages only, so the
+  // SVGs are named here and nowhere else.
+  const briefLines = entries
+    .map(({ slug, subjectId }) => `- [${subjectId} brief](${site}/p/${slug}/brief): one-page brief`)
+    .join("\n");
+  const badgeLines = entries
+    .map(({ slug, subjectId }) => `- [${subjectId} badge](${site}/badge/${slug}.svg): badge, SVG`)
+    .join("\n");
   const templateSection = templates.length
     ? `\n## Templates\n\n${templates
         .map((t) => `- [${t.title}](${site}/build/${t.slug}/): ${t.businessOperation}. Raw: ${site}/build/${t.slug}/SKILL.md`)
@@ -152,6 +160,12 @@ export function buildLlmsTxt(entries, site = SITE, templates = []) {
 
 - [Registry](${site}/data/registry.json)
 ${passportLines}
+- [Templates](${site}/data/templates.json)
+
+## Briefs and badges
+
+${briefLines}
+${badgeLines}
 ${templateSection}
 ## API
 

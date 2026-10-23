@@ -258,6 +258,7 @@ export default function Apply() {
         )}
 
         <form className="mt-7 space-y-5" onSubmit={submit}>
+          <p className="text-xs text-[var(--color-ink-3)]"><span aria-hidden="true">*</span> required</p>
           {/* A field no human sees and no human fills. */}
           <div className="sr-only" aria-hidden="true">
             <label htmlFor="website">Leave this empty</label>
@@ -265,22 +266,22 @@ export default function Apply() {
           </div>
 
           <div>
-            <label htmlFor="repo" className="block text-sm font-medium">Repository URL</label>
+            <label htmlFor="repo" className="block text-sm font-medium">Repository URL <span aria-hidden="true">*</span></label>
             <p className="mt-0.5 text-xs text-[var(--color-ink-3)]">
               Public repositories only at this stage. That restriction exists so we never hold your
               secrets &mdash; and so that anyone can recompute the verdict from the same source.
             </p>
             <input
-              id="repo" name="repo" type="url" required
+              id="repo" name="repo" type="url" required aria-required="true" autoComplete="url"
               placeholder="https://github.com/org/repo"
               className="mt-2 w-full border border-[var(--color-line-2)] bg-[var(--color-paper)] px-3 py-2 text-base"
             />
           </div>
 
           <div>
-            <label htmlFor="contact" className="block text-sm font-medium">Contact</label>
+            <label htmlFor="contact" className="block text-sm font-medium">Contact <span aria-hidden="true">*</span></label>
             <input
-              id="contact" name="contact" type="email" required
+              id="contact" name="contact" type="email" required aria-required="true" autoComplete="email"
               placeholder="you@example.com"
               className="mt-2 w-full border border-[var(--color-line-2)] bg-[var(--color-paper)] px-3 py-2 text-base"
             />
@@ -298,7 +299,7 @@ export default function Apply() {
               this form or from a hand-built client - can authorise anything. That was the hole
               D-21 actually closed, and it stays closed. */}
           <fieldset className="border border-[var(--color-line-2)] bg-[var(--color-paper)] p-3">
-            <legend className="px-1 text-sm font-medium">What we may touch</legend>
+            <legend className="px-1 text-sm font-medium">What you are asking for</legend>
             {/* THE SENTENCE THE MANDATE EXISTS TO CARRY, required on the form and not in terms of
                 service by SPEC §3.4. It survived the option's removal in D-21 and it survives the
                 option's return: it is the rule, and the radio below only asks which side of it a

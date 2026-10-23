@@ -1,0 +1,5 @@
+Contact: https://github.com/whiteknightonhorse/provek/security/advisories/new
+Policy: https://github.com/whiteknightonhorse/provek/blob/main/SECURITY.md
+Preferred-Languages: en
+Expires: 2027-10-23T00:00:00.000Z
+Canonical: https://provek.dev/.well-known/security.txt

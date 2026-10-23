@@ -270,5 +270,16 @@ export async function onRequestPost({ request, env }) {
 }
 
 export async function onRequestGet() {
-  return bad("This endpoint accepts a submission, not a reading.", 405);
+  const res = bad("This endpoint accepts a submission, not a reading.", 405);
+  res.headers.set("Allow", "POST");
+  return res;
+}
+
+// A preflight or a probe is answered with what the endpoint accepts. The origin policy stays in
+// `_middleware.js`; nothing here widens it.
+export async function onRequestOptions() {
+  return new Response(null, {
+    status: 204,
+    headers: { Allow: "POST, OPTIONS", "Access-Control-Allow-Methods": "POST" },
+  });
 }
