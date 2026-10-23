@@ -74,8 +74,16 @@ class PublicRegistry:
     def upsert(self, row: Row) -> None:
         self._rows[row.subject_id] = row
 
-    def to_machine(self, now: datetime) -> dict:
-        """A snapshot. Expired entries show as stale rather than quietly staying verified."""
+    def to_machine(self, now: datetime, generated_at: datetime | None = None) -> dict:
+        """A snapshot. Expired entries show as stale rather than quietly staying verified.
+
+        A document stamp and a row stamp are two facts. `generated_at` says when the FULL cohort
+        last ran - liveness reads it as "the cohort last ran" and the freshness watch as "the
+        registry reached the site" - while a row's `issued_at` says when THAT subject was
+        measured. An incremental run (`PROVEK_ONLY`) measures one subject and carries the rest
+        forward, so it passes the previous document's `generated_at` here: the stamp is
+        `generated_at or now`. `now` still decides staleness and nothing else changes.
+        """
         out = []
         for r in self._rows.values():
             status = (Status.STALE if r.status is Status.VERIFIED and now >= r.valid_until
@@ -93,11 +101,25 @@ class PublicRegistry:
                 "service_reachable": r.service_reachable,
                 "issued_at": r.issued_at.isoformat() if r.issued_at else None,
             })
-        return {"generated_at": now.isoformat(), "disclaimer": DISCLAIMER,
+        return {"generated_at": (generated_at or now).isoformat(), "disclaimer": DISCLAIMER,
                 "count": len(out), "subjects": sorted(out, key=lambda x: x["subject_id"])}
 
-    def write(self, now: datetime) -> str:
+    def write(self, now: datetime, generated_at: datetime | None = None) -> str:
         p = self.root / "registry.json"
-        p.write_text(json.dumps(self.to_machine(now), ensure_ascii=False, indent=2),
+        p.write_text(json.dumps(self.to_machine(now, generated_at), ensure_ascii=False, indent=2),
                      encoding="utf-8")
         return p.as_posix()
+
+
+def document_clock(incremental: bool, previous: datetime | None) -> datetime | None:
+    """The `generated_at` an incremental run must carry forward; `None` means "stamp now".
+
+    Only a full cohort run moves the document clock (D-68). An incremental run with no readable
+    previous clock has nothing to carry, and `not_measured` is not a default: it refuses.
+    """
+    if not incremental:
+        return None
+    if previous is None:
+        raise ValueError("REFUSED: incremental run with no previous cohort clock to carry "
+                         "\u2014 run the full cohort")
+    return previous

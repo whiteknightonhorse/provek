@@ -1,0 +1,34 @@
+# tree: b8698b3a4b1de175c270010d0ff8cc31009676ee (dirty)
+# (taken against origin/main b8698b3 plus this branch's uncommitted edits; the mutation is cohort.py's write call, restored from /tmp/cohort.py.orig)
+RED-068 - an incremental run that moves the clock is red at the door
+Fri Oct 23 05:51:30 AM UTC 2026
+
+## 1. the carry REMOVED (cohort.py: registry.write(now, DOCUMENT_CLOCK) -> registry.write(now))
+586:written = registry.write(now)
+                  and isinstance(n.func.value, ast.Name) and n.func.value.id == "registry"]
+        assert len(writes) == 1
+>       assert [ast.unparse(a) for a in writes[0].args] == ["now", "DOCUMENT_CLOCK"]
+E       AssertionError: assert ['now'] == ['now', 'DOCUMENT_CLOCK']
+E         
+E         Right contains one more item: 'DOCUMENT_CLOCK'
+E         Use -v to get more diff
+
+tests/test_incremental_run_keeps_the_cohort_clock.py:85: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_incremental_run_keeps_the_cohort_clock.py::test_the_only_branch_hands_the_previous_clock_to_the_emitter
+1 failed, 4 passed in 0.11s
+rc=1
+
+## the finding the incident shape produces (verbatim, from findings())
+document stamped by the intake run (T+82 min) -> ['DEADLINE TOO LATE TO ACT ON: the before_reissue interval plus a 7-day margin needs 30 days of validity, and the shipped rows carry 29. The re-issue finding would arrive with less than 7 days left to act on it: the interval and the published validity window have diverged']
+document clock carried (T) -> no DEADLINE finding
+
+## 2. restored
+586:written = registry.write(now, DOCUMENT_CLOCK)
+.....                                                                    [100%]
+5 passed in 0.07s
+
+document stamped by the intake run (T+82 min) -> ['DEADLINE TOO LATE TO ACT ON: the before_reissue interval plus a 7-day margin needs 30 days of validity, and the shipped rows carry 29. The re-issue finding would arrive with less than 7 days left to act on it: the interval and the published validity window have diverged']
+document clock carried (T) -> no DEADLINE finding
+Fri Oct 23 05:51:31 AM UTC 2026
+rc after restore (pytest on the test file)=0; rc with carry removed=1 (above)

@@ -4094,3 +4094,25 @@ T-GA-02; the live receipt needs one real paid call, which the dispatcher makes; 
 Project submission waits for the live page and at least two live attestations.
 
 ## D-67. Deployed Intelligent Contract bytes equal the committed file bytes at the deploy commit; no minified or generated deploy form. Every contract file <= 19 000 bytes because the Bradbury per-transaction gas cap is 16 777 216 (about 778 gas per byte, measured 2026-10-20). Long prose lives in the README, docstrings stay short. Ruling GA-DEPLOY-GAS-1020; see D-66.
+
+## D-68. An incremental run does not move the cohort clock
+
+**Source.** Fable ruling PROVEK-QA-1023 q-1 (2026-10-23); built by `T-IN-02-incremental-run-keeps-the-cohort-clock`.
+
+**Decision.** A `PROVEK_ONLY` run carries the previous document's `generated_at` forward
+(`document_clock` in `src/registry/public_registry.py`, passed to `registry.write` by
+`scripts/cohort.py`). Only a full cohort run stamps the document with its own time. The new
+row's own time is its `issued_at`; `valid_until`, the passports and the probe still use `now`.
+An incremental run whose previous document has no readable `generated_at` refuses with
+`REFUSED: incremental run with no previous cohort clock to carry — run the full cohort`.
+
+**Why.** Measured 2026-10-23 04:45–05:05: an intake run of one subject re-stamped `generated_at`
+on the whole registry while nine rows kept the `valid_until` of the 03:43:06 daily run. The window
+`commitments.findings()` compares was 30 d − 1 h 22 min against a need of 30 d with 1 h of
+`POLICY_TOLERANCE`, so `DEADLINE TOO LATE TO ACT ON` fired, three tests went red and `push.sh`
+refused five commits in a row. The tolerance was not widened: it exists for clock drift inside
+one run, and an intake run is not a cohort run. A document stamp and a row stamp are two facts;
+`issued_at` per row (T-76) already exists for the second.
+
+**Not decided here.** Whether intake defers while the tree is red is T-IN-01. `POLICY_TOLERANCE`,
+`RENEWAL_MARGIN` and `PASSPORT_VALIDITY` are unchanged.

@@ -434,3 +434,12 @@ is worth declaring exactly when something can actually be measured to satisfy it
 And the chain still stops at a person (ABI-16-7). The `TARGET APPEARED` finding is read by whoever
 is at the door or in the daily gates run; no module decides what to do about it, and none is added.
 
+
+## Incremental runs and the clock
+
+`PROVEK_ONLY=<subject> python3 scripts/cohort.py` measures the named subjects and carries every
+other row forward, and it also carries the document's `generated_at` forward (D-68): the document
+clock is the full cohort's, the new row's own time is its `issued_at`. Re-stamping the document
+from an intake run made the window between `generated_at` and the carried rows' `valid_until`
+shorter than the re-issue need (measured 2026-10-23: 30 d − 1 h 22 min against 30 d, five refused
+commits). With no readable previous `generated_at` the incremental run refuses; run the full cohort.

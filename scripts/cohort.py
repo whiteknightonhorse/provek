@@ -36,7 +36,7 @@ from src.collector.github import (
 )
 from src.collector.reachability import probe_service_endpoint
 from src.passport.passport import PROFILE_VERSION, PROTOCOL_VERSION, Provenance, build
-from src.registry.public_registry import PublicRegistry, Row
+from src.registry.public_registry import PublicRegistry, Row, document_clock
 from src.transport.file_transport import FileTransport
 from src.verify.control_map import (
     GITHUB_DID_NOT_ANSWER,
@@ -261,7 +261,26 @@ def previous_rows() -> dict:
     return rows
 
 
+def previous_generated_at():
+    """The previous document's `generated_at` as an aware datetime, or None if unreadable."""
+    prev = out / "registry" / "registry.json"
+    if not prev.is_file():
+        return None
+    try:
+        return parse_iso_ts(json.loads(prev.read_text(encoding="utf-8")).get("generated_at"))
+    except (OSError, ValueError, AttributeError):
+        return None
+
+
 PREVIOUS = previous_rows()
+# The document clock is the FULL cohort's: an incremental run carries it forward, and the new
+# row's own time is its `issued_at`. Measured 2026-10-23: a one-subject run re-stamped the whole
+# registry while nine rows kept their valid_until, the window read 30 d - 1 h 22 min against a
+# 30 d need, and push.sh refused five commits in a row (D-68).
+try:
+    DOCUMENT_CLOCK = document_clock(bool(ONLY), previous_generated_at())
+except ValueError as _e:
+    raise SystemExit(str(_e)) from None
 RATE_LIMITED: list[str] = []
 
 
@@ -564,7 +583,7 @@ for full in COHORT:
     print("%-42s %-7s %-9s %-6s %s" % (full.split("/")[1][:40], op["level"],
                                        m["verified"]["projection"], ci, lim))
 
-written = registry.write(now)
+written = registry.write(now, DOCUMENT_CLOCK)
 print("\nregistry:", written)
 
 # MIRROR TO WHAT IS ACTUALLY SERVED. This script wrote `public/`; the site and prerender.mjs read
