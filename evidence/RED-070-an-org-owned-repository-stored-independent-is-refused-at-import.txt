@@ -1,0 +1,22 @@
+# tree: 90399e900b66e8618e05128e20fa578db3782b92 (dirty)
+# (taken against 90399e9 plus this branch's uncommitted edits)
+$ date -u
+Fri Oct 23 06:31:03 AM UTC 2026
+
+# (control) the real data/subjects.json imports cohort.py past the gate
+$ pytest tests/test_operator_owners_file.py tests/test_cohort_affiliation_rederive.py tests/test_subjects_affiliation_matches_owner.py
+................                                                         [100%]
+16 passed in 0.77s
+
+# (a) MUTATION: defycard-com/x stored as independent, gate lifted from scripts/cohort.py as it runs at import
+GREEN control: real subjects ->  no SystemExit
+SystemExit: data/subjects.json claims a non-same_owner affiliation for a repository the operator owns: defycard-com/x
+rc=1
+
+# (b) MUTATION: the owner file without defycard-com (tmp copy) -> the same row is NOT refused: the gate follows the file
+not refused; OPERATOR_OWNERS = ['whiteknightonhorse']
+rc=0
+
+# restored: the shipped file lists both owners, tests green
+....                                                                     [100%]
+4 passed in 0.16s

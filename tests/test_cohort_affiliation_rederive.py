@@ -29,12 +29,12 @@ def _load():
     assert fn is not None, (
         "scripts/cohort.py no longer defines derive_affiliation - AUD-013's fix was removed or "
         "renamed, and this test targets nothing")
-    ns: dict = {"OPERATOR": OPERATOR}
+    ns: dict = {"OPERATOR_OWNERS": OWNERS}
     exec(compile(ast.Module(body=[fn], type_ignores=[]), str(_SRC), "exec"), ns)
     return ns["derive_affiliation"]
 
 
-OPERATOR = "whiteknightonhorse"
+OWNERS = frozenset({"whiteknightonhorse", "defycard-com"})
 DERIVE = _load()
 
 
@@ -44,21 +44,21 @@ def test_MUTATION_a_transfer_away_from_the_operator_is_caught_this_pass():
     operator would keep publishing `same_owner` indefinitely - exactly the "stored once, never
     re-checked" shape that produced AUD-001. GREEN: the owner read on THIS pass overrides the
     stale stored value the moment it disagrees."""
-    assert DERIVE("someone-else", "same_owner", operator=OPERATOR) == "independent"
+    assert DERIVE("someone-else", "same_owner", owners=OWNERS) == "independent"
 
 
 def test_MUTATION_a_transfer_to_the_operator_is_caught_this_pass():
     """The other direction: a subject transferred TO the operator must stop reading as
     independent the moment the new owner is visible, not one intake cycle later - this is AUD-001's
     exact shape, reproduced as a live transfer instead of a one-time intake mistake."""
-    assert DERIVE("whiteknightonhorse", "independent", operator=OPERATOR) == "same_owner"
+    assert DERIVE("whiteknightonhorse", "independent", owners=OWNERS) == "same_owner"
 
 
 def test_owner_match_is_case_insensitive():
     """`~/orchestra/intake_cron.py`'s own comparison is `.lower()`'d; this has to agree with it or
     a differently-cased owner would derive one answer here and another at intake."""
-    assert DERIVE("WhiteKnightOnHorse", "independent", operator=OPERATOR) == "same_owner"
-    assert DERIVE("whiteknightonhorse", "independent", operator="WhiteKnightOnHorse") == "same_owner"
+    assert DERIVE("WhiteKnightOnHorse", "independent", owners=OWNERS) == "same_owner"
+    assert DERIVE("whiteknightonhorse", "independent", owners=frozenset({"WhiteKnightOnHorse"})) == "same_owner"
 
 
 def test_unread_owner_falls_back_to_the_stored_value_not_a_guess():
@@ -66,5 +66,11 @@ def test_unread_owner_falls_back_to_the_stored_value_not_a_guess():
     answer THIS pass) must not be reported as independent or same_owner on a guess - the last
     known value stands until a real read can update it, the same discipline `skip_rate_limited`
     already applies to a whole carried-forward row."""
-    assert DERIVE(None, "same_owner", operator=OPERATOR) == "same_owner"
-    assert DERIVE(None, "independent", operator=OPERATOR) == "independent"
+    assert DERIVE(None, "same_owner", owners=OWNERS) == "same_owner"
+    assert DERIVE(None, "independent", owners=OWNERS) == "independent"
+
+
+def test_an_org_owned_repository_derives_same_owner():
+    """PROVEK-QA-1023 q-1 / D-70: the operator's organisation is the operator."""
+    assert DERIVE("defycard-com", "independent", owners=OWNERS) == "same_owner"
+    assert DERIVE("DefyCard-Com", "independent", owners=OWNERS) == "same_owner"

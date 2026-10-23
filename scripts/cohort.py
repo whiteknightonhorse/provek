@@ -116,20 +116,26 @@ if not _SUBJECTS:
 COHORT = [s["repo"] for s in _SUBJECTS]
 AFFILIATION = {s["repo"]: s["affiliation"] for s in _SUBJECTS}
 
-# THE OPERATOR'S OWN NAME, matched against every subject's repo string so a stored affiliation can
-# be CHECKED rather than merely typed once at intake and trusted forever. AUD-001 (Fable,
-# 2026-09-03): the live registry published `verifier_affiliation: "independent"` for
+# THE OPERATOR'S OWN GITHUB OWNERS, matched against every subject's repo string so a stored
+# affiliation can be CHECKED rather than merely typed once at intake and trusted forever. AUD-001
+# (Fable, 2026-09-03): the live registry published `verifier_affiliation: "independent"` for
 # `whiteknightonhorse/cryptocardhub-public` from 2026-08-25 to 2026-09-03 even though its owner IS
 # the operator - a fact `~/orchestra/intake_cron.py` derives correctly TODAY, but nothing re-checked
-# for a row already admitted. This constant has to match that script's OPERATOR by hand: intake runs
-# from `~/orchestra`, outside this repository, so no import can bind the two together - the gate
-# below at least stops the STORED value from drifting from what the repo string itself says, on
-# every run rather than once at intake.
-OPERATOR = "whiteknightonhorse"
+# for a row already admitted. PROVEK-QA-1023 q-1 (D-70): one login was the whole rule, so a
+# repository under the operator's organisation would have been published as `independent` -
+# AUD-001 again. The list lives in data/operator_owners.json, which intake_cron.py (outside this
+# repository, so no import can bind the two) reads too. Read, never defaulted: a missing or empty
+# file is a refusal, for the reason _SUBJECTS above is.
+_OWNERS_DOC = json.loads((Path(__file__).resolve().parents[1] / "data" / "operator_owners.json")
+                         .read_text(encoding="utf-8"))
+OPERATOR_OWNERS: frozenset[str] = frozenset(o.lower() for o in _OWNERS_DOC["owners"])
+if not OPERATOR_OWNERS:
+    raise SystemExit("data/operator_owners.json lists no owner; refusing to decide affiliation "
+                     "from an empty list")
 
 
-def affiliation_violations(subjects: list[dict], operator: str = OPERATOR) -> list[str]:
-    """Repos in `subjects` the operator owns whose stored affiliation is not same_owner.
+def affiliation_violations(subjects: list[dict], owners: frozenset[str] = OPERATOR_OWNERS) -> list[str]:
+    """Repos in `subjects` under any of the operator's owners whose stored affiliation is not same_owner.
 
     Pure, so a test can feed it a MUTATED copy of subjects.json's data without loading this whole
     module - and its live GitHub calls - a second time. See
@@ -137,7 +143,7 @@ def affiliation_violations(subjects: list[dict], operator: str = OPERATOR) -> li
     AUD-001's defect and clears on the corrected one.
     """
     return [s["repo"] for s in subjects
-            if s["repo"].split("/", 1)[0].lower() == operator.lower()
+            if s["repo"].split("/", 1)[0].lower() in {o.lower() for o in owners}
             and s["affiliation"] != "same_owner"]
 
 
@@ -150,7 +156,7 @@ if _bad_affiliation:
         "owns: " + ", ".join(_bad_affiliation))
 
 
-def derive_affiliation(owner: str | None, stored: str, operator: str = OPERATOR) -> str:
+def derive_affiliation(owner: str | None, stored: str, owners: frozenset[str] = OPERATOR_OWNERS) -> str:
     """AUD-013 (Fable, 2026-09-03): the mechanism that produced AUD-001, not just its one instance.
 
     `verifier_affiliation` was a fact `~/orchestra/intake_cron.py` wrote ONCE at admission, and
@@ -168,7 +174,7 @@ def derive_affiliation(owner: str | None, stored: str, operator: str = OPERATOR)
     """
     if owner is None:
         return stored
-    return "same_owner" if owner.lower() == operator.lower() else "independent"
+    return "same_owner" if owner.lower() in {o.lower() for o in owners} else "independent"
 
 # INCREMENTAL MODE, and it exists because of arithmetic, not taste. Scoring one subject costs three
 # anonymous GitHub calls and the anonymous budget is 60 an hour, so a full pass over N subjects
@@ -533,7 +539,9 @@ for full in COHORT:
               observations=observations(ev),
               # PER SUBJECT. `same_owner` on an applicant's passport would claim the verifier and
               # the subject are the same person, which is false and understates their verdict; the
-              # self-mandate is ours and means nothing on a repository we do not own.
+              # self-mandate is ours and means nothing on a repository we do not own. It follows the derived
+              # affiliation, not a login: a repository under any owner in OPERATOR_OWNERS is the same
+              # operator's, so an org-owned subject carries the ref too (D-70).
               mandate_ref=("self-mandate-0001" if affiliation == "same_owner" else None),
               verifier_affiliation=affiliation,
               access_channel=access_channel(tok))

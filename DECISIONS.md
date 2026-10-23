@@ -137,6 +137,8 @@ difference matters.
 quiet conflict of interest on the shop window. Eight of eight current records are affiliated. A
 registry that hides that is not a trust artefact.
 
+**Addendum (T-IN-04).** "The operator" is a list of GitHub owners, not one login; see D-70.
+
 ## D-13. Absence carries its reason everywhere, not only inside the score
 
 **Decision.** Every field of the accountability block is `{value, measured, reason}`. The default is
@@ -4137,3 +4139,30 @@ prints itself.
 
 **Not decided here.** Backfilling `request-id:` for records written before this change; shipping the
 Function (the dispatcher's push and deploy steps); the reason codes of any intake run beyond T-IN-01's.
+
+## D-70. Affiliation is decided by an owner list the verifier maintains, not by one login
+
+**Context.** `OPERATOR = "whiteknightonhorse"` was the only rule (`scripts/cohort.py`,
+`~/orchestra/intake_cron.py`). A repository under the operator's organisation `defycard-com` would
+have been published as `independent`: false on the face of the record (D-12), permanent, and with
+no removal path. Fable ruling PROVEK-QA-1023 q-1, 2026-10-23.
+
+**Decision.** (1) `data/operator_owners.json` lists the GitHub users and organisations the operator
+owns or controls; a repository under any of them is `same_owner`, every other owner `independent`.
+It ships `whiteknightonhorse` and `defycard-com`; any further owner is added by the operator in a
+one-line commit. (2) `scripts/cohort.py` reads it as `OPERATOR_OWNERS` (lower-cased), never defaults
+it, and refuses at import when it is missing or empty, as it does for `data/subjects.json`.
+`affiliation_violations` and `derive_affiliation` take `owners`; the self-mandate ref follows the
+derived affiliation, so an org-owned subject carries it too (same operator). (3) `intake_cron.py`
+runs outside the repository and cannot import; it reads the same file (T-IN-01).
+`tests/test_operator_owners_file.py` holds that the gate follows the file, that the list has no
+duplicates and only valid GitHub logins.
+
+**Why.** D-54's lesson: a fact checked against one spelling of itself drifts from the fact. The
+conflict of interest is the verifier's, so the verifier states it, in one place both programs read.
+A declared-affiliation field on the application form is rejected: it would make the applicant's
+claim the source of our disclosure, and an applicant with an interest in reading as independent
+is the one party whose claim cannot decide it.
+
+**Not decided here.** Which further owners belong on the list (the operator's question, Q3 of the
+ruling); `intake_cron.py` reading the file (T-IN-01).

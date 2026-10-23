@@ -30,17 +30,15 @@ def _load():
     assert fn is not None, (
         "scripts/cohort.py no longer defines affiliation_violations - AUD-001's gate was removed "
         "or renamed, and this test targets nothing")
-    operator = next((n.value.value for n in tree.body
-                      if isinstance(n, ast.Assign)
-                      and any(isinstance(t, ast.Name) and t.id == "OPERATOR" for t in n.targets)),
-                     None)
-    assert operator, "scripts/cohort.py no longer defines OPERATOR at module scope"
-    ns: dict = {"OPERATOR": operator}
+    owners = frozenset(o.lower() for o in json.loads(
+        (ROOT / "data" / "operator_owners.json").read_text(encoding="utf-8"))["owners"])
+    assert owners, "data/operator_owners.json lists no owner"
+    ns: dict = {"OPERATOR_OWNERS": owners}
     exec(compile(ast.Module(body=[fn], type_ignores=[]), str(_SRC), "exec"), ns)
-    return ns["affiliation_violations"], operator
+    return ns["affiliation_violations"], owners
 
 
-VIOLATIONS, OPERATOR = _load()
+VIOLATIONS, OWNERS = _load()
 
 
 def test_MUTATION_the_live_defect_shape_is_CAUGHT():
@@ -48,20 +46,20 @@ def test_MUTATION_the_live_defect_shape_is_CAUGHT():
     stored as "independent". The gate MUST flag it - this is the RED half of the mutational
     control the defect itself represents."""
     subjects = [{"repo": "whiteknightonhorse/cryptocardhub-public", "affiliation": "independent"}]
-    assert VIOLATIONS(subjects, operator=OPERATOR) == ["whiteknightonhorse/cryptocardhub-public"]
+    assert VIOLATIONS(subjects, owners=OWNERS) == ["whiteknightonhorse/cryptocardhub-public"]
 
 
 def test_the_corrected_row_clears_the_gate():
     """The GREEN half: the same repo, fixed to same_owner, passes."""
     subjects = [{"repo": "whiteknightonhorse/cryptocardhub-public", "affiliation": "same_owner"}]
-    assert VIOLATIONS(subjects, operator=OPERATOR) == []
+    assert VIOLATIONS(subjects, owners=OWNERS) == []
 
 
 def test_a_genuinely_independent_subject_is_not_flagged():
     """The control the other direction: an applicant who is not the operator is allowed to carry
     "independent" - the gate must not turn every non-same_owner row into a violation."""
     subjects = [{"repo": "someone-else/their-project", "affiliation": "independent"}]
-    assert VIOLATIONS(subjects, operator=OPERATOR) == []
+    assert VIOLATIONS(subjects, owners=OWNERS) == []
 
 
 def test_owner_match_is_case_insensitive():
@@ -69,14 +67,23 @@ def test_owner_match_is_case_insensitive():
     the logic it is meant to double-check, or a differently-cased owner would pass one and fail the
     other."""
     subjects = [{"repo": "WhiteKnightOnHorse/some-repo", "affiliation": "independent"}]
-    assert VIOLATIONS(subjects, operator=OPERATOR) == ["WhiteKnightOnHorse/some-repo"]
+    assert VIOLATIONS(subjects, owners=OWNERS) == ["WhiteKnightOnHorse/some-repo"]
+
+
+def test_MUTATION_an_org_owned_repository_stored_independent_is_CAUGHT():
+    """PROVEK-QA-1023 q-1 / D-70: one login was the whole rule, so `defycard-com/x` - under the
+    operator's organisation - would have been published as independent."""
+    subjects = [{"repo": "defycard-com/x", "affiliation": "independent"}]
+    assert VIOLATIONS(subjects, owners=OWNERS) == ["defycard-com/x"]
+    subjects[0]["affiliation"] = "same_owner"
+    assert VIOLATIONS(subjects, owners=OWNERS) == []
 
 
 def test_the_real_subjects_file_has_no_violations_today():
     """The actual fix: `data/subjects.json` as committed must already be clean, not merely
     clean-able. If this fails, the corpus itself still carries AUD-001's defect."""
     doc = json.loads((ROOT / "data" / "subjects.json").read_text(encoding="utf-8"))
-    assert VIOLATIONS(doc["subjects"], operator=OPERATOR) == []
+    assert VIOLATIONS(doc["subjects"], owners=OWNERS) == []
 
 
 def test_module_import_refuses_to_run_on_a_bad_corpus():

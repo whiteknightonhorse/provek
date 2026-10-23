@@ -1,0 +1,17 @@
+{
+  "_comment": [
+    "THE verifier's own GitHub owners. A repository under any login listed here is `same_owner`;",
+    "every other owner is `independent`. D-12: affiliation is disclosed on the face of the record.",
+    "D-54 / AUD-001: a false `independent` on an operator-owned repository lived on the live registry",
+    "for nine days. PROVEK-QA-1023 q-1: one login was the only rule, so a repository under the",
+    "operator's organisation would have been published as `independent` -- the same defect, new instance.",
+    "",
+    "WHAT COUNTS: a GitHub user or organisation the operator owns or controls. It is the verifier's",
+    "fact, not the applicant's claim, so there is no form field for it. Add an owner here, in a",
+    "one-line commit, when the operator takes control of another account; comparison is lower-cased.",
+    "",
+    "Read, never defaulted: scripts/cohort.py refuses to import when this file is missing or lists",
+    "no owner. ~/orchestra/intake_cron.py cannot import cohort.py and reads this same file (T-IN-01)."
+  ],
+  "owners": ["whiteknightonhorse", "defycard-com"]
+}

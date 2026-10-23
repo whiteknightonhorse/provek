@@ -82,7 +82,7 @@ Three things here are the whole product — two quoted above, and the third,
 |---|---|
 | `"level": "check_did_not_run"` | **Absence is a state, never a zero.** A verdict always says which reason applies; a zero would mean "measured, and fully non-autonomous", a different claim about the world. |
 | `"confidence": "inferred"` | The published number is never stronger than the measurement behind it. |
-| `"verifier_affiliation": "same_owner"` | Every record discloses whether the verifier and the subject share an owner — re-derived at each re-measure, not a label set once and trusted forever. |
+| `"verifier_affiliation": "same_owner"` | Every record discloses whether the verifier and the subject share an owner — re-derived at each re-measure, not a label set once and trusted forever. The verifier's own GitHub owners are listed in `data/operator_owners.json`. |
 
 ## How it's built
 
