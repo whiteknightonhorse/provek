@@ -18,7 +18,7 @@ import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from 
 import { dirname, join } from "node:path";
 import { loadNotes, noteArticle, notesIndexArticle, noteLd } from "./notes/emit.mjs";
 import { loadTemplates } from "../templates/emit.mjs";
-import { slugOf } from "./discovery.mjs";
+import { slugOf, withdrawnSlugs, passportRows } from "./discovery.mjs";
 import { buildRegistryMarkdown, buildPassportMarkdown, buildLandingMarkdown }
   from "./markdown.mjs";
 import { pageMarkdown } from "./html_to_markdown.mjs";
@@ -464,10 +464,10 @@ if (notes.length) {
   }
 }
 
-for (const row of registry.subjects) {
+const withdrawn = withdrawnSlugs(JSON.parse(readFileSync("../data/subjects.json", "utf8")));
+for (const row of passportRows(registry, passports, withdrawn)) {
   const s = slug(row.subject_id);
   const p = passports[s];
-  if (!p) continue;
   const verdict = p.verified.projection === null
     ? `not measured (${p.verified.projection_absent_reason})`
     : `${p.verified.projection} of 100`;

@@ -11,8 +11,15 @@
     "understate every external verdict and, worse, would let a self-verification hide among them.",
     "",
     "source records where the row came from. `intake:<id>` is the KV key's uuid, so any published",
-    "verdict can be traced back to the request that asked for it."
+    "verdict can be traced back to the request that asked for it.",
+    "",
+    "withdrawn lists repositories taken off the published surface at their owner's request (or",
+    "the operator's), each as {repo, at, reason, by: operator|subject}. A repo is in `subjects` OR",
+    "in `withdrawn`, never both: cohort.py refuses at import. The next run drops the carried row",
+    "and deletes the two passport files; scripts/withdraw_subject.py makes the move. Git history",
+    "and third-party caches keep what was published (D-72)."
   ],
+  "withdrawn": [],
   "subjects": [
     {
       "repo": "whiteknightonhorse/AI-Property-Sales-Platform",

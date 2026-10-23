@@ -429,6 +429,14 @@ export default function Apply() {
                 not ask for.
               </li>
               <li>
+                <strong className="text-[var(--color-ink-2)]">Removal:</strong> a published row and
+                passport are withdrawn on request by the repository&rsquo;s owner &mdash; open an
+                issue on github.com/whiteknightonhorse/provek from an account that can act for the
+                repository, or reply to any message from us. The next run removes the page, the
+                badge and the summary. Git history and third-party caches keep what was
+                published; we cannot recall those, and we say so rather than promise otherwise.
+              </li>
+              <li>
                 {/* This paragraph claimed "no identifier is created for you" while Google
                     Analytics sets one on this very page. The first half of that sentence was
                     scoped to the form and true; the second was unscoped and false - a false

@@ -44,6 +44,12 @@ export default function Registry({ reg }: { reg: R }) {
         {FUNNEL_SENTENCE} {INCUBATOR_SENTENCE}
       </p>
 
+      {/* T-IN-07 (D-72): said once, here, beside the table whose rows can be withdrawn. */}
+      <p className="mt-2 text-sm text-[var(--color-ink-2)] max-w-[46rem]">
+        A withdrawn subject is not listed. When the withdrawn row carried a verdict, the
+        withdrawal is recorded in the corrections log.
+      </p>
+
       {/* Corrections log (phase-2 plan): all errata live at /registry/corrections/, in full and
           unabridged - this is a POINTER, not a summary of what they said. Reproducing their text
           here as well would be the same rule written in two places (LAW #ONE-PLACE); the full,

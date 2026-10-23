@@ -55,6 +55,22 @@ export function passportIdsFromDir(passportsDir) {
  *  instead of guessing `subject_id` back out of a slug found on disk. */
 export const slugOf = (id) => id.replace(/[:/]/g, "_");
 
+/** Slugs of the subjects withdrawn in data/subjects.json (T-IN-07, D-72). The cohort run already
+ *  drops the row and deletes the passport, so this is the second lock: a stale file that survives
+ *  a hand-edit still gets no `/p/<slug>/` page and no sitemap entry. */
+export function withdrawnSlugs(subjectsDoc) {
+  return new Set((subjectsDoc.withdrawn ?? []).map((w) => slugOf(`git:${w.repo}`)));
+}
+
+/** The registry rows that get a `/p/<slug>/` page: a passport exists and the subject is not
+ *  withdrawn. The one route-list builder for passport pages, so a test can hold it. */
+export function passportRows(registry, passports, withdrawn) {
+  return registry.subjects.filter((row) => {
+    const s = slugOf(row.subject_id);
+    return passports[s] && !withdrawn.has(s);
+  });
+}
+
 /** `{slug, subjectId}` pairs, slug-sorted - the one place a filesystem slug and the registry's own
  *  `subject_id` are joined. Guessing `subject_id` back out of the slug (undoing the `slugOf`
  *  collapse) is not attempted: it is not invertible in general, and a passport title is exactly

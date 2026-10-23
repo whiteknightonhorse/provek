@@ -1,0 +1,26 @@
+tree: 9471fd81378b30dcebc500dda007178de813a5ab (dirty)
+
+$ pytest tests/test_withdrawn_subjects_are_not_carried.py (control, branch as built)
+........                                                                 [100%]
+8 passed in 0.88s
+rc=0
+
+# (a) cohort.py: previous_rows no longer drops a withdrawn row
+FAILED tests/test_withdrawn_subjects_are_not_carried.py::test_the_carried_set_excludes_a_withdrawn_row_and_says_so
+1 failed, 7 passed in 0.41s
+
+# (b) cohort.py: the run no longer deletes the passport files
+FAILED tests/test_withdrawn_subjects_are_not_carried.py::test_the_run_removes_only_the_withdrawn_passport_files
+1 failed, 7 passed in 0.31s
+
+# (c) cohort.py: withdrawn_violations finds nothing, so a repo may be in both lists
+FAILED tests/test_withdrawn_subjects_are_not_carried.py::test_a_repo_in_both_lists_is_named
+FAILED tests/test_withdrawn_subjects_are_not_carried.py::test_both_lists_naming_one_repo_is_a_systemexit_at_import
+2 failed, 6 deselected in 1.27s
+
+# (d) discovery.mjs: passportRows ignores the withdrawn set
+FAILED tests/test_withdrawn_subjects_are_not_carried.py::test_the_page_route_list_has_no_withdrawn_subject
+1 failed, 7 passed in 0.28s
+
+# restored
+8 passed in 0.27s

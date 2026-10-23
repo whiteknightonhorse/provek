@@ -4192,3 +4192,31 @@ when ticked. `tests/test_consent_is_not_bundled.py` runs the Function and reads 
 **Not decided here.** Whether any updates are ever sent (there is still no mail sender); reading old
 `consent: true` records as anything other than what they say; shipping the Function and the page
 (the dispatcher's push and deploy steps).
+
+## D-72. Withdrawal is one edit the next run honours
+
+**Context.** No removal path existed. Rows are upserted and carried forward
+(`scripts/cohort.py` `previous_rows`), so taking a subject off meant hand-editing six files;
+`SECURITY.md` names an issue as the only channel; the `/apply/` privacy list promised deletion of
+the intake record and said nothing about a published passport. Fable ruling PROVEK-QA-1023 q-1.
+
+**Decision.** (1) `data/subjects.json` gains `withdrawn: [{repo, at, reason, by}]`, `by` being
+`operator` or `subject`. A repo in both lists is a `SystemExit` at import, and a file without the
+key is refused, not defaulted. (2) `previous_rows()` drops a withdrawn row and prints `withdrawn, not
+carried: <subject_id>`; the run deletes that subject's two named passport files
+(`public/passports/`, `web/public/data/passports/`) and nothing else. `prerender.mjs` builds its
+`/p/<slug>/` list through `passportRows`, which skips a withdrawn slug as a second lock. (3)
+`scripts/withdraw_subject.py` makes the move, refuses an unknown repository and a second withdrawal,
+and prints the chain. (4) Intake refuses a withdrawn repository with `withdrawn_by_request`
+(`docs/INTAKE_OPERATIONS.md`; the reader is T-IN-01). (5) `/apply/` says who may ask and how;
+`/registry/` says withdrawn subjects are not listed and that a withdrawal of a row that carried a
+verdict is recorded in the corrections log.
+
+**What stays public, and why it is said.** Git history, the previous deploys, search-engine and
+archive caches and anything a third party copied keep what was published. This repository cannot
+recall them, and a promise of erasure it cannot keep would be the kind of claim this registry exists
+to catch in others. The withdrawal entry itself (repo, time, reason, who) stays in
+`data/subjects.json`, so the absence is explained rather than silent.
+
+**Not decided here.** Who verifies that a requester can act for a repository (a person reads the
+issue); intake reading `withdrawn` (T-IN-01); any withdrawal of a real subject.

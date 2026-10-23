@@ -29,7 +29,8 @@ def _load_previous_rows():
     # `datetime` is injected so that reverting the fix under test (back to a bare
     # `datetime.fromisoformat` call) reproduces the REAL mutation - a ValueError on a trailing `Z` -
     # instead of a NameError artefact of this harness lifting the function without its module scope.
-    ns = {"json": json, "Row": Row, "parse_iso_ts": parse_iso_ts, "datetime": datetime}
+    ns = {"json": json, "Row": Row, "parse_iso_ts": parse_iso_ts, "datetime": datetime,
+          "WITHDRAWN": [], "withdrawn_subject_ids": lambda w: set()}   # T-IN-07: nobody withdrawn
     module = ast.Module(body=[fn], type_ignores=[])
     exec(compile(module, str(src), "exec"), ns)
     return ns

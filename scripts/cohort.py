@@ -109,10 +109,55 @@ def optional_token() -> str | None:
 # subject could only be added by editing the program that measures subjects -- and intake has to
 # add one without a human opening an editor. Read, never defaulted: a missing file is a refusal,
 # because an empty cohort would publish a registry of nothing and read as "we verify no one".
-_SUBJECTS = json.loads((Path(__file__).resolve().parents[1] / "data" / "subjects.json")
-                        .read_text(encoding="utf-8"))["subjects"]
+_SUBJECTS_DOC = json.loads((Path(__file__).resolve().parents[1] / "data" / "subjects.json")
+                           .read_text(encoding="utf-8"))
+_SUBJECTS = _SUBJECTS_DOC["subjects"]
 if not _SUBJECTS:
     raise SystemExit("data/subjects.json lists no subjects; refusing to publish an empty registry")
+
+
+# WITHDRAWAL IS ONE EDIT THE NEXT RUN HONOURS (T-IN-07, D-72). Rows are upserted and carried
+# forward, so before this a subject could only leave the published surface by hand-editing six
+# files. A repo under `withdrawn` is dropped from the carried rows and its two passport files are
+# removed by the run. Read, never defaulted: a missing key is a refusal, because a file that
+# silently lacks the list would republish what somebody asked us to take down.
+def withdrawn_violations(subjects: list[dict], withdrawn: list[dict]) -> list[str]:
+    """Repos named by BOTH lists. Pure, so a test feeds it fixtures without importing this module."""
+    gone = {w["repo"] for w in withdrawn}
+    return [s["repo"] for s in subjects if s["repo"] in gone]
+
+
+def withdrawn_subject_ids(withdrawn: list[dict]) -> set[str]:
+    """The registry's `subject_id` of every withdrawn repo (`git:owner/name`, see `Binding`)."""
+    return {f"git:{w['repo']}" for w in withdrawn}
+
+
+def remove_withdrawn_passports(withdrawn: list[dict], passport_dirs: list[Path]) -> list[Path]:
+    """Delete `<slug>.json` for each withdrawn subject, in each directory, and nothing else.
+
+    Named files only - never a glob, never `git clean`: the only paths this can touch are the
+    passport of a subject that asked to leave. Returns the files it removed.
+    """
+    removed = []
+    for sid in sorted(withdrawn_subject_ids(withdrawn)):
+        name = sid.replace(":", "_").replace("/", "_") + ".json"
+        for d in passport_dirs:
+            f = d / name
+            if f.is_file():
+                f.unlink()
+                removed.append(f)
+    return removed
+
+
+try:
+    WITHDRAWN = _SUBJECTS_DOC["withdrawn"]
+except KeyError:
+    raise SystemExit("data/subjects.json has no `withdrawn` list; refusing to run without it "
+                     "(an absent list would republish a subject that asked to be removed)") from None
+_both = withdrawn_violations(_SUBJECTS, WITHDRAWN)
+if _both:
+    raise SystemExit("data/subjects.json lists a repository as both a subject and withdrawn: "
+                     + ", ".join(_both))
 COHORT = [s["repo"] for s in _SUBJECTS]
 AFFILIATION = {s["repo"]: s["affiliation"] for s in _SUBJECTS}
 
@@ -233,7 +278,11 @@ def previous_rows() -> dict:
     if not prev.is_file():
         return {}
     rows = {}
+    _gone = withdrawn_subject_ids(WITHDRAWN)
     for _r in json.loads(prev.read_text(encoding="utf-8"))["subjects"]:
+        if _r["subject_id"] in _gone:
+            print(f"withdrawn, not carried: {_r['subject_id']}")
+            continue
         # `parse_iso_ts`, not `datetime.fromisoformat` directly (LAW #ONE-PLACE,
         # `src/abs_profile/isotime.py`) - this repository's own writer never emits a trailing `Z`,
         # but a second, independent `fromisoformat` call is exactly how AUD-002 reintroduced the
@@ -601,6 +650,8 @@ print("\nregistry:", written)
 # let intake publish verdicts into a file no reader is ever served.
 served = Path(__file__).resolve().parents[1] / "web" / "public" / "data"
 (served / "passports").mkdir(parents=True, exist_ok=True)
+for _f in remove_withdrawn_passports(WITHDRAWN, [out / "passports", served / "passports"]):
+    print(f"withdrawn, passport removed: {_f.relative_to(Path(__file__).resolve().parents[1])}")
 mirrored = 0
 for src in sorted((out / "passports").glob("*.json")):
     (served / "passports" / src.name).write_bytes(src.read_bytes())

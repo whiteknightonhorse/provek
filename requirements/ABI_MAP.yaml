@@ -177,6 +177,10 @@ scripts/dated_promises.py:        [ABI-16-11, ABI-33-4]
 # taken by code from a measured count against a ceiling keyed by the pinned version.
 scripts/check_mypy_ceiling.py:    [ABI-16-11, ABI-33-4]
 
+# T-IN-07. A subject leaves the published surface by one recorded edit, and a refusal (an unknown
+# repository, a second withdrawal) is an exit, never a silent no-op. Same pair as cohort.py's rows.
+scripts/withdraw_subject.py:      [ABI-18-3, ABI-31-4]
+
 # T-S7, and the same pair a third time because it is the same door asked its FIRST question rather
 # than a later one. The two modules above judge what a workflow NAMES; this one asks whether the
 # file naming it is a file GitHub can open at all. ABI-32-1 because a workflow that never parses

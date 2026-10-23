@@ -526,6 +526,22 @@ invisibility bears on whether to enable them, rather than a footnote to threshol
 If the dashboard count is ever wanted historically it has to be read as it happens; nothing
 recovers it afterwards.
 
+## Withdrawal (T-IN-07, D-72)
+
+A published subject leaves by one edit the next run honours: `python3 scripts/withdraw_subject.py
+owner/name --reason "..." --by operator|subject` moves the row from `subjects` to `withdrawn` in
+`data/subjects.json` (`{repo, at, reason, by}`), then the chain in `docs/LIVENESS_OPERATIONS.md`
+runs: `scripts/cohort.py` (drops the carried row, prints `withdrawn, not carried: <subject_id>`,
+removes the two passport files), build, commit, `./scripts/push.sh`, deploy. A repository may not be
+in both lists; `cohort.py` refuses at import. If the withdrawn row carried a verdict, add an entry
+to the corrections log in the same commit, because `/registry/` says it is recorded there.
+
+**Reason code `withdrawn_by_request`.** Intake must refuse a new request for a repository listed
+under `withdrawn` with `provek_state: refused`, `provek_reason: withdrawn_by_request`, so a
+withdrawn subject is not silently re-admitted by the next application. Reading the list is
+`~/orchestra/intake_cron.py`'s part (T-IN-01); this repository defines the key and the code.
+Admitting it again is the operator's decision, made by moving the entry out of `withdrawn` by hand.
+
 ## Answering a request
 
 Verification is by hand at this stage, and the site says so: no queue position, no promised date.

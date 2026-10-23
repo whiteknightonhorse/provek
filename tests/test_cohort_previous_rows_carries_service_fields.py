@@ -33,7 +33,8 @@ def _load_previous_rows():
     fn = next((n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == _FN_NAME), None)
     assert fn is not None, f"scripts/cohort.py no longer defines {_FN_NAME} - this test targets nothing"
     from datetime import datetime
-    ns = {"json": json, "Row": Row, "parse_iso_ts": parse_iso_ts, "datetime": datetime}
+    ns = {"json": json, "Row": Row, "parse_iso_ts": parse_iso_ts, "datetime": datetime,
+          "WITHDRAWN": [], "withdrawn_subject_ids": lambda w: set()}   # T-IN-07: nobody withdrawn
     module = ast.Module(body=[fn], type_ignores=[])
     exec(compile(module, str(src), "exec"), ns)
     return ns
