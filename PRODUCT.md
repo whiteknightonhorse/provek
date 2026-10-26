@@ -43,7 +43,7 @@ An ERC-8004 **validator**: the standard supplies identity and transport, the met
 The claim a neighbouring product could not truthfully copy is the methodology itself, published in
 full — including its own limits, and including the record of every check that did not run.
 
-The system is applied to itself. `provek` is row eight of its own registry, measured by the same
+The system is applied to itself. `provek` is a row of its own registry, measured by the same
 collector as everything else — and it only became measurable when the repository was opened, which
 is the mechanism working rather than a courtesy.
 
@@ -68,7 +68,7 @@ ERC-8004 read adapter, and self-application over the cohort (count: SPEC §6).
 
 The word **liveness** in that list was doing more work than the artefact until 2026-08-20: the
 module existed, passed its tests and carried two laws, and no component had ever declared an
-obligation into it. It now holds one — the commitment to re-issue the eight published rows before
+obligation into it. It now holds one — the commitment to re-issue the published rows before
 they lapse — and a gate that goes red when the interval passes unmet (`LAW-REISSUE-OR-FINDING`,
 `docs/LIVENESS_OPERATIONS.md`). One obligation is a small claim, which is why it is stated as one.
 
@@ -95,7 +95,7 @@ above produces a verdict of its own and nothing consumes it in a passport yet. A
 three operations on every current subject are `not_measured` —
 on the unreadable subjects it is all three (counts: SPEC §6) — and the passport says which of the three absences
 applies rather than scoring them zero. (This read "two of three on every current subject" until
-2026-08-20; on that date it held for four of the eight. Counted from the emitted passports, as SPEC §6 is —
+2026-08-20; on that date (the registry of that date) it held for four of its eight rows. Counted from the emitted passports, as SPEC §6 is —
 which also records why the original sentence cannot be dated from anything in this repository.)
 
 **Vocabulary that must not drift:**

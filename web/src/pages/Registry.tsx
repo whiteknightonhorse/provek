@@ -1,6 +1,6 @@
 /** The listing. Dense, plain, and honest about its size (decision D-04).
  *
- * Eight rows exist. All are affiliated. We do not invent companies to fill the table: fabricated
+ * Every row is affiliated (the count lives in SPEC §6). We do not invent companies to fill the table: fabricated
  * entries in a trust registry would be precisely the thing this product exists to expose. So the
  * near-empty state is designed rather than apologised for. */
 
