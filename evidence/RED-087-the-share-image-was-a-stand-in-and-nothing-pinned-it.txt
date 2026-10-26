@@ -1,4 +1,5 @@
 RED-087 - T-WB-05: the share image was the executor's stand-in and no gate pinned its bytes or its URL (card said RED-078; renumbered, 078-086 taken)
+tree: 8cc899bbc01af5ba804a5786f176fc7f511b38fd (dirty)
 base: origin/main 8cc899b; designed asset sha256 993e35e9f3288fa9ace3709baa9bac27bb5694d1cacf9dfed52e10d076f4a00f (58291 B)
 == (a) RED: placeholder bytes (git show origin/main:web/public/og-image.png, 25095 B)
 Mon Oct 26 11:25:21 PM UTC 2026
