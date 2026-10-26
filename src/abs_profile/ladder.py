@@ -66,8 +66,10 @@ a subject a level for adding automation - an inverted incentive in the instrumen
 autonomy measurement.
 
 It was ratified on evidence that it is not self-serving: applying it changes NEITHER of the
-operator's own scores. provek stays L3 (a second identity remains after the bot is removed) and
-APIbase stays L3 (its second account is typed `User`). A rule that rescued our own number would
+operator's own scores. As of 2026-10-26 provek reads L3 on one attributed identity (its signed
+share is below SIGNED_SHARE_FOR_L4) and APIbase reads L3 on two (its second account is typed
+`User`); an earlier version of this paragraph named a second provek identity the registry never
+showed. A rule that rescued our own number would
 have deserved more suspicion, not less.
 
 THE RESIDUAL HOLES, NAMED RATHER THAN DISCOVERED LATER:
@@ -81,7 +83,10 @@ THE RESIDUAL HOLES, NAMED RATHER THAN DISCOVERED LATER:
   operator's own scores, so it needs its own control and its own ruling, not a quiet edit by the
   interested party.
 * Hiding a second human behind a self-installed GitHub App remains possible, but requires
-  repository-admin rights, which is attack T1 above - already acknowledged as unmeasurable."""
+  repository-admin rights, which is attack T1 above - already acknowledged as unmeasurable.
+* Author forgery (attack T13, open): platform attribution is a claim the commit makes, resolved
+  against the addresses on an account, and the address is written by the committer. The author
+  count is a lower bound only for a subject that does not forge it; only a signature binds."""
 
 SIGNED_SHARE_FOR_L4 = 0.9
 """ASSIGNED. The share of commits carrying a verified signature required before a sole-author

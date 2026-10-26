@@ -10,7 +10,7 @@ from enum import Enum
 
 class EvidenceClass(str, Enum):
     SELF_REPORTED = "self_reported"                       # the subject, for free
-    PLATFORM_OBSERVED = "platform_observed"               # the subject, at the cost of sustained theatre
+    PLATFORM_OBSERVED = "platform_observed"               # observed by the platform, forgeable by one line of configuration, not proven
     THIRD_PARTY_ATTESTED = "third_party_attested"         # requires collusion with a third party
     CRYPTOGRAPHICALLY_BOUND = "cryptographically_bound"   # requires compromising a key
 

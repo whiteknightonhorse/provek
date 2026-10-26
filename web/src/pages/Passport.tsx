@@ -750,6 +750,19 @@ export default function Passport({ p }: { p: P }) {
               </div>
             ))}
           </div>
+          {/* THE EVIDENCE CLASS, STATED WHERE THE AUTHORS ARE COUNTED (T-0569). GitHub's attribution
+              of a commit to an account resolves the address the committer wrote; only a signature
+              binds. The signed share is the part of the count that does. `evidence_class` is not a
+              passport field: every observation above comes from the git collector, whose class is
+              platform_observed (`src/collector/github.py`), so the sentence is the page's own. */}
+          <p className="mt-3 text-xs text-[var(--color-ink-3)] max-w-[46rem]" data-evidence-class="platform_observed">
+            Evidence class: platform-observed &mdash; identities are GitHub&rsquo;s attribution of
+            commit addresses, which the subject writes itself; signed commits:{" "}
+            {v.observations.signed_commit_share && typeof v.observations.signed_commit_share === "object"
+              && v.observations.signed_commit_share.measured
+              ? formatObservationValue("signed_commit_share", v.observations.signed_commit_share.value as number)
+              : "not measured"}.
+          </p>
         </section>
       )}
 

@@ -1,0 +1,13 @@
+tree: 95234fada3b089ba3275631f3ca8f8b6abf9977b (dirty)
+RED-081 (T-0569) - a method note that quotes a live author count carries its date, and every passport page states its evidence class, run 2026-10-26 on worktree 0569 (renumber at rebase if taken).
+
+Gates: web/notes/src/*.md, web/src/pages/Passport.tsx.
+Tests: tests/test_notes_cite_live_numbers_with_a_date.py, tests/test_passport_page_shows_evidence_class.py.
+Red 1 - the note as it stood on main (95234fa): test_every_sentence_quoting_a_live_number_carries_its_date
+  1 failed, 1 passed. Offenders: the "APIbase is L3 for a different reason" sentence, "APIbase has a
+  single author", "It is L3 because signed_commit_share is 0.0", and three generic "distinct author"
+  sentences (reworded to "author", which states the rule without a number).
+Red 2 - mutation on web/dist/p/git_whiteknightonhorse_APIbase/index.html ("Evidence class:" ->
+  "Evidence kind:"): test_every_passport_page_states_the_evidence_class_and_the_signed_share[APIbase]
+  failed (1 failed, 10 passed). Restored; 11 passed.
+After the fix: note test 2 passed; note length bound (600) kept by splitting paragraphs; tests/test_registry_corrections.py and the site-copy count now say six.

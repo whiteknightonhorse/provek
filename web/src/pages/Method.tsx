@@ -134,7 +134,7 @@ export default function Method() {
           <Facts
             rows={[
               ["self_reported", "the subject, for free — never enters the score"],
-              ["platform_observed", "the subject, at the cost of sustained theatre"],
+              ["platform_observed", "observed by the platform, forgeable by one line of configuration, not proven"],
               ["third_party_attested", "requires collusion with a third party"],
               ["cryptographically_bound", "requires compromising a key"],
             ]}

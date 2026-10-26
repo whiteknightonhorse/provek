@@ -1,4 +1,4 @@
-/** The corrections log, in full. All five corrections this project has ever published, byte-for-byte.
+/** The corrections log, in full. All six corrections this project has ever published, byte-for-byte.
  *
  * WHY THIS PAGE EXISTS (the corrections-log step of the phase-2 plan). `/registry/` used to carry both errata in full,
  * as two `<Strip>` blocks above the table - honest, and increasingly not what a reader who has
@@ -36,7 +36,7 @@ export default function Corrections() {
 
         <h1 className="text-2xl font-semibold tracking-tight">All corrections</h1>
         <p className="mt-2 text-sm text-[var(--color-ink-2)]">
-          Every erratum this project has published, in full and unabridged. Five exist today.
+          Every erratum this project has published, in full and unabridged. Six exist today.
         </p>
 
         {/* THE MOVE, NAMED. A reader who bookmarked or quoted the original location on `/registry/`
@@ -48,7 +48,8 @@ export default function Corrections() {
           it has ever needed. The third was published directly here, the address this page has
           carried since that move. The fourth was added on 2026-10-23, for a change made on 2026-09-01
           that had no notice of its own. The fifth was added on 2026-10-26, for a subject withdrawn
-          from the registry because its project was retired.
+          from the registry because its project was retired. The sixth was added on 2026-10-26, for a
+          method note that stated two live author counts the registry did not show.
         </p>
 
         <div className="mt-6 space-y-4">
@@ -116,6 +117,21 @@ export default function Corrections() {
               badge with it, because the project it described no longer exists. Its row read
               unverified with the reason unreadable and carried no verdict, so no verdict changed.
               Git history and copies kept by third parties still hold what was published (D-72).
+            </Strip>
+          </div>
+
+          <div>
+            <Strip tone="warn">
+              <strong>Correction, 2026-10-26.</strong> The method note on the autonomy levels said
+              that &ldquo;provek stays L3 because a second identity remains&rdquo; and that APIbase
+              had a &ldquo;single author&rdquo; and was L3 because its signed share was 0.0. The
+              registry showed neither: on 2026-10-23 and again on 2026-10-26, provek had one
+              attributed author (signed share 0.302, then 0.283) and APIbase had two (signed share
+              0.013, then 0.022). The note has been rewritten with each live number dated, and now
+              says what platform attribution does and does not prove: an author address is written
+              by the committer, so the count is a lower bound only for a subject that does not forge
+              it. No score, threshold or rule changed. Interested party: the operator&rsquo;s own
+              subjects; found by an external audit (Opus, 2026-10-24).
             </Strip>
           </div>
         </div>

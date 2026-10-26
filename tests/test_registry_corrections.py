@@ -80,6 +80,20 @@ EXPECTED_26OCT = (
     "parties still hold what was published (D-72)."
 )
 
+# The sixth entry (T-0569): the method note that quoted live author counts the registry did not show.
+# Values from the committed passports at b8698b3 (2026-10-23) and 47f9846 (2026-10-26).
+EXPECTED_26OCT_NOTE = (
+    "Correction, 2026-10-26. The method note on the autonomy levels said that \u201cprovek stays L3 "
+    "because a second identity remains\u201d and that APIbase had a \u201csingle author\u201d and was L3 "
+    "because its signed share was 0.0. The registry showed neither: on 2026-10-23 and again on "
+    "2026-10-26, provek had one attributed author (signed share 0.302, then 0.283) and APIbase had "
+    "two (signed share 0.013, then 0.022). The note has been rewritten with each live number dated, "
+    "and now says what platform attribution does and does not prove: an author address is written by "
+    "the committer, so the count is a lower bound only for a subject that does not forge it. No "
+    "score, threshold or rule changed. Interested party: the operator\u2019s own subjects; found by an "
+    "external audit (Opus, 2026-10-24)."
+)
+
 emitted = pytest.mark.skipif(not CORRECTIONS_PAGE.exists(), reason="site not built in this checkout")
 
 
@@ -92,17 +106,18 @@ def _main_text(html_path: Path) -> str:
 
 
 @emitted
-def test_all_five_corrections_are_preserved_byte_for_byte_on_the_corrections_page():
+def test_all_six_corrections_are_preserved_byte_for_byte_on_the_corrections_page():
     text = _main_text(CORRECTIONS_PAGE)
     assert EXPECTED_25AUG in text, "the 2026-08-25 erratum's text drifted from what was moved here"
     assert EXPECTED_31AUG in text, "the 2026-08-31 erratum's text drifted from what was moved here"
     assert EXPECTED_03SEP in text, "the 2026-09-03 erratum's text drifted from what was published"
     assert EXPECTED_01SEP in text, "the 2026-09-01 correction's text drifted from what was published"
     assert EXPECTED_26OCT in text, "the 2026-10-26 correction's text drifted from what was published"
+    assert EXPECTED_26OCT_NOTE in text, "the 2026-10-26 note correction's text drifted from what was published"
 
 
 @pytest.mark.skipif(not CORRECTIONS_MD.exists(), reason="markdown sibling not built in this checkout")
-def test_all_five_corrections_survive_into_the_no_js_markdown_sibling():
+def test_all_six_corrections_survive_into_the_no_js_markdown_sibling():
     """"prerender, no JS" is the whole point of moving this content to its own page - the markdown
     twin `web/markdown.mjs` derives from every page is what proves a reader (or a crawler) with no
     JavaScript still gets the exact same words."""
@@ -115,6 +130,7 @@ def test_all_five_corrections_survive_into_the_no_js_markdown_sibling():
     assert EXPECTED_03SEP in text
     assert EXPECTED_01SEP in text
     assert EXPECTED_26OCT in text
+    assert EXPECTED_26OCT_NOTE in text
 
 
 @emitted
@@ -128,6 +144,7 @@ def test_the_full_erratum_text_no_longer_lives_on_the_registry_page():
     assert EXPECTED_03SEP not in text
     assert EXPECTED_01SEP not in text
     assert EXPECTED_26OCT not in text
+    assert EXPECTED_26OCT_NOTE not in text
     assert "will be re-issued together" not in text
     assert "signature share the published" not in text
     assert "verification of the operator's own project" not in text
@@ -140,8 +157,8 @@ def test_registry_carries_exactly_one_correction_line():
     assert text.count("Erratum, 2026-08-31.") == 0
     assert text.count("Erratum, 2026-09-03.") == 0
     assert text.count("Correction, 2026-09-01.") == 0
-    assert text.count("Five corrections are on record for this registry.") == 1
-    assert text.count("All corrections (5)") == 1
+    assert text.count("Six corrections are on record for this registry.") == 1
+    assert text.count("All corrections (6)") == 1
     links = re.findall(r'<a\b[^>]*href="([^"]+)"[^>]*>\s*All corrections',
                        REGISTRY_PAGE.read_text(encoding="utf-8"))
     assert links == ["/registry/corrections/"]

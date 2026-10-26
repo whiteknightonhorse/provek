@@ -523,7 +523,8 @@ export function notesIndexArticle(notes) {
   <p class="mt-2 text-sm text-[var(--color-ink-2)] max-w-[46rem]">Each note describes one part of
   this instrument: a term it uses, a state it distinguishes, or a thing the standard underneath it
   does not settle. They document what is measured and what cannot be, and none of them advises
-  anybody on what to do about it.</p>
+  anybody on what to do about it. Notes are generated on a schedule with a random offset; each
+  carries the model that wrote it.</p>
   <ul class="mt-6">${rows}</ul>
 </article>`;
 }

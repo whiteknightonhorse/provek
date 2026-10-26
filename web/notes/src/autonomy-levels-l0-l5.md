@@ -101,11 +101,11 @@ The ladder measures autonomy; it does not measure decision quality, profitabilit
 
 L0-L5 measures a subject's operational autonomy. The operator's agents carry permissions P0-P5: observe, recommend, prepare, execute low-risk, autonomous, and self-optimizing. Using one letter for two quantities is the same defect as a return value with two states of the world. The operator's "AI Agent Fleet" document defines its own L0-L5 differently. Permissions use the letter P to keep them distinct.
 
-Some numbers are assigned rather than measured: the distinct author count (FEW_AUTHORS_FOR_L3 = 2), the signature share for L4 (SIGNED_SHARE_FOR_L4 = 0.9), and the sole author threshold (SOLE_AUTHOR = 1). These represent policy choices, not empirical findings, and they have not been ratified.
+Some numbers are assigned rather than measured: the author count (FEW_AUTHORS_FOR_L3 = 2), the signature share for L4 (SIGNED_SHARE_FOR_L4 = 0.9), and the sole author threshold (SOLE_AUTHOR = 1). These represent policy choices, not empirical findings, and they have not been ratified.
 
 ## Thresholds assigned, not measured
 
-Each threshold is a policy choice. SOLE_AUTHOR = 1 asserts that one distinct author is the strongest signal no human rota operates behind the commits. It is not proof - which is why a level built on it is capped and marked inferred. SIGNED_SHARE_FOR_L4 = 0.9 sets the signature threshold for sole-author repositories reaching L4. FEW_AUTHORS_FOR_L3 = 2 defines L3 qualification.
+Each threshold is a policy choice. SOLE_AUTHOR = 1 asserts that one author is the strongest signal no human rota operates behind the commits. It is not proof - which is why a level built on it is capped and marked inferred. SIGNED_SHARE_FOR_L4 = 0.9 sets the signature threshold for sole-author repositories reaching L4. FEW_AUTHORS_FOR_L3 = 2 defines L3 qualification.
 
 These values were bare numbers in comparison logic until 2026-08-20, when a review of the code surfaced them. A magic number at the point of comparison cannot be ratified, cannot be found when it needs changing, and cannot be told apart from a measurement. This project paid that cost before, when a cap invented for a cost that did not exist became an outage.
 
@@ -113,15 +113,19 @@ The codebase labels these **assigned, not measured**. They are a stated reading 
 
 ## Who counts as an author
 
-Accounts the platform classifies as bots are excluded from the author count, ratified by the operator on 2026-08-25. The rule follows from what `SOLE_AUTHOR` in [the methodology](/method/) claims to detect: one distinct author is the strongest signal of a human rota behind the commits. A dependency bot's commit is not evidence of a human rota. Counting it would assign people to code no person wrote and penalize adding automation - an inverted incentive in an instrument measuring autonomy.
+Accounts the platform classifies as bots are excluded from the author count, ratified by the operator on 2026-08-25. The rule follows from what `SOLE_AUTHOR` in [the methodology](/method/) claims to detect: one author is the strongest signal of a human rota behind the commits. A dependency bot's commit is not evidence of a human rota. Counting it would assign people to code no person wrote and penalize adding automation - an inverted incentive in an instrument measuring autonomy.
 
-This rule was ratified on evidence it does not serve the operator's interests. Applying it changes neither of the operator's scores. provek stays L3 because a second identity remains after the bot is removed. A rule that raised the operator's levels would deserve suspicion; unchanged scores do not.
+This rule was ratified on evidence it does not serve the operator's interests: it changed neither of the operator's levels. As of 2026-10-26, provek shows one attributed identity and reads L3 because its signed share, 0.283, is below the 0.9 a sole author must clear for L4; removing bots does not change that. A rule that raised the operator's levels would deserve suspicion; unchanged levels do not. An earlier version of this paragraph said a second identity remained; the registry never showed one, and the corrections log records it.
 
-APIbase is L3 for a different reason, corrected here 2026-08-31 after Fable found the original one false. Within its 30-day evidence window APIbase has a single author, so there is no second account for this rule to exclude at all. It is L3 because `signed_commit_share` is 0.0, below the 0.9 `SIGNED_SHARE_FOR_L4` threshold a sole author must clear to reach L4 - the same rule that keeps `pipeline.verify` from granting it L4.
+As of 2026-10-26, APIbase shows two attributed identities, which sits within the two-author band (`FEW_AUTHORS_FOR_L3 = 2`), so it reads L3 by that rule; its signed share, 0.022, would also keep it below L4 if it were a sole author. An earlier version of this paragraph, corrected 2026-08-31 and again 2026-10-26, gave other reasons: it said APIbase had one author, and the registry no longer shows that.
 
 Automation running on ordinary user accounts such as `apibase-dispatch` and `provek-dispatch` still counts as a human author. This error points downward - it understates autonomy rather than overstating it, which is the correct direction for a gate to fail in.
 
-Identity resolution is separately broken and deliberately left open. The collector reads `login` and falls back to commit e-mail, so distinct names sharing an address collapse into one author while one person with linked and unlinked accounts splits into two. [The registry](/registry/) measured this on provek on 2026-08-25. Fixing it could raise the operator's scores, requiring its own control, not a quiet edit by the interested party. Hiding a second human behind a self-installed GitHub App requires repository-admin rights, already acknowledged as the unmeasurable attack T1.
+Identity is resolved by the platform or by a signature, never by us, and the rule has three branches. A commit GitHub attributes to a login is attributed to that account. A signed commit with no login is attributed by the e-mail it was signed under. A commit with neither is counted apart as an unlinked key and opens the identity window, which floors the level at L2.
+
+What platform attribution proves is narrower than it sounds: linking an address to an account requires proving control of the address, but a commit's author address is written by whoever commits, and GitHub attributes any commit whose address is on an account's list. Anyone who knows an address on an account can write it, so only a signature binds.
+
+Counting authors by attribution therefore gives a lower bound only for a subject that does not forge author addresses; author forgery is an open attack, T13, recorded beside T1 and not measured. Fixing the e-mail fallback could raise the operator's scores, so it needs its own control, not a quiet edit by the interested party. Hiding a second human behind a self-installed GitHub App requires repository-admin rights, already acknowledged as the unmeasurable attack T1.
 
 ## Evidence classes and what a passport must show
 
@@ -131,7 +135,9 @@ A per-operation table forms the core: each row lists the operation, its level L0
 
 The accountability block sits adjacent to but apart from the score. Each field - emergency stop, claims addressee, insurance, dispute path - either holds a value or states why none was found, drawing from three categories: the check ran and qualified nothing, the check did not run, or the source was unreadable. These match the categories that qualify an operation as unmeasured, so a measured absence differs from an unchecked field and the artefact must state which.
 
-Provenance lists protocol version, profile version, evidence window span, and valid_until. An affiliation disclosure marks where verifier_affiliation is same_owner. Evidence falls into four classes by the cost to forge. Self-reported comes from the subject freely but never scores. Platform-observed comes from the subject at the cost of sustained theatre - behaviour the ecosystem captures, performed knowing it may be inspected. Third-party-attested requires collusion with a third party. Cryptographically-bound requires compromising a key and is costliest to fabricate.
+Provenance lists protocol version, profile version, evidence window span, and valid_until. An affiliation disclosure marks where verifier_affiliation is same_owner.
+
+Evidence falls into four classes by the cost to forge. Self-reported comes from the subject freely but never scores. Platform-observed is observed by the platform, forgeable by one line of configuration, not proven: the commit authorship that scores development initiation is a claim the committer writes and GitHub resolves. Third-party-attested requires collusion with a third party. Cryptographically-bound requires compromising a key and is costliest to fabricate.
 
 {{figure:registry-coverage}}
 

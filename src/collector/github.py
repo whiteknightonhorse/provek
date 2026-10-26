@@ -296,12 +296,15 @@ undesigned rather than guessed at from one ambiguous incident."""
 def authors_and_bot_commits(commits: list[dict]) -> tuple[set[str], int, set[str], int]:
     """Attributed authors, bot commits, and the keys nothing vouches for.
 
-    IDENTITY IS RESOLVED BY THE PLATFORM OR BY CRYPTOGRAPHY, NEVER BY US. A commit GitHub
-    attributes to a login is attributed: linking an address to an account requires proving you
-    control the address, and the attribution is then visible to any anonymous reader. A signed
-    commit is attributed by the signature. A commit with neither carries only the name and address
-    its author typed into their own `git config` -- written by the side being measured, which is
-    exactly what a key may not be. Merging such commits into an identity would encode a guess;
+    IDENTITY IS RESOLVED BY THE PLATFORM OR BY CRYPTOGRAPHY, NEVER BY US. Platform attribution is
+    a CLAIM the commit makes about its author, resolved by GitHub against the addresses on its
+    accounts: linking an address to an account requires proving you control it, but the address on
+    a commit is written by the committer, and anyone who knows an address on an account can write
+    it. Only a signature binds. So a commit GitHub attributes to a login is attributed, and the
+    count is a lower bound only for a subject that does not forge author addresses (open attack
+    T13, beside T1). A signed commit is attributed by the signature. A commit with neither carries
+    only the name and address its author typed into their own `git config` -- written by the side
+    being measured, which is exactly what a key may not be. Merging such commits into an identity would encode a guess;
     splitting them encodes a different guess. They are counted apart instead, and the count they
     produce is a LOWER BOUND rather than a number (Fable, 2026-08-25).
 

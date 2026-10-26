@@ -66,9 +66,9 @@ export default function Registry({ reg }: { reg: R }) {
           `tests/test_registry_corrections.py`. */}
       <div className="mt-5">
         <Strip tone="warn">
-          Five corrections are on record for this registry.{" "}
+          Six corrections are on record for this registry.{" "}
           <a href="/registry/corrections/" className="text-[var(--color-accent)] hover:underline">
-            All corrections (5) →
+            All corrections (6) →
           </a>
         </Strip>
       </div>
