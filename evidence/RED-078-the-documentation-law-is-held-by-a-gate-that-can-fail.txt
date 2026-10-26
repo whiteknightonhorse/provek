@@ -1,0 +1,18 @@
+tree: 66f7a822300c2892758fc68ca51dcdfc892b24c9 (dirty)
+RED-078 (T-0546) - the Documentation law is held by a gate that can fail, run 2026-10-26 on the worktree 0546 (renumber at rebase if taken).
+
+Gate: CLAUDE.md. Test: tests/test_docs_law_surfaces.py (LAW-DOCS-LAW-STANDS-AND-ITS-SURFACES-EXIST).
+Controls that must go red, each its own test, on copies in tmp_path:
+(a) token web/public/llms.txt removed from the section      -> test_a_dropped_surface_token_turns_red
+(b) heading duplicated                                       -> test_a_duplicated_heading_turns_red
+(c) test_readme_fragment_is_verbatim -> ..._verbatim2        -> test_a_renamed_permanent_check_turns_red
+(d) tree built from every named surface minus ALERT_TRIAGE   -> test_a_missing_surface_file_turns_red
+Real tree: test_the_law_stands_once_and_every_surface_exists.
+
+--- pytest output ---
+tests/test_docs_law_surfaces.py::test_the_law_stands_once_and_every_surface_exists PASSED [ 20%]
+tests/test_docs_law_surfaces.py::test_a_dropped_surface_token_turns_red PASSED [ 40%]
+tests/test_docs_law_surfaces.py::test_a_duplicated_heading_turns_red PASSED [ 60%]
+tests/test_docs_law_surfaces.py::test_a_renamed_permanent_check_turns_red PASSED [ 80%]
+tests/test_docs_law_surfaces.py::test_a_missing_surface_file_turns_red PASSED [100%]
+============================== 5 passed in 0.52s ===============================

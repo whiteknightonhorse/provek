@@ -643,3 +643,12 @@ laws:
     text: "a template page's Copy control reads its payload from the page's own <pre> DOM node at click time, and the /build/ index card's Copy control reads the same Template object, never a second string carried in the bundle; the copied text, the source SKILL.md, the emitted raw sibling, and the /data/templates.json and /data/templates/<slug>.json siblings are byte-identical"
     gate: web/src/components/CopyButton.tsx
     test: tests/test_template_copy_is_the_artefact.py
+  # T-0546 (FLEET-DOCS-LAW-1026). The gate is a document: sections 1-3 of the law are held by the
+  # task engine's DOCS: pre-flight and reviewer clause (~/taskloop/lib/docs-law.sh, md5 cc406711...,
+  # with ~/taskloop/test/test-docs-law.sh), which live outside this tree. A clone cannot judge a
+  # card, as it cannot judge a rollback (D-29). What it can judge: the law stands in CLAUDE.md
+  # once and whole, and every surface and permanent check section 4 names still exists.
+  - id: LAW-DOCS-LAW-STANDS-AND-ITS-SURFACES-EXIST
+    text: "Documentation law (FLEET-DOCS-LAW-1026): the law text stands in CLAUDE.md once and whole, and every surface and permanent check its section 4 names exists in this tree; sections 1-3 are enforced by the task engine's DOCS: pre-flight and reviewer clause outside this repository"
+    gate: CLAUDE.md
+    test: tests/test_docs_law_surfaces.py
