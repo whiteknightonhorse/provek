@@ -449,12 +449,18 @@ commits). With no readable previous `generated_at` the incremental run refuses; 
 `scripts/cohort.py` rewrites the "What a verdict looks like" fence in `README.md` from the passport
 it names, so the nightly (`~/orchestra/nightly_remeasure.sh`) and the intake tick treat `README.md`
 as a fifth regenerated path next to `public/passports`, `public/registry`, `web/public/data` and
-`public/erc8004`: it lands in the same data commit as the passport, and a failed night restores it.
+`public/erc8004`: it lands in the same data commit as the passport, and a night that fails at any
+step before the push restores it (files the night created there are moved to
+`~/orchestra/quarantine/<UTC>-nightly/`, never deleted; paths already dirty before the run are left
+alone). The nightly, intake, `notes_cron` and the publish step share one lock on the tree,
+`~/.provek_tree.lock`: the night waits up to 10 minutes for it, an intake tick that finds it held
+logs `tree busy` and retries on the next tick (not a red), and a publish failure after a successful
+push is retried once after 120 s, then reported as "pushed, NOT deployed".
 Because that is only true while `cohort.py` is the sole writer of `README.md` inside a run, both
 refuse to start when `git status --porcelain -- README.md` is non-empty (the log and the alert
 name it as "README.md changed BEFORE the run"): a hand edit in progress is never swept into a data commit or wiped by the undo. "Tree
 returned" is said only when HEAD and the full `git status` equal the snapshot taken before the run;
 otherwise the nightly log says "INCOMPLETE UNDO" (the Russian "undo incomplete" in
-`cohort_refresh.log`) and intake logs `RESTORE FAILED` with `leftover=`;
+`cohort_refresh.log`, with the differing paths; "tree returned" appears there only on equality) and intake logs `RESTORE FAILED` with `leftover=`;
 both name the differing paths. What to do: commit or park the hand edit, then re-run
 `bash ~/orchestra/nightly_remeasure.sh`.
