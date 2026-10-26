@@ -251,6 +251,14 @@ class Passport:
     admitting it into the score would let a subject buy a higher projection rather than earn one.
     Empty by default - a subject nobody has jointly asked to witness has an empty history, not a
     missing one."""
+    evidence_window: tuple[str, str] | None = None
+    """The window the evidence was read over, as ISO instants `(start, end)` (T-0578).
+
+    `provenance.evidence_window_days` says how long; this says WHEN, which is what a reader needs
+    to read the same history again. `end` is the instant the collector was given as `until` and
+    `start` is `end` minus the window; `PROVEK_UNTIL=<issued_at> python3 scripts/cohort.py`
+    reproduces it. Emitted as `evidence_window: {"start", "end"}`; None only for a Passport built
+    without `build()`."""
     access_channel: str = "anonymous"
     """WHICH CHANNEL the evidence came through, published rather than assumed (Fable, NEW-3).
 
@@ -292,6 +300,8 @@ class Passport:
             "valid_until": self.valid_until.isoformat(),
             "status": self.status.value,
             "provenance": asdict(self.provenance),
+            "evidence_window": ({"start": self.evidence_window[0], "end": self.evidence_window[1]}
+                                if self.evidence_window else None),
             "verified": self.verified,
             "self_reported": self.self_reported,
             "accountability": self.accountability.to_machine(),
@@ -352,6 +362,7 @@ def build(binding: Binding, scores: list[OperationScore], control_map: ControlMa
           mandate_ref: str | None = None,
           verifier_affiliation: str = "independent",
           access_channel: str = "anonymous",
+          evidence_window_end: datetime | None = None,
           service: Service | None = None,
           service_endpoint: ServiceEndpoint | None = None,
           task_history: list[dict] | None = None) -> Passport:
@@ -360,6 +371,9 @@ def build(binding: Binding, scores: list[OperationScore], control_map: ControlMa
     A map without coverage claims more than it knows (ABI-7-5), and a passport cannot stand on it.
     """
     now = now or datetime.now(timezone.utc)
+    window_end = evidence_window_end or now
+    window = ((window_end - timedelta(days=provenance.evidence_window_days)).isoformat(),
+              window_end.isoformat())
     ok = control_map.is_valid()
     verified = {
         # Confidence and limiters were computed by the scorer, armed by LAW-WEAK-SIGNAL-LIMITERS,
@@ -420,6 +434,7 @@ def build(binding: Binding, scores: list[OperationScore], control_map: ControlMa
         service=service if service is not None else Service(),
         service_endpoint=service_endpoint if service_endpoint is not None else ServiceEndpoint(),
         task_history=tuple(task_history or ()),
+        evidence_window=window,
         access_channel=access_channel,
         mandate_ref=mandate_ref,
         verifier_affiliation=verifier_affiliation,

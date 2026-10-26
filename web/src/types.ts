@@ -37,6 +37,8 @@ export interface Passport {
   issued_at: string;
   valid_until: string;
   status: string;
+  /** Absent on passports issued before T-0578. */
+  evidence_window?: { start: string; end: string } | null;
   provenance: {
     protocol_version: string;
     profile_version: string;

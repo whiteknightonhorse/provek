@@ -343,6 +343,9 @@ export default function Passport({ p }: { p: P }) {
         Issued {p.issued_at.slice(0, 19).replace("T", " ")} UTC &nbsp;|&nbsp; protocol{" "}
         {p.provenance.protocol_version} &nbsp;|&nbsp; profile {p.provenance.profile_version}{" "}
         &nbsp;|&nbsp; evidence window {p.provenance.evidence_window_days} days
+        {p.evidence_window
+          ? ` (${p.evidence_window.start.slice(0, 10)} to ${p.evidence_window.end.slice(0, 10)})`
+          : ""}
       </p>
 
       {/* "How to read this passport" - Passport clarity task. Three sentences, describing the

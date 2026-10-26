@@ -96,7 +96,9 @@ export default function Method() {
           Author counts are read over a rolling 30-day window, not over the repository's whole
           history. A subject with one author in the last 30 days and twelve before that is read as
           one author &mdash; the window is what "distinct authors" means throughout this
-          methodology, and every passport states the exact window it used.
+          methodology, and every passport states the exact window it used as <code>evidence_window</code>{" "}
+          (start and end). Reproduce: <code>{"PROVEK_UNTIL=<issued_at> python3 scripts/cohort.py"}</code>{" "}
+          reads that window again exactly, subject to GitHub's own history.
         </p>
 
         <h2 className="mt-8 text-lg font-semibold">What it does not measure</h2>

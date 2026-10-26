@@ -27,6 +27,9 @@ from src.abs_profile.ladder import L, development_initiation_level
 from src.abs_profile.measured import NotMeasured
 from src.collector.declaration import apply_declaration
 from src.collector.github import (
+    CALLS as GITHUB_CALLS,
+)
+from src.collector.github import (
     EVIDENCE_WINDOW_DAYS,
     RateLimited,
     access_channel,
@@ -367,7 +370,13 @@ if ONLY:
             continue                          # about to be re-measured; do not carry the old row
         registry.upsert(_row)
     print(f"carried forward: {len(registry._rows)} already-published row(s)")
-now = datetime.now(timezone.utc)
+# PROVEK_UNTIL is for REPRODUCTION only (T-0578): the evidence window ends at that instant instead
+# of now, and so does `issued_at`, so `PROVEK_UNTIL=<issued_at>` rebuilds a passport's own window.
+# Point the output at a scratch directory; a published run never sets it.
+_until = os.environ.get("PROVEK_UNTIL", "").strip()
+now = parse_iso_ts(_until) if _until else datetime.now(timezone.utc)
+if now is None:                               # parse_iso_ts returns None, it never raises
+    raise SystemExit(f"REFUSED: PROVEK_UNTIL={_until!r} is not an ISO instant")
 # PROFILE 1.1.0: the evidence window became the window that was published, and identity
 # resolution became the platform's job rather than ours. A passport must say which ruleset read
 # it, or a corrected document is indistinguishable from a changed subject.
@@ -457,7 +466,7 @@ def read_cohort(cohort: list[str], read_one) -> dict[str, object]:
 
 def _read_one(full: str, tok: str | None):
     """One subject's `collect_github` + `apply_declaration`, bundled for `read_cohort` above."""
-    ev = collect_github(full, tok)
+    ev = collect_github(full, tok, until=now)
     base_claims = {"source": "github", "private": ev.private} if ev.read else {"source": "github"}
     accountability, service, claims = apply_declaration(full, ev.head_sha, base_claims)
     return ev, accountability, service, claims
@@ -562,7 +571,8 @@ for full in COHORT:
               # operator's, so an org-owned subject carries the ref too (D-70).
               mandate_ref=("self-mandate-0001" if affiliation == "same_owner" else None),
               verifier_affiliation=affiliation,
-              access_channel=access_channel(tok))
+              access_channel=access_channel(tok),
+              evidence_window_end=now)
     m = p.to_machine()
     # The return value is deliberately dropped, and the call is not: publishing is the side effect
     # that puts the machine record where the row below points. The handle it returns was the
@@ -690,6 +700,11 @@ else:
     os.replace(_tmp, readme)          # an interrupted write must not leave a truncated README
     print("README fragment: re-emitted from %s (%d operation(s))" % (_names[0], len(_ops)))
 
+
+# THE RUN'S OWN CALL COUNT (T-0578). The module counter in `_api` includes the reads of a subject
+# that raised `RateLimited`, which the per-subject `github_calls=` notes never see. The nightly
+# reads this line from the log tail, and finds it with a tail grep.
+print(f"COST github_calls={GITHUB_CALLS['n']}")
 
 # A RATE-LIMITED COHORT IS AN ALARM, NOT A FOOTNOTE.
 # The nightly re-measure invokes this as `cohort.py || fail`, so a non-zero exit stops the run

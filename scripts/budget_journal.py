@@ -20,6 +20,7 @@ have. What moved IN here is the part that can be wrong independently of the netw
 """
 from __future__ import annotations
 
+import re
 from datetime import datetime, timezone
 
 
@@ -60,8 +61,17 @@ def wait_seconds_for(core: dict | None, now_epoch: int) -> int:
     return max(0, core["reset"] - now_epoch)
 
 
+def parse_cost_line(text: str) -> int | None:
+    """The LAST `COST github_calls=<n>` line `scripts/cohort.py` printed, or None when the run
+    never got that far (T-0578). None is `not measured`, never 0: a cohort that died before the
+    line made calls nobody counted."""
+    found = re.findall(r"^COST github_calls=(\d+)\s*$", text, flags=re.MULTILINE)
+    return int(found[-1]) if found else None
+
+
 def build_cost_row(*, at: datetime, n_subjects: int, seconds: int,
-                    before: dict | None, after: dict | None, waited_seconds: int) -> dict:
+                    before: dict | None, after: dict | None, waited_seconds: int,
+                    counted: int | None = None) -> dict:
     """One line of `remeasure_cost.jsonl` - MEASURED, never assumed (T-76 ruling).
 
     `github_calls_measured` is the difference of two real `/rate_limit` reads taken immediately
@@ -77,6 +87,12 @@ def build_cost_row(*, at: datetime, n_subjects: int, seconds: int,
 
     This mirrors `skip_rate_limited` in `scripts/cohort.py`: an absence is recorded by name, never
     coerced into a number that happens to print.
+
+    T-0578: `counted` is the run's own call count (the `COST github_calls=N` line `cohort.py`
+    prints from the counter in `_api`). When given it IS `github_calls_measured` and the reason is
+    None - a counter inside the one door cannot straddle the hourly reset. The two `/rate_limit`
+    reads stay in the row as a cross-check, and their difference is kept as
+    `github_calls_rate_limit_delta` (None when it cannot be trusted).
     """
     reason: str | None = None
     measured: int | None = None
@@ -87,6 +103,10 @@ def build_cost_row(*, at: datetime, n_subjects: int, seconds: int,
     else:
         measured = before["remaining"] - after["remaining"]
 
+    delta = measured
+    if counted is not None:
+        measured, reason = counted, None
+
     reference = after or before
     return {
         "at": at.isoformat(timespec="seconds"),
@@ -95,6 +115,7 @@ def build_cost_row(*, at: datetime, n_subjects: int, seconds: int,
         "seconds_per_subject": round(seconds / n_subjects, 2) if n_subjects else None,
         "github_calls_measured": measured,
         "github_calls_absent_reason": reason,
+        "github_calls_rate_limit_delta": delta,
         "remaining_before": before["remaining"] if before else None,
         "remaining_after": after["remaining"] if after else None,
         "limit": reference["limit"] if reference else None,

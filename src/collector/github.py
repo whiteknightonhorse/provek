@@ -16,7 +16,8 @@ from __future__ import annotations
 import json
 import re
 import subprocess
-from dataclasses import dataclass, field
+import tempfile
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timedelta, timezone
 
 from src.abs_profile.evidence import EvidenceClass
@@ -193,6 +194,23 @@ class RateLimited(RuntimeError):
 
 _RATE_LIMIT_PATH = "/rate_limit"
 
+CALLS = {"n": 0}
+"""Every `api.github.com` read this process made through `_api` (T-0578, Fable ruling
+AUDIT-OPUS-PROVEK-1028 q-1). The nightly used to INFER its call count from two `/rate_limit` reads
+and wrote `null` three nights of three, because the run straddles the hourly reset. A counter
+inside the one door cannot straddle anything. `/rate_limit` is not counted: it is the question
+about the budget, and GitHub does not charge it to the budget."""
+
+LAST_LINK: dict[str, str | None] = {"value": None}
+"""The `Link` response header of the most recent `_api` read, or None. Read once, after the first
+commits page, to log how many pages the window has - no behaviour hangs on it."""
+
+
+def _last_page(link: str | None) -> int | None:
+    """The page number of `rel="last"` in a `Link` header, or None when it names none."""
+    m = re.search(r'<[^>]*[?&]page=(\d+)[^>]*>\s*;\s*rel="last"', link or "")
+    return int(m.group(1)) if m else None
+
 
 def _api(path: str, token: str | None = None) -> tuple[int, object]:
     """ANONYMOUS BY DEFAULT (2026-08-20).
@@ -229,9 +247,16 @@ def _api(path: str, token: str | None = None) -> tuple[int, object]:
     headers = ["-H", "Accept: application/vnd.github+json"]
     if token:
         headers = ["-H", f"Authorization: Bearer {token}", *headers]
-    p = subprocess.run(
-        ["curl", "-s", "-w", "\n%{http_code}", *headers, f"{API}{path}"],
-        capture_output=True, text=True, timeout=60)
+    if path != _RATE_LIMIT_PATH:
+        CALLS["n"] += 1
+    LAST_LINK["value"] = None
+    with tempfile.NamedTemporaryFile("r", suffix=".hdr") as hdr:
+        p = subprocess.run(
+            ["curl", "-s", "-D", hdr.name, "-w", "\n%{http_code}", *headers, f"{API}{path}"],
+            capture_output=True, text=True, timeout=60)
+        for _line in hdr.read().splitlines():
+            if _line.lower().startswith("link:"):
+                LAST_LINK["value"] = _line.split(":", 1)[1].strip()
     raw = p.stdout.rsplit("\n", 1)
     if len(raw) != 2:
         return 0, None
@@ -362,8 +387,21 @@ def authors_and_bot_commits(commits: list[dict]) -> tuple[set[str], int, set[str
     return logins, bot_commits, unlinked_keys, unlinked_commits
 
 
-def collect_github(full_name: str, token: str | None = None) -> GitHubEvidence:
-    """Gather evidence about a repository. Unreachability yields NotMeasured, never zeros."""
+def collect_github(full_name: str, token: str | None = None,
+                   until: datetime | None = None) -> GitHubEvidence:
+    """Gather evidence about a repository. Unreachability yields NotMeasured, never zeros.
+
+    `until` is the END of the evidence window (T-0578); the window is `[until - 30 d, until]`.
+    None means now. A caller that publishes passes the same instant it stamps as `issued_at`, so
+    the window a passport declares is the window that was read, and `PROVEK_UNTIL=<issued_at>`
+    reproduces it. The notes end with `github_calls=N`, this subject's own `_api` reads.
+    """
+    calls_before = CALLS["n"]
+    ev = _collect_github(full_name, token, until)
+    return replace(ev, notes=[*ev.notes, f"github_calls={CALLS['n'] - calls_before}"])
+
+
+def _collect_github(full_name: str, token: str | None, until: datetime | None) -> GitHubEvidence:
     notes: list[str] = []
     def unread() -> Measurement:
         return Measurement(absent=NotMeasured.UNREADABLE)
@@ -399,14 +437,23 @@ def collect_github(full_name: str, token: str | None = None) -> GitHubEvidence:
     # and the dates are public, so waiting it out is visible to any reader. Between two unratified
     # numbers the PUBLISHED one wins: 30 days is a promise made in every issued document, 50 was a
     # literal in a URL that promised nothing (Fable, 2026-08-25).
-    since = (datetime.now(timezone.utc) - timedelta(days=EVIDENCE_WINDOW_DAYS)).isoformat()
+    since = ((until or datetime.now(timezone.utc)) - timedelta(days=EVIDENCE_WINDOW_DAYS)).isoformat()
+    # A reproduction (`until` given) must read the window it declares, so the upper bound goes to
+    # GitHub too; a live run has no upper bound and reads up to now, as before.
+    until_z = until.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ") if until else None
+    until_q = f"&until={until_z}" if until_z else ""
     commits: list[dict] = []
     window_fully_read = False
     code = 0
     for page in range(1, COMMIT_PAGE_CEILING + 1):
         code, batch = _api(
             f"/repos/{full_name}/commits"
-            f"?per_page={COMMITS_PER_PAGE}&since={since}&page={page}", token)
+            f"?per_page={COMMITS_PER_PAGE}&since={since}{until_q}&page={page}", token)
+        if page == 1 and code == 200:
+            # The page count of the window, logged and nothing more: the ceiling below is a
+            # stated limit (0568), and this line is how a reader sees how near a subject is to it.
+            last = _last_page(LAST_LINK["value"])
+            notes.append(f"commit pages in window: {last if last else 1}")
         if code != 200 or not isinstance(batch, list):
             break
         commits.extend(batch)
@@ -487,9 +534,14 @@ def collect_github(full_name: str, token: str | None = None) -> GitHubEvidence:
     if wf.absent is NotMeasured.APPARATUS_ABSENT:
         sched = Measurement(absent=NotMeasured.APPARATUS_ABSENT)
     elif wf.is_measured:
-        since_date = since[:10]
+        if until is not None and until_z:
+            since_z = (until - timedelta(days=EVIDENCE_WINDOW_DAYS)).astimezone(
+                timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            created = f"{since_z}..{until_z}"
+        else:
+            created = f">={since[:10]}"
         code, sruns = _api(
-            f"/repos/{full_name}/actions/runs?event=schedule&created=>={since_date}&per_page=1",
+            f"/repos/{full_name}/actions/runs?event=schedule&created={created}&per_page=1",
             token)
         if code == 200 and isinstance(sruns, dict):
             sched = Measurement(value=int(sruns.get("total_count", 0)))

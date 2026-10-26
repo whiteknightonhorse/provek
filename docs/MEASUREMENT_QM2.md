@@ -42,7 +42,7 @@ Projected to re-verification frequency, per project (from the 2026-08-24 average
 | monthly | 1 | negligible | 2 |
 
 **One GitHub token (5,000 calls/hour) supports roughly 51,000 projects at daily re-verification
-before rate limits bind**, at the 2026-08-24 measured rate.
+before rate limits bind**, at the 2026-08-24 measured rate. This assumes a token; the registry runs anonymously (see the 2026-10-26 addendum).
 
 ## Verdict on the inversion risk: REFUTED for MVP scope
 
@@ -71,3 +71,22 @@ simplification of the economics, not a hopeful reading.
 Since verification is effectively free at MVP scope, a per-verification fee is not required to
 cover cost. Whether to charge at all - and for what - stays an operator decision. The measurement
 removes a constraint; it does not choose a business model.
+
+## Addendum 2026-10-26 (T-0578): what the nightly's own journal says
+
+The verdict above prices a pass with a token (5,000 calls/hour). The production registry refuses a
+token (`scripts/cohort.py`, ABI-5-3) and reads anonymously, at 60 calls/hour per address. Since
+T-0578 the collector counts its own `api.github.com` calls and the nightly writes that count to
+`remeasure_cost.jsonl`; before it, the count was inferred from two `/rate_limit` reads and was
+`null` (`window_reset_during_run`) on three nights of three. `python3 scripts/qm2_from_journal.py`
+prints calls per subject per night and the anonymous capacity they imply. Its output on 2026-10-26:
+
+```
+journal rows: 54; counted nights: 0; earlier nights inferred from /rate_limit: 14
+earlier (not counted, before T-0570's extra call): 2.60..2.80 calls per subject
+not_measured: 0 counted nights
+```
+
+Not measured yet: no night has been counted. The earlier inferred figures predate T-0570, which
+added one call per subject, and do not enter any capacity figure. This addendum does not change
+the verdict or any threshold.
