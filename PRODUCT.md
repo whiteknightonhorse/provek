@@ -64,7 +64,7 @@ is the mechanism working rather than a courtesy.
 **Works today:** identity binding with a stated strength, evidence collection from git and the
 GitHub API, human-control map with mandatory coverage, scoring with three weak-signal limiters,
 passport issuance, public registry, status lifecycle, liveness, mandate, two transports, an
-ERC-8004 read adapter, and self-application over eight subjects.
+ERC-8004 read adapter, and self-application over the cohort (count: SPEC §6).
 
 The word **liveness** in that list was doing more work than the artefact until 2026-08-20: the
 module existed, passed its tests and carried two laws, and no component had ever declared an
@@ -135,7 +135,7 @@ Real, and honestly scarce.
 - **Nine passports** (as of 2026-10-26), all of the operator's own systems, all marked `same_owner` — an affiliated
   rehearsal of the protocol, not independent verification, and marked as such on every row and
   every document.
-- **4 verified, 4 unreadable.** The unreadable four are private repositories: they
+- **3 verified, 3 unreadable, 3 with no evidence in the window** (as of 2026-10-26). The unreadable three are private repositories: they
   answer 404 to a reader holding no credential, and a verdict on a source no third party can read
   is not reproducible. That is a measurement about the subject's public posture, not a judgement of
   it, and it is the honest result of applying the method to ourselves. Exact numbers live in the

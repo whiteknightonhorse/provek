@@ -8,7 +8,7 @@ cohort is below; the blocker is the last section.
 
 ## The cohort: who re-runs it, when, and what happens if nobody does
 
-The eight rows on `/registry` are not permanent. Each carries a `valid_until`, and
+The rows on `/registry` are not permanent. Each carries a `valid_until`, and
 `effectiveStatus()` turns a row `stale` at read time the moment that date passes — with no event, no
 commit and no notice (ABI-15-5, `LAW-STALE-IS-COMPUTED-AT-READ-TIME`). As of the run of
 2026-08-20 08:30 UTC that date is **2026-09-19** for all eight.
