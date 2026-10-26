@@ -44,3 +44,13 @@
 /.well-known/ai-catalog.json
   Content-Type: application/json
   Access-Control-Allow-Origin: *
+
+# Agent Skills Discovery index (RFC v0.2.0). JSON, CORS-open like the other discovery maps.
+/.well-known/agent-skills/index.json
+  Content-Type: application/json
+  Access-Control-Allow-Origin: *
+
+# The statement of this site's authentication. A static .md would otherwise depend on the host's
+# default type.
+/auth.md
+  Content-Type: text/markdown; charset=utf-8

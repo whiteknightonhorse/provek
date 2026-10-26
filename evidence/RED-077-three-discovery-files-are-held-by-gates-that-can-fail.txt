@@ -1,0 +1,16 @@
+tree: fe3e23d865ab33f1654c029c30d1f01f6474cff7 (dirty)
+RED-077 (T-0562) - gates able to fail, run 2026-10-26 on the worktree 0562 (renumber at rebase if taken).
+
+(a) mutation: flip one byte of a SKILL.md copy in memory
+    tests/test_discovery_maps_agree.py::test_one_flipped_byte_of_a_skill_md_turns_the_digest_comparison_red
+    asserts the recorded digest differs from the digest of the flipped bytes.
+(b) mutation: drop a template from buildAgentSkillsIndex's input -> gone from the index
+    tests/test_discovery_maps_agree.py::test_a_template_dropped_from_the_generators_input_vanishes_from_the_skills_index
+(c) mutation: hand-edit web/public/.well-known/agent-skills/index.json
+    -> test_checked_in_skills_index_is_a_fresh_run_of_the_generator fails.
+(d) auth.md: appending "token_endpoint" or "API key: abc" fails test_auth_md_names_no_credential_or_token_flow
+    (test_the_checker_can_fail shows the patterns match).
+(e) web/dist/build/<slug>/SKILL.md bytes must hash to the index digest
+    (tests/test_template_copy_is_the_artefact.py), and dist/auth.md must equal the source.
+
+Gate: env -u PROVEK_GITHUB_TOKEN ./scripts/push.sh --gates-only

@@ -106,3 +106,16 @@ def test_the_equality_check_catches_a_single_byte_difference():
     source = "## What to build\n\nSome text.\n"
     mutated = source + "\n"
     assert source != mutated, "the mutation did not change anything - fixture is vacuous"
+
+
+def test_served_skill_md_bytes_hash_to_the_skills_index_digest():
+    """The Agent Skills index (web/public/.well-known/agent-skills/index.json) promises a SHA-256
+    per SKILL.md; the artefact that must match is the one in dist, not the source (RED-077)."""
+    import hashlib
+    index = json.loads((ROOT / "web" / "public" / ".well-known" / "agent-skills" / "index.json")
+                       .read_text(encoding="utf-8"))
+    assert index["skills"], "the skills index lists nothing"
+    for s in index["skills"]:
+        served = DIST / s["name"] / "SKILL.md"
+        assert served.is_file(), f"{served} was not emitted - run `npm run build` in web/"
+        assert s["digest"] == "sha256:" + hashlib.sha256(served.read_bytes()).hexdigest(), s["name"]

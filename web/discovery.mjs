@@ -11,7 +11,8 @@
  * WHAT IS LISTED. Only what exists and answers today: the registry, every passport actually
  * present, the intake endpoint (`/api/apply` - GET 405, empty POST 400) and its one read (`GET /api/apply/<id>`), and
  * the sitemap. Nothing here describes a capability this project does not have (no OAuth
- * discovery, no MCP server, no skills) - a verdict this project cannot itself reproduce is exactly
+ * discovery, no MCP server, no A2A; the skills index lists only the SKILL.md files prerender.mjs
+ * already serves at /build/<slug>/SKILL.md) - a verdict this project cannot itself reproduce is exactly
  * what it marks other subjects down for claiming. The ARD manifest holds the same three kinds of
  * resource and nothing more: every entry carries `url`, never `data` - inlining a copy of a
  * document already served at a URL would itself be the second copy LAW #ONE-PLACE forbids.
@@ -37,7 +38,25 @@ export const SITE = "https://provek.dev";
 export function templateEntries() {
   return loadTemplates().map((t) => ({
     slug: t.slug, title: t.title, businessOperation: t.businessOperation,
+    description: t.description, bodySha256: t.bodySha256,
   }));
+}
+
+/** Agent Skills Discovery index (RFC v0.2.0, /.well-known/agent-skills/index.json): one entry per
+ *  SKILL.md this site serves at /build/<slug>/SKILL.md. `digest` is the SHA-256 of that file's raw
+ *  bytes (`bodySha256` from emit.mjs, the same hash templates/manifest.json records), so it is
+ *  read from the one place it is computed, never typed. */
+export function buildAgentSkillsIndex(templates, site = SITE) {
+  return {
+    $schema: "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
+    skills: templates.map((t) => ({
+      name: t.slug,
+      type: "skill-md",
+      description: t.description,
+      url: `${site}/build/${t.slug}/SKILL.md`,
+      digest: `sha256:${t.bodySha256}`,
+    })),
+  };
 }
 
 /** Passport ids, from the one place they are ever listed: the directory the site itself serves. */
@@ -132,7 +151,7 @@ export function buildLlmsTxt(entries, site = SITE, templates = []) {
   const templateSection = templates.length
     ? `\n## Templates\n\n${templates
         .map((t) => `- [${t.title}](${site}/build/${t.slug}/): ${t.businessOperation}. Raw: ${site}/build/${t.slug}/SKILL.md`)
-        .join("\n")}\n`
+        .join("\n")}\n- Skills index (Agent Skills Discovery 0.2.0): ${site}/.well-known/agent-skills/index.json\n`
     : "";
   return `# Provek
 
@@ -263,5 +282,6 @@ if (isMain) {
     llmsTxt: buildLlmsTxt(entries, site, templates),
     llmsFullTxt: buildLlmsFullTxt(entries, site, templates),
     aiCatalog: buildAiCatalog(entries, site),
+    agentSkillsIndex: buildAgentSkillsIndex(templates, site),
   }));
 }

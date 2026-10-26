@@ -1,0 +1,54 @@
+{
+  "$schema": "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
+  "skills": [
+    {
+      "name": "customer-support-agent",
+      "type": "skill-md",
+      "description": "Build an agent that reads a support inbox, classifies each message, drafts a reply grounded in the business's own policy documents, and escalates anything it should not answer alone. For a small online business handling 20-200 support emails a day. Use this when the goal is a working support-inbox agent, with a human deciding what actually gets sent, not a general-purpose chatbot.",
+      "url": "https://provek.dev/build/customer-support-agent/SKILL.md",
+      "digest": "sha256:072dd28c74e6aeaf0f3e093f4e9a41e13e6b59847480a4d284defa284e625d08"
+    },
+    {
+      "name": "lead-generation-agent",
+      "type": "skill-md",
+      "description": "Build an agent that finds companies and people matching a stated ideal customer profile, enriches each with public firmographic and contact data, sorts them into fit categories, and drafts a first-touch outreach message for a human to review and send. For a small B2B team without a dedicated SDR. Use this when the goal is a working lead pipeline that a human approves before anything goes out, not a mass-email blaster.",
+      "url": "https://provek.dev/build/lead-generation-agent/SKILL.md",
+      "digest": "sha256:e9625d0a64a7dbbe0755ab58b1e280400c66bc51231fa41e47b7f4a1302fbc1c"
+    },
+    {
+      "name": "ecommerce-operations-agent",
+      "type": "skill-md",
+      "description": "Build a back-office agent for a merchant: it explains recent sales performance, flags listing and inventory problems, and stages price, restock and listing changes as proposals - it never applies a change until a human explicitly approves it. Adapted from Anthropic's commerce-agents merchant agent. For a small online store owner running their own catalog without a dedicated operations team. Use this when the goal is a store back-office assistant that proposes changes for a human to approve, not one that edits a live store on its own.",
+      "url": "https://provek.dev/build/ecommerce-operations-agent/SKILL.md",
+      "digest": "sha256:2bf40800a6bfceead6c907c725dacac70e342088f8bea49e0ce62fe5dc2b3fe2"
+    },
+    {
+      "name": "market-research-agent",
+      "type": "skill-md",
+      "description": "Build an agent that produces a recurring market or competitor brief by asking multiple independent models the same research questions, having each model review the others' anonymized answers, then having one model combine everything into a single brief where every claim carries a source URL. For a small team that needs a recurring brief without relying on one analyst's or one model's unexamined view. Use this when the goal is a sourced, cross-checked brief, not a single model's unexamined summary.",
+      "url": "https://provek.dev/build/market-research-agent/SKILL.md",
+      "digest": "sha256:fcb4acb510ea70f608389dee881ba9cd906b2ad596de36ca4a497ec8aa208d8e"
+    },
+    {
+      "name": "content-production-agent",
+      "type": "skill-md",
+      "description": "Build an agent that drafts an article from a content brief, checks every factual claim in the draft against the sources it was given, flags or removes anything the sources do not support, and queues the finished piece for a human to publish - it never posts, publishes, or sends anything itself. For a small team or solo operator publishing on a regular cadence without a dedicated editorial staff. Use this when the goal is a checked, sourced draft ready for a human's final read, not an unsupervised auto-publisher.",
+      "url": "https://provek.dev/build/content-production-agent/SKILL.md",
+      "digest": "sha256:faf5c8fbaab7e9e39d4bc20c4ab8af5b10a74b14e27078f462b84a90442b3f79"
+    },
+    {
+      "name": "finance-operations-agent",
+      "type": "skill-md",
+      "description": "Build a finance back-office agent that reads invoice/receipt exports and a bank or card statement export, categorizes each transaction against the user's own chart of accounts, matches invoices to statement lines, and writes a plain-language reconciliation report naming what did and did not match. It never moves money: no payment, transfer, or payroll action exists anywhere in this template. For a small business or solo operator doing their own bookkeeping without dedicated finance staff. Use this when the goal is a categorized, reconciled report for a human to act on, not an agent with any write access to a financial account.",
+      "url": "https://provek.dev/build/finance-operations-agent/SKILL.md",
+      "digest": "sha256:66b0386334819fbae5b83358ca5e59064c1e8e8d83e3ae0f973a767df1f785f1"
+    },
+    {
+      "name": "youtube-channel-operations-agent",
+      "type": "skill-md",
+      "description": "Build an agent that operates a YouTube channel: it takes a finished video file and its metadata, tracks the channel's daily upload quota, uploads the video as unlisted, and hands the decision to make it public to a human who watches it first. It does not produce video - no editing, no script, no thumbnail, no aspect-ratio or duration rule for shorts versus long videos is decided by this template. For a small team or solo operator who already makes videos and wants the channel-side mechanics (auth, quota, queueing, the unlisted gate) automated instead of done by hand. Use this when the goal is a reliable upload pipeline for videos you already produce, not a video generator and not a growth or analytics tool.",
+      "url": "https://provek.dev/build/youtube-channel-operations-agent/SKILL.md",
+      "digest": "sha256:37f3c3baf157c9880d76dfbd70d7b480cbf3623ad6c6e87204bc7851b261dc7d"
+    }
+  ]
+}

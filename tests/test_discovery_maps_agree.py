@@ -17,6 +17,7 @@ phrasing) have no equivalent in the other two maps.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import pathlib
 import re
@@ -407,3 +408,80 @@ def test_llms_txt_lists_every_brief_badge_and_the_templates_data(live_report):
         assert f"{SITE}/p/{slug}/brief" in live_report["llmsTxt"], slug
         assert f"{SITE}/badge/{slug}.svg" in live_report["llmsTxt"], slug
     assert f"{SITE}/data/templates.json" in live_report["llmsTxt"]
+
+
+# --- Agent Skills Discovery index (RFC v0.2.0; RED-077) ------------------------------------------
+
+TEMPLATES = ROOT / "templates"
+SKILLS_INDEX = WEB / "public" / ".well-known" / "agent-skills" / "index.json"
+
+
+def _sha(b: bytes) -> str:
+    return hashlib.sha256(b).hexdigest()
+
+
+def _frontmatter_description(skill_md: str) -> str:
+    m = re.search(r'^description:\s*"((?:[^"\\]|\\.)*)"\s*$', skill_md, re.M)
+    assert m, "no quoted description in frontmatter"
+    return m.group(1).replace('\\"', '"')
+
+
+def test_skills_index_names_exactly_the_emitted_templates(live_report):
+    idx = live_report["agentSkillsIndex"]
+    assert idx["$schema"] == "https://schemas.agentskills.io/discovery/0.2.0/schema.json"
+    assert [s["name"] for s in idx["skills"]] == live_report["templateSlugs"]
+    assert set(live_report["templateSlugs"]) == {
+        p.name for p in TEMPLATES.iterdir() if (p / "SKILL.md").is_file()}
+
+
+def test_skills_index_digests_urls_and_descriptions_are_the_files(live_report):
+    manifest = json.loads((TEMPLATES / "manifest.json").read_text(encoding="utf-8"))["templates"]
+    for s in live_report["agentSkillsIndex"]["skills"]:
+        slug = s["name"]
+        raw = (TEMPLATES / slug / "SKILL.md").read_bytes()
+        assert s["type"] == "skill-md"
+        assert s["digest"] == "sha256:" + _sha(raw), slug
+        assert s["digest"] == "sha256:" + manifest[slug]["body_sha256"], slug
+        assert s["url"] == f"{SITE}/build/{slug}/SKILL.md", slug
+        assert s["description"] == _frontmatter_description(raw.decode("utf-8")), slug
+
+
+def test_checked_in_skills_index_is_a_fresh_run_of_the_generator(live_report):
+    assert SKILLS_INDEX.is_file(), "web/public/.well-known/agent-skills/index.json is missing"
+    fresh = json.dumps(live_report["agentSkillsIndex"], indent=2) + "\n"
+    assert SKILLS_INDEX.read_text(encoding="utf-8") == fresh
+
+
+def test_llms_txt_names_the_skills_index(live_report):
+    line = f"- Skills index (Agent Skills Discovery 0.2.0): {SITE}/.well-known/agent-skills/index.json"
+    assert line in live_report["llmsTxt"] and line in live_report["llmsFullTxt"]
+
+
+def test_headers_declare_the_skills_index_and_auth_md():
+    text = (WEB / "public" / "_headers").read_text(encoding="utf-8")
+    assert re.search(r"^/\.well-known/agent-skills/index\.json\n  Content-Type: application/json\n"
+                     r"  Access-Control-Allow-Origin: \*$", text, re.M)
+    assert re.search(r"^/auth\.md\n  Content-Type: text/markdown; charset=utf-8$", text, re.M)
+
+
+def test_a_template_dropped_from_the_generators_input_vanishes_from_the_skills_index():
+    script = (
+        "import { buildAgentSkillsIndex } from './discovery.mjs';"
+        "const t=(s)=>({slug:s,description:'d',bodySha256:'0'.repeat(64)});"
+        "console.log(JSON.stringify({two:buildAgentSkillsIndex([t('a-t'),t('b-t')]),"
+        "one:buildAgentSkillsIndex([t('a-t')])}));"
+    )
+    result = subprocess.run(["node", "--input-type=module", "-e", script],
+                            cwd=str(WEB), capture_output=True, text=True, timeout=30)
+    assert result.returncode == 0, result.stderr
+    doc = json.loads(result.stdout)
+    assert [s["name"] for s in doc["two"]["skills"]] == ["a-t", "b-t"]
+    assert [s["name"] for s in doc["one"]["skills"]] == ["a-t"]
+
+
+def test_one_flipped_byte_of_a_skill_md_turns_the_digest_comparison_red(live_report):
+    s = live_report["agentSkillsIndex"]["skills"][0]
+    raw = bytearray((TEMPLATES / s["name"] / "SKILL.md").read_bytes())
+    assert s["digest"] == "sha256:" + _sha(bytes(raw))
+    raw[len(raw) // 2] ^= 0x01
+    assert s["digest"] != "sha256:" + _sha(bytes(raw)), "the digest comparison cannot fail"
