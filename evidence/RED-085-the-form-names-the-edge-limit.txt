@@ -1,4 +1,4 @@
-tree: T-IN-08 worktree off origin/main 74a3d25
+tree: 949d9ca2a4585190024a5dc2782847b8e8abb266 (dirty)
 RED-085 (T-IN-08) - the form names the edge rate limit, run 2026-10-26 (card said RED-079; taken by T-0567, renumbered).
 
 Tests: tests/test_apply_form_names_the_edge_limit.py.
