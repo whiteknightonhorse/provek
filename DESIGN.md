@@ -140,8 +140,12 @@ belongs rather than eight pixels low forever.
    table is a redesign, not an addition. **Unchanged by D-16**, which permits one page that
    *describes* phase 2 and gives no reserved surface a control, a label or a nav entry — the
    pointer is here so that reading this rule alone cannot restore what D-16 qualified.
-5. No emblem or wordmark beyond the name set in type. An emblem earned before a method is the
-   substitution this product exists to detect.
+5. The one brand mark is "P." — an off-white P with a small green square at its foot, on a
+   near-black ground (D-73, operator decision 2026-10-26). Its source is
+   `web/public/brand/provek-mark.svg`; every icon the site serves is regenerated from it by
+   `python3 scripts/build_brand_icons.py`. No other emblem, and no wordmark beyond the name set in
+   type; the mark is an identifier for the tab and the home screen, not a claim of standing, and
+   it earns nothing a method has not.
 
 ## Known open items
 

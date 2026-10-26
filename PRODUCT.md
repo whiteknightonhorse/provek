@@ -122,8 +122,8 @@ must have room for these from the start, but must not describe them as coming fe
 - The entire public surface is **English-only** — code, docs, commit messages, interface.
 - Voice: a standards body, not a startup. States its own limits before it is asked. Never
   apologises for the size of the registry, and never pads it.
-- No logo or emblem exists, and none is required: an emblem earned before a method is exactly the
-  substitution this product exists to detect.
+- The brand mark is "P." with the green dot; the rule and its source are in
+  [DESIGN.md](DESIGN.md) § Rules a future change must not break, item 5.
 - Colour, typography and motion are **decided and recorded** in `DESIGN.md`: IBM Plex, two
   authored palettes, and one visual device — the unfilled slot, a ruled blank where an
   unmeasured value would have gone.

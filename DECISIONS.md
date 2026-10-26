@@ -4220,3 +4220,28 @@ to catch in others. The withdrawal entry itself (repo, time, reason, who) stays 
 
 **Not decided here.** Who verifies that a requester can act for a repository (a person reads the
 issue); intake reading `withdrawn` (T-IN-01); any withdrawal of a real subject.
+
+## D-73. One brand mark, "P." with the green dot, regenerated from one SVG
+
+**Context.** `DESIGN.md` rule 5 said "No emblem or wordmark beyond the name set in type", `PRODUCT.md`
+said "No logo or emblem exists, and none is required", and `web/BRIEF.md` repeated it as an
+anti-goal. The site nonetheless needed a favicon, a home-screen icon and the `image` in
+`agent-registration.json`. Operator decision 2026-10-26 (Fable ruling PROVEK-AGENT-READY-1026
+ruling-1 §7 Q1, option B): "P." with the green dot is the brand mark everywhere.
+
+**Decision.** (1) The mark is `web/public/brand/provek-mark.svg`, a vector redraw of the operator's
+240 px reference, three sampled colours, the P as one path, no font. (2) `scripts/build_brand_icons.py`
+regenerates `favicon.svg`, `favicon.ico` (16/32/48), `apple-touch-icon.png` (180), `icon-192.png` and
+`icon-512.png` from it; `tests/test_brand_icons_regenerate_from_source.py` fails when a committed icon
+differs from a fresh render. (3) `DESIGN.md` rule 5 is rewritten in place as the one canonical
+statement; `PRODUCT.md` and `web/BRIEF.md` carry one line and a pointer. (4) Pillow is added to
+`requirements/ci-tests.in` and pinned (12.3.0, with hashes) in `ci-tests.txt`, because that test
+imports it and the comparison is byte-exact.
+
+**Supersedes.** The prose of `DESIGN.md` rule 5, `PRODUCT.md` (the "No logo or emblem exists" line) and
+`web/BRIEF.md` (the first anti-goal) as they stood at 66f7a82. No earlier D-entry stated the rule, so
+none needs a "superseded by" marker.
+
+**Not decided here.** `web/public/og-image.png` keeps its current art; it is decided separately.
+The mark is an identifier, not a claim: the principle that an emblem earned before a method is the
+substitution this registry exists to detect stands, and the mark carries no score, badge or verdict.

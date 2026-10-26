@@ -22,3 +22,7 @@ pytest-cov
 # run every gate. A hand-written scanner cannot answer that question - being more permissive than
 # the machine it stands in for is the whole defect it would be written to catch.
 pyyaml
+# D-73: `tests/test_brand_icons_regenerate_from_source.py` re-renders web/public/brand/provek-mark.svg through Pillow and
+# compares the committed PNG and ICO bytes; without Pillow the tests job errors at collection.
+# The version is pinned by the compiled sibling so the zero-tolerance LANCZOS comparison holds.
+pillow

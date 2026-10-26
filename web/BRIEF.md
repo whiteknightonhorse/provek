@@ -42,8 +42,9 @@ slots, which stay disabled and unannounced.
 
 **Anti-goals, in the product's own terms:**
 
-- No emblem, mark, or wordmark invented to look established. An emblem earned before a method is
-  the substitution this product exists to detect.
+- The one brand mark is "P." with the green dot, an identifier and not a claim of standing; nothing
+  else of the kind, and no wordmark beyond the name. The rule is `DESIGN.md` § Rules a future change
+  must not break, item 5.
 - No decorative charts. A bar that restates the number beside it is not evidence, and a bar that
   implies precision we do not have is worse.
 - No gradient-on-dark "AI product" idiom. The category signal we want is *registry*, not *startup*.
