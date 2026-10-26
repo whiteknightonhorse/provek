@@ -43,6 +43,24 @@ fields, `unknown_outcome:<value>` for anything else, `no-store`, and never `cont
 `request-id:` key and answers 404 `no_such_request`; backfill by listing `request:` and writing the
 index if one is ever wanted. The page `/apply/status/?id=<id>` renders it.
 
+### Why a request is deferred (T-0566-a)
+
+A red step of the run never reruns the whole pipeline every five minutes: the admitted requests are
+deferred (`provek_defer_reason`, `provek_deferred_until`, `provek_attempts`) and the status endpoint
+shows that reason as `reason` and the time as `next_attempt_after`.
+
+| Reason prefix | Who is at fault | When it ends |
+|---|---|---|
+| `github_rate_limited_until_<time>` | GitHub's shared anonymous budget | at the named reset; refused as `repository_not_readable_for_24h` only after 24 h of `github_*` deferrals |
+| `github_unreachable_*`, `github_credentials_rejected_http_401` | GitHub or our credential | next hour; same 24 h rule |
+| `verifier_red_<step>` (measure, build, commit, push, deploy, confirm) | us: the run went red | 1 h, then 2 h, 4 h, at most 6 h between tries; never turns into a refusal, and after 24 h the alert says "applicant waiting > 24 h: <repo>" |
+| `live_registry_unreadable` | us or the edge: the live registry could not be read after a deploy | same backoff as `verifier_red_*`; never a refusal |
+
+An alert file (`~/orchestra/INTAKE_ALERT_OPEN`) exists only once Telegram answered 200. It is recalled by
+the first green publish, or by a tick that finds no request waiting on our red and a clean `git status`
+("queue empty, tree clean"). A run with nothing to commit skips `push.sh` and the publish step and goes
+straight to the live check.
+
 ## What happens without anyone
 
 1. A submission is validated at `/api/apply` — repository URL shape, address shape, honeypot.
