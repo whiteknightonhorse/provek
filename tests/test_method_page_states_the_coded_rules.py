@@ -44,6 +44,11 @@ def test_the_page_states_the_floor_the_unreachable_level_and_the_limiters():
         assert needle in rules, needle
 
 
+def test_the_page_defines_the_runtime_trace_as_a_scheduled_run_in_the_window():
+    """T-0570: O2 reads workflow runs started by `schedule` inside the window, not lifetime runs."""
+    assert "a runtime trace is a workflow run started by schedule inside the window" in _rules_section()
+
+
 def test_open_items_no_longer_lists_what_the_rules_section_closes():
     open_items = _text(PAGE).split("Open items")[1]
     for gone in ("the rules for L0, L1, L2 and L5", "the full list of limiters O1-O3",

@@ -43,7 +43,8 @@ CMAP = ControlMap([ControlPath(Surface.GITHUB, Capability.IMPROVE_OR_FIX, True)]
 def _read_evidence(distinct_authors: int = 1, workflow_runs: int = 1) -> GitHubEvidence:
     return GitHubEvidence("whiteknightonhorse/some-repo", False, "deadbeef",
                           Measurement(value=1.0), Measurement(value=distinct_authors),
-                          Measurement(value=0.0), Measurement(value=workflow_runs))
+                          Measurement(value=0.0), Measurement(value=workflow_runs),
+                          scheduled_runs_in_window=Measurement(value=workflow_runs))
 
 
 def _built_passport():

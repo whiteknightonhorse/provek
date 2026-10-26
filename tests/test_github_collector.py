@@ -48,8 +48,11 @@ def test_runtime_trace_requires_actual_runs_not_just_readability():
     def m(v):
         return Measurement(value=v)
 
-    ev = GitHubEvidence("x/y", True, "s", m(1.0), m(1), m(0.0), m(0))
+    ev = GitHubEvidence("x/y", True, "s", m(1.0), m(1), m(0.0), m(0), scheduled_runs_in_window=m(0))
     assert ev.workflow_runs.is_measured is True
     assert ev.has_runtime_trace is False
-    ev2 = GitHubEvidence("x/y", True, "s", m(1.0), m(1), m(0.0), m(42))
+    ev2 = GitHubEvidence("x/y", True, "s", m(1.0), m(1), m(0.0), m(42), scheduled_runs_in_window=m(1))
     assert ev2.has_runtime_trace is True
+    # Lifetime runs of any trigger are NOT a trace (T-0570): 42 runs, none scheduled in the window.
+    ev3 = GitHubEvidence("x/y", True, "s", m(1.0), m(1), m(0.0), m(42), scheduled_runs_in_window=m(0))
+    assert ev3.has_runtime_trace is False and ev3.runtime_trace_read is True

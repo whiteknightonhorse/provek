@@ -4273,5 +4273,36 @@ rises. Today's registry (authors 2 / 1 / 1 for the three projections) is unchang
 
 **Supersedes in part.** D-56 (the two-thresholds clause); marked there.
 
-**Not decided here.** O2 (runtime trace) is published as coded today; card 0570 changes it.
+**Not decided here.** O2 (runtime trace) is published as coded today; card 0570 changes it
+(superseded by D-75).
 `SIGNED_SHARE_FOR_L4`, `SOLE_AUTHOR` and the window are unchanged.
+
+## D-75. A runtime trace is a scheduled run in the window
+
+**Context.** Limiter O2 capped a weak mixed signal at L2 unless the subject had a "runtime trace".
+The collector read that as `workflow_runs > 0`, where `workflow_runs` is the `total_count` of
+`/actions/runs` for the repository's whole history and every trigger. A push-triggered CI that a human
+starts by pushing satisfied "something starts without a human at the keyboard", so the limiter never
+fired (live counts 5136 / 1072 / 566). Fable ruling AUDIT-OPUS-PROVEK-1028 q-1 ruling-1 (2026-10-26),
+audit P1-05. GitHub's OpenAPI description of "list workflow runs for a repository" documents the
+parameters used: `event` ("Returns workflow run triggered by the event you specify") and `created`
+("Returns workflow runs created within the given date-time range", search date syntax such as `>=2026-09-26`).
+
+**Decision.** (1) New measurement `scheduled_runs_in_window`: `total_count` of
+`/repos/{full}/actions/runs?event=schedule&created=>={window start}&per_page=1`, the window being the 30 days
+the commits read uses. One more call per subject. A non-200 answer is `unreadable` with a note; a subject whose
+unfiltered read is `apparatus_absent` stays `apparatus_absent` with no second call; otherwise a measured integer,
+zero included. (2) `has_runtime_trace` is `scheduled_runs_in_window` measured and above zero. `workflow_runs`
+stays as a displayed observation. (3) O2 still caps at L2 in both failing states, because L2 means "no evidence
+above L2" and never a negative verdict (ABI-33-4); the limiter string now says which:
+`O2:no_scheduled_run_in_window->capped_L2` (measured zero or no CI at all) and
+`O2:trace_not_measured->capped_L2` (unreadable). (4) `/method/` states the sentence; the passport carries
+`scheduled_runs_in_window` beside `workflow_runs`.
+
+**Effect.** This can only lower levels. provek has three scheduled workflows and keeps its trace; whether
+APIbase and mcp-protocol-tester have a scheduled run in the window is not known here, and the rule applies as
+it falls. The next night applies this to all nine rows; levels may fall.
+
+**Supersedes.** The O2 clause "without a runtime trace the level is capped at L2 (as coded today)" on `/method/`
+and in ADR-0005, edited in place; the limiter string `O2:no_runtime_trace->capped_L2` is retired (it survives
+only in dated evidence files).

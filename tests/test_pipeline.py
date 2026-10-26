@@ -182,7 +182,7 @@ def test_a_github_remote_is_scored_through_platform_closure_not_just_the_local_c
     behind the unsigned commits - the ratified rule (Fable, 2026-08-25) that an OPEN identity window
     is a LOWER BOUND, not a count, and floors the level at L2.
 
-    `runtime_trace` is forced true here (via `workflow_runs`) so the O2 weak-signal limiter cannot
+    `runtime_trace` is forced true here (via `scheduled_runs_in_window`) so the O2 weak-signal limiter cannot
     also produce L2 and mask whether the closure gate itself ran - this test isolates that one gate.
     """
     from src.abs_profile.measured import Measurement
@@ -200,6 +200,7 @@ def test_a_github_remote_is_scored_through_platform_closure_not_just_the_local_c
                              distinct_authors=Measurement(value=1),
                              bot_author_share=Measurement(value=0.0),
                              workflow_runs=Measurement(value=1),
+                             scheduled_runs_in_window=Measurement(value=1),
                              identity_window_closed=Measurement(value=False))
     monkeypatch.setattr(pipeline_module, "collect_github", lambda full_name, *a, **kw: fake_gh)
 

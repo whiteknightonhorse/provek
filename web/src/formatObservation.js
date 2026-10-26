@@ -16,7 +16,7 @@
 
 /** Keys whose measured value is a share of commits (0..1), not a count. Read from
  *  `scripts/cohort.py`'s `observations()`: these three alone are `round(n / len(commits), 3)`.
- *  `distinct_authors`, `workflow_runs` and `unlinked_key_count` are plain counts and must not be
+ *  `distinct_authors`, `workflow_runs`, `scheduled_runs_in_window` and `unlinked_key_count` are plain counts and must not be
  *  multiplied by 100 - a count rendered as a percentage would misstate what it measures. */
 export const SHARE_OBSERVATION_KEYS = [
   "signed_commit_share",

@@ -9,8 +9,8 @@ subject's self-report, and forging it is cheap - the subject owns all of its own
 
 ## Decision - three limiters, implemented in code
 * **O1** a mixed signal yields `confidence=INFERRED`, never `MEASURED`;
-* **O2** the signal ALONE does not justify L3+; without a runtime trace of initiation the ceiling
-  is L2;
+* **O2** the signal ALONE does not justify L3+; without a runtime trace of initiation (a workflow
+  run started by `schedule` inside the 30-day window, D-75) the ceiling is L2;
 * **O3** the signal is stronger at REFUTING: a contradiction lowers a claimed level, while
   agreement only weakly supports it.
 

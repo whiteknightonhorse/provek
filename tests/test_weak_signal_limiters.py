@@ -26,7 +26,16 @@ def test_O2_weak_signal_ALONE_cannot_justify_L3_or_above():
     """The key limiter: without a runtime trace of initiation the ceiling is L2."""
     s = score_operation("dev", L.L4, OBS, weak_mixed_signal=True, runtime_trace=False)
     assert s.level is WEAK_SIGNAL_CEILING
-    assert "O2:no_runtime_trace->capped_L2" in s.limiters_applied
+    assert "O2:no_scheduled_run_in_window->capped_L2" in s.limiters_applied
+
+
+def test_O2_an_unreadable_trace_caps_too_and_says_so():
+    """Both cap (L2 is the floor, never a negative verdict, ABI-33-4); the string tells them apart."""
+    s = score_operation("dev", L.L4, OBS, weak_mixed_signal=True, runtime_trace=False,
+                        trace_read=False)
+    assert s.level is WEAK_SIGNAL_CEILING
+    assert "O2:trace_not_measured->capped_L2" in s.limiters_applied
+    assert "O2:no_scheduled_run_in_window->capped_L2" not in s.limiters_applied
 
 
 def test_O2_runtime_trace_lifts_the_ceiling():

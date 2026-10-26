@@ -1,0 +1,9 @@
+tree: a9c47ca61a5f2bfd5d20d27ce96f9a6cbb72a65b (dirty)
+RED-082 (T-0570) - limiter O2 reads workflow runs started by `schedule` inside the window, run 2026-10-26 on worktree 0570 (renumber at rebase if taken; RED-081 is T-0569's, unmerged).
+
+Gates: src/collector/github.py (has_runtime_trace), src/verify/scorer.py.
+Tests: tests/test_scheduled_runs_in_window.py, tests/test_github_collector.py.
+Mutation: has_runtime_trace -> `self.workflow_runs.is_measured and self.workflow_runs.value > 0` (the old rule):
+  3 failed, 6 passed - 1000 lifetime runs / 0 scheduled is not capped,
+  the HTTP 500 case is not capped, test_runtime_trace_requires_actual_runs reads 42 runs as a trace.
+Restored; 23 passed.

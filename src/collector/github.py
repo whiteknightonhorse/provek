@@ -87,6 +87,13 @@ class GitHubEvidence:
     with `not measured` -- which would reward a subject for injecting one anonymous commit."""
     unlinked_commit_share: Measurement = field(default_factory=lambda: Measurement(value=None, absent=NotMeasured.UNREADABLE))
     unlinked_key_count: Measurement = field(default_factory=lambda: Measurement(value=None, absent=NotMeasured.UNREADABLE))
+    scheduled_runs_in_window: Measurement = field(default_factory=lambda: Measurement(value=None, absent=NotMeasured.UNREADABLE))
+    """Workflow runs started by the `schedule` event inside the evidence window (T-0570, Fable).
+
+    The runtime trace of limiter O2. `workflow_runs` counts every run of any trigger across the
+    repository's whole history, so a push-triggered CI that a human starts by pushing satisfied
+    "something starts without a human at the keyboard". A scheduled run is the trace that does.
+    Measured zero, unreadable, and no CI apparatus at all stay three different states."""
     evidence_class: EvidenceClass = EvidenceClass.PLATFORM_OBSERVED
     notes: list[str] = field(default_factory=list)
 
@@ -94,11 +101,18 @@ class GitHubEvidence:
     def has_runtime_trace(self) -> bool:
         """Is there a runtime trace of initiation (limiter O2 from the Fable ruling).
 
-        CI runs are NOT proof that a business is autonomous, but they are an observable trace that
-        something starts without a human at the keyboard. Without such a trace, a weak signal has
-        no right to justify L3 or above.
+        A trace is a workflow run started by `schedule` inside the evidence window (T-0570): CI
+        that only a push starts is not a trace that something starts without a human at the
+        keyboard. Without such a trace, a weak signal has no right to justify L3 or above.
         """
-        return self.workflow_runs.is_measured and self.workflow_runs.value > 0
+        return self.scheduled_runs_in_window.is_measured and self.scheduled_runs_in_window.value > 0
+
+    @property
+    def runtime_trace_read(self) -> bool:
+        """Did the trace READ finish? False only for `unreadable`; a measured zero and a repository
+        with no CI apparatus at all are both answers, and the scorer words them differently."""
+        return (self.scheduled_runs_in_window.is_measured
+                or self.scheduled_runs_in_window.absent is NotMeasured.APPARATUS_ABSENT)
 
 
 def publishable_source(ev: GitHubEvidence) -> bool:
@@ -189,7 +203,8 @@ def _api(path: str, token: str | None = None) -> tuple[int, object]:
     evidence/RED-037-*): `whiteknightonhorse/gov-auction-report` now answers 404, not 200, and a
     404 short-circuits `collect_github` after the FIRST call - it never reaches the commits or runs
     endpoints - so the three subjects `measure_qm2.py` exercises cost 3 + 3 + 1 = 7 calls, not the
-    flat 3-per-subject this docstring assumed. A collector that measures its own subjects can be
+    flat 3-per-subject this docstring assumed. T-0570 adds ONE call per subject that has CI at all
+    (the scheduled-runs read): 3 + 3 + 1 becomes 4 + 4 + 1 = 9 for those three. A collector that measures its own subjects can be
     as stale as any other measurement; this one had gone four days without being re-run against
     the sources it describes.
 
@@ -454,7 +469,7 @@ def collect_github(full_name: str, token: str | None = None) -> GitHubEvidence:
         if total_runs:
             wf = Measurement(value=total_runs)
         else:
-            # APPARATUS_ABSENT (Fable, 2026-09-01). This endpoint carries no `since` filter - it
+            # APPARATUS_ABSENT (Fable, 2026-09-01). This UNFILTERED read carries no window - it
             # is not a windowed read - so `total_count: 0` is not "none in the last thirty days",
             # it is "none have ever existed". Measured on `cryptocardhub-public`. Publishing that
             # as a measured `value: 0` would let a structural fact about the subject's platform
@@ -466,9 +481,28 @@ def collect_github(full_name: str, token: str | None = None) -> GitHubEvidence:
         wf = unread()
         notes.append(f"CI runs not read, HTTP {code}")
 
+    # THE TRACE O2 READS (T-0570): runs started by `schedule` inside the same window the commits
+    # use. One more call per subject. No apparatus ever -> no second call, same absence; an
+    # unreadable first read leaves the trace unreadable too.
+    if wf.absent is NotMeasured.APPARATUS_ABSENT:
+        sched = Measurement(absent=NotMeasured.APPARATUS_ABSENT)
+    elif wf.is_measured:
+        since_date = since[:10]
+        code, sruns = _api(
+            f"/repos/{full_name}/actions/runs?event=schedule&created=>={since_date}&per_page=1",
+            token)
+        if code == 200 and isinstance(sruns, dict):
+            sched = Measurement(value=int(sruns.get("total_count", 0)))
+        else:
+            sched = unread()
+            notes.append(f"scheduled CI runs not read, HTTP {code}")
+    else:
+        sched = unread()
+
     return GitHubEvidence(full_name, bool(repo.get("private")), head,
                           signed, authors, bots, wf, notes=notes,
                           owner=(repo.get("owner") or {}).get("login"),
                           identity_window_closed=closed,
                           unlinked_commit_share=unlinked_share,
-                          unlinked_key_count=unlinked_key_count)
+                          unlinked_key_count=unlinked_key_count,
+                          scheduled_runs_in_window=sched)

@@ -317,7 +317,8 @@ export default function Method() {
             cannot tell L0 or L1 from L2; no rule here assigns L0 or L1.</li>
           <li>L5 is unreachable: no rule assigns it.</li>
           <li>O1: an operation justified by this weak mixed signal alone is marked inferred.</li>
-          <li>O2: without a runtime trace the level is capped at L2 (as coded today).</li>
+          <li>O2: a runtime trace is a workflow run started by <code className="font-mono">schedule</code> inside
+            the window; without one the level is capped at L2.</li>
           <li>O3: implemented in the scorer, not exercised in production: no subject declares a level.</li>
           <li>Boundary: more than 1 000 commits in the window leave the window open, and the level is L2.</li>
         </ul>

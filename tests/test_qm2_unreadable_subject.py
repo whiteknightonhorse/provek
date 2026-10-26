@@ -47,7 +47,8 @@ def _unread(full_name: str = "whiteknightonhorse/gov-auction-report") -> GitHubE
 def _read(distinct_authors: int, workflow_runs: int = 0) -> GitHubEvidence:
     return GitHubEvidence("whiteknightonhorse/some-repo", False, "deadbeef",
                           Measurement(value=1.0), Measurement(value=distinct_authors),
-                          Measurement(value=0.0), Measurement(value=workflow_runs))
+                          Measurement(value=0.0), Measurement(value=workflow_runs),
+                          scheduled_runs_in_window=Measurement(value=workflow_runs))
 
 
 def test_an_unread_subject_gets_neither_a_level_nor_a_projection():

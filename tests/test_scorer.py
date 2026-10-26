@@ -59,7 +59,7 @@ def test_confidence_and_limiters_survive_to_the_emitted_artefact():
 
     assert ops[0]["confidence"] == "inferred", "an O1-limited level may not be published as measured"
     assert "O1:mixed_classes->inferred" in ops[0]["limiters_applied"]
-    assert "O2:no_runtime_trace->capped_L2" in ops[0]["limiters_applied"]
+    assert "O2:no_scheduled_run_in_window->capped_L2" in ops[0]["limiters_applied"]
     assert ops[1]["measured"] is False
     assert ops[1]["level"] == "check_did_not_run"
 

@@ -132,7 +132,8 @@ def score_subject(ev: gh.GitHubEvidence, cmap: ControlMap) -> OperationScore:
     lvl = L.L4 if (ev.distinct_authors.is_measured and ev.distinct_authors.value == 1) else L.L3
     return score_operation("development_initiation", lvl,
                            (EvidenceClass.PLATFORM_OBSERVED,), cmap.implied_level_cap(),
-                           weak_mixed_signal=True, runtime_trace=ev.has_runtime_trace)
+                           weak_mixed_signal=True, runtime_trace=ev.has_runtime_trace,
+                           trace_read=ev.runtime_trace_read)
 
 
 def registry_row(subject_id: str, p: Passport, ref: str) -> Row:

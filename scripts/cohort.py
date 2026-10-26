@@ -397,6 +397,7 @@ def observations(ev) -> dict:
         "distinct_authors": m(ev.distinct_authors),
         "bot_author_share": m(ev.bot_author_share),
         "workflow_runs": m(ev.workflow_runs),
+        "scheduled_runs_in_window": m(ev.scheduled_runs_in_window),
         # PUBLISHED SO THE CLOSURE CAN BE RECOMPUTED, not just the count that came out of it.
         # Without these a reader sees `distinct_authors: 1` and cannot tell a genuinely
         # sole-authored repository from one whose commits nothing vouches for.
@@ -525,6 +526,7 @@ for full in COHORT:
     # consults this in the branch where the level is absent.
     dev = (score_operation("development_initiation", lvl, observed, cmap.implied_level_cap(),
                            weak_mixed_signal=True, runtime_trace=ev.has_runtime_trace,
+                           trace_read=ev.runtime_trace_read,
                            absent_reason=ev.distinct_authors.absent)
            if publishable else
            OperationScore("development_initiation", NotMeasured.UNREADABLE, (), Confidence.MEASURED))

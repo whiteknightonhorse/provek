@@ -17,8 +17,8 @@ self-report, and forging it is cheap - the subject owns all of its own keys. So 
 HERE, in code, not in a docstring: a rule written only in a comment is not enforced.
 
   O1. A mixed signal yields confidence=INFERRED, never MEASURED, and the class mix is disclosed.
-  O2. The signal ALONE cannot justify L3 or above: that needs a runtime trace of initiation.
-      Without one, the level is capped at L2.
+  O2. The signal ALONE cannot justify L3 or above: that needs a runtime trace of initiation: a
+      workflow run started by `schedule` inside the window (T-0570). Without one, the level is capped at L2.
   O3. The signal is stronger at REFUTING than at confirming: a contradiction legitimately lowers
       a claimed level, while agreement only weakly supports it.
 """
@@ -63,6 +63,7 @@ def score_operation(operation: str,
                     *,
                     weak_mixed_signal: bool = False,
                     runtime_trace: bool = False,
+                    trace_read: bool = True,
                     claimed_level: L | None = None,
                     absent_reason: NotMeasured | None = None) -> OperationScore:
     """Score ONE operation. Absent usable evidence yields not_measured, never L0.
@@ -114,7 +115,11 @@ def score_operation(operation: str,
         limiters.append("O1:mixed_classes->inferred")
         if not runtime_trace and level > WEAK_SIGNAL_CEILING:  # O2
             level = WEAK_SIGNAL_CEILING
-            limiters.append("O2:no_runtime_trace->capped_L2")
+            # Both cap: L2 means "no evidence above L2", never a negative verdict (ABI-33-4).
+            # The string says which of the two it was (T-0570): a measured zero, or a trace the
+            # collector could not read.
+            limiters.append("O2:no_scheduled_run_in_window->capped_L2" if trace_read
+                            else "O2:trace_not_measured->capped_L2")
 
     if claimed_level is not None and level < claimed_level:     # O3
         limiters.append("O3:contradicts_claim->claim_rejected")

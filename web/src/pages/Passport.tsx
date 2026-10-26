@@ -21,6 +21,7 @@ const OBS_LABEL: Record<string, string> = {
   distinct_authors: "Distinct commit authors",
   bot_author_share: "Share of commits from bot or app accounts",
   workflow_runs: "Automated CI runs observed",
+  scheduled_runs_in_window: "CI runs started by a schedule in the last 30 days",
   head_sha: "Commit the reading was taken at",
   // Added 2026-08-31 - these three carried no label at all and rendered under their raw
   // machine name (`identity_window_closed`, `unlinked_commit_share`, `unlinked_key_count`)
@@ -44,6 +45,7 @@ const OBS_GROUP: Record<string, "authorship" | "reading"> = {
   unlinked_commit_share: "authorship",
   unlinked_key_count: "authorship",
   workflow_runs: "reading",
+  scheduled_runs_in_window: "reading",
   identity_window_closed: "reading",
   head_sha: "reading",
 };
@@ -61,8 +63,10 @@ const OP_LABEL: Record<string, string> = {
 const LIMITER_TEXT: Record<string, string> = {
   "O1:mixed_classes->inferred":
     "evidence of mixed forgery cost, so this level is inferred rather than measured",
-  "O2:no_runtime_trace->capped_L2":
-    "no runtime trace, so the level is capped at L2 whatever the repository suggests",
+  "O2:no_scheduled_run_in_window->capped_L2":
+    "no workflow run started by a schedule in the window, so the level is capped at L2 whatever the repository suggests",
+  "O2:trace_not_measured->capped_L2":
+    "the scheduled-run trace could not be read, so the level is capped at L2 whatever the repository suggests",
   "O3:contradicts_claim->claim_rejected":
     "the subject claimed a higher level than the evidence supports; the claim was rejected",
   control_map_cap:

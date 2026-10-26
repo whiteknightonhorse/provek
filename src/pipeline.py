@@ -124,6 +124,7 @@ def verify(remote: str, binding: Binding, transport, registry: PublicRegistry,
                               gh.identity_window_closed)
         observed = (EvidenceClass.PLATFORM_OBSERVED,) if publishable else ()
         runtime_trace = gh.has_runtime_trace
+        trace_read = gh.runtime_trace_read
         default_inspected = reads_completed(gh)
         default_absent_reason = GITHUB_DID_NOT_ANSWER if not publishable else GITHUB_PARTIAL_READ
     else:
@@ -131,6 +132,7 @@ def verify(remote: str, binding: Binding, transport, registry: PublicRegistry,
         lvl = _observed_level(ev.signed_commit_share, ev.distinct_authors)
         observed = (EvidenceClass.PLATFORM_OBSERVED,) if local_read_ok else ()
         runtime_trace = False
+        trace_read = False      # no GitHub remote: the trace was never read
         default_inspected = local_read_ok
         default_absent_reason = GITHUB_DID_NOT_ANSWER
 
@@ -140,7 +142,8 @@ def verify(remote: str, binding: Binding, transport, registry: PublicRegistry,
 
     scores: list[OperationScore] = [
         score_operation("development_initiation", lvl, observed, cap,
-                        weak_mixed_signal=True, runtime_trace=runtime_trace),
+                        weak_mixed_signal=True, runtime_trace=runtime_trace,
+                        trace_read=trace_read),
         score_operation("deployment", None, ()),        # runtime not presented -> not_measured
         score_operation("treasury_control", None, ()),  # outside MVP scope -> not_measured
     ]
