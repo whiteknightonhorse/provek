@@ -102,6 +102,7 @@ def test_readme_run_it_succeeds_from_a_genuinely_fresh_clone(tmp_path):
 
     env = dict(os.environ)
     env.pop(_REPRODUCE_ENV, None)  # exactly one clone deep - see the module docstring
+    env.pop("PROVEK_GITHUB_TOKEN", None)  # README promises "no credential at all"; cohort.py refuses a set token
     env["PATH"] = f"{venv_dir / 'bin'}{os.pathsep}{env.get('PATH', '')}"
 
     for command in commands[1:]:  # [0] is the clone above, done with a local path instead of the URL

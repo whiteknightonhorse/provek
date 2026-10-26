@@ -157,8 +157,11 @@ def test_malformed_provek_until_is_refused():
     from os import environ
     from pathlib import Path
     root = Path(__file__).resolve().parent.parent
+    # The push door runs with PROVEK_GITHUB_TOKEN set (T-0571), and cohort.py refuses a token
+    # before it reads PROVEK_UNTIL, so the ambient token must not reach this child.
+    env = {k: v for k, v in environ.items() if k != "PROVEK_GITHUB_TOKEN"}
     r = subprocess.run([sys.executable, "scripts/cohort.py"], cwd=root,
-                       env={**environ, "PROVEK_UNTIL": "not-a-date"},
+                       env={**env, "PROVEK_UNTIL": "not-a-date"},
                        capture_output=True, text=True, timeout=120)
     assert r.returncode != 0
     assert "REFUSED: PROVEK_UNTIL='not-a-date'" in (r.stderr + r.stdout)
