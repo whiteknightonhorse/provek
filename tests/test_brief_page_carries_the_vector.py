@@ -114,3 +114,15 @@ def test_cache_is_short():
     m = re.search(r"max-age=(\d+)", r["cacheControl"] or "")
     assert m, r["cacheControl"]
     assert int(m.group(1)) <= 600
+
+
+def test_head_carries_social_tags_and_a_short_description():
+    """The brief is rendered by a Function, so a walk over web/dist never sees it: guard it here."""
+    r = run("verified_three_ops")
+    body = r["body"]
+    for tag in ('property="og:image"', 'property="og:title"', 'property="og:description"',
+                'name="twitter:card"'):
+        assert tag in body, f"{tag} missing from the brief page head"
+    assert "https://provek.dev/og-image.png" in body
+    m = re.search(r'<meta name="description" content="([^"]*)"', body)
+    assert m and 0 < len(m.group(1)) <= 160

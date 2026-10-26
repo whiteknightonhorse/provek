@@ -152,13 +152,20 @@ function page(p, slug) {
     </div>
   </section>`;
 
+  const desc = `Summary autonomy passport for ${p.subject_id}. Status ${status}.`;
+
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
-<meta name="description" content="Summary autonomy passport for ${esc(p.subject_id)}. Status ${esc(status)}.">
+<meta name="description" content="${esc(desc)}">
+<meta property="og:type" content="website">
+<meta property="og:title" content="${esc(title)}">
+<meta property="og:description" content="${esc(desc)}">
+<meta property="og:image" content="${SITE}/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="${SITE}/p/${esc(slug)}/brief">
 <style>${STYLE}.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);}</style>
 </head>
