@@ -76,7 +76,7 @@ into one word. Inventing that rule to satisfy a sentence in this document is pre
 travel this project exists to detect. A registry `confidence` column, if it is wanted, is a
 recorded decision first and a column second.
 
-Must handle the **honest current state**: eight rows, all affiliated. See §6.
+Must handle the **honest current state**: the registry rows (count in §6), all affiliated.
 
 ### 3.3 Landing (`/`) — for subjects
 
@@ -435,7 +435,7 @@ From specification §11.4. A commission on transfers is excluded forever.
 
 Streams 3 and 4 are the real business, and both are **accumulating assets**. The registry page is
 therefore not a directory — it is the visible surface of the asset being accumulated. It should
-read that way even at eight rows.
+read that way even with few rows.
 
 ## 6. Data — real, and honestly scarce
 
@@ -443,8 +443,8 @@ read that way even at eight rows.
 
 The master specification's first cohort is eleven. The three that are not here are named
 in [`docs/COHORT_EXCLUSIONS.md`](docs/COHORT_EXCLUSIONS.md) with the §2.7 condition each
-one fails, because a registry that silently holds eight where its own specification says
-eleven has made an unexplained choice.
+one fails, because a registry that silently holds fewer rows than the eleven its own
+specification names has made an unexplained choice.
 
 ⚠️ **Corrected 2026-08-20.** This table listed a projection for all eight. It stopped being true
 when the pipeline moved to an anonymous channel: **four** of the eight subjects are private
@@ -465,15 +465,15 @@ the drift this project exists to catch.
 The membership and counts above are dated 2026-10-26 and restated in [`docs/COHORT_EXCLUSIONS.md`](docs/COHORT_EXCLUSIONS.md), the canonical place. `audiobook-shorts-series` was withdrawn at the operator's request (D-72). The "eight" and "four" in the dated corrections below describe the registry on 2026-08-20.
 
 **At least** two of three operations on every subject are `not_measured` — runtime evidence is not
-collected yet, and the passport says so. On the four unreadable subjects it is all three, and the
+collected yet, and the passport says so. On the three unreadable subjects it is all three, and the
 three are not all absent for the same reason: `development_initiation` is `unreadable` there,
 because a repository that returns 404 to an anonymous reader cannot be read at all, while
 `deployment` and `treasury_control` are `check_did_not_run` on those subjects exactly as they are
-on the public four. Two absences with different causes must not be summed into one word — that is
+on the readable six. Two absences with different causes must not be summed into one word — that is
 invariant 1 in prose rather than in a field.
 
 ⚠️ **Corrected 2026-08-20.** This read "two of three operations on every subject". It is true of
-four of the eight; the four private subjects carry three `not_measured` operations each — counted
+four of the eight (the registry of that date); the four private subjects then carried three `not_measured` operations each — counted
 from the emitted passports, the same reading that produced the table above. The sentence was
 presumably written against the credentialed pipeline, but that is not reconstructible from this
 repository: the oldest commit carrying emitted passports already shows `unreadable` on the private

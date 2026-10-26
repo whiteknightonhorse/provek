@@ -93,9 +93,9 @@ reading, and the reading is that the instrument cannot answer this question on t
 artefact against a committed one, no runtime evidence collection feeding the score — the probe
 above produces a verdict of its own and nothing consumes it in a passport yet. At least two of
 three operations on every current subject are `not_measured` —
-on the four unreadable subjects it is all three — and the passport says which of the three absences
+on the unreadable subjects it is all three (counts: SPEC §6) — and the passport says which of the three absences
 applies rather than scoring them zero. (This read "two of three on every current subject" until
-2026-08-20; it holds for four of the eight. Counted from the emitted passports, as SPEC §6 is —
+2026-08-20; on that date it held for four of the eight. Counted from the emitted passports, as SPEC §6 is —
 which also records why the original sentence cannot be dated from anything in this repository.)
 
 **Vocabulary that must not drift:**
@@ -132,7 +132,7 @@ must have room for these from the start, but must not describe them as coming fe
 
 Real, and honestly scarce.
 
-- **Eight passports**, all of the operator's own systems, all marked `same_owner` — an affiliated
+- **Nine passports** (as of 2026-10-26), all of the operator's own systems, all marked `same_owner` — an affiliated
   rehearsal of the protocol, not independent verification, and marked as such on every row and
   every document.
 - **4 verified, 4 unreadable.** The unreadable four are private repositories: they

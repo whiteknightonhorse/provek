@@ -20,7 +20,7 @@ The registry serves both and is mode **Operate**: scan, filter, leave with a lin
 Primary action for the subject: request verification. Primary outcome for the consumer: understand
 what a number does and does not claim, and see what was not measured without hunting for it.
 
-The proof available is small and must not be inflated: eight passports, all the operator's own
+The proof available is small and must not be inflated: nine passports (as of 2026-10-26), all the operator's own
 systems, all affiliated, two of three operations unmeasured on every one. Two measured answers
 exist and are worth showing: 50,275 on-chain identities, 0.006 CPU-seconds per verification.
 
