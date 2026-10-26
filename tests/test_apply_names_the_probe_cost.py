@@ -567,6 +567,8 @@ PAGE_QUANTITIES = (
     "30 days after its outcome",               # T-0573: a retention period, not a count of requests
     "30 days after the row is withdrawn",      # T-0573: the same rule for a published request
     "the one-line notification",               # T-0573: the size of the Telegram message, not of a probe
+    "in a few seconds",                        # T-IN-08: the edge rate-limit sentence, a wait, not a probe count
+    "Wait ten seconds and send once more",     # T-IN-08: the same sentence; one retry by the visitor, not a request we send
 )
 
 SECTION_QUANTITIES = (
