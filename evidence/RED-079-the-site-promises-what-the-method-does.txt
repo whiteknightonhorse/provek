@@ -1,0 +1,12 @@
+tree: 3e2b55d9ea0b9d9f2d462bc6b204adea661e8b81
+(origin/main, detached checkout with only the new test files copied in)
+
+$ pytest tests/test_site_copy_has_no_known_contradictions.py tests/test_error_page_is_not_indexed.py
+FAILED tests/test_site_copy_has_no_known_contradictions.py::test_the_phase_page_does_not_promise_no_payment_step_in_a_later_phase
+FAILED tests/test_site_copy_has_no_known_contradictions.py::test_the_apply_form_says_public_only_and_names_the_operators_private_rows
+FAILED tests/test_site_copy_has_no_known_contradictions.py::test_every_surface_that_says_public_only_says_what_the_private_rows_are
+FAILED tests/test_error_page_is_not_indexed.py::test_the_prerender_adds_noindex_to_the_404_branch_only
+FAILED tests/test_error_page_is_not_indexed.py::test_the_badge_marks_only_the_no_such_passport_answer_noindex
+5 failed, 12 passed, 1 skipped
+
+$ branch as built: ./scripts/push.sh --gates-only -> TREE GREEN
