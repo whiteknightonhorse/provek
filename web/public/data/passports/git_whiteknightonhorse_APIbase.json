@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-10-26T02:46:11.450434+00:00",
-    "valid_until": "2026-11-25T02:46:11.450434+00:00",
+    "issued_at": "2026-10-26T03:46:12.239052+00:00",
+    "valid_until": "2026-11-25T03:46:12.239052+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -61,7 +61,7 @@
           "absent_reason": null
         },
         "workflow_runs": {
-          "value": 5146,
+          "value": 5154,
           "measured": true,
           "absent_reason": null
         },
@@ -165,7 +165,7 @@
       "reason": null,
       "confidence": "measured",
       "declared": true,
-      "checked_at": "2026-10-26T02:46:11.450434+00:00"
+      "checked_at": "2026-10-26T03:46:12.239052+00:00"
     },
     "task_history": [],
     "mandate_ref": "self-mandate-0001",
