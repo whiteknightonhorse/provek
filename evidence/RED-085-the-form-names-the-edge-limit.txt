@@ -1,0 +1,6 @@
+tree: T-IN-08 worktree off origin/main 74a3d25
+RED-085 (T-IN-08) - the form names the edge rate limit, run 2026-10-26 (card said RED-079; taken by T-0567, renumbered).
+
+Tests: tests/test_apply_form_names_the_edge_limit.py.
+Red on 74a3d25 (before the edits): 2 failed - Apply.tsx lacks `r.status === 429` / "Wait ten seconds"; INTAKE_OPERATIONS.md lacks "5 per 10 s per IP".
+Green after: 2 passed.

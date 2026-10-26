@@ -86,6 +86,9 @@ export async function onRequestPost({ request, env }) {
 
   // Honeypot. A field no human sees and no human fills. Turnstile is deliberately not here yet:
   // it is added if real spam arrives, not in anticipation of it, and it is cookieless when it is.
+  // A per-IP limit (5 POSTs per 10 s, block 10 s) has run at the Cloudflare edge since 2026-10-23.
+  // It is not in this code because the edge can count per address and this Function cannot (KV
+  // cannot count honestly); Turnstile still waits for real spam (S-2).
   if (clean(body.website) !== "") return Response.json({ ok: true, id: "ignored" });
 
   const repo = clean(body.repo, REPO_MAX);

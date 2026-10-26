@@ -482,6 +482,11 @@ stopped meaning what it says. Found by Fable, in the sentence this same change h
   limit is the answer to a concentrated burst and is blind to volume spread thinly across
   addresses, which is S-2's shape; both may end up on, for different reasons.
 
+  **Addendum 2026-10-23.** The per-IP rule is on: POST /api/apply, 5 per 10 s per IP, block 10 s
+  (Cloudflare rate-limiting rule, zone provek.dev; nothing stored on our side). Measured at
+  creation: 8 POSTs → 400 ×5, 429 ×3. The form shows a sentence on 429 (T-IN-08). S-2 (Turnstile)
+  is unchanged by it.
+
   **Two rewrites, and the second is the instructive one.** The trigger first read *"5 submissions
   from one IP within an hour, or one IP responsible for more than half of a day's junk"* — and no
   record in KV carries an IP. the `record` literal in `apply.js` stores id, `received_at`, repo, contact, both mandate

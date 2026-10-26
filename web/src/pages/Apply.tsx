@@ -116,6 +116,15 @@ export default function Apply() {
           origin: new URLSearchParams(window.location.search).get("via") === "challenge" ? "challenge" : null,
         }),
       });
+      // T-IN-08: a Cloudflare rate-limiting rule on POST /api/apply (5 per 10 s per IP, block 10 s,
+      // on since 2026-10-23) answers 429 with an HTML page, so say what to do instead of "HTTP 429".
+      if (r.status === 429) {
+        setSent({
+          state: "failed",
+          why: "Too many requests from your network in a few seconds. Wait ten seconds and send once more; nothing was saved.",
+        });
+        return;
+      }
       const d = await r.json().catch(() => ({}));
       if (!r.ok || !d.ok) {
         setSent({ state: "failed", why: d.error || `HTTP ${r.status}` });
