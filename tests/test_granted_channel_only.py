@@ -108,3 +108,17 @@ def test_the_law_text_matches_the_refusal_the_gate_performs():
     block = law.split("id: LAW-GRANTED-CHANNEL-ONLY")[1].split("- id:")[0]
     assert "anonymous public channel only" in block and "a credential in the environment stops the run" in block
     assert "granted to this project" not in block
+
+
+@pytest.mark.parametrize("script", ["push.sh", "sync_main.sh"])
+def test_the_doors_outward_do_not_escalate_privilege(script: str):
+    """T-0571: the two shell doors read a neighbour tenant's token file through a privileged grep
+    until 2026-10-26. They now take the tenant's own token through a credential helper, so the
+    privilege words must not appear as commands in either script (comments are skipped)."""
+    import re
+
+    text = (ROOT / "scripts" / script).read_text(encoding="utf-8")
+    code = "\n".join(line for line in text.splitlines() if not line.lstrip().startswith("#"))
+    assert re.search(r"(^|[^A-Za-z0-9_./-])(sudo|doas|pkexec)(\s|$)", code) is None, f"{script} escalates privilege"
+    assert "set-url" not in code.replace('"REFUSED: remote URL changed"', ""), f"{script} rewrites the remote URL"
+    assert "credential.helper" in code

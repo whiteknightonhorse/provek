@@ -179,9 +179,20 @@ if [ "$(git rev-parse HEAD)" != "$(git rev-parse main)" ]; then
   exit 1
 fi
 
-TOK=$(sudo grep -ohE 'gh[pous]_[A-Za-z0-9_]+' /home/audiobook2/.claude/gh.env | head -1)
-if [ -z "$TOK" ]; then echo "no token" >&2; exit 1; fi
-trap 'git remote set-url origin "https://github.com/whiteknightonhorse/provek.git" 2>/dev/null; unset TOK' EXIT
-git remote set-url origin "https://x-access-token:${TOK}@github.com/whiteknightonhorse/provek.git"
-git push -q origin main
-echo "PUSH DONE, token removed from the remote config"
+# T-0571 (audit P5-08, P2-11): this door used to read a token with a root grep out of a NEIGHBOUR
+# tenant's credential file, splice it into the remote URL and rely on an EXIT trap to put the URL
+# back. Two measured defects: a privileged read of another tenant's secret, and a trap that a
+# SIGKILL (intake's run() timeout) skips - which left the token in .git/config. Now the tenant
+# pushes with its OWN token, handed to git by a credential helper for this one command: nothing is
+# written to .git/config, there is no trap to rely on, and the remote URL is checked afterwards
+# instead of restored.
+TOKEN_VAR="PROVEK_GITHUB_TOKEN"
+if [ -z "${PROVEK_GITHUB_TOKEN:-}" ]; then
+  echo "PROVEK_GITHUB_TOKEN not set; push refused - a push needs the tenant's own token" >&2
+  exit 1
+fi
+git -c credential.helper= \
+    -c 'credential.helper=!f(){ printf "username=x-access-token\npassword=%s\n" "$PROVEK_GITHUB_TOKEN"; }; f' \
+    push -q origin main
+[ "$(git remote get-url origin)" = "https://github.com/whiteknightonhorse/provek.git" ] || { echo "REFUSED: remote URL changed" >&2; exit 1; }
+echo "PUSH DONE"

@@ -43,14 +43,18 @@ REMOTE="${SYNC_MAIN_REMOTE:-origin}"
 BRANCH="${SYNC_MAIN_BRANCH:-main}"
 
 url="$(git remote get-url "$REMOTE")"
+# T-0571: this fetch used to read a NEIGHBOUR tenant's token file with a privileged grep, splice
+# the token into the remote URL and restore it in an EXIT trap (skipped by SIGKILL, which left the
+# token in .git/config). Now the tenant's own PROVEK_GITHUB_TOKEN reaches git through a credential
+# helper for this one command; the remote URL is never rewritten.
 if [[ "$url" == https://github.com/* ]]; then
-  TOK=$(sudo grep -ohE 'gh[pous]_[A-Za-z0-9_]+' /home/audiobook2/.claude/gh.env | head -1)
-  if [ -z "$TOK" ]; then echo "sync_main: no token, cannot even read $REMOTE from this host (AUD-003)" >&2; exit 1; fi
-  trap 'git remote set-url "$REMOTE" "$url" 2>/dev/null; unset TOK' EXIT
-  git remote set-url "$REMOTE" "https://x-access-token:${TOK}@${url#https://}"
+  if [ -z "${PROVEK_GITHUB_TOKEN:-}" ]; then echo "sync_main: PROVEK_GITHUB_TOKEN not set, cannot even read $REMOTE from this host (AUD-003)" >&2; exit 1; fi
+  git -c credential.helper= \
+      -c 'credential.helper=!f(){ printf "username=x-access-token\npassword=%s\n" "$PROVEK_GITHUB_TOKEN"; }; f' \
+      fetch -q "$REMOTE" "$BRANCH"
+else
+  git fetch -q "$REMOTE" "$BRANCH"
 fi
-
-git fetch -q "$REMOTE" "$BRANCH"
 
 local_head="$(git rev-parse HEAD)"
 remote_head="$(git rev-parse "$REMOTE/$BRANCH")"
