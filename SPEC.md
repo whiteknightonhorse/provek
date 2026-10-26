@@ -439,7 +439,7 @@ read that way even at eight rows.
 
 ## 6. Data — real, and honestly scarce
 
-**Eight records exist. All are the operator's own systems, all carry `same_owner`.**
+**Nine records exist (as of 2026-10-26; the registry is the source of the number). All are the operator's own systems, all carry `same_owner`.**
 
 The master specification's first cohort is eleven. The three that are not here are named
 in [`docs/COHORT_EXCLUSIONS.md`](docs/COHORT_EXCLUSIONS.md) with the §2.7 condition each
@@ -458,8 +458,11 @@ the drift this project exists to catch.
 
 | subject | state | why |
 |---|---|---|
-| AIpush, APIbase, mcp-protocol-tester, provek | verified, projection 40–80 | public, readable anonymously |
-| AI-Property-Sales-Platform, audiobook-shorts-series, cryptocardhub-defycard, gov-auction-report | **unverified, `unreadable`** | private repositories; no anonymous reader can recompute the verdict |
+| APIbase, mcp-protocol-tester, provek | verified, projection | public, readable anonymously |
+| AI-Property-Sales-Platform, cryptocardhub-defycard, gov-auction-report | **unverified, `unreadable`** | private repositories; no anonymous reader can recompute the verdict |
+| AIpush, cryptocardhub-public, provek-method | **unverified, `no_evidence_in_window`** | read, and no commits inside the evidence window |
+
+The membership and counts above are dated 2026-10-26 and restated in [`docs/COHORT_EXCLUSIONS.md`](docs/COHORT_EXCLUSIONS.md), the canonical place. `audiobook-shorts-series` was withdrawn at the operator's request (D-72). The "eight" and "four" in the dated corrections below describe the registry on 2026-08-20.
 
 **At least** two of three operations on every subject are `not_measured` — runtime evidence is not
 collected yet, and the passport says so. On the four unreadable subjects it is all three, and the

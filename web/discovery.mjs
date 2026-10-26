@@ -172,7 +172,7 @@ export function buildLlmsTxt(entries, site = SITE, templates = []) {
 - [Challenge](${site}/challenge/): the open verification challenge - free, public, open to any business whose operations run through agents.
 - [Witness](${site}/witness/): the GenLayer Evidence Witness - validators independently check an evidence URL and must agree before a record is written. Contract explorer: https://scan.bradbury.genlayer.com/address/0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6 (pre-reset network; redeploy pending).
 - [Autonomy levels L0-L5](${site}/method/notes/autonomy-levels-l0-l5/): what each rung requires as evidence, and which thresholds are assigned rather than measured.
-- [Four states of absence](${site}/method/notes/not-measured-is-not-zero/): why a measurement that is absent is not a zero.
+- [Six states of absence](${site}/method/notes/not-measured-is-not-zero/): why a measurement that is absent is not a zero.
 - [ERC-8004](${site}/method/notes/what-erc-8004-provides-and-what-it-does-not/): what ERC-8004 standardizes, and what it leaves to a validator.
 
 ## Data (JSON)

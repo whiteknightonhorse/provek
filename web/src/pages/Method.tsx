@@ -329,7 +329,6 @@ export default function Method() {
         <ul className="mt-2 text-sm text-[var(--color-ink-2)] list-disc pl-5 space-y-1">
           <li>the denominator <code className="font-mono">signed_commit_share</code> is a share OF &mdash; which commits are counted
             in it</li>
-          <li>the comparison operators used at each threshold (&ge;, &le;, or ==)</li>
           <li>the <code className="font-mono">unlinked_*</code> measures and <code className="font-mono">control_map_cap</code></li>
         </ul>
 
