@@ -5,6 +5,7 @@ A test that cannot fail is not a test (law 5): `_problems` is exercised on a hea
 image and on a description of 161 characters before it is trusted on the build."""
 from __future__ import annotations
 
+import hashlib
 import html
 import re
 from pathlib import Path
@@ -14,6 +15,8 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "web" / "dist"
 MAX_DESCRIPTION = 160
+# T-WB-05: the operator's designed card (provek-og-image.png, 1200x630). The hash is the design's.
+EXPECTED_SHA256 = "993e35e9f3288fa9ace3709baa9bac27bb5694d1cacf9dfed52e10d076f4a00f"
 
 built = pytest.mark.skipif(not (DIST / "index.html").exists(), reason="site not built in this checkout")
 
@@ -52,3 +55,35 @@ def test_the_default_image_is_a_1200_by_630_png():
     data = (DIST / "og-image.png").read_bytes()
     assert data[:8] == b"\x89PNG\r\n\x1a\n"
     assert int.from_bytes(data[16:20], "big") == 1200 and int.from_bytes(data[20:24], "big") == 630
+
+
+def test_the_share_image_is_the_designed_asset():
+    data = (ROOT / "web" / "public" / "og-image.png").read_bytes()
+    assert hashlib.sha256(data).hexdigest() == EXPECTED_SHA256
+
+
+def _unresolved(doc: str, dist: Path) -> list[str]:
+    head = doc.split("</head>", 1)[0]
+    out = []
+    for url in re.findall(r'<meta (?:property="og:image"|name="twitter:image") content="([^"]*)"', head):
+        prefix = "https://provek.dev/"
+        if not url.startswith(prefix):
+            out.append(f"{url} is not on https://provek.dev/")
+        elif not (dist / url[len(prefix):]).is_file():
+            out.append(f"{url} has no built file")
+    return out
+
+
+def test_the_resolve_check_can_fail(tmp_path):
+    (tmp_path / "og-image.png").write_bytes(b"x")
+    ok = '<head><meta property="og:image" content="https://provek.dev/og-image.png"><meta name="twitter:image" content="https://provek.dev/og-image.png"></head>'
+    assert _unresolved(ok, tmp_path) == []
+    assert len(_unresolved(ok.replace("og-image.png", "gone.png"), tmp_path)) == 2
+    assert len(_unresolved(ok.replace("https://provek.dev/", "https://x.example/"), tmp_path)) == 2
+
+
+@built
+def test_every_image_tag_resolves_to_a_built_file():
+    bad = {str(p.relative_to(DIST)): _unresolved(p.read_text(encoding="utf-8"), DIST) for p in sorted(DIST.rglob("*.html"))}
+    bad = {k: v for k, v in bad.items() if v}
+    assert not bad, bad

@@ -124,5 +124,6 @@ def test_head_carries_social_tags_and_a_short_description():
                 'name="twitter:card"'):
         assert tag in body, f"{tag} missing from the brief page head"
     assert "https://provek.dev/og-image.png" in body
+    assert 'name="twitter:image"' in body and 'property="og:image:alt"' in body
     m = re.search(r'<meta name="description" content="([^"]*)"', body)
     assert m and 0 < len(m.group(1)) <= 160

@@ -1,0 +1,28 @@
+RED-087 - T-WB-05: the share image was the executor's stand-in and no gate pinned its bytes or its URL (card said RED-078; renumbered, 078-086 taken)
+base: origin/main 8cc899b; designed asset sha256 993e35e9f3288fa9ace3709baa9bac27bb5694d1cacf9dfed52e10d076f4a00f (58291 B)
+== (a) RED: placeholder bytes (git show origin/main:web/public/og-image.png, 25095 B)
+Mon Oct 26 11:25:21 PM UTC 2026
+E         + 7a1cc46b006c1c4b10e1a9ca7c852e8f10617dc95dc61f81c2e1d2340fd17f17
+
+tests/test_every_page_head_has_og_image.py:62: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_every_page_head_has_og_image.py::test_the_share_image_is_the_designed_asset
+1 failed in 0.05s
+rc=1
+== (a) GREEN: designed asset
+Mon Oct 26 11:25:21 PM UTC 2026
+.                                                                        [100%]
+1 passed in 0.03s
+rc=0
+== (b) RED: dist/og-image.png renamed
+Mon Oct 26 11:25:21 PM UTC 2026
+tests/test_every_page_head_has_og_image.py:89: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_every_page_head_has_og_image.py::test_every_image_tag_resolves_to_a_built_file
+1 failed in 0.05s
+rc=1
+== (b) GREEN: restored
+Mon Oct 26 11:25:21 PM UTC 2026
+.                                                                        [100%]
+1 passed in 0.04s
+rc=0

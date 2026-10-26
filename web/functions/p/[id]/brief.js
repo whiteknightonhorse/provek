@@ -166,7 +166,11 @@ function page(p, slug) {
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:image" content="${SITE}/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Provek, evidence, not claims. How much of a business really runs without people? Autonomy measured from public-repo evidence, one operation at a time.">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="${SITE}/og-image.png">
 <link rel="canonical" href="${SITE}/p/${esc(slug)}/brief">
 <style>${STYLE}.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);}</style>
 </head>

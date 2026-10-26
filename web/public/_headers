@@ -17,6 +17,11 @@
 /data/*
   Cache-Control: public, max-age=0, must-revalidate
 
+# Link-preview crawlers refetch the share image on their own schedule; a day's cache is enough for
+# a file that changes with a card, and the hash gate in tests is what keeps the bytes honest.
+/og-image.png
+  Cache-Control: public, max-age=86400
+
 # RFC 8288 Link headers, on every page, pointing at the two documents this project asks to be
 # found by regardless of which page a crawler entered on: the registry (the same relation
 # `rel="alternate"` already used on <link> in the page head, so a crawler reading only headers and
