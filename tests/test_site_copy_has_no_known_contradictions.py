@@ -86,6 +86,8 @@ def test_the_method_page_claims_no_more_than_it_publishes():
     assert "Four absences are distinguished" in src
     assert "every published rule can be recomputed" in src
     assert "listed under Open items below" in src
+    assert "licensed for reuse" not in src, "LICENSE holds two licences; the page must name them"
+    assert "CC BY 4.0" in src and "Apache-2.0" in src
 
 
 def test_no_backtick_is_printed_inside_the_method_page_text():

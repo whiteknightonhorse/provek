@@ -56,7 +56,14 @@ export default function Method() {
             >
               github.com/whiteknightonhorse/provek
             </a>
-            , licensed for reuse, so every published rule can be recomputed from the same inputs. The
+            : the method text under CC BY 4.0 and the code under Apache-2.0 (
+            <a
+              href="https://github.com/whiteknightonhorse/provek/blob/main/LICENSE"
+              className="text-[var(--color-accent)] hover:underline"
+            >
+              LICENSE
+            </a>
+            ), so every published rule can be recomputed from the same inputs. The
             operating documents that produced this instrument are recorded separately at{" "}
             <a
               href="https://github.com/whiteknightonhorse/provek-method"
