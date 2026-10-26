@@ -7,7 +7,7 @@
 import { useMemo, useState } from "react";
 import { Page, Strip } from "../components/Chrome";
 import { AbsentMark } from "../components/Measured";
-import { effectiveStatus, operationsMeasuredNote, orderAbsentReason, orderLinkUrl, slug } from "../types";
+import { effectiveStatus, noIndependentSubjectYet, operationsMeasuredNote, orderAbsentReason, orderLinkUrl, slug } from "../types";
 import type { Registry as R } from "../types";
 import { FUNNEL_SENTENCE, INCUBATOR_SENTENCE } from "../copy";
 
@@ -43,6 +43,15 @@ export default function Registry({ reg }: { reg: R }) {
       <p className="mt-2 text-sm text-[var(--color-ink-2)] max-w-[46rem]">
         {FUNNEL_SENTENCE} {INCUBATOR_SENTENCE}
       </p>
+
+      {/* T-0567: rendered from the data, so it disappears with the first independent row. */}
+      {noIndependentSubjectYet(reg.subjects) && (
+        <p className="mt-2 text-sm text-[var(--color-ink-2)] max-w-[46rem]">
+          Every row today is the operator&rsquo;s own &mdash; the affiliation column says so on
+          each. No independent applicant has been published yet; this sentence is removed by the
+          first one.
+        </p>
+      )}
 
       {/* T-IN-07 (D-72): said once, here, beside the table whose rows can be withdrawn. */}
       <p className="mt-2 text-sm text-[var(--color-ink-2)] max-w-[46rem]">

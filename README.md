@@ -31,7 +31,7 @@ credential-free.
 - Publishes a [registry](https://provek.dev/registry/) of verdicts; a verdict expires and lapses to
   `stale` on its own. Corrections are published in full, not quietly fixed — see the
   [corrections log](https://provek.dev/registry/corrections/).
-- Takes [applications](https://provek.dev/apply/) — free, public repositories only, read-only
+- Takes [applications](https://provek.dev/apply/) — free, public repositories only (the operator's own private repositories are listed as unreadable, not measured), read-only
   unless a signed mandate says otherwise.
 
 A later phase (a verified agent commissioning and witnessing paid work) is specified and not

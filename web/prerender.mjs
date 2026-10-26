@@ -332,7 +332,7 @@ written.push(write("/method/", page("/method/", TITLES["/method/"],
   "How a level is assigned to an operation, how evidence is classed by forgery cost, and what the score does not measure.",
   ldOrganization())));
 written.push(write("/apply/", page("/apply/", TITLES["/apply/"],
-  "Request verification. Free at this stage. Public repositories only.",
+  "Request verification. Free at this stage. Public repositories only (the operator's private ones are listed as unreadable).",
   ldOrganization())));
 // T-IN-03: the per-request status page. The id lives in the query string, which no static file can
 // carry, so the emitted HTML is the shell that looks the request up in the browser.
@@ -577,7 +577,8 @@ for (const w of witnessRecords) {
 const notFound = page(PRERENDER_ROUTE, "No such page - Provek",
   "Nothing is served at this address.", ldOrganization())
   .replace(/\s*<link rel="canonical"[^>]*>/, "")
-  .replace(/\s*<meta property="og:url"[^>]*>/, "");
+  .replace(/\s*<meta property="og:url"[^>]*>/, "")
+  .replace("</head>", '<meta name="robots" content="noindex">\n</head>');
 assertNoComment(notFound, "404.html");
 writeFileSync(join(DIST, "404.html"), notFound);
 

@@ -563,6 +563,7 @@ PAGE_QUANTITIES = (
     "plus four fields about the record",
     "which one we applied",
     "always the read-only one",
+    "evidence only one party can see",         # T-0567: who can see the evidence, not a count of requests
 )
 
 SECTION_QUANTITIES = (

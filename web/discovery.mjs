@@ -165,7 +165,7 @@ export function buildLlmsTxt(entries, site = SITE, templates = []) {
 - [Registry](${site}/registry/): every subject submitted, what could be established about each, and why not where it could not.
 - [Method](${site}/method/): how a level is assigned to an operation, how evidence is classed, and what the score does not measure.
 - [Build](${site}/build/): AI agent templates - copy one instruction into your own coding agent, get an agent that runs one business operation. Free, no account.
-- [Apply](${site}/apply/): request verification. Free at this stage. Public repositories only.
+- [Apply](${site}/apply/): request verification. Free at this stage. Public repositories only (the operator's private ones are listed as unreadable).
 - [Phase 2](${site}/phase-2/): live: the Provider Catalog (a verified subject may publish an Order link).
 - [Phase 3](${site}/phase-2/#phase-3): specified, not in service - no application taken, no date given.
 - [Corrections](${site}/registry/corrections/): every erratum the project has published, in full.

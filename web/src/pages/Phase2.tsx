@@ -174,10 +174,12 @@ export default function Phase2() {
 
         <h2 className="mt-9 text-lg font-semibold">Money never passes through us</h2>
         <p className="mt-2 text-sm text-[var(--color-ink-2)]">
-          Decision A-6, and it is permanent rather than deferred &mdash; which is why there is no
-          payment step anywhere on this site, not in this phase and not in a later one. We hold and
-          route no funds: no escrow, no treasury, no keys. In phase 3 a customer pays the agent
-          directly. A commission on transfers is excluded forever.
+          Decision A-6 is about custody and routing, and it is permanent: we hold and route no one
+          else&rsquo;s funds &mdash; no escrow, no treasury, no keys. In phase 3 a customer pays
+          the agent directly, and a commission on what passes between the parties is excluded
+          forever. What A-6 does not exclude is a price for our own work. Verification is free at
+          this stage. If a fixed fee for witnessing is introduced later, it is announced on the
+          registry and in the decision log before it applies, and it is never a share of anyone&rsquo;s transfer.
         </p>
         <p className="mt-3 text-sm text-[var(--color-ink-2)]">
           The milestone contract is deployed by the parties themselves. Our part is to publish the

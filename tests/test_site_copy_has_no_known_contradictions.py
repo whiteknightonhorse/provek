@@ -138,3 +138,26 @@ def test_the_corrections_count_is_five_everywhere_it_is_printed():
 def test_the_youtube_template_title_is_title_cased_like_the_other_six():
     assert '"YouTube Channel Operations Agent"' in _read(ROOT / "templates" / "emit.mjs")
     assert "YouTube channel operations agent" not in _read(WEB / "public" / "llms.txt")
+
+
+# T-0567: a price for our own work is not excluded; "public only" is a rule for applicants -------
+
+def test_the_phase_page_does_not_promise_no_payment_step_in_a_later_phase():
+    text = _jsx_text(_read(PAGES / "Phase2.tsx")).replace("\n", " ")
+    flat = " ".join(text.split())
+    assert "not in a later one" not in flat
+    assert "What A-6 does not exclude is a price for our own work." in flat
+
+
+def test_the_apply_form_says_public_only_and_names_the_operators_private_rows():
+    src = _read(PAGES / "Apply.tsx")
+    flat = " ".join(src.split())
+    assert "Public repositories only" in flat
+    assert "private repositories" in flat
+    assert "That path is not open to applicants." in flat
+
+
+def test_every_surface_that_says_public_only_says_what_the_private_rows_are():
+    for rel in ("README.md", "web/public/llms.txt", "web/public/llms-full.txt", "web/discovery.mjs"):
+        flat = " ".join(_read(ROOT / rel).split())
+        assert "ublic repositories only (the operator" in flat, rel

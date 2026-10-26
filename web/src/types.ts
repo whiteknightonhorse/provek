@@ -308,3 +308,11 @@ export interface Template {
  *  Inlined under its own `window.__PROVEK__` key so the byte budget that keeps the first screen
  *  small is never spent on seven files' worth of markdown a reader has not asked to build yet. */
 export type TemplateSummary = Pick<Template, "slug" | "title" | "businessOperation">;
+
+/** T-0567: true while no independent subject has been published - every listed row is the
+ *  operator's own (`same_owner`). The registry header states it only while this holds, so the
+ *  sentence removes itself when the first independent row arrives. An empty registry is not
+ *  "every row is the operator's own". */
+export function noIndependentSubjectYet(subjects: ReadonlyArray<{ verifier_affiliation: string }>): boolean {
+  return subjects.length > 0 && subjects.every((s) => s.verifier_affiliation === "same_owner");
+}

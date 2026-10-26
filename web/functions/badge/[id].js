@@ -111,14 +111,16 @@ function unknownSvg(reason) {
 }
 
 const CACHE = "public, max-age=300, s-maxage=300";
+// T-0567: the "no such passport" answer stays 200 (embedded images) but is not for the index.
+const NOINDEX = { "x-robots-tag": "noindex" };
 // Five minutes - short enough that a passport's lapse into `stale` (a pure date comparison, so it
 // needs no fresh evidence to be correct) is never left showing its old word for long, and long
 // enough that an embed on a busy page does not put a fresh render on every load.
 
-function svgResponse(body, status = 200) {
+function svgResponse(body, status = 200, extraHeaders = {}) {
   return new Response(body, {
     status,
-    headers: { "content-type": "image/svg+xml; charset=utf-8", "cache-control": CACHE },
+    headers: { "content-type": "image/svg+xml; charset=utf-8", "cache-control": CACHE, ...extraHeaders },
   });
 }
 
@@ -142,7 +144,7 @@ export async function onRequestGet({ request, params, env }) {
   } catch {
     return svgResponse(unknownSvg("could not be read"), 200);
   }
-  if (!res.ok) return svgResponse(unknownSvg("no such passport"));
+  if (!res.ok) return svgResponse(unknownSvg("no such passport"), 200, NOINDEX);
 
   let data;
   try {
@@ -151,7 +153,7 @@ export async function onRequestGet({ request, params, env }) {
     return svgResponse(unknownSvg("could not be read"));
   }
   const p = data && data.passport;
-  if (!p) return svgResponse(unknownSvg("no such passport"));
+  if (!p) return svgResponse(unknownSvg("no such passport"), 200, NOINDEX);
 
   const status = effectiveStatus(p.status, p.valid_until, new Date());
   // Not read at all in the `plain` branch (T-SG-14) - the badge is "without a number" in the

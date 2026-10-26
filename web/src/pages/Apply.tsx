@@ -268,8 +268,11 @@ export default function Apply() {
           <div>
             <label htmlFor="repo" className="block text-sm font-medium">Repository URL <span aria-hidden="true">*</span></label>
             <p className="mt-0.5 text-xs text-[var(--color-ink-3)]">
-              Public repositories only at this stage. That restriction exists so we never hold your
-              secrets &mdash; and so that anyone can recompute the verdict from the same source.
+              Public repositories only. That restriction exists so we never hold your secrets
+              &mdash; and so that anyone can recompute the verdict from the same source. The
+              registry also lists private repositories the operator entered as his own before this
+              form existed; they are measured as unreadable, which is the method&rsquo;s answer to
+              evidence only one party can see. That path is not open to applicants.
             </p>
             <input
               id="repo" name="repo" type="url" required aria-required="true" autoComplete="url"
