@@ -50,10 +50,10 @@ CONTRACT = HERE.parent / "contracts" / "provek_evidence_witness.py"
 # identification unambiguous, and pinning it too would make this script brittle to a change in the
 # linter's own column-counting convention rather than to a change in THIS contract.
 EXPECTED_WARNINGS = [
-    {"code": "E010", "line": 247,
+    {"code": "E010", "line": 248,
      "msg": "gl.nondet.* call in 'ProvekEvidenceWitness.witness.<locals>.leader_fn' "
             "not reachable from equivalence principle block"},
-    {"code": "E010", "line": 264,
+    {"code": "E010", "line": 265,
      "msg": "gl.nondet.* call in 'ProvekEvidenceWitness.witness.<locals>.validator_fn' "
             "not reachable from equivalence principle block"},
 ]

@@ -366,6 +366,8 @@ interpreter is 3.10 — see `GL-harness-notes.md`), and
 not something specific to this one — checked against the committed digest
 `genvm-universal-v0.2.16.sha256`, D-63 §4).
 
+The contract's first line, `# v0.2.16`, is the version line a GenLayer studio node routes by, and without it the node's default executor rejects the pinned runner (as of 2026-10-27, D-63 addendum); the `# { "Depends": ... }` line stays second.
+
 `scripts/check_genvm_lint.py` — not a bare `genvm-lint check contracts/provek_evidence_witness.py`
 — is the actual gate: `genvm-lint` has no baseline/allowlist mechanism, so any surviving warning
 makes a bare invocation exit 1 permanently, including the two confirmed false positives named

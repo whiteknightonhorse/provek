@@ -3966,6 +3966,8 @@ ruling-2 §2: `target-version py310` and its `F403` rule would flag the contract
 reported `TREE GREEN`. Not deployed — no deploy applies to this task; nothing here touches a live
 network.
 
+**Addendum 2026-10-27 (T-GLR-03b).** A GenLayer studio node routes a text contract to its executor by the contract's first line: only a first line of the form `# v0.2.<n>` selects the retained v0.2 executor, and any other first line goes to the newer default executor, which rejects the pinned runner id as malformed. Both contracts now carry `# v0.2.16` as line 1, above the unchanged `# { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }` line. The version line names the same tag as the committed digest `genvm-universal-v0.2.16.sha256`; the runner id, the universal asset, the digest and the pip pins (genlayer-py 0.18.0, genlayer-test 0.29.2, genvm-linter 0.11.0) are unchanged. Measured by the D1b run against studio-next (`studio-next.md`, 2026-10-27). The release-candidate pip set (0.19.0rc2 / 0.30.0rc2 / 0.11.1rc2) stays out until a genvm tag mapping for it exists.
+
 ## D-64. The GenLayer witness is published twice — source of record in provek, a history-preserving subtree mirror for the Builder programme
 
 **Source.** `taskloop/disputes/GL-07-contract-repo-split.ruling-1.md` §1 (read whole, executed

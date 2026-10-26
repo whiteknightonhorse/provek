@@ -97,6 +97,8 @@ different things on purpose.
 
 Run from this directory, with the isolated Python 3.12 toolchain of D-63 (the door uses `~/orchestra/glenv`):
 
+The contract's first line must be `# v0.2.16`, with the `# { "Depends": ... }` line second ([why](../genlayer-witness/README.md), as of 2026-10-27).
+
 ```
 python3 scripts/check_genvm_lint.py          # genvm-lint check, with the four named E010 warnings
 python3 -m pytest tests/direct -v            # direct-mode tests: mocks only, no network
