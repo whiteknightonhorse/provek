@@ -478,7 +478,8 @@ stopped meaning what it says. Found by Fable, in the sentence this same change h
 * **S-3 — 20 accepted submissions inside one hour, by `received_at`. This one opens an
   investigation; it does not by itself switch anything on.** The operator reads the Cloudflare
   dashboard for concentration, and the per-IP rate limit goes on only if the traffic is in fact
-  concentrated — that rule is a Cloudflare setting and needs nothing stored on our side. A per-IP
+  concentrated (the rule as of 2026-08-24, superseded: the limit has been on since 2026-10-23,
+  see the Addendum below) — that rule is a Cloudflare setting and needs nothing stored on our side. A per-IP
   limit is the answer to a concentrated burst and is blind to volume spread thinly across
   addresses, which is S-2's shape; both may end up on, for different reasons.
 
