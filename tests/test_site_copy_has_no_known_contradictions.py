@@ -120,7 +120,8 @@ def test_the_public_notes_index_prints_no_ceiling_or_ladder():
 def test_note_bodies_carry_no_task_or_ruling_ids_of_the_kinds_the_audit_named():
     for note in sorted((WEB / "notes" / "src").glob("*.md")):
         text = _read(note)
-        for phrase in ("Operator ruling", "task T-", "awaiting operator ratification"):
+        for phrase in ("Operator ruling", "task T-", "awaiting operator ratification",
+                       "licensed for reuse"):
             assert phrase not in text, f"{note.name}: {phrase!r}"
 
 

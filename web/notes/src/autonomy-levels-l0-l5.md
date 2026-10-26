@@ -145,6 +145,6 @@ In this example, binding_strength is weak with the flag revocable, and status is
 
 ## The workings are published, not just the verdict
 
-The [methodology](/method/) is published in full, licensed for reuse. The scorer, every gate and every decision live at github.com/whiteknightonhorse/provek, so any verdict can be recomputed from the same inputs.
+The [methodology](/method/) is published in full: the method text under CC BY 4.0, the code under Apache-2.0. The scorer, every gate and every decision live at github.com/whiteknightonhorse/provek, so any verdict can be recomputed from the same inputs.
 
 Operating documents that produced the instrument are recorded separately at provek-method as provenance, not instruction. Following the methodology has no effect on any verdict, since the score is computed from measured operations alone and the use of a method is not one of them. Every verdict in the [registry](/registry/) remains recomputable.
