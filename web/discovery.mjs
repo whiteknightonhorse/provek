@@ -190,6 +190,7 @@ ${templateSection}
 
 - [API catalog](${site}/.well-known/api-catalog): RFC 9727 linkset of every resource above and the one endpoint below.
 - [/api/apply](${site}/api/apply): submit a subject for verification. GET -> 405. Empty POST -> 400. Non-JSON -> 415.
+- POST /api/apply is limited per IP at the edge (5 per 10 s): over the limit the edge answers 429 with an HTML body, not JSON; wait ten seconds and retry.
 - \`GET /api/apply/<id>\` -> state of one request, by its id (the id POST /api/apply returned; never the contact).
 `;
 }
