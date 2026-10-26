@@ -339,15 +339,9 @@ class ApibaseReceiptAttest(gl.Contract):
                 # "Nobody could check" is not "the claim is false": vote Disagree, let GenVM
                 # rotate the leader, write nothing.
                 return False
-            if _judge(receipt_id, leader_observation) != _judge(receipt_id, my_observation):
-                return False
-            if leader_observation["receipt_sha256"] != my_observation["receipt_sha256"]:
-                return False
-            if (leader_observation.get("receipt") is not None
-                    and leader_observation.get("chain_found") and "skip_reason" not in leader_observation):
-                if _matched_transfer(leader_observation) != _matched_transfer(my_observation):
-                    return False
-            return True
+            # Every input is immutable by design (write-once receipt, mined Base receipt), so
+            # whole-observation equality is the binding: the record is built from all of it.
+            return leader_observation == my_observation
 
         observation = glvm.run_nondet_unsafe(leader_fn, validator_fn)
 

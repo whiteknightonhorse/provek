@@ -28,8 +28,9 @@ different" from "the validator could not observe anything at all", and it cannot
 malformed leader result before comparing it. `_judge` below is the one deterministic function
 both leader and validator call, so the actual verdict rule lives in exactly one place (an
 invariant checked by `tests/direct/test_provek_evidence_witness.py`'s golden-vector tests); the
-validator's job is solely to decide whether it AGREES with the leader having reached that verdict,
-by independently fetching the same URL and running the identical judgement function itself.
+validator's job is solely to decide whether it AGREES with the record the leader would write
+(`_bound`: verdict, fetch state, status, observation text, digest), by independently fetching the
+same URL and computing the identical tuple itself.
 
 CONSENSUS SEMANTICS, NAMED EXPLICITLY. A leader response of 403/429/5xx is an OBSERVATION, not a
 failure to observe: `_judge` turns it into a normal `FAIL` with `observation="status=NNN"`, mirroring
@@ -177,6 +178,21 @@ def _unreachable_digest(criterion: str, url: str, fetch: str, checked_at: str) -
     ).hexdigest()
 
 
+def _bound(criterion: str, expected: str, url: str, observation: dict, checked_at: str) -> tuple:
+    """Everything the record is built from, fetch state included: validators agree only if this
+    tuple is equal. `bytes` is not bound, and neither is `body_sha256` for `url_reachable`: it is
+    not written to the record, and binding it would make dynamic pages undeterminable."""
+    result, observation_str = _judge(criterion, expected, observation)
+    if criterion == "url_reachable":
+        evidence_digest = _url_reachable_digest(url, result, checked_at)
+    elif observation["fetch"] == "ok":
+        evidence_digest = observation["body_sha256"]
+    else:
+        evidence_digest = _unreachable_digest(criterion, url, observation["fetch"], checked_at)
+    return (observation["url"], observation["fetch"], observation["status"],
+            result, observation_str, evidence_digest)
+
+
 class ProvekEvidenceWitness(gl.Contract):
     """See the module docstring for the full design rationale. Storage: `operator` (immutable
     after construction), `records` (witness_id -> `WitnessResult`, append-only), `index`
@@ -254,24 +270,13 @@ class ProvekEvidenceWitness(gl.Contract):
                 # contract that an uncaught exception is ALSO treated as Disagree, but named
                 # explicitly rather than left implicit.
                 return False
-            leader_verdict, _ = _judge(criterion, expected, observation)
-            my_verdict, _ = _judge(criterion, expected, my_observation)
-            if leader_verdict != my_verdict:
-                return False
-            if criterion == "artifact_hash" and my_observation["body_sha256"] != observation.get("body_sha256"):
-                return False
-            return True
+            return (_bound(criterion, expected, evidence_url, observation, checked_at)
+                    == _bound(criterion, expected, evidence_url, my_observation, checked_at))
 
         observation = glvm.run_nondet_unsafe(leader_fn, validator_fn)
 
-        result, observation_str = _judge(criterion, expected, observation)
-
-        if criterion == "url_reachable":
-            evidence_digest = _url_reachable_digest(evidence_url, result, checked_at)
-        elif observation["fetch"] == "ok":
-            evidence_digest = observation["body_sha256"]
-        else:
-            evidence_digest = _unreachable_digest(criterion, evidence_url, observation["fetch"], checked_at)
+        _, _, _, result, observation_str, evidence_digest = _bound(
+            criterion, expected, evidence_url, observation, checked_at)
 
         self.records[witness_id] = WitnessResult(
             subject_id=subject_id,

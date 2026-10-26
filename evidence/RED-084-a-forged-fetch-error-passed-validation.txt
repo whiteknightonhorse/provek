@@ -1,0 +1,58 @@
+tree: 91971a6b8c899aac6bdffcef07c2e674a7ed7932 (dirty)
+RED-084 - a forged fetch error passed validation (T-GLR-01)
+Mon Oct 26 07:18:26 PM UTC 2026
+
+## RED: pre-fix contract (git show HEAD:integrations/genlayer-witness/contracts/provek_evidence_witness.py), tests B (oversized), C (url_reachable 404), D (forged status/fetch ok)
+$ pytest tests/direct/test_provek_evidence_witness.py -q -k 'oversized_body or forged_error_for_url_reachable or forged_status'   (cwd integrations/genlayer-witness)
+        direct_vm.mock_web(_url_pattern(ARTIFACT_URL), {"status": 200, "body": "x" * 2_000_001})
+        witness_contract.witness(SUBJECT, "artifact_hash", ARTIFACT_URL, "0" * 64)
+>       assert direct_vm.run_validator(leader_result=dict(FORGED_ERROR)) is False
+E       AssertionError: assert True is False
+E        +  where True = run_validator(leader_result={'url': 'https://example.com/artifact.bin', 'status': 0, 'body_sha256': '', 'bytes': 0, ...})
+E        +    where run_validator = VMContext(_sender=b'\xdc\x18\xaa=\xb8\xbc\x91\xa6\xe3\x90\xa3^}\x08\x11$o\xf3\xab\x01', _origin=None, _contract_addres...m_mocks_hit=set(), _live_web_handler=None, _live_llm_handler=None, _gl_call_hook=None, _traces=[], _trace_enabled=True).run_validator
+E        +    and   {'url': 'https://example.com/artifact.bin', 'status': 0, 'body_sha256': '', 'bytes': 0, ...} = dict({'url': 'https://example.com/artifact.bin', 'status': 0, 'body_sha256': '', 'bytes': 0, ...})
+
+tests/direct/test_provek_evidence_witness.py:262: AssertionError
+___________ test_validator_rejects_a_forged_error_for_url_reachable ____________
+
+direct_vm = VMContext(_sender=b'\xdc\x18\xaa=\xb8\xbc\x91\xa6\xe3\x90\xa3^}\x08\x11$o\xf3\xab\x01', _origin=None, _contract_addres...m_mocks_hit=set(), _live_web_handler=None, _live_llm_handler=None, _gl_call_hook=None, _traces=[], _trace_enabled=True)
+witness_contract = <CalldataProxy for <_contract_provek_evidence_witness.ProvekEvidenceWitness object at 0x7f8cc41929f0>>
+
+    def test_validator_rejects_a_forged_error_for_url_reachable(direct_vm, witness_contract):
+        direct_vm.mock_web(_url_pattern(ARTIFACT_URL), {"status": 404, "body": ""})
+        witness_contract.witness(SUBJECT, "url_reachable", ARTIFACT_URL, "")
+>       assert direct_vm.run_validator(leader_result=dict(FORGED_ERROR)) is False
+E       AssertionError: assert True is False
+E        +  where True = run_validator(leader_result={'url': 'https://example.com/artifact.bin', 'status': 0, 'body_sha256': '', 'bytes': 0, ...})
+E        +    where run_validator = VMContext(_sender=b'\xdc\x18\xaa=\xb8\xbc\x91\xa6\xe3\x90\xa3^}\x08\x11$o\xf3\xab\x01', _origin=None, _contract_addres...m_mocks_hit=set(), _live_web_handler=None, _live_llm_handler=None, _gl_call_hook=None, _traces=[], _trace_enabled=True).run_validator
+E        +    and   {'url': 'https://example.com/artifact.bin', 'status': 0, 'body_sha256': '', 'bytes': 0, ...} = dict({'url': 'https://example.com/artifact.bin', 'status': 0, 'body_sha256': '', 'bytes': 0, ...})
+
+tests/direct/test_provek_evidence_witness.py:268: AssertionError
+____________ test_validator_rejects_a_forged_status_and_fetch_state ____________
+
+direct_vm = VMContext(_sender=b'\xdc\x18\xaa=\xb8\xbc\x91\xa6\xe3\x90\xa3^}\x08\x11$o\xf3\xab\x01', _origin=None, _contract_addres...m_mocks_hit=set(), _live_web_handler=None, _live_llm_handler=None, _gl_call_hook=None, _traces=[], _trace_enabled=True)
+witness_contract = <CalldataProxy for <_contract_provek_evidence_witness.ProvekEvidenceWitness object at 0x7f8cc40428a0>>
+
+    def test_validator_rejects_a_forged_status_and_fetch_state(direct_vm, witness_contract):
+        direct_vm.mock_web(_url_pattern(ARTIFACT_URL), {"status": 200, "body": ARTIFACT_BODY.decode()})
+        witness_contract.witness(SUBJECT, "artifact_hash", ARTIFACT_URL, ARTIFACT_SHA256)
+        forged = {"url": ARTIFACT_URL, "status": 299, "body_sha256": ARTIFACT_SHA256,
+                  "bytes": len(ARTIFACT_BODY), "fetch": "ok"}
+>       assert direct_vm.run_validator(leader_result=forged) is False
+E       AssertionError: assert True is False
+E        +  where True = run_validator(leader_result={'url': 'https://example.com/artifact.bin', 'status': 299, 'body_sha256': '5e4a5320fd073091ec6fb994054700a50f95b8ba4e11fd5b478901ae8c86f99e', 'bytes': 36, ...})
+E        +    where run_validator = VMContext(_sender=b'\xdc\x18\xaa=\xb8\xbc\x91\xa6\xe3\x90\xa3^}\x08\x11$o\xf3\xab\x01', _origin=None, _contract_addres...m_mocks_hit=set(), _live_web_handler=None, _live_llm_handler=None, _gl_call_hook=None, _traces=[], _trace_enabled=True).run_validator
+
+tests/direct/test_provek_evidence_witness.py:276: AssertionError
+=========================== short test summary info ============================
+FAILED tests/direct/test_provek_evidence_witness.py::test_validator_rejects_a_forged_error_for_an_oversized_body
+FAILED tests/direct/test_provek_evidence_witness.py::test_validator_rejects_a_forged_error_for_url_reachable
+FAILED tests/direct/test_provek_evidence_witness.py::test_validator_rejects_a_forged_status_and_fetch_state
+3 failed, 32 deselected in 0.14s
+rc=1
+
+## GREEN control: fixed contract, same command
+Mon Oct 26 07:18:27 PM UTC 2026
+...                                                                      [100%]
+3 passed, 32 deselected in 0.08s
+rc=0

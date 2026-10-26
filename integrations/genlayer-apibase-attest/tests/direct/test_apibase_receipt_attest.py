@@ -306,6 +306,29 @@ def test_validator_rejects_a_malformed_leader_result(direct_vm, attest_contract)
     assert direct_vm.run_validator(leader_error=RuntimeError("leader blew up")) is False
 
 
+def _leader_observation(direct_vm):
+    return copy.deepcopy(direct_vm._captured_validators[-1][0])
+
+
+@pytest.mark.parametrize("forge", [
+    lambda o: o.update(tx_status=0),
+    lambda o: o["receipt"].update(payee="0x" + "ee" * 20),
+    lambda o: o.update(chain_found=False),
+], ids=["tx_status", "receipt_payee", "chain_found"])
+def test_validator_rejects_a_forged_unbound_field(direct_vm, attest_contract, forge):
+    _world(direct_vm)
+    attest_contract.attest(RECEIPT_ID)
+    forged = _leader_observation(direct_vm)
+    forge(forged)
+    assert direct_vm.run_validator(leader_result=forged) is False
+
+
+def test_validator_agrees_with_the_true_leader_observation(direct_vm, attest_contract):
+    _world(direct_vm)
+    attest_contract.attest(RECEIPT_ID)
+    assert direct_vm.run_validator(leader_result=_leader_observation(direct_vm)) is True
+
+
 # --------------------------------------------------------------------------------------------
 # golden vector — a REAL eth_getTransactionReceipt of a USDC transfer on Base
 # --------------------------------------------------------------------------------------------
@@ -346,6 +369,15 @@ def _strip_docstrings(tree: ast.AST) -> ast.AST:
     return tree
 
 
+def _without_validator_body(tree: ast.AST) -> ast.AST:
+    """T-GLR-01 replaced the body of `validator_fn` (and only that) with whole-observation
+    equality; it is checked by the forged-observation tests below, so it is blanked here."""
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef) and node.name == "validator_fn":
+            node.body = [ast.Pass()]
+    return tree
+
+
 def test_contract_sizes():
     assert ATTEST in CONTRACT_FILES and len(CONTRACT_FILES) >= 2, CONTRACT_FILES
     too_big = {str(p.relative_to(ROOT)): p.stat().st_size for p in CONTRACT_FILES
@@ -357,8 +389,8 @@ def test_attest_docs_only_change():
     raw = REFERENCE.read_bytes()
     assert hashlib.sha256(raw).hexdigest() == REFERENCE_SHA256, "reference is not the 774a184 file"
     reference = raw.decode("utf-8")
-    before = _strip_docstrings(ast.parse(reference))
-    after = _strip_docstrings(ast.parse(ATTEST.read_text(encoding="utf-8")))
+    before = _without_validator_body(_strip_docstrings(ast.parse(reference)))
+    after = _without_validator_body(_strip_docstrings(ast.parse(ATTEST.read_text(encoding="utf-8"))))
     assert ast.dump(before, include_attributes=False) == ast.dump(after, include_attributes=False)
 
 

@@ -171,7 +171,7 @@ repeat the same GET), but backed, in practice, by exactly one observer. `ProvekE
 adds a second, structurally different guarantee over the same two criterion types: GenLayer's
 leader/validator equivalence principle requires multiple independent validators, running on
 different infrastructure, to each fetch the evidence themselves and agree with the leader's
-verdict before any result is written to chain-verified state (see "How GenLayer consensus is
+record before any result is written to chain-verified state (see "How GenLayer consensus is
 used"). It is a *reusable verification primitive*, published for GenLayer's own Intelligent
 Contracts showcase, not a component Provek's pipeline calls — see "Why this is not part of Provek
 scoring".
@@ -298,8 +298,8 @@ expected, observation)`, called identically by the leader (to shape its own retu
 downstream use) and by every validator; this keeps the actual PASS/FAIL rule living in exactly one
 place, checked by the golden-vector and criterion-coverage tests in
 `tests/direct/test_provek_evidence_witness.py`. `validator_fn`'s own job is narrower: decide
-whether it **agrees** the leader reached the right verdict, by fetching the same URL itself and
-comparing.
+whether it **agrees** with the record the leader would write, by fetching the same URL itself and
+comparing `_bound(...)`: url, fetch state, status, verdict, observation text and evidence digest.
 
 **Why a custom validator, not `strict_eq`.** `strict_eq` can only ask "is the validator's output
 byte-identical to the leader's" — it cannot distinguish "the validator observed something
@@ -310,10 +310,10 @@ own documented "recommended for most contracts" mechanism, and is what this cont
 `validator_fn` returns `False` (disagree) if: the leader's result is not a well-formed `Return`: if
 the observation is not a dict with the expected keys and a recognized `fetch` state; if the
 validator's own `gl.nondet.web.get(evidence_url)` call raises an exception; or if the validator's
-own independently-computed verdict (via the same `_judge`) disagrees with the leader's, or — for
-`artifact_hash` — if the validator's own fetched `body_sha256` differs from the leader's even when
-both reached the same PASS/FAIL verdict (catches a leader that guessed the right verdict from the
-wrong bytes).
+own `_bound(...)` tuple differs from the leader's in any field, fetch state included. The body is
+not bound for `url_reachable` (it is not written to the record) and `bytes` is never bound. Verdict-only
+agreement was incomplete in the design (GL-00 ruling-2), not a build defect; the Portal steward rejected
+it on 2026-10-23 (D-76).
 
 **The validator's own fetch failing is "undetermined", never "the claim is false".** If the
 validator's own `gl.nondet.web.get` call raises, `validator_fn` returns `False` without

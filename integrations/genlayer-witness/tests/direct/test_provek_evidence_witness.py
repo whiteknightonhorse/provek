@@ -242,6 +242,67 @@ def test_validator_rejects_a_malformed_leader_result(direct_vm, witness_contract
 
 
 # --------------------------------------------------------------------------------------------
+# T-GLR-01: a validator binds every field it would write, fetch state included
+# --------------------------------------------------------------------------------------------
+
+FORGED_ERROR = {"url": ARTIFACT_URL, "status": 0, "body_sha256": "", "bytes": 0, "fetch": "error"}
+
+
+def test_validator_rejects_a_forged_error_for_a_wrong_expected(direct_vm, witness_contract):
+    # The Portal steward's case: the real body is served at 200, `expected` is wrong, and the
+    # leader claims the fetch errored. Verdicts agree (FAIL/FAIL) but the records differ.
+    direct_vm.mock_web(_url_pattern(ARTIFACT_URL), {"status": 200, "body": ARTIFACT_BODY.decode()})
+    witness_contract.witness(SUBJECT, "artifact_hash", ARTIFACT_URL, "0" * 64)
+    assert direct_vm.run_validator(leader_result=dict(FORGED_ERROR)) is False
+
+
+def test_validator_rejects_a_forged_error_for_an_oversized_body(direct_vm, witness_contract):
+    direct_vm.mock_web(_url_pattern(ARTIFACT_URL), {"status": 200, "body": "x" * 2_000_001})
+    witness_contract.witness(SUBJECT, "artifact_hash", ARTIFACT_URL, "0" * 64)
+    assert direct_vm.run_validator(leader_result=dict(FORGED_ERROR)) is False
+
+
+def test_validator_rejects_a_forged_error_for_url_reachable(direct_vm, witness_contract):
+    direct_vm.mock_web(_url_pattern(ARTIFACT_URL), {"status": 404, "body": ""})
+    witness_contract.witness(SUBJECT, "url_reachable", ARTIFACT_URL, "")
+    assert direct_vm.run_validator(leader_result=dict(FORGED_ERROR)) is False
+
+
+def test_validator_rejects_a_forged_status_and_fetch_state(direct_vm, witness_contract):
+    direct_vm.mock_web(_url_pattern(ARTIFACT_URL), {"status": 200, "body": ARTIFACT_BODY.decode()})
+    witness_contract.witness(SUBJECT, "artifact_hash", ARTIFACT_URL, ARTIFACT_SHA256)
+    forged = {"url": ARTIFACT_URL, "status": 299, "body_sha256": ARTIFACT_SHA256,
+              "bytes": len(ARTIFACT_BODY), "fetch": "ok"}
+    assert direct_vm.run_validator(leader_result=forged) is False
+
+
+def test_validator_rejects_a_forged_url(direct_vm, witness_contract):
+    direct_vm.mock_web(_url_pattern(ARTIFACT_URL), {"status": 200, "body": ARTIFACT_BODY.decode()})
+    witness_contract.witness(SUBJECT, "artifact_hash", ARTIFACT_URL, ARTIFACT_SHA256)
+    forged = {"url": "https://example.com/other", "status": 200, "body_sha256": ARTIFACT_SHA256,
+              "bytes": len(ARTIFACT_BODY), "fetch": "ok"}
+    assert direct_vm.run_validator(leader_result=forged) is False
+
+
+def test_url_reachable_does_not_bind_the_body(direct_vm, witness_contract):
+    # Guard: a dynamic page whose body differs between fetches stays determinable.
+    direct_vm.mock_web(_url_pattern(REACHABLE_URL), {"status": 200, "body": "a"})
+    witness_contract.witness(SUBJECT, "url_reachable", REACHABLE_URL, "")
+    direct_vm.clear_mocks()
+    direct_vm.mock_web(_url_pattern(REACHABLE_URL), {"status": 200, "body": "b"})
+    assert direct_vm.run_validator() is True
+
+
+def test_record_is_built_from_bound(direct_vm, witness_contract, contract_module):
+    direct_vm.mock_web(_url_pattern(ARTIFACT_URL), {"status": 200, "body": ARTIFACT_BODY.decode()})
+    wid = witness_contract.witness(SUBJECT, "artifact_hash", ARTIFACT_URL, "0" * 64)
+    record = witness_contract.get_result(wid)
+    leader = direct_vm._captured_validators[-1][0]
+    bound = contract_module._bound("artifact_hash", "0" * 64, ARTIFACT_URL, leader, record.checked_at)
+    assert (record.result, record.observation, record.evidence_digest) == bound[3:]
+
+
+# --------------------------------------------------------------------------------------------
 # golden vector — the ONE digest formula shared byte-for-byte with `src.witness.witness._digest`
 # --------------------------------------------------------------------------------------------
 

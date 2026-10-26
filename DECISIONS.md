@@ -4306,3 +4306,23 @@ it falls. The next night applies this to all nine rows; levels may fall.
 **Supersedes.** The O2 clause "without a runtime trace the level is capped at L2 (as coded today)" on `/method/`
 and in ADR-0005, edited in place; the limiter string `O2:no_runtime_trace->capped_L2` is retired (it survives
 only in dated evidence files).
+
+## D-76. A validator binds every field it would write, fetch state included
+
+**Context.** Both GenLayer contracts let a validator agree on the verdict (and one hash) while the record
+was built from the LEADER's whole observation. A leader could report `fetch="error"` for a URL that served a
+real body; a wrong `expected` made both sides say FAIL, the validator agreed, and the record stored the
+leader's false fetch state. The Portal steward rejected this on 2026-10-23. The rule was incomplete in the
+design (GL-00 ruling-2), not a build defect. Fable ruling GENLAYER-RESET-1022 q-1 ruling-1 §2.1 (2026-10-26),
+audit P3-03.
+
+**Decision.** Verdict-only agreement is a defect. (1) Witness: `_bound(...)` returns url, fetch state,
+status, verdict, observation text and evidence digest; the validator agrees only if its tuple equals the
+leader's, and the record is written from the same function. `bytes` is not bound, and neither is
+`body_sha256` for `url_reachable` (not written to the record; binding it would make dynamic pages
+undeterminable). (2) Attest: the validator agrees only if the whole observation is equal, because every
+input is immutable (write-once receipt, mined Base receipt). The two integration READMEs state the rule in
+place.
+
+**Effect.** A forged leader observation no longer passes validation. Honest runs are unchanged; a dynamic
+`url_reachable` page still agrees. Contract sizes stay under the D-67 cap of 19 000 bytes.
