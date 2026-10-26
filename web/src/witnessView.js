@@ -19,7 +19,7 @@
 export const CONTRACT_ADDRESS = "0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6";
 export const CHAIN_ID = 4221;
 export const NETWORK_LABEL = "GenLayer testnet Bradbury (chain 4221)";
-export const EXPLORER_BASE = "https://explorer-bradbury.genlayer.com";
+export const EXPLORER_BASE = "https://scan.bradbury.genlayer.com";
 export const DEFAULT_SUBJECT = "git:whiteknightonhorse/provek";
 
 /** Statuses from the GenLayer consensus docs (v0.6) that end the watch. FINALIZED, UNDETERMINED and

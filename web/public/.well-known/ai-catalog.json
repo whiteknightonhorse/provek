@@ -50,17 +50,6 @@
       ]
     },
     {
-      "identifier": "urn:air:provek.dev:passport:git_whiteknightonhorse_audiobook-shorts-series",
-      "displayName": "Autonomy passport: git:whiteknightonhorse/audiobook-shorts-series",
-      "type": "application/json",
-      "url": "https://provek.dev/data/passports/git_whiteknightonhorse_audiobook-shorts-series.json",
-      "representativeQueries": [
-        "Which operations of git:whiteknightonhorse/audiobook-shorts-series are verified autonomous, and at what level?",
-        "What is the autonomy passport of git:whiteknightonhorse/audiobook-shorts-series?",
-        "What evidence supports each operation score for git:whiteknightonhorse/audiobook-shorts-series?"
-      ]
-    },
-    {
       "identifier": "urn:air:provek.dev:passport:git_whiteknightonhorse_cryptocardhub-defycard",
       "displayName": "Autonomy passport: git:whiteknightonhorse/cryptocardhub-defycard",
       "type": "application/json",

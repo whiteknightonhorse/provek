@@ -19,15 +19,17 @@
     "and deletes the two passport files; scripts/withdraw_subject.py makes the move. Git history",
     "and third-party caches keep what was published (D-72)."
   ],
-  "withdrawn": [],
+  "withdrawn": [
+    {
+      "repo": "whiteknightonhorse/audiobook-shorts-series",
+      "at": "2026-10-26T02:45:57+00:00",
+      "reason": "project retired 2026-10",
+      "by": "operator"
+    }
+  ],
   "subjects": [
     {
       "repo": "whiteknightonhorse/AI-Property-Sales-Platform",
-      "affiliation": "same_owner",
-      "source": "cohort-b5"
-    },
-    {
-      "repo": "whiteknightonhorse/audiobook-shorts-series",
       "affiliation": "same_owner",
       "source": "cohort-b5"
     },

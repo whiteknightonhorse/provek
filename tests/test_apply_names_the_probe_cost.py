@@ -559,7 +559,6 @@ PAGE_QUANTITIES = (
     "One operation exists today",              # our unit of account, not what we send
     "That one operation costs your origin",    # the same unit, introducing the real count
     "Without those two controls",              # the positive and negative controls, not a total
-    "any later one money does not pass through us",
     "the two-letter country",
     "plus four fields about the record",
     "which one we applied",

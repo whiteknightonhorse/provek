@@ -364,8 +364,8 @@ export default function Apply() {
             {sent.state === "sending" ? "Sending…" : "Submit request"}
           </button>
           <p className="text-xs text-[var(--color-ink-3)]">
-            Nothing is charged. There is no payment step anywhere on this site, in this phase or any
-            later one &mdash; money does not pass through us by design.
+            Nothing is charged today and Provek never holds or routes your funds. Verification may
+            become paid later; the registry will say so before it does.
           </p>
 
           {/* An operator who ruled that cookieless analytics needs care about consent will be asked

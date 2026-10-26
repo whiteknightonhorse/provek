@@ -1,9 +1,10 @@
 {
   "network": "testnet_bradbury",
   "chain_id": 4221,
+  "network_note": "pre-reset Bradbury; redeploy pending (GLR)",
   "rpc_url": "https://rpc-bradbury.genlayer.com",
   "contract_address": "0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6",
-  "explorer_url": "https://explorer-bradbury.genlayer.com/address/0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6",
+  "explorer_url": "https://scan.bradbury.genlayer.com/address/0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6",
   "deploy_tx": "07d54ea656a583b980f3071587775a66d0aa56da1042c7f77f2f5228d3d6f754",
   "deploy_tx_status": "ACCEPTED",
   "deploy_tx_consensus_result": "AGREE",

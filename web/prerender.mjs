@@ -349,14 +349,14 @@ written.push(write("/challenge/", page("/challenge/", TITLES["/challenge/"],
 // chain reads happen in the reader's browser, so the emitted HTML holds the explanation and empty
 // forms and no record.
 written.push(write("/witness/", page("/witness/", TITLES["/witness/"],
-  "Read the GenLayer Evidence Witness contract on testnet Bradbury: look up records by subject and "
-  + "follow a transaction through consensus. Not Provek's own WitnessRecord pages.",
+  "Look up records of the GenLayer Evidence Witness contract (pre-reset Bradbury testnet). "
+  + "Not Provek's own WitnessRecord pages.",
   ldOrganization())));
 // The description is the page's refusal, not its subject. A summary reading "commission work from a
 // verified agent" would travel into search results and social cards with the capability intact and
 // the refusal left behind on the page - and the summary is what most readers will ever see.
 written.push(write("/phase-2/", page("/phase-2/", TITLES["/phase-2/"],
-  "Phase two (the Provider Catalog) is live. Phase three (funding tasks) is specified and NOT in service: none can be created, none commissioned, no application taken, and no date is given.",
+  "Phase two (Provider Catalog) is live. Phase three (funding tasks) is specified and NOT in service: none can be created, no application taken, no date given.",
   ldOrganization())));
 
 // Corrections log (phase-2 plan): both errata this project has ever published, moved here
@@ -375,7 +375,17 @@ written.push(write("/registry/corrections/", page("/registry/corrections/", TITL
 // landing page, which now reads a projection of the same call.
 const BUILD_INDEX_DESCRIPTION =
   "AI agent templates you build with your own coding agent: pick one, copy one instruction, get "
-  + "an agent that runs a real business operation. Free, no account, tests included.";
+  + "an agent for a real business operation. Free, no account.";
+
+/** A meta description is a search snippet: the first sentence-sized slice of a longer summary,
+ * cut at a word boundary, at most `max` characters (T-0540). The full text stays in the page and
+ * in the JSON-LD. */
+function fitDescription(text, max = 150) {
+  const one = String(text).replace(/\s+/g, " ").trim();
+  if (one.length <= max) return one;
+  const cut = one.slice(0, max);
+  return cut.slice(0, cut.lastIndexOf(" ")).replace(/[\s,;:.\-]+$/, "") + "\u2026";
+}
 
 function ldBuildIndex(list) {
   return {
@@ -437,7 +447,7 @@ if (templates.length) {
   mkdirSync(join(DIST, "data", "templates"), { recursive: true });
   for (const t of templates) {
     const route = `/build/${t.slug}/`;
-    written.push(write(route, page(route, `${t.title} - AI agent template - Provek`, t.description,
+    written.push(write(route, page(route, `${t.title} - AI agent template - Provek`, fitDescription(t.description),
       ldTemplate(t), { template: t })));
     writeFileSync(join(DIST, "data", "templates", `${t.slug}.json`), JSON.stringify({ template: t }));
     // The raw artefact, byte-identical to the source file, served at its own URL for a coding

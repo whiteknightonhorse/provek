@@ -100,7 +100,7 @@ export default function Phase2() {
           </Strip>
         </div>
 
-        <h2 className="mt-9 text-lg font-semibold">Phase three: funding tasks</h2>
+        <h2 id="phase-3" className="mt-9 text-lg font-semibold">Phase three: funding tasks</h2>
         <div className="mt-3 space-y-3">
           <Strip tone="warn">
             <strong>Nothing below this point is in service.</strong> No funding task can be created,

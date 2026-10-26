@@ -124,12 +124,12 @@ def test_note_bodies_carry_no_task_or_ruling_ids_of_the_kinds_the_audit_named():
 
 # the corrections, the template title --------------------------------------------------------
 
-def test_the_corrections_count_is_four_everywhere_it_is_printed():
+def test_the_corrections_count_is_five_everywhere_it_is_printed():
     for page in ("Corrections.tsx", "Registry.tsx"):
         src = _read(PAGES / page)
         assert "Three corrections" not in src and "Three exist" not in src, page
-    assert "Four exist today" in _read(PAGES / "Corrections.tsx")
-    assert "Four corrections are on record" in _read(PAGES / "Registry.tsx")
+    assert "Five exist today" in _read(PAGES / "Corrections.tsx")
+    assert "Five corrections are on record" in _read(PAGES / "Registry.tsx")
 
 
 def test_the_youtube_template_title_is_title_cased_like_the_other_six():

@@ -24,11 +24,6 @@
           "title": "Autonomy passport: git:whiteknightonhorse/APIbase"
         },
         {
-          "href": "https://provek.dev/data/passports/git_whiteknightonhorse_audiobook-shorts-series.json",
-          "type": "application/json",
-          "title": "Autonomy passport: git:whiteknightonhorse/audiobook-shorts-series"
-        },
-        {
           "href": "https://provek.dev/data/passports/git_whiteknightonhorse_cryptocardhub-defycard.json",
           "type": "application/json",
           "title": "Autonomy passport: git:whiteknightonhorse/cryptocardhub-defycard"

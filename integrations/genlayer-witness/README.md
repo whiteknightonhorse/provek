@@ -43,8 +43,8 @@ Witness" so the two are never confused.
 |---|---|
 | Page | https://provek.dev/witness/ |
 | Contract | `0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6` |
-| Explorer | https://explorer-bradbury.genlayer.com/address/0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6 |
-| Network | GenLayer testnet Bradbury (chain 4221), RPC `https://rpc-bradbury.genlayer.com` |
+| Explorer | https://scan.bradbury.genlayer.com/address/0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6 |
+| Network | GenLayer testnet Bradbury (chain 4221), RPC `https://rpc-bradbury.genlayer.com` (pre-reset network, as of 2026-10-20; GenLayer reset Bradbury on 2026-10-24 and the redeploy is pending) |
 | Client library | `genlayer-js` 1.1.8, an exact pin in `web/package.json` and `web/package-lock.json` |
 
 **Design: reads go straight to the chain, writes go through an operator relay.**
@@ -142,8 +142,8 @@ integrations/genlayer-witness/
                                `src.witness.witness._digest`, this directory's 3.12 direct tests
                                read the contract's own `_url_reachable_digest`)
   deploy/
-    README.md                — the Deployment record (Bradbury address, explorer, three live
-                               records, three named SDK limitations) — see "How to deploy" below
+    README.md                — the Deployment record (Bradbury address, explorer, three records
+                               as of 2026-10-20 on the pre-reset network, three named SDK limitations) — see "How to deploy" below
     deployment.json           — the same record's real, measured fields
 ```
 
@@ -159,7 +159,7 @@ mode). Results are stored on-chain, immutably, and can be read back at any later
 `get_result(witness_id)` or listed per subject by `list_by_subject(subject_id)`.
 
 It is deployed on **GenLayer Testnet Bradbury** (chain id `4221`) at
-[`0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6`](https://explorer-bradbury.genlayer.com/address/0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6) —
+[`0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6`](https://scan.bradbury.genlayer.com/address/0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6) —
 see "How to deploy" and `deploy/README.md` for the full, measured record.
 
 ## 2. Why it exists
@@ -421,18 +421,18 @@ deploy path** — it is a difference in which client library and receipt field t
 operational script uses.
 
 **The real, measured Bradbury deployment** — network, chain id, RPC, contract address, explorer
-URL, deploy transaction, the three live PASS/PASS/FAIL records, and the three SDK workarounds
+URL, deploy transaction, the three PASS/PASS/FAIL records (as of 2026-10-20, pre-reset network), and the three SDK workarounds
 needed to reach them — is recorded in `deploy/README.md` ("Deployment record") and
 `deploy/deployment.json`, both written by GL-05b directly from the dispatcher's own transcripts.
 This section does not repeat that record; see it for the full, current detail. In short: **network**
 GenLayer Testnet Bradbury, chain id `4221`, RPC `https://rpc-bradbury.genlayer.com`; **contract**
-[`0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6`](https://explorer-bradbury.genlayer.com/address/0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6);
+[`0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6`](https://scan.bradbury.genlayer.com/address/0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6);
 **deploy tx** ACCEPTED, validators AGREE, execution FINISHED_WITH_RETURN, from commit
 `5e28d5f933329c124c058996da28b2abd4da5d37`.
 
 ## 11. Example request/result
 
-Taken verbatim from the live Bradbury deployment's first record (`deploy/deployment.json`,
+Taken verbatim from the first record of the Bradbury deployment (as of 2026-10-20, pre-reset network) (`deploy/deployment.json`,
 `live_records[0]`; full transaction detail in `evidence/MEASURED-012-*`).
 
 **Request** (`witness()`, sent by the operator):
@@ -466,7 +466,7 @@ contract.witness(
 `witness_id`: `0645571a8dea1e2601e441eb3c451b3eb6ab60f2f1c5af68c70129c03ae13453`. Transaction status:
 `ACCEPTED` (tx hash, `0x`-stripped for the secret-scan gate per GL-00 ruling-1:
 `45388e3b02dba0295c5960a7aabefadf4175198a1d71b90008689772dfd68c7a`). See `deploy/deployment.json`
-for the other two live records (a second PASS on `url_reachable` against `https://provek.dev/`,
+for the other two records (a second PASS on `url_reachable` against `https://provek.dev/`,
 and a FAIL on the same LICENSE artefact checked against a deliberately wrong digest — the FAIL path
 shown on-chain, not merely asserted by a test).
 

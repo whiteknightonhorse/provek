@@ -2,7 +2,7 @@
  * announced as features that exist (decision D-05). */
 
 export function Masthead({ route }: { route: string }) {
-  const link = (href: string, label: string, active: boolean) => (
+  const link = (href: string, label: string, active: boolean, short?: string) => (
     <a
       key={href}
       href={href}
@@ -14,7 +14,12 @@ export function Masthead({ route }: { route: string }) {
           : "border-transparent text-[var(--color-ink-2)] hover:text-[var(--color-ink)]")
       }
     >
-      {label}
+      {short ? (
+        <>
+          <span className="hidden sm:inline">{label}</span>
+          <span className="sm:hidden" aria-label={label}>{short}</span>
+        </>
+      ) : label}
     </a>
   );
   return (
@@ -33,7 +38,7 @@ export function Masthead({ route }: { route: string }) {
           {link("/registry/", "Registry", route.startsWith("/registry") || route.startsWith("/p/"))}
           {link("/method/", "Method", route === "/method/")}
           {link("/build/", "Build", route.startsWith("/build/"))}
-          {link("/witness/", "GenLayer Evidence Witness", route === "/witness/")}
+          {link("/witness/", "GenLayer Evidence Witness", route === "/witness/", "Witness")}
         </nav>
       </div>
     </header>

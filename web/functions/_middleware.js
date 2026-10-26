@@ -101,6 +101,14 @@ export async function onRequest(context) {
     return Response.redirect(url.toString(), 301);
   }
 
+  // `/404` is the error document served as an ordinary page: Cloudflare Pages maps `/404` to
+  // `404.html` and answers 200 for it, so a crawler is told a page exists whose body says none does.
+  // Same body, the status it describes (T-0540).
+  if (url.pathname === "/404" || url.pathname === "/404/" || url.pathname === "/404.html") {
+    const res = await next();
+    return new Response(res.body, { status: 404, headers: res.headers });
+  }
+
   // THE CONTROL for negotiation. No `Accept: text/markdown` - including no Accept header at all,
   // which is what an ordinary browser sends - and this file does nothing whatsoever from here on.
   // Every branch below this line runs only for a request that asked for markdown by name.

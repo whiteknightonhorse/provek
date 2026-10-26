@@ -129,7 +129,7 @@ def test_a_valid_request_is_202_with_the_hash_exactly_as_returned():
     assert r["result"]["status"] == 202
     h = "0x" + "aB09" * 16
     assert r["result"]["body"] == {
-        "tx_hash": h, "explorer_url": f"https://explorer-bradbury.genlayer.com/tx/{h}", "track_url": f"/witness/?tx={h}",
+        "tx_hash": h, "explorer_url": f"https://scan.bradbury.genlayer.com/tx/{h}", "track_url": f"/witness/?tx={h}",
     }
     (w,) = r["calls"]["writeContract"]
     assert w == {"address": DEPLOYMENT["contract_address"], "functionName": "witness", "value": "0",

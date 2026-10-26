@@ -526,6 +526,13 @@ export default function Witness() {
         </dl>
 
         <RequestCheck criteria={criteria} />
+        <div className="mt-8">
+          <Strip tone="warn">
+            <strong>Notice, 2026-10-24.</strong> GenLayer reset the Bradbury testnet on 2026-10-24. The records below are read from the
+            pre-reset network (rpc-bradbury.genlayer.com, chain 4221) while it still answers; the witness contract is being redeployed on
+            the new network and this page will switch to it then.
+          </Strip>
+        </div>
         <LookUp />
         <Tracker />
 

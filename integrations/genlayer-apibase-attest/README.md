@@ -19,10 +19,9 @@ a consensus-backed record that the receipt and the chain agree, or that they do 
 
 **Where this code lives.** The source of record is `integrations/genlayer-apibase-attest/` in
 [`whiteknightonhorse/provek`](https://github.com/whiteknightonhorse/provek/tree/main/integrations/genlayer-apibase-attest),
-where Provek's gates check it (D-66, beside D-63 for the first contract). The same directory is to be
-published, with its history, as `whiteknightonhorse/apibase-genlayer-attest` — a read-only mirror made
-with `git subtree split`, created by the follow-up task T-GA-02 and not by the one that wrote this
-file (the procedure is D-64's). The mirror is never edited directly: every change enters Provek and is
+where Provek's gates check it (D-66, beside D-63 for the first contract). The same directory is published, with its
+history, as `whiteknightonhorse/apibase-genlayer-attest` — a read-only mirror made with
+`git subtree split` (the procedure is D-64's). The mirror is never edited directly: every change enters Provek and is
 re-split. Paths such as `DECISIONS.md`, `docs/adr/` and `evidence/RED-*` refer to the root of the Provek
 repository.
 

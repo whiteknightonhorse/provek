@@ -6,9 +6,9 @@ in this directory holds the real, measured fields this file summarizes below.
 
 ## Deployment record
 
-**Network:** GenLayer Testnet Bradbury, chain id `4221`, RPC `https://rpc-bradbury.genlayer.com`.
+**Network:** GenLayer Testnet Bradbury, chain id `4221`, RPC `https://rpc-bradbury.genlayer.com`. GenLayer reset Bradbury on 2026-10-24; this record describes the pre-reset network, and the redeploy is pending.
 
-**Contract:** [`0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6`](https://explorer-bradbury.genlayer.com/address/0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6),
+**Contract:** [`0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6`](https://scan.bradbury.genlayer.com/address/0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6),
 deployed from commit `5e28d5f933329c124c058996da28b2abd4da5d37` (`origin/main`) by
 `0x2c111FCD3082083C9B287DD9DA5995f190968Ef9`. The deploy transaction was ACCEPTED, with validators
 in AGREE and execution result FINISHED_WITH_RETURN (its hash, `0x`-stripped for the secret-scan
@@ -18,7 +18,7 @@ gate per GL-00 ruling-1, is `deploy_tx` in `deployment.json`).
 4 passed (consensus-path integration tests against a real network with real validators; see
 `evidence/MEASURED-011-*`).
 
-**Three live records on Bradbury** (all ACCEPTED, read back with `get_result`; full detail and
+**Three records on Bradbury, as of 2026-10-20 (pre-reset network)** (all ACCEPTED, read back with `get_result`; full detail and
 every transaction hash in `evidence/MEASURED-012-*` and `deployment.json`'s `live_records`):
 
 | result | criterion       | evidence_url                                             | observation      |

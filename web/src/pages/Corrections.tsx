@@ -1,4 +1,4 @@
-/** The corrections log, in full. All four corrections this project has ever published, byte-for-byte.
+/** The corrections log, in full. All five corrections this project has ever published, byte-for-byte.
  *
  * WHY THIS PAGE EXISTS (the corrections-log step of the phase-2 plan). `/registry/` used to carry both errata in full,
  * as two `<Strip>` blocks above the table - honest, and increasingly not what a reader who has
@@ -36,7 +36,7 @@ export default function Corrections() {
 
         <h1 className="text-2xl font-semibold tracking-tight">All corrections</h1>
         <p className="mt-2 text-sm text-[var(--color-ink-2)]">
-          Every erratum this project has published, in full and unabridged. Four exist today.
+          Every erratum this project has published, in full and unabridged. Five exist today.
         </p>
 
         {/* THE MOVE, NAMED. A reader who bookmarked or quoted the original location on `/registry/`
@@ -47,7 +47,8 @@ export default function Corrections() {
           a single compact line pointing here instead of carrying the full text of every correction
           it has ever needed. The third was published directly here, the address this page has
           carried since that move. The fourth was added on 2026-10-23, for a change made on 2026-09-01
-          that had no notice of its own.
+          that had no notice of its own. The fifth was added on 2026-10-26, for a subject withdrawn
+          from the registry because its project was retired.
         </p>
 
         <div className="mt-6 space-y-4">
@@ -105,6 +106,16 @@ export default function Corrections() {
               when every non-bot commit in the window is attributed &mdash; an open identity window
               floors the level at L2. The earlier figure was a true reading of the window it was
               taken from, and is superseded.
+            </Strip>
+          </div>
+
+          <div>
+            <Strip tone="warn">
+              <strong>Correction, 2026-10-26.</strong> Subject withdrawn: project retired 2026-10. The
+              subject audiobook-shorts-series was removed from the registry, and its passport and
+              badge with it, because the project it described no longer exists. Its row read
+              unverified with the reason unreadable and carried no verdict, so no verdict changed.
+              Git history and copies kept by third parties still hold what was published (D-72).
             </Strip>
           </div>
         </div>

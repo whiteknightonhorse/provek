@@ -51,7 +51,7 @@ passport's operations array, entire and in order.
 [
   {
     "operation": "development_initiation",
-    "level": "L2",
+    "level": "L3",
     "measured": true,
     "confidence": "inferred",
     "limiters_applied": [
@@ -130,8 +130,8 @@ Witness" so the two are never confused.
 |---|---|
 | Page | https://provek.dev/witness/ |
 | Contract | `0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6` |
-| Explorer | https://explorer-bradbury.genlayer.com/address/0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6 |
-| Network | GenLayer testnet Bradbury (chain 4221), RPC `https://rpc-bradbury.genlayer.com` |
+| Explorer | https://scan.bradbury.genlayer.com/address/0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6 |
+| Network | GenLayer testnet Bradbury (chain 4221), RPC `https://rpc-bradbury.genlayer.com` (pre-reset network, as of 2026-10-20; GenLayer reset Bradbury on 2026-10-24 and the redeploy is pending) |
 | Client library | `genlayer-js` 1.1.8, an exact pin in `web/package.json` and `web/package-lock.json` |
 
 **Design: reads go straight to the chain, writes go through an operator relay.**

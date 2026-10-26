@@ -117,7 +117,7 @@ def test_tx_hash_parsing_does_not_repair_malformed_input():
 
 
 def test_explorer_paths():
-    assert probe("explorer_tx") == "https://explorer-bradbury.genlayer.com/tx/0xabc"
+    assert probe("explorer_tx") == "https://scan.bradbury.genlayer.com/tx/0xabc"
     assert probe("explorer_address") == DEPLOYMENT["explorer_url"]
 
 
