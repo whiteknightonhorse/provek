@@ -1,0 +1,7 @@
+tree: 97cc0e4ae811b94ab6296f756916baa6790b14e3 (dirty)
+RED-083 (T-0573) - /apply/ privacy list states retention, every holder and a private channel, run 2026-10-26 on worktree 0573 (renumber at rebase if taken).
+
+Gates: web/src/pages/Apply.tsx, docs/INTAKE_OPERATIONS.md; orchestra intake_cron.py (put_record ttl, no contact in say()).
+Tests: tests/test_apply_privacy_names_retention_and_channel.py; ~/orchestra tests/test_intake_cron.py (4 new).
+Mutation (orchestra): refused put without ttl + contact= back in say(refused):
+  2 failed, 47 passed - ttl test and the address-free log/alert test both red.

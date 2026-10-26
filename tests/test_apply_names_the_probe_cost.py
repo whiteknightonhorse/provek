@@ -564,6 +564,9 @@ PAGE_QUANTITIES = (
     "which one we applied",
     "always the read-only one",
     "evidence only one party can see",         # T-0567: who can see the evidence, not a count of requests
+    "30 days after its outcome",               # T-0573: a retention period, not a count of requests
+    "30 days after the row is withdrawn",      # T-0573: the same rule for a published request
+    "the one-line notification",               # T-0573: the size of the Telegram message, not of a probe
 )
 
 SECTION_QUANTITIES = (

@@ -562,6 +562,28 @@ withdrawn subject is not silently re-admitted by the next application. Reading t
 `~/orchestra/intake_cron.py`'s part (T-IN-01); this repository defines the key and the code.
 Admitting it again is the operator's decision, made by moving the entry out of `withdrawn` by hand.
 
+## Retention (T-0573)
+
+The sentence on `/apply/` ("Kept for") is this table in prose; the code that makes it true is
+`put_record(key, rec, ttl)` in `~/orchestra/intake_cron.py`, which sends the KV REST
+`expiration_ttl` query parameter. The 30 days are the shortest period in which a refused applicant
+can still ask why; GDPR art. 5(1)(e) is read as "a stated period or rule". There has been no
+professional review, and the page says so.
+
+| Outcome | KV record | Where else the data sits |
+|---|---|---|
+| refused | `expiration_ttl` 2592000 s (30 days), set when the refusal is written | Telegram one-line copy: deleted by hand on request; Cloudflare edge logs: Cloudflare's own period |
+| published | none while the row is listed | same as above; the request is the provenance of the verdict |
+| withdrawn (D-72) | the published record is rewritten once with `expiration_ttl` 2592000 s and a `provek_expires` marker, by the first intake run that sees the repository under `withdrawn` | same as above |
+| deferred / received | none (the outcome has not happened) | same as above |
+
+The operator's intake log (`logs/intake.jsonl`, `logs/intake_cron.log`) keeps the request id and
+repository and never the address, and the Telegram alert tail is built from those lines.
+`scripts/redact_contacts.py` (orchestra) redacted the addresses written before 2026-10-26, with no
+parked copy. Deletion on request goes to the private channel named on `/apply/`, never a public
+issue. Requests already in KV without a TTL (the 2026-10-24 test and two external refusals) are not
+touched by a live call from this card; the operator deletes them by hand.
+
 ## Answering a request
 
 *(Historical; the cron performs the verification step. Declining a request remains the operator's.)*

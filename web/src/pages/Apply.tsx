@@ -388,11 +388,11 @@ export default function Apply() {
               <li>
                 <strong className="text-[var(--color-ink-2)]">Stored:</strong> the repository URL,
                 your address, the time, and the two-letter country your request arrived from —
-                and the browser string your request arrived with &mdash; plus four fields about the
+                and the browser string your request arrived with (both for abuse triage; they travel with the
+                record and expire with it) &mdash; plus four fields about the
                 record rather than about you: a random identifier, which mandate you asked for,
                 which one we applied (always the read-only one), and whether our notification to
-                the operator went through. The operator&rsquo;s intake log on this server also keeps a working copy of your address
-                while the request is processed. Nothing further, and this form sets no cookie of its own.
+                the operator went through. Nothing further, and this form sets no cookie of its own.
               </li>
               <li>
                 {/* THE COUNT ABOVE WENT FROM EIGHT TO THIRTEEN, so this entry exists rather than a
@@ -409,13 +409,6 @@ export default function Apply() {
                 mail sender in this project, so today these records only wait for the day a sender exists.
               </li>
               <li>
-                <strong className="text-[var(--color-ink-2)]">Where:</strong> Cloudflare key-value
-                storage, plus — when that notification succeeds — a copy carried by Telegram to the
-                operator&rsquo;s private channel so a human sees it. Telegram is named because a
-                message channel that reaches a person passes through somebody; the stored record is
-                read by the operator alone.
-              </li>
-              <li>
                 <strong className="text-[var(--color-ink-2)]">Used for:</strong> deciding whether to
                 run a verification and contacting you about it. Never for anything else, never sold,
                 never passed on.
@@ -426,17 +419,30 @@ export default function Apply() {
                     stores while describing one - and `apply.js` has no deletion path at all, so
                     both are the operator's hands. Naming a store and leaving the promise where it
                     was is how a privacy statement quietly becomes partly false. */}
-                <strong className="text-[var(--color-ink-2)]">Deleted:</strong> whenever you ask, by
-                opening an issue or replying to any message from us &mdash; the stored record, the
-                intake-log copy and the message-channel copy together, all by hand, since nothing here deletes on a
-                timer. There is nothing to unsubscribe from &mdash; we do not send anything you did
-                not ask for.
+                <strong className="text-[var(--color-ink-2)]">Kept for:</strong> a refused or withdrawn
+                request is deleted from storage 30 days after its outcome; a published request is
+                kept while its row is listed, because the request is the provenance of the verdict,
+                and deleted 30 days after the row is withdrawn. The operator&rsquo;s intake log keeps
+                the request id and repository, not your address. The Telegram copy is deleted by hand
+                on request.
+              </li>
+              <li>
+                <strong className="text-[var(--color-ink-2)]">Deleted sooner:</strong> whenever you
+                ask, through partners@provek.dev (private; a public issue would publish that you
+                asked). There is nothing to reply to: we send no mail.
+              </li>
+              <li>
+                <strong className="text-[var(--color-ink-2)]">Who holds it:</strong> Cloudflare (the
+                storage and the edge that serves this form, which also keeps standard request logs
+                with your IP address for its own retention period, and counts requests per address to
+                limit abuse), Telegram (the one-line notification), and this server&rsquo;s intake log
+                as above.
               </li>
               <li>
                 <strong className="text-[var(--color-ink-2)]">Removal:</strong> a published row and
                 passport are withdrawn on request by the repository&rsquo;s owner &mdash; open an
                 issue on github.com/whiteknightonhorse/provek from an account that can act for the
-                repository, or reply to any message from us. The next run removes the page, the
+                repository, or write through the private channel named under Deleted sooner. The next run removes the page, the
                 badge and the summary. Git history and third-party caches keep what was
                 published; we cannot recall those, and we say so rather than promise otherwise.
               </li>
@@ -464,6 +470,11 @@ export default function Apply() {
                 </a>
                 . Advertising and personalisation signals are switched off, which is the most that
                 can be said for it.
+              </li>
+              <li>
+                <strong className="text-[var(--color-ink-2)]">Not legal advice:</strong> this is a
+                plain description of what the system does, written by the people who built it and
+                checked against the code; it has not been reviewed by a lawyer.
               </li>
             </ul>
           </div>
