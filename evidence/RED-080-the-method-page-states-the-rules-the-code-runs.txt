@@ -1,0 +1,10 @@
+tree: dbe921afe4d10467dfbbf8f707941106ca0c046a (dirty)
+RED-080 (T-0568) - the Method page states the rules the code runs, and development initiation has one procedure, run 2026-10-26 on worktree 0568 (renumber at rebase if taken; RED-079 is T-0567's, unmerged).
+
+Gates: src/abs_profile/ladder.py, web/src/pages/Method.tsx.
+Tests: tests/test_one_development_initiation_procedure.py, tests/test_method_page_states_the_coded_rules.py.
+Mutation: FEW_AUTHORS_FOR_L3 = 2 -> 3 in ladder.py (one place), then both test files:
+  9 failed, 32 passed - the three-author grid rows through cohort, pipeline and direct doors,
+  test_a_plain_clone_makes_no_closure_claim, test_there_is_one_threshold_and_it_is_two, and
+  test_the_page_carries_the_values_of_the_constants (page says "at most 2").
+Restored; 41 passed.

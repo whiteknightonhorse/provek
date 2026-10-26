@@ -94,3 +94,17 @@ def test_the_collector_works_with_no_token_at_all():
     assert inspect.signature(_api).parameters["token"].default is None
     assert access_channel(None) == "anonymous"
     assert access_channel("ghp_x") == "granted_token"
+
+
+def test_the_law_text_matches_the_refusal_the_gate_performs():
+    """The law's text says a credential stops the run before anything is written. That is held by
+    `tests/test_a_credential_may_not_build_a_published_artefact.py`; this asserts the gate still
+    carries the refusal and the law still says so, so neither can drift from the other."""
+    root = pathlib.Path(__file__).resolve().parents[1]
+    gate = (root / "scripts" / "cohort.py").read_text(encoding="utf-8")
+    assert "REFUSED: PROVEK_GITHUB_TOKEN is set" in gate
+    assert (root / "tests" / "test_a_credential_may_not_build_a_published_artefact.py").exists()
+    law = (root / "enforced_by.yaml").read_text(encoding="utf-8")
+    block = law.split("id: LAW-GRANTED-CHANNEL-ONLY")[1].split("- id:")[0]
+    assert "anonymous public channel only" in block and "a credential in the environment stops the run" in block
+    assert "granted to this project" not in block

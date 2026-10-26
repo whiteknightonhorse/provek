@@ -143,9 +143,16 @@ export default function Method() {
 
         <h2 className="mt-8 text-lg font-semibold">Not measured is a state, not a zero</h2>
         <p className="mt-1 text-sm text-[var(--color-ink-2)]">
-          Four absences are distinguished and never collapsed: the check ran and nothing qualified;
-          the check did not run; the source could not be read; the wrong source was asked, so an
-          endpoint that cannot see the quantity answered with an empty list. A missing measurement is not a
+          Six absences are distinguished and never collapsed. <code className="font-mono">nothing_qualified</code>:
+          the check ran across candidates and none qualified. <code className="font-mono">check_did_not_run</code>:
+          the check never ran. <code className="font-mono">unreadable</code>: the check ran and the source
+          refused to answer. <code className="font-mono">no_evidence_in_window</code>: the check ran, the
+          apparatus exists, and the evidence window held no evidence of this class &mdash; a later
+          window may not be empty. <code className="font-mono">apparatus_absent</code>: the check ran and
+          read an empty result because the subject has no such apparatus at all. <code className="font-mono">not_declared</code>:
+          the subject&rsquo;s own declaration was read and said nothing there. Beside them sits a trap, not a
+          state: the wrong source was asked, so an endpoint that cannot see the quantity answered with an
+          empty list. A missing measurement is not a
           violation, and a verifier that suspended a subject for its own blindness would be
           punishing someone for its own failure.
         </p>
@@ -292,19 +299,38 @@ export default function Method() {
             said nothing for the change to contradict. Naming what is NOT yet published here is
             cheaper than the alternative, which is a reader discovering the gap by finding a
             surprising verdict, the way this one was found. */}
+        <h2 className="mt-8 text-lg font-semibold">Rules as coded</h2>
+        <p className="mt-1 text-sm text-[var(--color-ink-2)]">
+          One function, <code className="font-mono">development_initiation_level</code> in{" "}
+          <code className="font-mono">src/abs_profile/ladder.py</code>, assigns the level of development
+          initiation for the registry and for a single verification alike. Its rules, with the numbers:
+        </p>
+        <ul className="mt-2 text-sm text-[var(--color-ink-2)] list-disc pl-5 space-y-1">
+          <li>Window: commits are read over the last 30 days.</li>
+          <li>Closure: if every non-bot commit in the window was attributed to an identity by the platform
+            or by a signature, the window is closed and the author count is a count. Otherwise it is a
+            lower bound and the level is L2.</li>
+          <li>L3: a closed window and at most 2 attributed identities.</li>
+          <li>L4: a closed window, a sole identity, and at least 90 % of commits signed. If the signed
+            share could not be measured, L4 is withheld and L3 stands.</li>
+          <li>L2: no evidence above L2. It is the floor. The instrument reads identities only, so it
+            cannot tell L0 or L1 from L2; no rule here assigns L0 or L1.</li>
+          <li>L5 is unreachable: no rule assigns it.</li>
+          <li>O1: an operation justified by this weak mixed signal alone is marked inferred.</li>
+          <li>O2: without a runtime trace the level is capped at L2 (as coded today).</li>
+          <li>O3: implemented in the scorer, not exercised in production: no subject declares a level.</li>
+          <li>Boundary: more than 1 000 commits in the window leave the window open, and the level is L2.</li>
+        </ul>
+
         <h2 className="mt-8 text-lg font-semibold">Open items</h2>
         <p className="mt-1 text-sm text-[var(--color-ink-2)]">
           Measured or coded today, and not yet published here as a rule of the method:
         </p>
         <ul className="mt-2 text-sm text-[var(--color-ink-2)] list-disc pl-5 space-y-1">
-          <li>the rules for L0, L1, L2 and L5 &mdash; only L3 and L4's thresholds are stated above</li>
           <li>the denominator <code className="font-mono">signed_commit_share</code> is a share OF &mdash; which commits are counted
             in it</li>
           <li>the comparison operators used at each threshold (&ge;, &le;, or ==)</li>
-          <li>whether any level above L4 is reachable at all under <code className="font-mono">SOLE_AUTHOR</code></li>
-          <li>the full list of limiters O1-O3 and what each one does to a verdict</li>
-          <li>the inputs <code className="font-mono">identity_window_closed</code>, <code className="font-mono">has_runtime_trace</code>, the <code className="font-mono">unlinked_*</code> measures,
-            and <code className="font-mono">control_map_cap</code></li>
+          <li>the <code className="font-mono">unlinked_*</code> measures and <code className="font-mono">control_map_cap</code></li>
         </ul>
 
       </div>

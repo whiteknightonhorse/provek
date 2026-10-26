@@ -15,7 +15,7 @@ not imported - so the function under test is lifted out of its source with `ast`
 import ast
 from pathlib import Path
 
-from src.abs_profile.ladder import SIGNED_SHARE_FOR_L4, SMALL_TEAM_FOR_L3, SOLE_AUTHOR, L
+from src.abs_profile.ladder import FEW_AUTHORS_FOR_L3, L, development_initiation_level
 from src.abs_profile.measured import Measurement, NotMeasured
 
 _FN_NAME = "cohort_development_initiation_level"
@@ -26,8 +26,7 @@ def _load_level_fn():
     tree = ast.parse(src.read_text(encoding="utf-8"))
     fn = next((n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == _FN_NAME), None)
     assert fn is not None, f"scripts/cohort.py no longer defines {_FN_NAME} - these tests target nothing"
-    ns = {"L": L, "SOLE_AUTHOR": SOLE_AUTHOR, "SIGNED_SHARE_FOR_L4": SIGNED_SHARE_FOR_L4,
-          "SMALL_TEAM_FOR_L3": SMALL_TEAM_FOR_L3}
+    ns = {"L": L, "development_initiation_level": development_initiation_level}
     module = ast.Module(body=[fn], type_ignores=[])
     exec(compile(module, str(src), "exec"), ns)
     return ns[_FN_NAME]
@@ -66,8 +65,8 @@ def test_distinct_authors_unmeasured_withholds_the_whole_verdict():
 
 
 def test_small_team_still_reaches_l3():
-    assert LEVEL(M(value=SMALL_TEAM_FOR_L3), M(value=0.0), M(value=True)) == L.L3
+    assert LEVEL(M(value=FEW_AUTHORS_FOR_L3), M(value=0.0), M(value=True)) == L.L3
 
 
 def test_large_team_floors_at_l2():
-    assert LEVEL(M(value=SMALL_TEAM_FOR_L3 + 1), M(value=1.0), M(value=True)) == L.L2
+    assert LEVEL(M(value=FEW_AUTHORS_FOR_L3 + 1), M(value=1.0), M(value=True)) == L.L2

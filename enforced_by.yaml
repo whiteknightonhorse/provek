@@ -161,7 +161,7 @@ laws:
     gate: scripts/cohort.py
     test: tests/test_served_set_matches_registry.py
   - id: LAW-GRANTED-CHANNEL-ONLY
-    text: "a subject is read through a token granted to this project, never through host privilege"
+    text: "a published artefact is built through the anonymous public channel only; a credential in the environment stops the run before anything is written"
     gate: scripts/cohort.py
     test: tests/test_granted_channel_only.py
   - id: LAW-EMITTED-ARTEFACT-IS-CHECKED

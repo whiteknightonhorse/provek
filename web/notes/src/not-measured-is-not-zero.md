@@ -1,9 +1,9 @@
 ---
 {
   "slug": "not-measured-is-not-zero",
-  "title": "Four Ways a Measurement Can Be Absent - Provek",
-  "h1": "Four states of absence, and the one that hides as a finding",
-  "description": "Distinguishes nothing_qualified, check_did_not_run and unreadable, plus the state where a blind instrument's empty reading reads as a finding.",
+  "title": "Six Ways a Measurement Can Be Absent - Provek",
+  "h1": "Six states of absence, and the trap that hides as a finding",
+  "description": "Six named states of absence in a passport - nothing_qualified to not_declared - and the trap where a blind instrument's empty reading reads as a finding.",
   "keys": [],
   "addresses": [
     {
@@ -75,11 +75,18 @@
 }
 ---
 
-An unmeasured field is not a blank. A passport must name which of three reasons left an operation unmeasured: the check did not run, it ran but nothing qualified, or the source refused to answer. A fourth exists: an instrument that cannot see the quantity, producing an indistinguishable reading. Unless the instrument's reach is disclosed alongside the finding, absence remains indistinguishable from the three.
+An unmeasured field is not a blank. A passport must name which of six reasons left an operation unmeasured. Beside them sits a trap that is not a state: an instrument that cannot see the quantity, producing an indistinguishable reading. Unless the instrument's reach is disclosed alongside the finding, absence remains indistinguishable from the six.
 
-## Three states, not a blank
+## Six states, not a blank
 
-The passport distinguishes three states of absence: `nothing_qualified` when the check ran and found no match, `check_did_not_run` when the check never ran, and `unreadable` when the source declined to answer.
+The passport distinguishes six states of absence, the values of `NotMeasured` in `src/abs_profile/measured.py`:
+
+- `nothing_qualified`: the check ran across candidates and none qualified.
+- `check_did_not_run`: the check never ran, so nobody looked.
+- `unreadable`: the check ran and the source declined to answer.
+- `no_evidence_in_window`: the check ran and the apparatus exists, but the evidence window held no evidence of this class; a later window may not be empty.
+- `apparatus_absent`: the check ran and read an empty result because the subject has no such apparatus at all, a permanent fact rather than a gap.
+- `not_declared`: the subject's own declaration was read and said nothing in that field. It is a statement about a claim, never about a quantity.
 
 Each measurement carries exactly one of: a value, or the reason it is absent. A `Measurement` dataclass enforces this by rejecting any instance that is both empty and doubled. One return value meaning two states of the world caused seven defects in the operator's systems, including a twelve-week outage where "no news" and "the source is dead" returned identically, hiding the failure from monitoring.
 
@@ -101,9 +108,9 @@ LAW-NOT-MEASURED lived in the `Measurement` class, not enforced at the boundary.
 
 ## When the instrument cannot see the quantity
 
-The three named states - nothing_qualified, check_did_not_run, unreadable - occupy distinct places in the grammar of absence. A fourth sits at the boundary: an endpoint that cannot see a quantity returns HTTP 200 with an empty list, indistinguishable from zero at the point of capture. Two GitHub endpoints show the risk. The `/commits/{sha}/status` endpoint reported zero integrations for every commit; the reading was correct. The `/commits/{sha}/check-runs` endpoint returned four runs on the same commits. The legacy API cannot carry what the modern one does.
+The six named states occupy distinct places in the grammar of absence. A trap sits at the boundary: an endpoint that cannot see a quantity returns HTTP 200 with an empty list, indistinguishable from zero at the point of capture. Two GitHub endpoints show the risk. The `/commits/{sha}/status` endpoint reported zero integrations for every commit; the reading was correct. The `/commits/{sha}/check-runs` endpoint returned four runs on the same commits. The legacy API cannot carry what the modern one does.
 
-A conclusion drawn from an instrument that cannot see the quantity is not evidence. It is more dangerous when correct, because it will be repeated elsewhere. The wrong-source state is the fourth member in the operation-level absence grammar of [the method](/method/): beside nothing_qualified and unreadable sits the case where an endpoint was asked, answered 200 with no data, and vanished into zero.
+A conclusion drawn from an instrument that cannot see the quantity is not evidence. It is more dangerous when correct, because it will be repeated elsewhere. The wrong-source trap is the case the grammar of [the method](/method/) cannot name from inside: beside the six states sits the case where an endpoint was asked, answered 200 with no data, and vanished into zero.
 
 Fable found this while refuting a brief that used an empty measurement as proof. The reading was correct - no deploy integrations existed - but the proof was invalid, because it came from an instrument blind to deploy integrations. This form of failure is most dangerous when correct: the conclusion will be trusted and the pattern will be repeated without record of its source.
 
@@ -125,9 +132,9 @@ Demand data retrieval faced different constraints. `GetKeyword` returned 812 rea
 
 ## What a passport's per-operation table renders
 
-A passport's per-operation table embodies decision D-03: every unmeasured operation shows the word `not_measured` and its reason, never blank or zero. Each row names an operation, assigns a level from L0 to L5, carries confidence (`measured` or `inferred`), and lists the limiters applied. When an operation remains unmeasured, the reason is one of three forms: `nothing_qualified` when the check ran but matched nothing, `check_did_not_run` when the check never executed, or `unreadable` when the source refused to answer.
+A passport's per-operation table embodies decision D-03: every unmeasured operation shows the word `not_measured` and its reason, never blank or zero. Each row names an operation, assigns a level from L0 to L5, carries confidence (`measured` or `inferred`), and lists the limiters applied. When an operation remains unmeasured, the reason is one of the six states defined above.
 
-L-10 names a fourth absence: the wrong source was asked. An endpoint answers HTTP 200 with an empty list, indistinguishable from true zero at the point of reading. A conclusion drawn from an instrument that cannot see the quantity is not evidence. Before recording absence, the instrument must be shown able to see presence. This extends the project's foundational rule from L-1: "no news" and "the source is dead" must never read the same.
+L-10 names a trap beside the states: the wrong source was asked. An endpoint answers HTTP 200 with an empty list, indistinguishable from true zero at the point of reading. A conclusion drawn from an instrument that cannot see the quantity is not evidence. Before recording absence, the instrument must be shown able to see presence. This extends the project's foundational rule from L-1: "no news" and "the source is dead" must never read the same.
 
 The table stays sparse by design. Two of three operations on current subjects read `not_measured`, and that sparsity is the truth the artifact must keep visible. This rendering prevents the collapse that caused seven production defects across the operator's systems.
 

@@ -18,10 +18,8 @@ from datetime import datetime, timezone
 from src.abs_profile.evidence import EvidenceClass
 from src.abs_profile.identity import Binding
 from src.abs_profile.ladder import (
-    FEW_AUTHORS_FOR_L3,
-    SIGNED_SHARE_FOR_L4,
-    SOLE_AUTHOR,
     L,
+    development_initiation_level,
 )
 from src.abs_profile.measured import Measurement
 from src.collector.declaration import apply_declaration, github_full_name
@@ -69,36 +67,14 @@ class Result:
 
 def _observed_level(signed_share: Measurement, authors: Measurement,
                     identity_window_closed: Measurement | None = None) -> L | None:
-    """Level for the operation "development initiation", from OBSERVABLE signals.
+    """Level for "development initiation" from OBSERVABLE signals - an APPROXIMATION, not proof of
+    autonomy (attack T1, unimplementable register U-2); recorded as platform_observed and never
+    presented as a verdict that no human wrote the code.
 
-    HONEST BOUNDARY. This is an APPROXIMATION, not proof of autonomy: signatures and author counts
-    do not say who pressed the button (attack T1, unimplementable register U-2). The result is
-    recorded as platform_observed and is NEVER presented as a verdict that no human wrote the code.
-
-    `identity_window_closed` is `None` for a plain git clone (`src.collector.repo`), which has no
-    platform to attribute an unsigned commit's identity to and so has no closure claim to make -
-    the gate below simply does not apply there, exactly as before this parameter existed. For
-    GitHub-sourced evidence (`src.collector.github.collect_github`) it is ALWAYS a real Measurement,
-    and PLATFORM CLOSURE (Fable, 2026-08-25) applies: `authors` is only an author COUNT when every
-    non-bot commit in the window was attributed by the platform or by a signature; an open window
-    makes it a lower bound only, and the ladder answers that with the L2 floor rather than a guess
-    in either direction (AUD-002 - this gate used to live only in `scripts/cohort.py`, so a GitHub
-    subject scored through this "single entry point" skipped it entirely).
-
-    Deliberately keeps its OWN thresholds (`FEW_AUTHORS_FOR_L3`, weighing the signature share for
-    L4) rather than `scripts/cohort.py`'s `cohort_development_initiation_level` and
-    `SMALL_TEAM_FOR_L3` - see that constant's docstring for why two procedures exist on purpose.
+    One procedure for registry and pipeline: `src.abs_profile.ladder.development_initiation_level`
+    (D-74). `identity_window_closed` is `None` for a plain git clone, which has no closure claim.
     """
-    if not signed_share.is_measured or not authors.is_measured:
-        return None
-    if identity_window_closed is not None and not (
-            identity_window_closed.is_measured and identity_window_closed.value):
-        return L.L2
-    if authors.value == SOLE_AUTHOR and signed_share.value >= SIGNED_SHARE_FOR_L4:
-        return L.L4
-    if authors.value <= FEW_AUTHORS_FOR_L3:
-        return L.L3
-    return L.L2
+    return development_initiation_level(authors, signed_share, identity_window_closed)
 
 
 def verify(remote: str, binding: Binding, transport, registry: PublicRegistry,

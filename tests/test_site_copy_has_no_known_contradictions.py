@@ -83,7 +83,8 @@ def test_the_method_page_claims_no_more_than_it_publishes():
     assert "Published in full" not in src
     assert "any verdict can be recomputed" not in src
     assert "Three absences" not in src
-    assert "Four absences are distinguished" in src
+    assert "Four absences are distinguished" not in src
+    assert "Six absences are distinguished" in src
     assert "every published rule can be recomputed" in src
     assert "listed under Open items below" in src
     assert "licensed for reuse" not in src, "LICENSE holds two licences; the page must name them"

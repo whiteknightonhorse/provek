@@ -309,7 +309,7 @@ function registryCoverage(ns) {
       ${hatchDefs(ns)}${head}${body}${legend}</svg>`,
     caption: `Every operation on every subject in the registry, as at ${reg.generated_at.slice(0, 10)}. `
       + `No total is drawn: a single coverage number would turn a named shortfall into a score. `
-      + `Read from <code>public/registry/registry.json</code> and the eight passports beside it.`,
+      + `Read from <code>public/registry/registry.json</code> and the ${rows.length} passports beside it.`,
   };
 }
 

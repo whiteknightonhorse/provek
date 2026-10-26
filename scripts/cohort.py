@@ -23,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from src.abs_profile.evidence import EvidenceClass
 from src.abs_profile.identity import Binding, BindingKind
 from src.abs_profile.isotime import parse_iso_ts
-from src.abs_profile.ladder import SIGNED_SHARE_FOR_L4, SMALL_TEAM_FOR_L3, SOLE_AUTHOR, L
+from src.abs_profile.ladder import L, development_initiation_level
 from src.abs_profile.measured import NotMeasured
 from src.collector.declaration import apply_declaration
 from src.collector.github import (
@@ -409,46 +409,10 @@ def observations(ev) -> dict:
 
 def cohort_development_initiation_level(distinct_authors, signed_commit_share,
                                           identity_window_closed) -> L | None:
-    """Level for "development initiation" - the COHORT's own procedure.
-
-    Deliberately not `src.pipeline._observed_level` - see `SMALL_TEAM_FOR_L3`'s docstring for why
-    two procedures exist at all (the cohort does not weigh signatures for L3, so it needs a wider
-    band - <=3 instead of <=2 - to reach the same conclusion from less).
-
-    DEFECT FIXED HERE (Fable, 2026-08-31, not a new ratification). Until this fix, `SOLE_AUTHOR`
-    alone reached L4 in this function while `pipeline.verify` additionally required
-    `SIGNED_SHARE_FOR_L4` - the rule actually published on provek.dev. A cohort computed from LESS
-    evidence (no signature weighing) was handing out a STRONGER verdict than the pipeline computed
-    from MORE evidence, for identical inputs: APIbase (signed_commit_share=0.0, distinct_authors=1)
-    scored L4 here and L3 in `pipeline.verify`. The ratified compensation for "the cohort does not
-    weigh signatures" is `SMALL_TEAM_FOR_L3`'s wider band - it widens what reaches L3. Nothing
-    ratified widening what reaches L4; that requirement was silently dropped and is reinstated
-    below, so the two procedures now agree at the one rung where they must.
-
-    SIGNED_COMMIT_SHARE NOT MEASURED (ABI-33-4: inability to measure never yields a NEGATIVE
-    verdict, chosen deliberately over the alternative reading). The old code required BOTH
-    `distinct_authors` and `signed_commit_share` to be measured before assigning ANY level, so an
-    unmeasured signature share withheld even the L3 verdict a sole author already supports without
-    any signature evidence at all - more punitive than the absence requires. Here, only the CLAIM
-    TO L4 needs the signature: a sole author whose signature share is unmeasured falls through to
-    the L3 (or L2) rung that distinct_authors alone can support, rather than being withheld
-    outright. A rung that needs no signature evidence should not be denied for the absence of one.
-    """
-    if not distinct_authors.is_measured:
-        return None
-    # PLATFORM CLOSURE (Fable, 2026-08-25) - unchanged by this fix. The author count is only an
-    # author COUNT when every non-bot commit in the window was attributed by the platform or by a
-    # signature; otherwise it is a LOWER BOUND, and the floor - not "not measured" - is the honest
-    # answer to an open window (see the fuller note this replaced, in git history at this line).
-    if not (identity_window_closed.is_measured and identity_window_closed.value):
-        return L.L2
-    if (distinct_authors.value == SOLE_AUTHOR
-            and signed_commit_share.is_measured
-            and signed_commit_share.value >= SIGNED_SHARE_FOR_L4):
-        return L.L4
-    if distinct_authors.value <= SMALL_TEAM_FOR_L3:
-        return L.L3
-    return L.L2
+    """The cohort's door to the one procedure, `src.abs_profile.ladder.development_initiation_level`
+    (D-74; the rules, and the history of the defects fixed in them, live in that docstring)."""
+    return development_initiation_level(distinct_authors, signed_commit_share,
+                                        identity_window_closed)
 
 
 # `publishable_source` and `reads_completed` moved to `src.collector.github` (AUD-002, LAW

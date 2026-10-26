@@ -91,8 +91,38 @@ FEW_AUTHORS_FOR_L3 = 2
 """ASSIGNED. Above one author but few enough that a machine-led process remains the simplest
 explanation."""
 
-SMALL_TEAM_FOR_L3 = 3
-"""ASSIGNED. The cohort's own reading of the same question, and DELIBERATELY DIFFERENT from
-FEW_AUTHORS_FOR_L3 above: `pipeline.verify` weighs signatures as well, the cohort does not, so the
-cohort needs a wider band to reach the same conclusion from less. Two numbers because there are two
-procedures - not because one of them drifted."""
+
+def development_initiation_level(distinct_authors, signed_commit_share,
+                                 identity_window_closed) -> L | None:
+    """The ONE procedure for the level of "development initiation" - registry and pipeline alike.
+
+    WHY THERE WAS A SECOND BAND, AND WHY IT IS GONE (D-56, superseded in part by D-74). The cohort
+    once used `SMALL_TEAM_FOR_L3 = 3` against the pipeline's `FEW_AUTHORS_FOR_L3 = 2`, on the
+    stated ground that the pipeline weighs signatures at L3 and the cohort does not. Neither
+    procedure ever weighed signatures at L3: both compared the author count alone, and signatures
+    mattered only at L4. The ground was false, so the wider band compensated for nothing and gave
+    the same repository two different levels depending on which door it entered by.
+
+    Inputs are `Measurement`s. `identity_window_closed` is `None` for a plain git clone, which has
+    no platform to attribute an unsigned commit's identity to and so makes no closure claim.
+
+    * authors not measured -> None (withheld, never a zero);
+    * closure measured-and-False, or unmeasured -> L2, the floor: an open window makes the author
+      count a lower bound (PLATFORM CLOSURE, Fable 2026-08-25);
+    * sole author with a MEASURED signed share >= SIGNED_SHARE_FOR_L4 -> L4;
+    * authors <= FEW_AUTHORS_FOR_L3 -> L3 (an unmeasured signature share only withholds the L4
+      claim, ABI-33-4: a rung that needs no signature evidence is not denied for its absence);
+    * otherwise L2.
+    """
+    if not distinct_authors.is_measured:
+        return None
+    if identity_window_closed is not None and not (
+            identity_window_closed.is_measured and identity_window_closed.value):
+        return L.L2
+    if (distinct_authors.value == SOLE_AUTHOR
+            and signed_commit_share.is_measured
+            and signed_commit_share.value >= SIGNED_SHARE_FOR_L4):
+        return L.L4
+    if distinct_authors.value <= FEW_AUTHORS_FOR_L3:
+        return L.L3
+    return L.L2

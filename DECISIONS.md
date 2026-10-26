@@ -3434,6 +3434,8 @@ bound.
 count window and neither platform closure nor the bot-exclusion rule, because it never called
 `collect_github` at all
 
+Superseded in part by D-74 (2026-10-26): the two procedures now share one function.
+
 **What was live.** The 2026-08-25 errata against `collect_github` (a COUNT window - `-n 50` -
 evacuated by the very activity of the subject it measures, publicly corrected to a 30-day TIME
 window) never reached `src/pipeline.py`. `verify()` always read every remote, GitHub or not,
@@ -4245,3 +4247,31 @@ none needs a "superseded by" marker.
 **Not decided here.** `web/public/og-image.png` keeps its current art; it is decided separately.
 The mark is an identifier, not a claim: the principle that an emblem earned before a method is the
 substitution this registry exists to detect stands, and the mark carries no score, badge or verdict.
+
+## D-74. One procedure and one threshold for development initiation (2)
+
+**Context.** D-56 left two procedures for the level of "development initiation": the cohort's
+(`SMALL_TEAM_FOR_L3 = 3`) and the pipeline's (`FEW_AUTHORS_FOR_L3 = 2`), justified by the claim
+that the pipeline weighs signatures at L3 and the cohort does not. Read against the code that claim is
+false: `src/pipeline.py` and `scripts/cohort.py` both compared the author count alone at L3, and
+signatures mattered only at L4. The method page also listed thresholds as "stated above" that it did
+not state, and named three or four of the six `NotMeasured` states. Fable ruling AUDIT-OPUS-PROVEK-1028
+q-1 ruling-1 (2026-10-26).
+
+**Decision.** (1) `src.abs_profile.ladder.development_initiation_level` is the one function; the cohort
+and `pipeline._observed_level` both call it. `SMALL_TEAM_FOR_L3` is deleted; `FEW_AUTHORS_FOR_L3 = 2`
+is the one threshold. (2) `/method/` gains "Rules as coded" (30 days, closure, L3 at most 2
+identities, L4 sole identity and 90 % signed, L2 as the floor, L5 unreachable, O1-O3, the 1 000-commit
+boundary) and names all six `NotMeasured` states, as does the note "not-measured-is-not-zero".
+(3) The text of LAW-GRANTED-CHANNEL-ONLY now says what the gate does: the anonymous channel only, a
+credential stops the run. (4) `docs/COHORT_EXCLUSIONS.md` is restated for nine rows and names the
+D-72 withdrawal.
+
+**Effect.** A future subject with exactly three authors in a closed window drops from L3 to L2; nobody
+rises. Today's registry (authors 2 / 1 / 1 for the three projections) is unchanged by construction:
+2 <= 2, 1 <= 2, 1 <= 2.
+
+**Supersedes in part.** D-56 (the two-thresholds clause); marked there.
+
+**Not decided here.** O2 (runtime trace) is published as coded today; card 0570 changes it.
+`SIGNED_SHARE_FOR_L4`, `SOLE_AUTHOR` and the window are unchanged.
