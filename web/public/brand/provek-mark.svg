@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="Provek">
+  <rect width="1024" height="1024" fill="#0f1115"/>
+  <path fill="#e8e6df" fill-rule="evenodd" d="M244 313H376A115.5 115.5 0 0 1 376 544H318V685H244ZM318 377H363A51.5 51.5 0 0 1 363 480H318Z"/>
+  <rect x="623" y="600" width="85" height="85" fill="#4ade80"/>
+</svg>
