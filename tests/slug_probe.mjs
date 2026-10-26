@@ -2,6 +2,8 @@
  * The instrument for `tests/test_passport_slug_is_judged_before_it_is_fetched.py`: it RUNS the
  * slug guard instead of reading it.
  *
+ * (The pattern named below is the 2026-08-24 rule; T-IN-06, D-77, amended it - see web/src/slug.js.)
+ *
  * WHY IT EXISTS AT ALL. A source scan can see that `^[A-Za-z0-9_-]+$` is written and can never see
  * what it returns. The two are not the same claim, and the gap between them is wide enough to ship
  * a hole through: the same pattern in Python's `re` accepts a trailing newline and in JavaScript

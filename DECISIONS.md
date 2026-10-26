@@ -4326,3 +4326,31 @@ place.
 
 **Effect.** A forged leader observation no longer passes validation. Honest runs are unchanged; a dynamic
 `url_reachable` page still agrees. Contract sizes stay under the D-67 cap of 19 000 bytes.
+
+## D-77. The intake judges what was sent, not what was left after truncating it
+
+**Context.** `apply.js` cut every field to its maximum with `slice(0, MAX)` and only then ran the
+regex, so a 2100-character repository URL was stored as its first 2000 characters (record 9d6d3dbb…).
+A `null` body reached `body.repo` and Cloudflare answered 1101. `request.json()` ignores the
+content-type, so a cross-origin `text/plain` POST (no preflight) wrote a record. The contact regex
+accepted `<b>@x.y`. The slug rule `^[A-Za-z0-9_-]+$` was written in four places and refused the `.`
+that `slugOf` (`web/discovery.mjs`) keeps, so a repository named `a.b` had a static passport page and
+no `/brief` or badge. Fable ruling PROVEK-QA-1023 q-1 (2026-10-23), audit D-1, D-4, D-5, L7.
+
+**Decision.** (1) Validate before truncating: `clean(v, max)` returns `null` for a value longer than
+`max` and every caller treats `null` as invalid; trimming whitespace stays, because a trimmed URL is
+the one meant. (2) Anything but a JSON content-type is a 415, checked before the body is read; a body
+that is not a plain object is a 400 with a sentence. (3) Repository URL max 160 and contact max 254,
+with tighter regexes, a `..`-free repository name, and dots allowed in the name. (4) One slug rule,
+`/^(?!.*\.\.)[A-Za-z0-9_][A-Za-z0-9_.-]*$/`, byte-identical in `web/src/slug.js`, `brief.js`,
+`badge/[id].js` and `api/apply/[id].js` (`tests/test_slug_rule_is_one_place.py`). (5) `brief.js` and
+`badge/[id].js` carry `access-control-allow-origin: *` like every other route. The per-field rules
+live in the table in `docs/INTAKE_OPERATIONS.md` and are not restated here.
+
+**Supersedes.** Slice-first validation; the `^[A-Za-z0-9_-]+$` slug rule (dated snapshots of it in
+`docs/ALERT_TRIAGE.md` and `evidence/RED-032-*` stay as records of 2026-08-24); no ACAO on brief and badge.
+`evidence/RED-072-an-overlong-or-non-json-intake-request-is-refused-not-truncated.txt` shows the
+swapped-order mutation returning 200.
+
+**Not decided here.** Turnstile and a rate limiter (operator question Q4 of the ruling); shipping the
+Function (the dispatcher's push and deploy steps).

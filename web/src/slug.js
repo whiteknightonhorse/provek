@@ -24,6 +24,7 @@
  * "the registry has not loaded yet" and "no such subject" would render identically, which is the
  * defect this component's own four-state loader exists to refuse.
  *
+ * (As of 2026-08-24; the rule was amended by T-IN-06, D-77, to admit `.` and refuse `..`.)
  * `^[A-Za-z0-9_-]+$` is not a guess about what a slug looks like. It was measured against every
  * subject the registry carries and every passport file on disk (8 and 8 on 2026-08-24), each of
  * which is `subject_id.replace(/[:/]/g, "_")` over `git:owner/repo` - so the character set is the
