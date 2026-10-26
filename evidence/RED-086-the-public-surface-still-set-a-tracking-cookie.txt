@@ -1,0 +1,25 @@
+RED-086 - T-WB-04: the public surface still set a tracking cookie (GA4 on every page, beacon absent)
+tree: fa65ecb9b27ee91db01cf7ff5e0b661f06111d35 (dirty)
+== RED: tests on origin/main fa65ecb build (web/dist/index.html 33884 bytes)
+Mon Oct 26 10:35:56 PM UTC 2026
+E         'Google Analytics' is contained here:
+E                     Google Analytics runs on every page here, without a consent banner. It sets a cookie
+E         ?           ++++++++++++++++
+E                           and creates an identifier for your browser, and what it records goes to Google. That
+E                           is the operator&rsquo;s decision and it is written down, with the argument against
+E                           it, in the{" "}...
+E         
+E         ...Full output truncated (18 lines hidden), use '-vv' to show
+
+tests/test_public_surface_sets_no_tracking_cookie.py:63: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_public_surface_sets_no_tracking_cookie.py::test_no_shipped_page_loads_google_analytics
+FAILED tests/test_public_surface_sets_no_tracking_cookie.py::test_every_shipped_page_carries_exactly_one_cloudflare_beacon_with_a_token
+FAILED tests/test_public_surface_sets_no_tracking_cookie.py::test_apply_discloses_what_is_true_now
+3 failed, 1 passed in 0.07s
+rc=1
+== GREEN: after the change (web/dist/index.html 32360 bytes)
+Mon Oct 26 10:36:08 PM UTC 2026
+....                                                                     [100%]
+4 passed in 0.05s
+rc=0

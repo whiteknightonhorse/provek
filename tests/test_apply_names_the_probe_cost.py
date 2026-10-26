@@ -569,6 +569,7 @@ PAGE_QUANTITIES = (
     "the one-line notification",               # T-0573: the size of the Telegram message, not of a probe
     "in a few seconds",                        # T-IN-08: the edge rate-limit sentence, a wait, not a probe count
     "Wait ten seconds and send once more",     # T-IN-08: the same sentence; one retry by the visitor, not a request we send
+    "and the one it replaced",                 # T-WB-04: the decision log entry D-78 supersedes, not a count of requests
 )
 
 SECTION_QUANTITIES = (

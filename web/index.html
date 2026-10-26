@@ -47,54 +47,12 @@
     <meta name="twitter:title" content="Provek — evidence, not claims" />
     <meta name="twitter:description" content="Per business operation, how much of a company runs without a human in the loop — with the evidence behind every number, including what could not be measured." />
 
-    <!-- GA4, operator's decision of 2026-08-20, recorded as D-14.
-         Fable ruled against measurement on this surface and the operator overruled it; the record
-         says so rather than presenting this as an unexamined default.
-
-         Two flags are set that the operator did not ask for and that do not alter what he chose to
-         collect: Google Signals and ad-personalisation signals are OFF. They feed advertising
-         profiles rather than the audience counts this is here to answer, so leaving them on would
-         collect more than the decision covers. `send_page_view` is false because the router
-         is ours: gtag would count only the first screen and miss every navigation after it. -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QD2522TMYP"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-QD2522TMYP', {
-        send_page_view: false,
-        allow_google_signals: false,
-        allow_ad_personalization_signals: false
-      });
-      // ROUTING IS BY PATHNAME, not by hash. This counted `hashchange` for fourteen minutes
-      // before the static-emit change moved routing to pushState, and then kept counting it -
-      // so every visit recorded one view of "/" whatever page it was, and client-side
-      // navigations recorded nothing at all. A measurement decision that cost an argument and
-      // then returned garbage is worse than no measurement, so this reads the real route and
-      // hooks the same events the router does.
-      (function () {
-        var seen = null;
-        function view() {
-          var path = location.pathname || '/';
-          if (path === seen) return;
-          seen = path;
-          gtag('event', 'page_view', {
-            page_path: path,
-            page_location: location.href,
-            page_title: document.title
-          });
-        }
-        addEventListener('popstate', view);
-        // pushState fires no event of its own; the router calls it on every internal link.
-        var push = history.pushState;
-        history.pushState = function () {
-          push.apply(this, arguments);
-          setTimeout(view, 0);
-        };
-        addEventListener('load', function () { setTimeout(view, 0); });
-        view();
-      })();
-    </script>
+    <!-- Cloudflare Web Analytics, D-78 (2026-10-26). Cookieless: no cookie, no identifier, no
+         consent mechanism needed, so the count is of page loads and never of a consenting subset.
+         No `spa` key: Cloudflare's documentation says pushState navigations are tracked
+         automatically, and routing here is pushState (App.tsx), so a beacon that counted only the
+         first screen would repeat the GA defect corrected at 3e97acc. -->
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "dc32400b1fac46a0bdc4de782329c146"}'></script>
     <!-- The SVG was the only icon declared, and it was the only one that existed: /favicon.ico,
          /apple-touch-icon.png and /site.webmanifest all answered 404 on the live site. That is not
          a cosmetic gap. Google's result pages and Safari's tabs fetch the raster names by

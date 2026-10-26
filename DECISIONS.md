@@ -164,6 +164,8 @@ slipped, and this one had none.
 
 ## D-14. Measurement on the public surface: GA4, without a consent banner
 
+**Superseded by D-78 (2026-10-26).** The record below is kept as it was written.
+
 **Decision.** Google Analytics 4 (`G-QD2522TMYP`, property 550740129) is installed on
 `provek.dev`. No consent banner. The operator decided this on 2026-08-20, against a ruling.
 
@@ -4354,3 +4356,19 @@ swapped-order mutation returning 200.
 
 **Not decided here.** Turnstile and a rate limiter (operator question Q4 of the ruling); shipping the
 Function (the dispatcher's push and deploy steps).
+
+## D-78. Measurement on the public surface: Cloudflare Web Analytics, cookieless, no banner
+
+**Decision.** GA4 (`G-QD2522TMYP`, property 550740129) is removed from `provek.dev`; Cloudflare Web
+Analytics is installed by a script tag in `web/index.html` (not by the account's auto-install, which
+was measured injecting nothing on 2026-10-25 and which no gate here can read). No consent banner,
+because nothing identifier-setting runs. Supersedes D-14. (The card that ordered this called the
+entry D-73; that number was taken by the brand-mark entry, so this is the next free one.)
+
+**Why.** The operator reversed D-14 on 2026-10-25 after PROVEK-QA-1023 (audit M8): the audience is
+EU due-diligence readers; `/apply/` itself told them they were counted without consent; a
+consent-gated GA would count a consenting subset shaped like a total (the D-14 objection, now
+adopted). Two things are lost: per-visitor sessions, and Google's history of the property, which
+stays in Google until the operator deletes it. One thing is gained: a count that needs no banner.
+
+**Gate.** `tests/test_public_surface_sets_no_tracking_cookie.py`.

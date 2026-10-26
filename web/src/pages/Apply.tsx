@@ -79,7 +79,7 @@ const ISSUES = "https://github.com/whiteknightonhorse/provek/issues";
 // A number is a claim with a maintenance cost, and neither of these was worth one.)
 const DECISION_LOG =
   "https://github.com/whiteknightonhorse/provek/blob/main/DECISIONS.md" +
-  "#d-14-measurement-on-the-public-surface-ga4-without-a-consent-banner";
+  "#d-78-measurement-on-the-public-surface-cloudflare-web-analytics-cookieless-no-banner";
 
 export default function Apply() {
   const [sent, setSent] = useState<Sent>({ state: "idle" });
@@ -456,29 +456,18 @@ export default function Apply() {
                 published; we cannot recall those, and we say so rather than promise otherwise.
               </li>
               <li>
-                {/* This paragraph claimed "no identifier is created for you" while Google
-                    Analytics sets one on this very page. The first half of that sentence was
-                    scoped to the form and true; the second was unscoped and false - a false
-                    sentence in the one paragraph a stranger reads before handing over an address.
-                    The measurement decision is the operator's (D-14). A surface that contradicts
-                    it is a separate matter, and this is the correction.
-
-                    AND "IT IS WRITTEN DOWN" IS NOW REACHABLE FROM THE PAGE THAT SAYS IT. This is
-                    the one place a stranger is told they are being counted, and the clause that
-                    softens it - that the argument against it is on the record - was the only claim
-                    in this list they could not check without being told where to look. A site whose
-                    product is evidence over claims may not ask to be taken at its word about the
-                    entry that argues against its own tracker. */}
+                {/* This paragraph described GA4 from 2026-08-20 to this change.
+                    It is the one place a stranger is told how they are counted, so it changes in
+                    the same commit as the counter (D-78). */}
                 <strong className="text-[var(--color-ink-2)]">Separately, about this whole site:</strong>{" "}
-                Google Analytics runs on every page here, without a consent banner. It sets a cookie
-                and creates an identifier for your browser, and what it records goes to Google. That
-                is the operator&rsquo;s decision and it is written down, with the argument against
-                it, in the{" "}
+                visits are counted by Cloudflare Web Analytics. It sets no cookie and creates no
+                identifier for your browser; what it records is a count of page loads, by page, and
+                it is held by Cloudflare, not by us. That decision, and the one it replaced, are
+                written down in the{" "}
                 <a href={DECISION_LOG} className="text-[var(--color-accent)] hover:underline">
                   project&rsquo;s decision log
                 </a>
-                . Advertising and personalisation signals are switched off, which is the most that
-                can be said for it.
+                .
               </li>
               <li>
                 <strong className="text-[var(--color-ink-2)]">Not legal advice:</strong> this is a
