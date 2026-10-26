@@ -16,7 +16,7 @@
    permissions is a defect.
 7. **The entire GitHub surface is ENGLISH ONLY** - code, comments, documents, commit messages.
    Working documents on the operator's laptop stay in Russian; the repository is what others read.
-8. Never `--no-verify`, never `push --force` to main. The only door outward is `scripts/push.sh`.
+8. Never `--no-verify`, never `push --force` to main. The only door for code is `scripts/push.sh`; the only door for the site is `~/orchestra/deploy.sh`, run after it; both are the dispatcher's, never the executor's.
 
 # Documentation law (FLEET-DOCS-LAW-1026, operator ruling 2026-10-24)
 Observable change = anything a user, agent, integrator or self-hoster can see: behaviour, routes and response fields, MCP tools and prompts, error codes and messages, limits, prices and fees, headers, env/config defaults, CLI flags, served files, page text.
@@ -31,8 +31,8 @@ PERMANENT CHECK: test_readme_fragment_is_verbatim, test_brief_copy_matches_passp
 NOT documentation: PROGRESS.md, tasks/, CLAUDE.md.
 Enforcement of the law above: sections 1-3 by the task engine's DOCS: pre-flight and reviewer clause (~/taskloop/lib/docs-law.sh, outside this tree, as the rollback procedure's machine half lives outside it); section 4 by LAW-DOCS-LAW-STANDS-AND-ITS-SURFACES-EXIST in enforced_by.yaml.
 
-## Resource budget (measured 2026-08-19; ten projects share this host)
-disk 10 GB - memory 1.5 GB - CPU <= 1 core - **concurrency = 1 process**
+## Resource budget (measured 2026-10-26; 14 projects share this host, `ls -d /home/*/ | wc -l`)
+disk 10 GB - memory 1.5 GB - CPU <= 1 core - **one pipeline on this tree at a time** (the shared lock `~/.provek_tree.lock`: intake, nightly, notes, deploy); cron ticks that find it held yield
 Clones are `--depth 1` and the working copy is deleted after the audit.
 On contention THIS project yields; deferral is a named finding, not silence.
 
