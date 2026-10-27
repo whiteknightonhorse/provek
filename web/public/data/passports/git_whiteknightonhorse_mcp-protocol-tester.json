@@ -1,6 +1,6 @@
 {
   "subject_id": "git:whiteknightonhorse/mcp-protocol-tester",
-  "projection": 40,
+  "projection": 60,
   "passport": {
     "schema_version": "2.0.0",
     "subject_id": "git:whiteknightonhorse/mcp-protocol-tester",
@@ -8,19 +8,23 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-10-26T03:46:12.239052+00:00",
-    "valid_until": "2026-11-25T03:46:12.239052+00:00",
+    "issued_at": "2026-10-27T04:30:44.350614+00:00",
+    "valid_until": "2026-11-26T04:30:44.350614+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
       "profile_version": "1.1.0",
       "evidence_window_days": 30
     },
+    "evidence_window": {
+      "start": "2026-09-27T04:30:44.350614+00:00",
+      "end": "2026-10-27T04:30:44.350614+00:00"
+    },
     "verified": {
       "operations": [
         {
           "operation": "development_initiation",
-          "level": "L2",
+          "level": "L3",
           "measured": true,
           "confidence": "inferred",
           "limiters_applied": [
@@ -42,7 +46,7 @@
           "limiters_applied": []
         }
       ],
-      "projection": 40,
+      "projection": 60,
       "projection_absent_reason": null,
       "observations": {
         "signed_commit_share": {
@@ -51,7 +55,7 @@
           "absent_reason": null
         },
         "distinct_authors": {
-          "value": 1,
+          "value": 2,
           "measured": true,
           "absent_reason": null
         },
@@ -61,26 +65,31 @@
           "absent_reason": null
         },
         "workflow_runs": {
-          "value": 592,
+          "value": 629,
+          "measured": true,
+          "absent_reason": null
+        },
+        "scheduled_runs_in_window": {
+          "value": 169,
           "measured": true,
           "absent_reason": null
         },
         "identity_window_closed": {
-          "value": false,
+          "value": true,
           "measured": true,
           "absent_reason": null
         },
         "unlinked_commit_share": {
-          "value": 0.957,
+          "value": 0.0,
           "measured": true,
           "absent_reason": null
         },
         "unlinked_key_count": {
-          "value": 1,
+          "value": 0,
           "measured": true,
           "absent_reason": null
         },
-        "head_sha": "f45e3324f1a2e925a89a1449823095e00f7437cd"
+        "head_sha": "d37ca7ce06dfb7433ae5a8e07501565850b71b60"
       },
       "control_map_valid": true,
       "control_map_cap": 5,
@@ -103,7 +112,7 @@
       "private": false,
       "declaration": {
         "present": true,
-        "pinned_sha": "f45e3324f1a2e925a89a1449823095e00f7437cd",
+        "pinned_sha": "d37ca7ce06dfb7433ae5a8e07501565850b71b60",
         "schema_version": "1.0.0"
       }
     },
