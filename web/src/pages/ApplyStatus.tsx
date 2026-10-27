@@ -12,6 +12,7 @@
 
 import { useEffect, useState } from "react";
 import { Page, Strip } from "../components/Chrome";
+import { deferralText } from "../deferral.js";
 
 type Status = {
   state: string;
@@ -115,15 +116,16 @@ function body(view: View) {
   const repo = s.repo ? <code className="font-mono text-xs">{s.repo}</code> : "your repository";
   if (s.state === "received")
     return <Strip tone="info"><strong>Received.</strong> {repo} is recorded and has not been picked up by the run yet.</Strip>;
-  if (s.state === "deferred")
+  if (s.state === "deferred") {
+    const d = deferralText(s.reason);
     return (
       <Strip tone="info">
-        <strong>Waiting for GitHub.</strong> {repo} is queued; GitHub&rsquo;s public interface is
-        busy or unreachable.{" "}
+        <strong>{d.head}</strong> {repo} {d.body}{" "}
         {s.next_attempt_after ? <>We retry after <code className="font-mono text-xs">{s.next_attempt_after}</code>.</> : null}
         {s.reason ? <> <span className="text-[var(--color-ink-3)]">({s.reason})</span></> : null}
       </Strip>
     );
+  }
   if (s.state === "refused")
     return (
       <Strip tone="warn">
