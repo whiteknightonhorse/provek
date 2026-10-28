@@ -1,0 +1,54 @@
+MEASURED-020 - T-GA-02: dry run of `git subtree split --prefix=integrations/genlayer-apibase-attest` (D-64, second mirror)
+Stamp (commit the split was taken from; evidence-only files are added after it and do not touch the subdirectory):
+# HEAD: 642d6b1a9953998143e05e647f4dd1b4de838d46
+# tree: 642d6b1a9953998143e05e647f4dd1b4de838d46
+
+$ git subtree split --prefix=integrations/genlayer-apibase-attest -b ga-attest-split
+Created branch 'ga-attest-split'
+0a196b1281e8df61fa91ce35d19406d1dd322990
+
+$ git rev-parse ga-attest-split^{tree}
+189bce3cea6ac50707986e313775772cc8a9c733
+$ git rev-parse HEAD:integrations/genlayer-apibase-attest
+189bce3cea6ac50707986e313775772cc8a9c733
+RESULT: tree hashes EQUAL
+
+split commits: 8
+provek commits touching the subdirectory: 8
+
+$ git ls-tree -r --name-only ga-attest-split   (24 paths)
+LICENSE
+README.md
+contracts/apibase_receipt_attest.py
+deploy/.gitkeep
+deploy/DEPLOYMENT.md
+deploy/deployment.json
+genvm-universal-v0.6.0-rc10.sha256
+gltest.config.yaml
+pyproject.toml
+requirements.txt
+requirements/ci-genlayer.txt
+scripts/check_genvm_lint.py
+tests/direct/conftest.py
+tests/direct/test_apibase_receipt_attest.py
+tests/fixtures/apibase_receipt_attest.774a184.py.txt
+tests/fixtures/receipt_pass.json
+tests/fixtures/rpc_receipt_null.json
+tests/fixtures/rpc_receipt_pass.json
+tests/fixtures/rpc_receipt_real_base_usdc.json
+tests/fixtures/rpc_receipt_reverted.json
+tests/integration/__init__.py
+tests/integration/fixtures.py
+tests/integration/test_apibase_receipt_attest_live.py
+
+Secret-scan pattern over the split's history (pattern read from scripts/secret_scan.sh, not reprinted):
+$ git log -p ga-attest-split | grep -cE "$PATTERN"
+10
+All 10 lines are in tests/fixtures/ (receipt_pass.json, rpc_receipt_*.json: captured public Base chain answers), the one directory
+scripts/secret_scan.sh excludes by design; 0 lines elsewhere in the split.
+
+Differences from the witness mirror, named: the split carries no .github/workflows/contract-tests.yml and no .gitignore (the witness
+mirror carries both, D-64 item 3), so the mirror would have no CI until a workflow file is added inside the subdirectory through
+Provek. Not decided here.
+
+Nothing was pushed and no repository was created; the branch ga-attest-split is a local dry-run branch.
