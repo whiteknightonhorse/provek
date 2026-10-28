@@ -106,19 +106,27 @@ echo "8/9 reproduce"; PROVEK_REPRODUCE_README=1 python3 -m pytest tests/test_rep
 # for exactly this. A MISSING VENV IS RED, NOT SKIP: silently skipping the one step nothing else
 # here can cover would be invariant 1's own mistake, aimed at this door.
 echo "9/9 genlayer"
-if [ ! -x ~/orchestra/glenv/bin/python3 ]; then
-  echo "REFUSED: ~/orchestra/glenv (the isolated Python 3.12 venv T-GL-02 built) is missing or" >&2
-  echo "not executable - a missing venv is RED, not skip." >&2
+# T-GLR-04. The venv is `glenv-babwp`, not the T-GL-02 `glenv` it replaces: that one holds the
+# genlayer-test 0.29.2 harness, which cannot load the py-genlayer runner Bradbury Phase 2 executes
+# (`babwp9t37j...`, header `# v0.3.0`). Build it from the committed, hash-pinned closure:
+#   python3.12 -m venv ~/orchestra/glenv-babwp && ~/orchestra/glenv-babwp/bin/pip install --quiet \
+#     --require-hashes --only-binary=:all: --no-deps -r requirements/ci-genlayer.txt
+GLENV="${GLENV:-$HOME/orchestra/glenv-babwp}"
+if [ ! -x "$GLENV/bin/python3" ]; then
+  echo "REFUSED: $GLENV (the isolated Python 3.12 venv built from requirements/ci-genlayer.txt) is" >&2
+  echo "missing or not executable - a missing venv is RED, not skip." >&2
   exit 1
 fi
-# Same cache-priming gltest's own broken auto-downloader needs in CI (see gates.yml's matching
-# step for the full account) - guarded, since T-GL-02 already primed this host once and a fresh
-# 216 MB download on every push would be its own kind of waste.
-GENVM_TARBALL=~/.cache/gltest-direct/genvm-universal-v0.2.16.tar.xz
+# The two GenVM-bundle consumers (gltest's direct harness, genvm-linter) are told the version, so
+# neither asks GitHub for "latest" (see gates.yml's matching step for the full account).
+export GENVM_VERSION=v0.6.0-rc10 GENVM_ALLOW_PRERELEASE=1
+# Same cache-priming as gates.yml - guarded, since this host needs the 310 MB bundle once, not on
+# every push.
+GENVM_TARBALL=~/.cache/gltest-direct/bundles-v2/genvm-universal-v0.6.0-rc10.tar.xz
 if [ ! -f "$GENVM_TARBALL" ]; then
-  mkdir -p ~/.cache/gltest-direct
+  mkdir -p ~/.cache/gltest-direct/bundles-v2
   curl -fsSL -o "$GENVM_TARBALL" \
-    https://github.com/genlayerlabs/genvm/releases/download/v0.2.16/genvm-universal.tar.xz
+    https://github.com/genlayerlabs/genvm-manager/releases/download/v0.6.0-rc10/genvm-universal.tar.xz
 fi
 # THE DOOR'S OWN CACHE OUTLIVES ANY SINGLE PUSH, SO THE GUARD ABOVE IS BLIND TO IT GOING STALE.
 #
@@ -126,23 +134,25 @@ fi
 # still the asset this project pinned. A release ASSET, unlike a tag, is a fourth movable pointer
 # this file's own header did not count (see gates.yml's matching step for the full argument): the
 # same tag can serve a re-uploaded or truncated asset under an unchanged name, and an existence
-# check alone would trust it silently, forever, on a host T-GL-02 only primed once. Checked against
-# the one committed digest (D-63) every time this step runs, cached copy or fresh download alike -
-# not only on the branch that just downloaded it.
-want="$(cat integrations/genlayer-witness/genvm-universal-v0.2.16.sha256)"
+# check alone would trust it silently, forever. Checked against the one committed digest (D-79)
+# every time this step runs, cached copy or fresh download alike - not only on the branch that
+# just downloaded it.
+want="$(cat integrations/genlayer-witness/genvm-universal-v0.6.0-rc10.sha256)"
 got="$(sha256sum "$GENVM_TARBALL" | cut -d' ' -f1)"
 if [ "$got" != "$want" ]; then
-  echo "REFUSED: $GENVM_TARBALL sha256 mismatch (got $got, want $want, D-63) - a moved or" >&2
+  echo "REFUSED: $GENVM_TARBALL sha256 mismatch (got $got, want $want, D-79) - a moved or" >&2
   echo "truncated release asset is RED here, never silently trusted." >&2
   exit 1
 fi
+mkdir -p ~/.cache/genvm-linter
+cp "$GENVM_TARBALL" ~/.cache/genvm-linter/genvm-universal-genlayerlabs-genvm-manager-v0.6.0-rc10.tar.xz
 # T-GA-01 (D-66): two contracts, one toolchain, one loop. The directory list is the same text in
 # gates.yml's `genlayer` job; `tests/test_door_matches_ci.py` holds the steps, this loop is the list.
 for d in integrations/genlayer-witness integrations/genlayer-apibase-attest; do
   ( cd "$d" \
-    && ~/orchestra/glenv/bin/python3 scripts/check_genvm_lint.py \
-    && ~/orchestra/glenv/bin/python3 -m pytest tests/direct -q \
-    && ~/orchestra/glenv/bin/python3 -m pytest --collect-only -q tests/integration )
+    && "$GLENV/bin/python3" scripts/check_genvm_lint.py \
+    && "$GLENV/bin/python3" -m pytest tests/direct -q \
+    && "$GLENV/bin/python3" -m pytest --collect-only -q tests/integration )
 done
 
 # Gates-only mode. The orchestra must judge the tree after EVERY task, not just before a push,

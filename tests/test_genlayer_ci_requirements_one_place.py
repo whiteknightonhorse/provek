@@ -39,9 +39,9 @@ def test_every_copy_of_the_genlayer_pin_set_is_byte_identical_to_the_root(copy):
 
 
 def test_the_apibase_copy_of_the_sha256_and_toolchain_files_matches_the_witness():
-    """`genvm-universal-v0.2.16.sha256`, `gltest.config.yaml` and `pyproject.toml` are copied, not
+    """`genvm-universal-v0.6.0-rc10.sha256`, `gltest.config.yaml` and `pyproject.toml` are copied, not
     shared; the same law applies to them."""
     witness = ROOT / "integrations" / "genlayer-witness"
     apibase = ROOT / "integrations" / "genlayer-apibase-attest"
-    for name in ("genvm-universal-v0.2.16.sha256", "gltest.config.yaml", "pyproject.toml", "requirements.txt"):
+    for name in ("genvm-universal-v0.6.0-rc10.sha256", "gltest.config.yaml", "pyproject.toml", "requirements.txt"):
         assert _read(witness / name) == _read(apibase / name), f"{name} drifted between the two integrations"

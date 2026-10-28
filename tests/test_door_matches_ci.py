@@ -159,10 +159,10 @@ CI_GATES: dict[str, Door | Advisory | Capped] = {
         Door("PROVEK_REPRODUCE_README"),
     # T-GL-04 (D-63). `integrations/genlayer-witness/` needs Python >= 3.12, so this job alone
     # runs on a second, isolated toolchain rather than the 3.10 every other job shares - the door's
-    # counterpart is step 9, which reaches into `~/orchestra/glenv` (T-GL-02) instead of the
+    # counterpart is step 9, which reaches into `~/orchestra/glenv-babwp` (T-GLR-04) instead of the
     # interpreter running push.sh itself.
-    "pre-populate the direct-mode SDK cache (gltest's own downloader 404s past genvm v0.2.16)":
-        Door("genvm-universal-v0.2.16.tar.xz"),
+    "pre-populate the direct-mode SDK cache (GenVM v0.6.0-rc10, the babwp runner's bundle)":
+        Door("genvm-universal-v0.6.0-rc10.tar.xz"),
     # `genvm-lint check` has no baseline/allowlist flag, so a bare invocation would be permanently
     # red over two confirmed false-positive warnings this project keeps rather than works around
     # (see `integrations/genlayer-witness/README.md`) - `check_genvm_lint.py` is the one place that

@@ -6,7 +6,7 @@ in this directory holds the real, measured fields this file summarizes below.
 
 ## Deployment record
 
-**Network:** GenLayer Testnet Bradbury, chain id `4221`, RPC `https://rpc-bradbury.genlayer.com`. GenLayer reset Bradbury on 2026-10-24; this record describes the pre-reset network, and the redeploy is pending.
+**Network:** GenLayer Testnet Bradbury, chain id `4221`, RPC `https://rpc-bradbury.genlayer.com`. GenLayer reset Bradbury on 2026-10-24; this record describes the pre-reset network, and the redeploy is pending. Toolchain note: Bradbury Phase 2 runs the `py-genlayer:babwp9t3…` runner (contract header `# v0.3.0`) as of 2026-10-28; the documentation's `1jb45…` runner id fails there (every deploy FINISHED_WITH_ERROR), so the contract in this repository now carries the babwp header and the redeploy uses those bytes (D-79).
 
 **Contract:** [`0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6`](https://scan.bradbury.genlayer.com/address/0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6),
 deployed from commit `5e28d5f933329c124c058996da28b2abd4da5d37` (`origin/main`) by

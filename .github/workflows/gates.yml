@@ -273,57 +273,53 @@ jobs:
     # repository's own interpreter is 3.10, which is why every OTHER job here runs on 3.10 and
     # this one alone runs on 3.12 - a second, isolated toolchain, not a repository-wide bump.
     runs-on: ubuntu-latest
+    env:
+      GENVM_VERSION: v0.6.0-rc10
+      GENVM_ALLOW_PRERELEASE: "1"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
           python-version: "3.12"
-      # `--no-deps`, AND THAT IS NOT AN ORDINARY USE OF THE FLAG. `genlayer-test==0.29.2`'s own
-      # PUBLISHED PyPI metadata declares `genlayer-py<0.17.0,>=0.13.0`, which conflicts with the
-      # `genlayer-py==0.18.0` this set pins - a plain `pip install --require-hashes -r
-      # requirements/ci-genlayer.txt` (no `--no-deps`) was measured to refuse on exactly this
-      # conflict. GL-harness-notes.md SS7a: the git tag `genlayer-test==0.29.2` is actually BUILT
-      # FROM declares `>=0.18.0,<0.19.0` instead - the PyPI metadata is stale, not the pin. `--no-
-      # deps` is safe here specifically because `ci-genlayer.txt` already names the FULL correct
-      # transitive closure with hashes (see `requirements/ci-genlayer.in`'s own comment for the
-      # compile command); it only tells pip not to recompute a dependency graph it would get
-      # wrong from the same bad metadata, never to install anything unlisted.
+      # `--no-deps` is safe here because `ci-genlayer.txt` already names the FULL transitive closure
+      # with hashes (see `requirements/ci-genlayer.in`'s own comment for the compile command); it
+      # only tells pip not to recompute a dependency graph, never to install anything unlisted.
       - run: |
           pip install --quiet --require-hashes --only-binary=:all: --no-deps -r requirements/ci-genlayer.txt
 
-      - name: pre-populate the direct-mode SDK cache (gltest's own downloader 404s past genvm v0.2.16)
-        # `gltest`'s `sdk_loader.py` resolves "latest" by following `genvm`'s GitHub releases
-        # redirect - which today points at v0.3.0-rc7 - then unconditionally requests an asset
-        # named `genvm-universal.tar.xz` under that tag. That asset name stopped being published
-        # starting with v0.3.0-rc0 (releases now ship per-platform assets instead), so the request
-        # 404s and EVERY `pytest tests/direct` run fails out of the box on a fresh host, for any
-        # contract using this genlayer-test pin, not something specific to this project
-        # (GL-harness-notes.md SS7b). v0.2.16 is the last release still shipping that asset name,
-        # and it contains the exact runner hash (`1jb45aa8yn...`) this contract's header pins -
-        # verified, not a convenient stand-in. `sdk_loader.list_cached_versions()` finds a
-        # correctly-named file here and skips the broken "latest" call entirely, using its own
-        # existing cache-first path - no package source is patched. A GitHub Actions runner is
-        # fresh on every run, so this has to happen every run, unlike on the door's own host where
-        # T-GL-02 primed it once (see `scripts/push.sh`'s matching step).
+      - name: pre-populate the direct-mode SDK cache (GenVM v0.6.0-rc10, the babwp runner's bundle)
+        # T-GLR-04. Bradbury Phase 2 runs the py-genlayer runner `babwp9t37j...` (contract header
+        # `# v0.3.0`); that runner ships only in the `genvm-manager` releases (v0.6.0-rc10 carries
+        # it at `runners/py-genlayer/ba/bwp9t37j...zip`), no longer in the `genvm` v0.2.16 bundle
+        # this step used to fetch. Both tools that need the bundle - gltest's direct harness and
+        # genvm-linter - are told the version through `GENVM_VERSION` (job `env:`) and find a
+        # correctly-named file in their own cache, so neither ever asks GitHub for "latest" and the
+        # rc cannot move under the gate. gltest names its cache file `genvm-universal-<version>.tar.xz`
+        # under `~/.cache/gltest-direct/bundles-v2/`, genvm-linter
+        # `genvm-universal-genlayerlabs-genvm-manager-<version>.tar.xz` under `~/.cache/genvm-linter/`;
+        # the one download is copied to both.
         #
         # THE FOURTH MOVABLE POINTER THIS FILE'S OWN HEADER DID NOT NAME. The comment above
         # `permissions:` counts three legs of pinning - action SHAs, token scope, pip hashes - and
         # this download was a fourth left unpinned: a release ASSET, not a tag, which GitHub lets
         # the same account re-upload under an unchanged version number (D-30's own argument, applied
-        # to a binary instead of a wheel). `sha256sum -c` against the digest this project commits in
-        # `genvm-universal-v0.2.16.sha256` (D-63) makes a re-signed or truncated asset a refused
+        # to a binary instead of a wheel), and a prerelease at that. `sha256sum -c` against the digest
+        # this project commits in `genvm-universal-v0.6.0-rc10.sha256` (D-63, D-79) - the same value
+        # as the release's own `SHA256SUMS` - makes a re-signed or truncated asset a refused
         # download rather than a silently trusted one - checked here, and again at the door in
         # `scripts/push.sh`'s matching step (L-2: one committed digest, not a copy per caller).
         run: |
-          mkdir -p ~/.cache/gltest-direct
-          curl -fsSL -o ~/.cache/gltest-direct/genvm-universal-v0.2.16.tar.xz \
-            https://github.com/genlayerlabs/genvm/releases/download/v0.2.16/genvm-universal.tar.xz
-          want="$(cat integrations/genlayer-witness/genvm-universal-v0.2.16.sha256)"
-          got="$(sha256sum ~/.cache/gltest-direct/genvm-universal-v0.2.16.tar.xz | cut -d' ' -f1)"
+          mkdir -p ~/.cache/gltest-direct/bundles-v2 ~/.cache/genvm-linter
+          curl -fsSL -o ~/.cache/gltest-direct/bundles-v2/genvm-universal-v0.6.0-rc10.tar.xz \
+            https://github.com/genlayerlabs/genvm-manager/releases/download/v0.6.0-rc10/genvm-universal.tar.xz
+          want="$(cat integrations/genlayer-witness/genvm-universal-v0.6.0-rc10.sha256)"
+          got="$(sha256sum ~/.cache/gltest-direct/bundles-v2/genvm-universal-v0.6.0-rc10.tar.xz | cut -d' ' -f1)"
           if [ "$got" != "$want" ]; then
-            echo "::error::genvm-universal-v0.2.16.tar.xz sha256 mismatch: got $got, want $want (D-63)"
+            echo "::error::genvm-universal-v0.6.0-rc10.tar.xz sha256 mismatch: got $got, want $want (D-79)"
             exit 1
           fi
+          cp ~/.cache/gltest-direct/bundles-v2/genvm-universal-v0.6.0-rc10.tar.xz \
+            ~/.cache/genvm-linter/genvm-universal-genlayerlabs-genvm-manager-v0.6.0-rc10.tar.xz
 
       # T-GA-01 (D-66): the three steps below run for BOTH GenLayer contracts. The `for` line is the
       # same text in scripts/push.sh's door step 9 (L-2); a subshell per directory keeps one

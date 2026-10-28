@@ -228,7 +228,7 @@ supported_criteria() -> list[str]               # ["artifact_hash", "url_reachab
 | `expected`        | echoed from the request (normalized: `strip().lower()`'d for `artifact_hash`)                 |
 | `result`          | `"PASS"` or `"FAIL"` — never a third value; see "How validators verify the result"           |
 | `evidence_digest` | see below — not always a hash of fetched bytes                                                |
-| `checked_at`      | the requesting transaction's own datetime, `gl.message_raw["datetime"]` — **not** `datetime.now()`, which is equally deterministic on GenVM but is the exact temporal pattern `genvm-lint` flags, and the field is named explicitly here rather than left to a reader's guess |
+| `checked_at`      | the requesting transaction's own datetime, `gl.message.raw["datetime"]` — **not** `datetime.now()`, which is equally deterministic on GenVM but is the exact temporal pattern `genvm-lint` flags, and the field is named explicitly here rather than left to a reader's guess |
 | `observation`     | a short human string — `"status=200"`, `"sha256 mismatch"`, `"unreachable"`, `"too_large"` — the one field that keeps the nuance a bare PASS/FAIL would lose (see "How GenLayer consensus is used" on 403/429/5xx) |
 
 **`evidence_digest`, by criterion and outcome.** For `artifact_hash`, when the fetch succeeded
@@ -258,7 +258,7 @@ bridge exists today; see "Why this is not part of Provek scoring"):
 | `criterion` (flat string)                        | `criterion` (dict: `type`, `url`, `sha256`?) | this contract's four flat request args together carry the same information the dict holds — see the input table above |
 | `result`                                         | `result`                                | identical `"PASS"`/`"FAIL"` vocabulary |
 | `evidence_digest`                                | `evidence_digest`                       | same formula for `artifact_hash` PASS/FAIL-with-bytes and for `url_reachable`; named departure for `artifact_hash` FAIL-without-bytes (above) |
-| `checked_at`                                     | `checked_at`                            | Provek uses `datetime.now(timezone.utc).isoformat()`; this contract uses the requesting transaction's own `gl.message_raw["datetime"]` — both are "the moment this check ran", read from a different clock |
+| `checked_at`                                     | `checked_at`                            | Provek uses `datetime.now(timezone.utc).isoformat()`; this contract uses the requesting transaction's own `gl.message.raw["datetime"]` — both are "the moment this check ran", read from a different clock |
 | `observation`                                    | *(no equivalent field)*                 | new here — Provek's schema (spec 4.2-bis point 4) has no field for this; adding it was a deliberate choice to keep the nuance a bare PASS/FAIL loses, not an extension of Provek's own published schema |
 | *(no equivalent field)*                          | `witnessed_fee_paid`                    | Provek's is always `False` in v0; this contract has no payable method and no fee concept of any kind — not even a placeholder field |
 
@@ -267,11 +267,11 @@ bridge exists today; see "Why this is not part of Provek scoring"):
 `witness()` performs all deterministic validation (input shape, operator check, duplicate check)
 *before* entering GenVM's non-deterministic block — so a malformed request reverts without ever
 reaching consensus. The actual evidence fetch runs inside
-`glvm.run_nondet_unsafe(leader_fn, validator_fn)`
-(`import genlayer.gl.vm as glvm`, matching the alias form GenLayer's own boilerplate
-`contracts/PatternTest.py` uses — see `taskloop/disputes/GL-00-genlayer-witness-design.ruling-2.md`
-§2 "Why not `strict_eq`" for why this alias form was chosen over the fully-dotted
-`gl.vm.run_nondet_unsafe`).
+`gl.vm.run_nondet(leader_fn, validator_fn)` (the v0.3.0 SDK's name for what the v0.2 SDK called
+`run_nondet_unsafe`: the validator runs unsandboxed and an uncaught exception in it is *Disagree*;
+see `taskloop/disputes/GL-00-genlayer-witness-design.ruling-2.md` §2 "Why not `strict_eq`" for why
+a custom leader/validator pair is used — the v0.3.0 SDK has no `genlayer.gl.vm` alias module, so the
+fully-dotted form is the only one, T-GLR-04).
 
 The **leader** calls `gl.nondet.web.get(evidence_url)` once, from its own infrastructure, and
 normalizes the response into a plain dict of primitives (`url`, `status`, `body_sha256`, `bytes`,
@@ -317,7 +317,7 @@ it on 2026-10-23 (D-76).
 
 **The validator's own fetch failing is "undetermined", never "the claim is false".** If the
 validator's own `gl.nondet.web.get` call raises, `validator_fn` returns `False` without
-constructing any `FAIL` — this is GenVM's documented behaviour for a `run_nondet_unsafe` call: an
+constructing any `FAIL` — this is GenVM's documented behaviour for a `gl.vm.run_nondet` call: an
 uncaught exception inside a validator closure is also treated as *Disagree*, and this contract
 names that explicitly rather than leaving it implicit (see the contract's own docstring at that
 line). When enough validators disagree this way, GenVM rotates leaders; if the round as a whole
@@ -355,26 +355,30 @@ in-process against a Python 3.12 interpreter, with `gl.nondet.web.get` calls ans
 `scripts/push.sh`'s door step `9/9` and `.github/workflows/gates.yml`'s `genlayer` job both run.
 
 ```
-~/orchestra/glenv/bin/python3 -m pytest tests/direct -v
-~/orchestra/glenv/bin/python3 scripts/check_genvm_lint.py
+~/orchestra/glenv-babwp/bin/python3 -m pytest tests/direct -v
+~/orchestra/glenv-babwp/bin/python3 scripts/check_genvm_lint.py
 ```
 
-Both commands need the isolated Python 3.12 venv at `~/orchestra/glenv` (this repository's own
-interpreter is 3.10 — see `GL-harness-notes.md`), and
-`~/.cache/gltest-direct/genvm-universal-v0.2.16.tar.xz` pre-populated in the direct-mode SDK cache
-(the auto-downloader 404s on every fresh host against the current `genvm` release, for any project,
-not something specific to this one — checked against the committed digest
-`genvm-universal-v0.2.16.sha256`, D-63 §4).
+Both commands need the isolated Python 3.12 venv at `~/orchestra/glenv-babwp` (this repository's own
+interpreter is 3.10 — see `GL-harness-notes.md`; built from the hash-pinned `requirements/ci-genlayer.txt`:
+`genlayer-test==0.30.0rc2`, `genvm-linter==0.11.1rc2`, `genlayer-py==0.19.0rc2`), `GENVM_VERSION=v0.6.0-rc10`
+and `GENVM_ALLOW_PRERELEASE=1` in the environment, and
+`~/.cache/gltest-direct/bundles-v2/genvm-universal-v0.6.0-rc10.tar.xz` (copied to
+`~/.cache/genvm-linter/genvm-universal-genlayerlabs-genvm-manager-v0.6.0-rc10.tar.xz`) pre-populated,
+checked against the committed digest `genvm-universal-v0.6.0-rc10.sha256` (D-79) — the bundle is the
+`genvm-manager` release that carries the babwp runner.
 
-The contract's first line, `# v0.2.16`, is the version line a GenLayer studio node routes by, and without it the node's default executor rejects the pinned runner (as of 2026-10-27, D-63 addendum); the `# { "Depends": ... }` line stays second.
+The contract's first line, `# v0.3.0`, is the version line a GenLayer studio node routes by, and its second line,
+`# { "Depends": "py-genlayer:babwp9t37jw9g4j2bccgn14g6x7x9s1f7dsmh7emvz735pz4zxa0" }`, names the runner: Bradbury Phase 2
+runs the babwp runner as of 2026-10-28, and the documentation's `1jb45…` id fails there (D-79).
 
 `scripts/check_genvm_lint.py` — not a bare `genvm-lint check contracts/provek_evidence_witness.py`
 — is the actual gate: `genvm-lint` has no baseline/allowlist mechanism, so any surviving warning
-makes a bare invocation exit 1 permanently, including the two confirmed false positives named
+makes a bare invocation exit 1 permanently, including the confirmed false positives named
 below. The script asks the narrower, honest question a CI status can actually answer: is the
-warning set *exactly* the two named, understood false positives, and did SDK-semantic validation
+warning set *exactly* the named, understood false positives, and did SDK-semantic validation
 pass — any other shape (a third warning, a moved line, a changed message) is a real failure. See
-"Known `genvm-lint check` warnings" below for what the two warnings are and why they are false
+"Known `genvm-lint check` warnings" below for what the warning is and why it is a false
 positives.
 
 ## 9. How to run integration tests
@@ -474,38 +478,25 @@ shown on-chain, not merely asserted by a test).
 
 ## Known `genvm-lint check` warnings (named, not suppressed)
 
-Two warnings survive `genvm-lint check contracts/provek_evidence_witness.py`, both the same code:
+One warning survives `genvm-lint check contracts/provek_evidence_witness.py` (`genvm-linter==0.11.1rc2`):
 
 ```
-E010: gl.nondet.* call in 'ProvekEvidenceWitness.witness.<locals>.leader_fn' not reachable from equivalence principle block
-E010: gl.nondet.* call in 'ProvekEvidenceWitness.witness.<locals>.validator_fn' not reachable from equivalence principle block
+E014: Class 'WitnessResult' used in storage needs @allow_storage decorator
 ```
 
-**Both are false positives, confirmed by reading `genvm_linter`'s own source
-(`genvm_linter/lint/safety.py:366-372`, `genvm-linter==0.11.0`, the pinned version in
-`~/orchestra/glenv`).** The E010 reachability check recognizes a fixed, literal list of dotted
-call names as "equivalence principle blocks" — `gl.vm.run_nondet`, `gl.vm.run_nondet_unsafe`,
-`gl.eq_principle.strict_eq`, and a few older-version aliases. It does NOT recognize
-`glvm.run_nondet_unsafe(...)` — the form this contract uses, via `import genlayer.gl.vm as glvm`,
-matching the GenLayer boilerplate's own `contracts/PatternTest.py` convention for accessing
-`glvm.Return`/`glvm.run_nondet_unsafe` directly (see this file's own module docstring and
-GL-facts.md F1). Because the linter's pattern-matcher sees the call as `glvm.run_nondet_unsafe`
-rather than `gl.vm.run_nondet_unsafe`, it does not add it to the set of recognized "safe contexts
-for nondet" (`safety.py`'s own docstring at that line), and so it reports the `gl.nondet.web.get(...)`
-call textually inside `leader_fn`/`validator_fn` as unreachable from any such block — even though
-both closures ARE, in fact, the exact `leader_fn`/`validator_fn` pair passed to
-`glvm.run_nondet_unsafe(leader_fn, validator_fn)` two lines below their definitions.
-
-This is named rather than worked around by switching the call site to the fully-dotted
-`gl.vm.run_nondet_unsafe(...)` form (which WOULD silence it) because ruling-2 §2 of the design
-dispute specifies the aliased form explicitly, matching `PatternTest.py`; changing the call
-convention to satisfy a linter false positive was judged the wrong trade against following the
-ruling. If a future `genvm-linter` release recognizes import aliases, this note becomes stale and
-should be removed along with a re-run of `genvm-lint check`.
+**It is a false positive, confirmed by reading `genvm_linter`'s own source
+(`genvm_linter/lint/structure.py`, the pinned version in `~/orchestra/glenv-babwp`).** The E014 check
+accepts only the decorator names `allow_storage` and `gl.allow_storage`, the v0.2 spelling. The v0.3.0 SDK
+renamed the decorator to `gl.storage.allow` (`genlayer/storage/_internal/generate.py`, the babwp runner's
+`py-lib-genlayer-std`; the SDK's own migration note `v0.3.rst`), the contract uses that name, and the
+linter's second half — SDK-semantic validation, which builds the real schema from the SDK — passes. The E010
+warnings this section used to name are gone: the linter recognises the fully-dotted `gl.vm.run_nondet`
+that v0.3.0 forces. If a later `genvm-linter` release learns `gl.storage.allow`, this note becomes stale
+and should be removed along with a re-run of `genvm-lint check`.
 
 No other warnings survive. The three "Bare Python exception" warnings GL-harness-notes observed
 in the boilerplate's own `football_bets.py` do not apply here: every deterministic revert path in
-this contract raises `glvm.UserError(...)`, not a bare `Exception`/`ValueError`.
+this contract raises `gl.vm.UserError(...)`, not a bare `Exception`/`ValueError`.
 
 ## Limitations (named, not hidden)
 

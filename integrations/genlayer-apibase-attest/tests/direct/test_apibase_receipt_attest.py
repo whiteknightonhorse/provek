@@ -385,10 +385,33 @@ def test_contract_sizes():
     assert not too_big, f"over {MAX_CONTRACT_BYTES} bytes (Bradbury per-tx gas cap): {too_big}"
 
 
+# T-GLR-04: the one place the v0.2.16 -> v0.3.0 (py-genlayer babwp) API mapping is written down. The
+# reference is the 774a184 file in the OLD API; applying exactly these substitutions to it must give
+# the current file, validator body and docstrings aside, so the port changed names and nothing else.
+API_MAP = (
+    ("from genlayer import *\nimport genlayer.gl.vm as glvm", "import genlayer as gl\nfrom genlayer.types import *"),
+    ("@allow_storage", "@gl.storage.allow"),
+    ("(gl.Contract)", "(gl.contract.Contract)"),
+    (": TreeMap[", ": gl.storage.TreeMap["),
+    ("gl.message_raw[", "gl.message.raw["),
+    ("glvm.run_nondet_unsafe(", "gl.vm.run_nondet("),
+    ("glvm.", "gl.vm."),
+)
+
+
+def test_attest_header_names_the_babwp_runner():
+    head = ATTEST.read_text(encoding="utf-8").splitlines()[:2]
+    assert head == ["# v0.3.0",
+                    '# { "Depends": "py-genlayer:babwp9t37jw9g4j2bccgn14g6x7x9s1f7dsmh7emvz735pz4zxa0" }']
+
+
 def test_attest_docs_only_change():
     raw = REFERENCE.read_bytes()
     assert hashlib.sha256(raw).hexdigest() == REFERENCE_SHA256, "reference is not the 774a184 file"
     reference = raw.decode("utf-8")
+    for old_api, new_api in API_MAP:
+        assert old_api in reference, old_api
+        reference = reference.replace(old_api, new_api)
     before = _without_validator_body(_strip_docstrings(ast.parse(reference)))
     after = _without_validator_body(_strip_docstrings(ast.parse(ATTEST.read_text(encoding="utf-8"))))
     assert ast.dump(before, include_attributes=False) == ast.dump(after, include_attributes=False)

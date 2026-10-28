@@ -3,32 +3,27 @@
 # The job installs the COMPILED sibling, `ci-genlayer.txt`, which names this set plus everything it
 # drags in, each with its hashes. This file is the intent; that one is what runs.
 #
-# THIS SET NEEDS PYTHON >= 3.12, UNLIKE ITS THREE SIBLINGS. `genlayer-py`, `genlayer-test` and
-# `genvm-linter` all declare `requires_python: ">=3.12"` (or `>=3.10` for the linter, but its own
-# runtime dependency on the other two forces 3.12 anyway) - this repository's own interpreter is
-# 3.10 (GL-harness-notes.md, D-63). `pip-compile`, which compiled the other three `.in` files, runs
-# under THIS repository's 3.10 and cannot resolve this set at all: it would refuse before touching
-# the network, the same way installing it here would. Regenerate this one file differently, from a
-# real Python 3.12 (the isolated `~/orchestra/glenv` this project already builds for T-GL-02):
+# THIS SET NEEDS PYTHON >= 3.12, UNLIKE ITS THREE SIBLINGS. `genlayer-py` and `genlayer-test`
+# declare `requires_python: ">=3.12"` - this repository's own interpreter is 3.10
+# (GL-harness-notes.md, D-63). `pip-compile`, which compiled the other three `.in` files, runs under
+# THIS repository's 3.10 and cannot resolve this set at all. Regenerate this one file from a real
+# Python 3.12:
 #
-#   uv pip compile --generate-hashes --python 3.12 --override /tmp/gl-override.txt \
+#   uv pip compile --generate-hashes --python 3.12 --prerelease allow -c /tmp/gl-constraints.txt \
 #       -o requirements/ci-genlayer.txt requirements/ci-genlayer.in
 #
-# where /tmp/gl-override.txt contains one line, `genlayer-py==0.18.0` - NEEDED because
-# `genlayer-test==0.29.2`'s own PUBLISHED PyPI metadata declares `genlayer-py<0.17.0,>=0.13.0`,
-# which conflicts with the pin below (GL-harness-notes.md SS7a: checked against the actual source at
-# the git tag that same release is built from, which declares `>=0.18.0,<0.19.0` - the PyPI
-# metadata is stale, not the pin). `--override` forces the resolver to accept 0.18.0 anyway; the
-# override file itself is not committed, because the flag is only needed to WALK the dependency
-# graph during compilation - the resulting `ci-genlayer.txt` is a flat, fully pinned closure that
-# does not re-resolve anything at install time.
+# where /tmp/gl-constraints.txt (not committed) holds the three lines `iniconfig==2.3.0`,
+# `pluggy==1.6.0`, `pytest==9.1.1`: the versions `ci-tests.txt` and `ci-shipped.txt` pin, so that
+# `tests/test_pip_pinned.py` (one version of a package across the sets) stays green. The
+# unconstrained resolution picks newer ones; `genlayer-test` runs on the pinned pytest.
 #
-# THE SAME STALE METADATA ALSO BREAKS A PLAIN `pip install` OF THE COMPILED FILE (measured: pip's
-# resolver refuses the same conflict `uv` needed the override for). `requirements/ci-genlayer.txt`
-# is therefore installed with `--no-deps` in both `gates.yml` and `scripts/push.sh` - safe here,
-# unlike an ordinary use of that flag, because the compiled file already names the FULL correct
-# transitive closure with hashes; `--no-deps` only tells pip not to recompute a graph it would get
-# wrong from the same bad metadata.
-genlayer-py==0.18.0
-genlayer-test==0.29.2
-genvm-linter==0.11.0
+# T-GLR-04: the set moved to the toolchain that matches the GenVM runner Bradbury Phase 2 executes
+# (py-genlayer `babwp9t37j...`, header `# v0.3.0`): `genlayer-test` 0.30.0rc2 is the direct harness
+# that loads that runner's `.zip` form, `genvm-linter` 0.11.1rc2 the first linter that can load it,
+# and both are published to PyPI only as release candidates (hence `--prerelease allow`; one
+# transitive dependency, `py-ecc`, is a beta too). The old `genlayer-py<0.17.0` metadata conflict
+# (GL-harness-notes.md SS7a) is gone, so no `--override` file is needed any more; the install keeps
+# `--no-deps` anyway, because the compiled file already names the full closure with hashes.
+genlayer-py==0.19.0rc2
+genlayer-test==0.30.0rc2
+genvm-linter==0.11.1rc2

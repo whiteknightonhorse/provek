@@ -1,5 +1,5 @@
-# v0.2.16
-# { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
+# v0.3.0
+# { "Depends": "py-genlayer:babwp9t37jw9g4j2bccgn14g6x7x9s1f7dsmh7emvz735pz4zxa0" }
 
 """APIbase Receipt Attest - what this witness attests.
 
@@ -16,8 +16,8 @@ import re
 from dataclasses import dataclass
 from urllib.parse import urlparse
 
-from genlayer import *
-import genlayer.gl.vm as glvm
+import genlayer as gl
+from genlayer.types import *
 
 TRANSFER_TOPIC = "0x" + "ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 """`keccak256("Transfer(address,address,uint256)")`, the ERC-20 event topic (split so the repo secret scan stays strict)."""
@@ -35,7 +35,7 @@ _REQUIRED_OBSERVATION_KEYS = frozenset({"receipt_http", "receipt_sha256", "fetch
 _FETCH_STATES = frozenset({"ok", "error"})
 
 
-@allow_storage
+@gl.storage.allow
 @dataclass
 class ChainConfig:
     """One chain the contract is willing to ask about: the JSON-RPC endpoint (the stated trust
@@ -45,7 +45,7 @@ class ChainConfig:
     usdc: str
 
 
-@allow_storage
+@gl.storage.allow
 @dataclass
 class Attestation:
     """The published record for one `attest()` call — immutable once written. `result` is
@@ -258,7 +258,7 @@ def _judge(receipt_id: str, observation: dict) -> tuple:
     return "FAIL", "no_matching_transfer"
 
 
-class ApibaseReceiptAttest(gl.Contract):
+class ApibaseReceiptAttest(gl.contract.Contract):
     """See the module docstring. Storage: `operator` (fixed at construction), `receipt_base_url`
     (receipts live at `{receipt_base_url}{receipt_id}.json`), `chains` (chain id -> `ChainConfig`,
     operator-updatable), `records` (attest_id -> `Attestation`, append-only), `index`
@@ -267,14 +267,14 @@ class ApibaseReceiptAttest(gl.Contract):
 
     operator: Address
     receipt_base_url: str
-    chains: TreeMap[str, ChainConfig]
-    records: TreeMap[str, Attestation]
-    index: TreeMap[str, str]
+    chains: gl.storage.TreeMap[str, ChainConfig]
+    records: gl.storage.TreeMap[str, Attestation]
+    index: gl.storage.TreeMap[str, str]
 
     def __init__(self, operator: Address, receipt_base_url: str):
         parsed = urlparse(receipt_base_url)
         if parsed.scheme not in ("http", "https") or not parsed.hostname or not receipt_base_url.endswith("/"):
-            raise glvm.UserError("receipt_base_url must be an http(s) URL ending in '/'")
+            raise gl.vm.UserError("receipt_base_url must be an http(s) URL ending in '/'")
         self.operator = operator
         self.receipt_base_url = receipt_base_url
 
@@ -282,29 +282,29 @@ class ApibaseReceiptAttest(gl.Contract):
     def set_chain(self, chain_id: str, rpc_url: str, usdc: str) -> None:
         """Operator-only: set the JSON-RPC URL and USDC address for a chain id."""
         if gl.message.sender_address != self.operator:
-            raise glvm.UserError("only the operator may configure a chain")
+            raise gl.vm.UserError("only the operator may configure a chain")
         if not isinstance(chain_id, str) or not re.match(r"^[0-9]{1,20}$", chain_id):
-            raise glvm.UserError("chain_id must be a decimal string")
+            raise gl.vm.UserError("chain_id must be a decimal string")
         parsed = urlparse(rpc_url) if isinstance(rpc_url, str) else None
         if parsed is None or parsed.scheme not in ("http", "https") or not parsed.hostname:
-            raise glvm.UserError("rpc_url must be an http(s) URL")
+            raise gl.vm.UserError("rpc_url must be an http(s) URL")
         if not isinstance(usdc, str) or not _ADDR_RE.match(usdc):
-            raise glvm.UserError("usdc must be a 0x-prefixed 20-byte hex address")
+            raise gl.vm.UserError("usdc must be a 0x-prefixed 20-byte hex address")
         self.chains[chain_id] = ChainConfig(rpc_url=rpc_url, usdc=usdc.lower())
 
     @gl.public.write
     def attest(self, receipt_id: str) -> str:
         """Permissionless: attest one receipt id by consensus; returns the attest_id."""
         if not isinstance(receipt_id, str) or not _RECEIPT_ID_RE.match(receipt_id):
-            raise glvm.UserError("receipt_id must be 32-64 lowercase hex characters")
+            raise gl.vm.UserError("receipt_id must be 32-64 lowercase hex characters")
 
-        checked_at = gl.message_raw["datetime"]
+        checked_at = gl.message.raw["datetime"]
         sender = gl.message.sender_address.as_hex
         attest_id = hashlib.sha256(
             json.dumps([receipt_id, checked_at, sender], sort_keys=True).encode("utf-8")
         ).hexdigest()
         if attest_id in self.records:
-            raise glvm.UserError(f"duplicate attest_id {attest_id}: this check was already published")
+            raise gl.vm.UserError(f"duplicate attest_id {attest_id}: this check was already published")
 
         receipt_url = f"{self.receipt_base_url}{receipt_id}.json"
         chains_cfg = {chain_id: [cfg.rpc_url, cfg.usdc] for chain_id, cfg in self.chains.items()}
@@ -323,7 +323,7 @@ class ApibaseReceiptAttest(gl.Contract):
                 return _error_observation()
 
         def validator_fn(leader_result) -> bool:
-            if not isinstance(leader_result, glvm.Return):
+            if not isinstance(leader_result, gl.vm.Return):
                 return False
             leader_observation = leader_result.calldata
             if not _well_formed(leader_observation):
@@ -344,11 +344,11 @@ class ApibaseReceiptAttest(gl.Contract):
             # whole-observation equality is the binding: the record is built from all of it.
             return leader_observation == my_observation
 
-        observation = glvm.run_nondet_unsafe(leader_fn, validator_fn)
+        observation = gl.vm.run_nondet(leader_fn, validator_fn)
 
         result, detail = _judge(receipt_id, observation)
         if result == "REVERT":
-            raise glvm.UserError(detail)
+            raise gl.vm.UserError(detail)
 
         receipt = observation["receipt"]
         self.records[attest_id] = Attestation(
@@ -380,7 +380,7 @@ class ApibaseReceiptAttest(gl.Contract):
     def get_attestation(self, attest_id: str) -> Attestation:
         """The published record for attest_id; reverts if unknown."""
         if attest_id not in self.records:
-            raise glvm.UserError(f"unknown attest_id {attest_id!r}")
+            raise gl.vm.UserError(f"unknown attest_id {attest_id!r}")
         return self.records[attest_id]
 
     @gl.public.view
@@ -392,7 +392,7 @@ class ApibaseReceiptAttest(gl.Contract):
     def get_chain(self, chain_id: str) -> ChainConfig:
         """The RPC URL and USDC address for chain_id; reverts if not configured."""
         if chain_id not in self.chains:
-            raise glvm.UserError(f"chain {chain_id!r} is not configured")
+            raise gl.vm.UserError(f"chain {chain_id!r} is not configured")
         return self.chains[chain_id]
 
     @gl.public.view

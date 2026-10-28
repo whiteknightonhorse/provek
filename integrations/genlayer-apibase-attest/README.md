@@ -95,20 +95,21 @@ different things on purpose.
 
 ## Commands
 
-Run from this directory, with the isolated Python 3.12 toolchain of D-63 (the door uses `~/orchestra/glenv`):
+Run from this directory, with the isolated Python 3.12 toolchain of D-63 (the door uses `~/orchestra/glenv-babwp`, with `GENVM_VERSION=v0.6.0-rc10`, `GENVM_ALLOW_PRERELEASE=1`):
 
-The contract's version line `# v0.2.16` must be line 1, with the `# { "Depends": ... }` line second ([why](../genlayer-witness/README.md), as of 2026-10-27).
+The contract's version line `# v0.3.0` must be line 1, with the `# { "Depends": "py-genlayer:babwp9t3…" }` line second ([why](../genlayer-witness/README.md)): Bradbury Phase 2 runs the babwp runner as of 2026-10-28, and the documentation's `1jb45…` id fails there (D-79).
 
 ```
-python3 scripts/check_genvm_lint.py          # genvm-lint check, with the four named E010 warnings
+python3 scripts/check_genvm_lint.py          # genvm-lint check, with the two named E014 warnings
 python3 -m pytest tests/direct -v            # direct-mode tests: mocks only, no network
 gltest --network studionet tests/integration # live; skipped unless ATTEST_CONTRACT and APIBASE_RECEIPT_ID are set
 ```
 
 `genvm-lint check` itself has no allowlist, so `scripts/check_genvm_lint.py` runs it with `--json` and
-demands that the warning set be exactly the four known false positives: the linter's reachability check
-does not recognise the `import genlayer.gl.vm as glvm; glvm.run_nondet_unsafe(...)` alias form, so each
-of the two closures reports its `gl.nondet.web.get` and `gl.nondet.web.post` as E010. Any other shape is red.
+demands that the warning set be exactly the two known false positives: the linter (0.11.1rc2) only knows the
+v0.2 storage decorator name `allow_storage`, so it reports `ChainConfig` and `Attestation`, decorated with the
+v0.3.0 `gl.storage.allow`, as E014; its SDK-semantic validation, which builds the real schema, passes. Any
+other shape is red.
 
 `tests/fixtures/rpc_receipt_real_base_usdc.json` is a real `eth_getTransactionReceipt` answer from
 `https://mainnet.base.org` (transaction `0xa7055e5e…bf58`, block 52589696): two logs, one of them a USDC

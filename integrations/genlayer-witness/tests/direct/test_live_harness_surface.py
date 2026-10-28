@@ -31,7 +31,7 @@ def _schema_for(contract_module):
     """Derive the real ABI schema from the already-deployed contract class instead of hand-typing
     method names — `get_schema` is the exact function GenVM itself uses to build a contract's
     schema, so this cannot go stale silently if a method is renamed, added, or removed."""
-    from genlayer.py.get_schema import get_schema
+    from genlayer._internal.get_schema import get_schema
 
     contract_cls = _find_contract_class(contract_module)
     assert contract_cls is not None, "no contract class found in the deployed module"

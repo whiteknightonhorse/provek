@@ -1,5 +1,5 @@
-# v0.2.16
-# { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
+# v0.3.0
+# { "Depends": "py-genlayer:babwp9t37jw9g4j2bccgn14g6x7x9s1f7dsmh7emvz735pz4zxa0" }
 
 """Provek Evidence Witness — a GenLayer Intelligent Contract.
 
@@ -50,10 +50,10 @@ OPERATOR-ONLY, BY DESIGN. `witness()` reverts for any `gl.message.sender_address
 request, never on this contract's own initiative" discipline `src/witness/witness.py`'s docstring
 names as A-9. There is no permissionless mode in v0.
 
-FIELD NAME NOTE (GL-harness-notes.md #3, GL-facts.md F5). `genlayer.gl.nondet.web.Response` is
+FIELD NAME NOTE (GL-harness-notes.md #3, GL-facts.md F5). `genlayer.nondet.web.Response` is
 defined with a `status` field, not `status_code` — the prose examples on the GenLayer docs site
-use `status_code`, but the SDK actually installed (`genlayer-py==0.18.0` / the extracted
-`py-lib-genlayer-std` runner pinned by this file's own header hash) defines `status`, confirmed by
+use `status_code`, but the SDK actually installed (the `py-lib-genlayer-std` runner behind
+this file's own header hash) defines `status`, confirmed by
 running this project's own direct tests against it. This contract uses `response.status`.
 """
 
@@ -62,8 +62,8 @@ import json
 from dataclasses import dataclass
 from urllib.parse import urlparse
 
-from genlayer import *
-import genlayer.gl.vm as glvm
+import genlayer as gl
+from genlayer.types import *
 
 MAX_ARTIFACT_BYTES = 2_000_000
 """Same cap as `src.collector.reachability.MAX_ARTIFACT_BYTES` (ABI-5-3: one number, one reason —
@@ -81,7 +81,7 @@ _OBSERVATION_KEYS = frozenset({"url", "status", "body_sha256", "bytes", "fetch"}
 _FETCH_STATES = frozenset({"ok", "too_large", "error"})
 
 
-@allow_storage
+@gl.storage.allow
 @dataclass
 class WitnessResult:
     """The published record for one `witness()` call — immutable once written, the same
@@ -108,27 +108,27 @@ def _validate_url(url: str) -> None:
     the "is this even a URL worth asking a validator to fetch" boundary, kept here so a malformed
     request reverts before it ever reaches consensus."""
     if not isinstance(url, str) or len(url) == 0 or len(url) > 2048:
-        raise glvm.UserError("evidence_url must be a non-empty string of at most 2048 characters")
+        raise gl.vm.UserError("evidence_url must be a non-empty string of at most 2048 characters")
     for ch in url:
         if ord(ch) <= 0x20 or ord(ch) == 0x7F:
-            raise glvm.UserError("evidence_url must not contain whitespace or control characters")
+            raise gl.vm.UserError("evidence_url must not contain whitespace or control characters")
     parsed = urlparse(url)
     if parsed.scheme not in ("http", "https"):
-        raise glvm.UserError(f"evidence_url must be http or https, got scheme {parsed.scheme!r}")
+        raise gl.vm.UserError(f"evidence_url must be http or https, got scheme {parsed.scheme!r}")
     if not parsed.hostname:
-        raise glvm.UserError("evidence_url must name a host")
+        raise gl.vm.UserError("evidence_url must name a host")
     if "@" in parsed.netloc:
-        raise glvm.UserError("evidence_url must not carry userinfo")
+        raise gl.vm.UserError("evidence_url must not carry userinfo")
 
 
 def _normalize_observation(url: str, response) -> dict:
     """Turn a `gl.nondet.web.Response` into a plain dict of primitives (so it survives the
-    `run_nondet_unsafe` calldata boundary — `genlayer.py.calldata.Decoded` only ever contains
+    `gl.vm.run_nondet` calldata boundary — `genlayer.calldata.Decoded` only ever contains
     `None | int | str | bytes | list | dict`, never a custom class). Pure and exception-free —
     the `gl.nondet.web.get(url)` call itself stays written out inline inside `leader_fn` and
     `validator_fn` below rather than factored into a shared helper, because `genvm-lint`'s
     equivalence-principle reachability check statically requires a `gl.nondet.*` call to appear
-    textually inside the leader/validator closure passed to `run_nondet_unsafe`, not merely inside
+    textually inside the leader/validator closure passed to `gl.vm.run_nondet`, not merely inside
     a function that closure happens to call."""
     body = response.body or b""
     if len(body) > MAX_ARTIFACT_BYTES:
@@ -194,7 +194,7 @@ def _bound(criterion: str, expected: str, url: str, observation: dict, checked_a
             result, observation_str, evidence_digest)
 
 
-class ProvekEvidenceWitness(gl.Contract):
+class ProvekEvidenceWitness(gl.contract.Contract):
     """See the module docstring for the full design rationale. Storage: `operator` (immutable
     after construction), `records` (witness_id -> `WitnessResult`, append-only), `index`
     (subject_id -> JSON-encoded list of witness_ids — a `TreeMap[str, DynArray[str]]` does not
@@ -203,8 +203,8 @@ class ProvekEvidenceWitness(gl.Contract):
     documents as "Pattern 7")."""
 
     operator: Address
-    records: TreeMap[str, WitnessResult]
-    index: TreeMap[str, str]
+    records: gl.storage.TreeMap[str, WitnessResult]
+    index: gl.storage.TreeMap[str, str]
 
     def __init__(self, operator: Address):
         self.operator = operator
@@ -217,23 +217,23 @@ class ProvekEvidenceWitness(gl.Contract):
         the given criterion, or a `witness_id` that already exists (records are immutable — a
         repeat request is a caller error, not a re-check)."""
         if gl.message.sender_address != self.operator:
-            raise glvm.UserError("only the operator may request a witness check")
+            raise gl.vm.UserError("only the operator may request a witness check")
         if not isinstance(subject_id, str) or len(subject_id) == 0 or len(subject_id) > 256:
-            raise glvm.UserError("subject_id must be a non-empty string of at most 256 characters")
+            raise gl.vm.UserError("subject_id must be a non-empty string of at most 256 characters")
         if criterion not in SUPPORTED_CRITERIA:
-            raise glvm.UserError(
+            raise gl.vm.UserError(
                 f"unsupported criterion {criterion!r}: supported types are {SUPPORTED_CRITERIA}")
         _validate_url(evidence_url)
 
         expected = expected.strip().lower()
         if criterion == "artifact_hash":
             if len(expected) != 64 or any(c not in "0123456789abcdef" for c in expected):
-                raise glvm.UserError("artifact_hash requires a 64-character hex sha256 in `expected`")
+                raise gl.vm.UserError("artifact_hash requires a 64-character hex sha256 in `expected`")
         else:  # url_reachable
             if expected != "":
-                raise glvm.UserError("url_reachable does not take an `expected` value")
+                raise gl.vm.UserError("url_reachable does not take an `expected` value")
 
-        checked_at = gl.message_raw["datetime"]
+        checked_at = gl.message.raw["datetime"]
         sender = gl.message.sender_address.as_hex
 
         witness_id = hashlib.sha256(
@@ -241,7 +241,7 @@ class ProvekEvidenceWitness(gl.Contract):
                        sort_keys=True).encode("utf-8")
         ).hexdigest()
         if witness_id in self.records:
-            raise glvm.UserError(f"duplicate witness_id {witness_id}: this check was already published")
+            raise gl.vm.UserError(f"duplicate witness_id {witness_id}: this check was already published")
 
         def leader_fn() -> dict:
             try:
@@ -252,7 +252,7 @@ class ProvekEvidenceWitness(gl.Contract):
                         "fetch": "error"}
 
         def validator_fn(leader_result) -> bool:
-            if not isinstance(leader_result, glvm.Return):
+            if not isinstance(leader_result, gl.vm.Return):
                 return False
             observation = leader_result.calldata
             if not isinstance(observation, dict):
@@ -267,14 +267,14 @@ class ProvekEvidenceWitness(gl.Contract):
             except Exception:
                 # The validator could not observe the URL itself — this is "no consensus is
                 # possible", not "the claim is false": returning False here (rather than raising)
-                # is a deliberate agree/disagree vote, matching run_nondet_unsafe's documented
+                # is a deliberate agree/disagree vote, matching gl.vm.run_nondet's documented
                 # contract that an uncaught exception is ALSO treated as Disagree, but named
                 # explicitly rather than left implicit.
                 return False
             return (_bound(criterion, expected, evidence_url, observation, checked_at)
                     == _bound(criterion, expected, evidence_url, my_observation, checked_at))
 
-        observation = glvm.run_nondet_unsafe(leader_fn, validator_fn)
+        observation = gl.vm.run_nondet(leader_fn, validator_fn)
 
         _, _, _, result, observation_str, evidence_digest = _bound(
             criterion, expected, evidence_url, observation, checked_at)
@@ -303,7 +303,7 @@ class ProvekEvidenceWitness(gl.Contract):
         this repository's `CLAUDE.md` names as its most-violated invariant: a missing record is a
         caller error to surface, not a value to fabricate."""
         if witness_id not in self.records:
-            raise glvm.UserError(f"unknown witness_id {witness_id!r}")
+            raise gl.vm.UserError(f"unknown witness_id {witness_id!r}")
         return self.records[witness_id]
 
     @gl.public.view

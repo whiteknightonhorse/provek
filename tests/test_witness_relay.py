@@ -63,11 +63,12 @@ def _contract_validate_url():
     class UserError(Exception):
         pass
 
-    class glvm:  # noqa: N801 - the name the contract's source uses
-        pass
+    class gl:  # noqa: N801 - the name the contract's source uses (`gl.vm.UserError`, v0.3.0 SDK)
+        class vm:  # noqa: N801
+            pass
 
-    glvm.UserError = UserError
-    ns = {"glvm": glvm, "urlparse": urlparse}
+    gl.vm.UserError = UserError
+    ns = {"gl": gl, "urlparse": urlparse}
     exec(compile(ast.Module([fn], []), "contract._validate_url", "exec"), ns)  # noqa: S102
     return ns["_validate_url"], UserError
 

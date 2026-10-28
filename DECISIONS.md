@@ -3966,7 +3966,7 @@ ruling-2 §2: `target-version py310` and its `F403` rule would flag the contract
 reported `TREE GREEN`. Not deployed — no deploy applies to this task; nothing here touches a live
 network.
 
-**Addendum 2026-10-27 (T-GLR-03b).** A GenLayer studio node routes a text contract to its executor by the contract's first line: only a first line of the form `# v0.2.<n>` selects the retained v0.2 executor, and any other first line goes to the newer default executor, which rejects the pinned runner id as malformed. Both contracts now carry `# v0.2.16` as line 1, above the unchanged `# { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }` line. The version line names the same tag as the committed digest `genvm-universal-v0.2.16.sha256`; the runner id, the universal asset, the digest and the pip pins (genlayer-py 0.18.0, genlayer-test 0.29.2, genvm-linter 0.11.0) are unchanged. Measured by the D1b run against studio-next (`studio-next.md`, 2026-10-27). The release-candidate pip set (0.19.0rc2 / 0.30.0rc2 / 0.11.1rc2) stays out until a genvm tag mapping for it exists.
+**Addendum 2026-10-27 (T-GLR-03b).** A GenLayer studio node routes a text contract to its executor by the contract's first line: only a first line of the form `# v0.2.<n>` selects the retained v0.2 executor, and any other first line goes to the newer default executor, which rejects the pinned runner id as malformed. Both contracts now carry `# v0.2.16` as line 1, above the unchanged `# { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }` line. The version line names the same tag as the committed digest `genvm-universal-v0.2.16.sha256`; the runner id, the universal asset, the digest and the pip pins (genlayer-py 0.18.0, genlayer-test 0.29.2, genvm-linter 0.11.0) are unchanged. Measured by the D1b run against studio-next (`studio-next.md`, 2026-10-27). The release-candidate pip set (0.19.0rc2 / 0.30.0rc2 / 0.11.1rc2) stays out until a genvm tag mapping for it exists. **Superseded by D-79 (2026-10-28):** the mapping exists (`genvm-manager` v0.6.0-rc10), the rc set is in, and the first line is now `# v0.3.0`.
 
 ## D-64. The GenLayer witness is published twice — source of record in provek, a history-preserving subtree mirror for the Builder programme
 
@@ -4374,3 +4374,41 @@ adopted). Two things are lost: per-visitor sessions, and Google's history of the
 stays in Google until the operator deletes it. One thing is gained: a count that needs no banner.
 
 **Gate.** `tests/test_public_surface_sets_no_tracking_cookie.py`.
+
+## D-79. Both GenLayer contracts target the runner Bradbury Phase 2 executes (py-genlayer babwp, `# v0.3.0`), and the gates moved to the toolchain that loads it
+
+**Decision.** `provek_evidence_witness.py` and `apibase_receipt_attest.py` carry `# v0.3.0` and
+`# { "Depends": "py-genlayer:babwp9t37jw9g4j2bccgn14g6x7x9s1f7dsmh7emvz735pz4zxa0" }` and are written
+against that runner's `py-lib-genlayer-std` (`import genlayer as gl`, `from genlayer.types import *`).
+Their behaviour, record shape and the D-76 validator binding are unchanged; only names moved:
+`gl.Contract` -> `gl.contract.Contract`, `@allow_storage` -> `@gl.storage.allow`, `TreeMap` ->
+`gl.storage.TreeMap`, `gl.message_raw` -> `gl.message.raw`, `glvm.run_nondet_unsafe` ->
+`gl.vm.run_nondet`, `glvm.UserError`/`glvm.Return` -> `gl.vm.UserError`/`gl.vm.Return`. The mapping is
+written once, as data, in `test_apibase_receipt_attest.py`'s `API_MAP`, which proves the attest port
+changed names and nothing else.
+
+**Why.** Measured by the dispatcher on 2026-10-28 on Bradbury Phase 2 (chain 4221): the runner in the
+current documentation and in D-63, `py-genlayer:1jb45aa8...`, ends every deploy in
+FINISHED_WITH_ERROR for everyone, including the unmodified documentation Hello; a contract in the babwp
+style deployed by this project's own wallet, fees and CLI finished with a return and is readable.
+
+**Where the SDK came from.** The babwp runner is not in the `genvm` repository, its tags or releases,
+nor in the public runner bucket; it ships in `genlayerlabs/genvm-manager` release `v0.6.0-rc10`,
+asset `genvm-universal.tar.xz` (sha256 `d3c6ba368dbd5cad01e484e19573906b4ffed41f46a48191bdc579c81cf801af`,
+equal to the release's own `SHA256SUMS`), member `runners/py-genlayer/ba/bwp9t37...zip`, whose
+`runner.json` depends on `py-lib-genlayer-std:z7fv8bqpetj3wnjd8sn5s5xfqve3rz8nmtq4npwf2qdvns57zjgg`
+(zip sha256 `f9dfb42ef676a43e564d466a5c97afbedc3c7d15a6ae4adb8f15dbbae4a7fca1`). Every renamed API was
+read in that package's source and in the SDK's own migration note (`v0.3.rst`), not guessed.
+
+**Pins that moved (named).** `genvm-universal-v0.2.16.sha256` -> `genvm-universal-v0.6.0-rc10.sha256`
+(both integrations); `requirements/ci-genlayer.{in,txt}` and the two integration copies:
+genlayer-py 0.19.0rc2, genlayer-test 0.30.0rc2, genvm-linter 0.11.1rc2 (release candidates, which is all
+PyPI carries; no override needed any more); door step 9 of the push script, `gates.yml`'s `genlayer`
+job and the mirror's `contract-tests.yml` fetch the new bundle and pass `GENVM_VERSION` /
+`GENVM_ALLOW_PRERELEASE`; the door's venv is `~/orchestra/glenv-babwp`, the old `glenv` is untouched;
+`check_genvm_lint.py` expects the linter's E014 false positive on the `@gl.storage.allow` classes
+(the E010 ones are gone with the fully-dotted `gl.vm.run_nondet`). The live-harness-surface test
+imports `genlayer._internal.get_schema` (was `genlayer.py.get_schema`).
+
+**Not decided here.** The redeploy on Bradbury, the three witness records, `set_chain` and the attest
+call are the dispatcher's, with the merged bytes.
