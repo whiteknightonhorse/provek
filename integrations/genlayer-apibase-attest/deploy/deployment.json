@@ -1,0 +1,105 @@
+{
+  "network": "testnet_bradbury",
+  "chain_id": 4221,
+  "network_note": "Bradbury Phase 2 (GenLayer reset the testnet on 2026-10-24); redeployed 2026-10-28 by the dispatcher from the T-GLR-04 commit",
+  "rpc_url": "https://rpc-bradbury.genlayer.com",
+  "contract_address": "0x1bD4C0EBC9b365905d4EBC84b944d861499afe6E",
+  "explorer_url": "https://explorer-bradbury.genlayer.com/address/0x1bD4C0EBC9b365905d4EBC84b944d861499afe6E",
+  "deploy_tx": "856b09fa342880698f8adb32ead654c21497fa2b3e7a0d2cea2dbfe25c078e16",
+  "deploy_tx_status": "ACCEPTED",
+  "deploy_tx_consensus_result": "MAJORITY_AGREE",
+  "deploy_tx_execution_result": "FINISHED_WITH_RETURN",
+  "deployer": "0x2c111FCD3082083C9B287DD9DA5995f190968Ef9",
+  "constructor_args": {
+    "operator": "0x2c111FCD3082083C9B287DD9DA5995f190968Ef9",
+    "receipt_base_url": "https://apibase.pro/r/"
+  },
+  "commit": "11474b4cfc94dada3a3e5301d19d1262713027ac",
+  "contract_sha256": "497d6d126c354632d53c3c1b4b56524032b7425a9d481b79272cbb430a70ce08",
+  "runner_header": "# v0.3.0 / # { \"Depends\": \"py-genlayer:babwp9t37jw9g4j2bccgn14g6x7x9s1f7dsmh7emvz735pz4zxa0\" }",
+  "set_chain": {
+    "tx": "f0736fc0c198cbc38ad454aeddcb47830c16187aff36e90f073b44cd38b80178",
+    "tx_status": "FINALIZED",
+    "execution_result": "FINISHED_WITH_RETURN",
+    "chain_id": "8453",
+    "rpc_url": "https://mainnet.base.org",
+    "usdc": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "get_config_after": "chains [\"8453\"], operator 0x2c111F..8Ef9, receipt_base_url https://apibase.pro/r/"
+  },
+  "fees": {
+    "deploy_quoted": "0.100000000000010352",
+    "deploy_charged": "not_measured",
+    "write_quoted": "0.100000000000010352",
+    "write_charged": "not_measured",
+    "unit": "GEN (test GEN, Bradbury Phase 2); quoted = the fee deposit held per transaction; charged = the part not refunded at finalization; the node exposes no per-transaction gas, so no per-transaction charge is recorded for this contract (all 10 transactions of the 2026-10-28 session, witness and attest together, netted 0.001056359060011646 GEN, MEASURED-017; the attest write on the live receipt came after that count)"
+  },
+  "_note_tx_hashes": "deploy_tx, set_chain.tx, failed_attempts[].tx and every live_records[].tx/payment_tx below have their 0x prefix stripped - scripts/secret_scan.sh blocks the literal pattern 0x + 64 hex chars (GL-00 ruling-1); see evidence/MEASURED-017-* and evidence/MEASURED-019-* for the source transcripts (MEASURED-019 strips the same prefix).",
+  "live_records": [
+    {
+      "receipt_id": "9dbc77f9fd66bcb8714cd064f5681005",
+      "attest_id": "0954262009b2f224290261fb68e833acf11f4003c1d52ea31027f4a778e414ef",
+      "receipt_url": "https://apibase.pro/r/9dbc77f9fd66bcb8714cd064f5681005.json",
+      "rail": "x402-base",
+      "chain_id": "8453",
+      "tool": "myvariant.search",
+      "payment_tx": "33a9eaf0a5d83046a76c78ce2ac50f6883e00fe6ae18ca516760c93f5ac2eff0",
+      "payer": "0x672f6b63074e47988084b69a3795701a3f94ff2d",
+      "payee": "0x50ebda9da5dc19c302ca059d7b9e06e264936480",
+      "amount_atomic": "1000",
+      "billed": true,
+      "upstream_status": 200,
+      "receipt_sha256": "958eba9006b7e6806d6ed56d8dfeec111341dbee7730e880ff09dcdc4cf0daf3",
+      "response_sha256": "246b5028c1941fc3f797d9a31eb8c8eb63c32d00f39e0182cd1d66a8bef6dfab",
+      "requester": "0x2c111FCD3082083C9B287DD9DA5995f190968Ef9",
+      "observation": "payment_matches",
+      "result": "PASS",
+      "checked_at": "2026-10-28T09:30:52Z",
+      "tx": "a15bf4852f4af999cb1bfd59b43d10b6501ae68d3a25472bc700c6f71c06a1c0",
+      "tx_status": "ACCEPTED",
+      "tx_consensus_result": "MAJORITY_AGREE",
+      "tx_execution_result": "FINISHED_WITH_RETURN",
+      "validators": "5/5"
+    }
+  ],
+  "failed_attempts": [
+    {
+      "receipt_id": "1203e946c6082bc8e85c9a3deeb43f2e5f37e88e3c55afadde8e2c49b14836a8",
+      "tx": "a291bf9701ea1928d620437ccfb693689ec717aca93fda68c062f1e823c5bc13",
+      "tx_status": "FINALIZED",
+      "tx_execution_result": "FINISHED_WITH_ERROR",
+      "reason": "contract user error: the receipt URL https://apibase.pro/r/1203e946...json answered HTTP 404 on 2026-10-28; this id is the repository test fixture, not a real APIbase receipt. No record was written."
+    }
+  ],
+  "not_measured": [
+    "a live attest that reached FAIL or NOT_FOUND (none was run; one PASS record exists)",
+    "a studionet `gltest tests/integration` run for this contract (no transcript exists)",
+    "the per-transaction charge of any attest-contract transaction"
+  ],
+  "known_sdk_limitations": [
+    "The genlayer CLI read path answers \"gen_call does not exist\" on this network's default RPC; reads were captured as raw gen_call on https://rpc-bradbury.genlayer.com with hand-encoded GenVM calldata. A page that reads this contract must read through deployment.json's rpc_url.",
+    "The CLI argument parser turns a decimal string such as 8453 into a number and a 0x... string into an address type; set_chain was written with the s# string-argument rule (a byte-copy of the CLI bundle with one added rule), see the tooling note in MEASURED-017.",
+    "The node's own gas figures are not available on rpc-bradbury, so no per-transaction gas is recorded."
+  ],
+  "evidence": [
+    "evidence/MEASURED-017-glr-05-bradbury-phase2-deploy-and-three-records.txt",
+    "evidence/MEASURED-019-glr-05-phase2-attest-read.txt"
+  ],
+  "source_transcripts": "~/taskloop/briefs/GLR-05-transcripts/ (dispatcher-captured; this task made no GenLayer network call and did not read ~/orchestra/gl/)",
+  "previous_deployments": [
+    {
+      "network": "testnet_bradbury",
+      "chain_id": 4221,
+      "network_note": "pre-reset Bradbury (chain reset by GenLayer 2026-10-24); records not carried over; the deployment died with the reset",
+      "rpc_url": "https://rpc-bradbury.genlayer.com",
+      "contract_address": "0x7572cAB5… (only the prefix is in the dispatcher's brief; the full address is not_measured - no transcript of that deployment exists in ~/taskloop/briefs/GLR-05-transcripts/)",
+      "explorer_url": "not_measured",
+      "deploy_tx": "not_measured",
+      "deploy_tx_status": "not_measured",
+      "deployer": "not_measured",
+      "commit": "not_measured",
+      "live_records": [],
+      "evidence": [],
+      "source_transcripts": "none (the transcripts of the 2026-10-20 deployment, ~/taskloop/briefs/GA-05-transcripts/, do not exist)"
+    }
+  ]
+}

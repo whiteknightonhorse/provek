@@ -4011,6 +4011,13 @@ https://github.com/whiteknightonhorse/provek-genlayer-witness/actions/runs/37295
 `evidence/MEASURED-014-gl-07-mirror-live-checks.txt`.
 
 
+**Addendum, T-GA-02 (2026-10-28): a second mirror, same rule.** `integrations/genlayer-apibase-attest/` is published as
+`whiteknightonhorse/apibase-genlayer-attest` by the same `git subtree split --prefix=...` and the same procedure: the source of
+record stays in this repository (D-66), the mirror is never edited directly, a re-split is a fast-forward, and a
+non-fast-forward is a defect fixed here, never by force-push. Preparation is recorded in `evidence/MEASURED-020-*` (dry run, no
+push); creating the repository and pushing are the dispatcher's. The Bradbury Phase 2 deployment of that contract is recorded in
+`integrations/genlayer-apibase-attest/deploy/deployment.json` and `DEPLOYMENT.md`.
+
 ## D-65. The mypy advisory is re-dated once, to 2026-12-14, with the count that justifies it — and the second extension carries a ceiling
 
 **Source.** Fable ruling PROVEK-STALE-1018 q-1 (2026-10-19) and `T-MY-01-advisory-redated.ruling-1`;

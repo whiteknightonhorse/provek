@@ -22,8 +22,32 @@ a consensus-backed record that the receipt and the chain agree, or that they do 
 where Provek's gates check it (D-66, beside D-63 for the first contract). The same directory is published, with its
 history, as `whiteknightonhorse/apibase-genlayer-attest` — a read-only mirror made with
 `git subtree split` (the procedure is D-64's). The mirror is never edited directly: every change enters Provek and is
-re-split. Paths such as `DECISIONS.md`, `docs/adr/` and `evidence/RED-*` refer to the root of the Provek
+re-split (D-64, second mirror). The deployed contract is this directory's `contracts/apibase_receipt_attest.py` as committed at
+`11474b4` (D-67). Paths such as `DECISIONS.md`, `docs/adr/` and `evidence/*` refer to the root of the Provek
 repository.
+
+## APIbase Receipt Attest — live on Bradbury Phase 2
+
+`ApibaseReceiptAttest` (`integrations/genlayer-apibase-attest/`) is deployed on the GenLayer test network, test GEN only. One real
+APIbase receipt has been attested there; the record is readable by anyone with `get_attestation`.
+
+| | |
+|---|---|
+| Contract | `0x1bD4C0EBC9b365905d4EBC84b944d861499afe6E` |
+| Explorer | https://explorer-bradbury.genlayer.com/address/0x1bD4C0EBC9b365905d4EBC84b944d861499afe6E |
+| Page | https://apibase.pro/attest/ (APIbase's page for this contract; APIbase moves it to this address when its promotion goes live) |
+| Network | GenLayer testnet Bradbury Phase 2 (chain 4221), RPC `https://rpc-bradbury.genlayer.com`; deployed 2026-10-28 from commit `11474b4` after GenLayer reset the testnet on 2026-10-24 (the earlier deployment died with the reset; its entry is kept in `deploy/deployment.json`, `previous_deployments`) |
+| Rail configured | `set_chain("8453", ...)`: Base mainnet, `https://mainnet.base.org`, USDC `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` |
+
+Live records, as of 2026-10-28 (read back with `list_by_receipt` and `get_attestation`; every field and transaction in
+`deploy/deployment.json` and `evidence/MEASURED-019-*`, the deploy and the write in `evidence/MEASURED-017-*`):
+
+| result | receipt id | observation | attested at (UTC) |
+|---|---|---|---|
+| PASS | `9dbc77f9fd66bcb8714cd064f5681005` (`myvariant.search`, 1000 atomic USDC) | `payment_matches` | 2026-10-28T09:30:52Z |
+
+Not measured: a live `FAIL` or `NOT_FOUND` record (none was requested), and a studionet integration run for this contract.
+The deployment record is `deploy/DEPLOYMENT.md`.
 
 ## The receipt: `apibase-receipt/1`
 
