@@ -19,7 +19,9 @@ import * as route from "../web/functions/api/witness-submit.js";
 const FAKE_KEY = "0x" + "ab12".repeat(16);
 const NOW = new Date("2026-10-12T10:15:30Z");
 const HASH = "0x" + "aB09".repeat(16); // mixed case on purpose: it must come back exactly as given
-const CONTRACT = "0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6";
+const CONTRACT = "0x99C23e1794ed35b429161fBEB00967D0c81DC491";
+const QUOTE = 100000000000010352n; // the D2 quote (evidence/MEASURED-017-*), in wei
+const DISTRIBUTION = { leaderTimeunitsAllocation: "100", validatorTimeunitsAllocation: "200", rotations: ["3"] };
 
 const logs = [];
 for (const m of ["log", "info", "warn", "error", "debug"]) console[m] = (...a) => logs.push(a.map(String).join(" "));
@@ -33,17 +35,25 @@ function kvStub({ unreadable = false } = {}) {
   };
 }
 
-function mockDeps({ write, hash = HASH } = {}) {
-  const calls = { createAccount: [], createClient: [], writeContract: [] };
+function mockDeps({ write, hash = HASH, balance = 20n * 10n ** 18n, quote = QUOTE, estimateFails = false, balanceFails = false } = {}) {
+  const calls = { createAccount: [], createClient: [], writeContract: [], estimate: 0, getBalance: [] };
   const deps = {
     now: () => NOW,
     loadGenlayer: async () => ({
       createAccount: (k) => { calls.createAccount.push(k); return { address: "0x" + "12".repeat(20) }; },
       createClient: (cfg) => {
         calls.createClient.push({ chain: cfg.chain, account: cfg.account });
-        return { writeContract: async (a) => { calls.writeContract.push(a); if (write) return write(a); return hash; } };
+        return {
+          estimateTransactionFees: async () => {
+            calls.estimate += 1;
+            if (estimateFails) throw new Error("fee manager unreachable");
+            return { distribution: DISTRIBUTION, feeValue: quote, policy: { enabled: true } };
+          },
+          getBalance: async (a) => { calls.getBalance.push(a); if (balanceFails) throw new Error("rpc down"); return balance; },
+          writeContract: async (a) => { calls.writeContract.push(a); if (write) return write(a); return hash; },
+        };
       },
-      testnetBradbury: { id: 4221, name: "mock-bradbury" },
+      testnetBradbury: { id: 4221, name: "mock-bradbury", rpcUrls: { default: { http: ["https://preset.example"] } } },
     }),
   };
   return { deps, calls };
@@ -98,7 +108,7 @@ const CASES = {
     const kv = kvStub();
     const { deps, calls } = mockDeps();
     const r = await post(envOk(kv), deps, GOOD);
-    return out(r, { calls: { ...calls, writeContract: calls.writeContract.map((a) => ({ ...a, value: String(a.value) })) }, kv: [...kv.m.entries()] });
+    return out(r, { calls: { ...calls, writeContract: calls.writeContract.map((a) => ({ ...a, value: String(a.value), fees: { ...a.fees, feeValue: String(a.fees && a.fees.feeValue) } })) }, kv: [...kv.m.entries()] });
   },
   post_artifact_hash_uppercase_is_normalised: async () => {
     const { deps, calls } = mockDeps();
@@ -255,6 +265,48 @@ const CASES = {
   upstream_loader_fails: async () => {
     const deps = { now: () => NOW, loadGenlayer: async () => { throw new Error(`cannot load; key was ${FAKE_KEY}`); } };
     return out(await post(envOk(kvStub()), deps, GOOD));
+  },
+  health_funded: async () => {
+    const { deps, calls } = mockDeps();
+    return out(await snap(await relay.handleGet({ env: envOk(kvStub()) }, deps)), { calls: { ...calls, getBalance: calls.getBalance } });
+  },
+  health_unfunded: async () => {
+    const { deps } = mockDeps({ balance: QUOTE - 1n });
+    return out(await snap(await relay.handleGet({ env: envOk(kvStub()) }, deps)));
+  },
+  health_exactly_funded: async () => {
+    const { deps } = mockDeps({ balance: QUOTE });
+    return out(await snap(await relay.handleGet({ env: envOk(kvStub()) }, deps)));
+  },
+  health_balance_unreadable: async () => {
+    const { deps } = mockDeps({ balanceFails: true });
+    return out(await snap(await relay.handleGet({ env: envOk(kvStub()) }, deps)));
+  },
+  health_quote_unreadable: async () => {
+    const { deps } = mockDeps({ estimateFails: true });
+    return out(await snap(await relay.handleGet({ env: envOk(kvStub()) }, deps)));
+  },
+  post_unfunded_is_503_and_sends_nothing: async () => {
+    const kv = kvStub();
+    const { deps, calls } = mockDeps({ balance: QUOTE - 1n });
+    const r = await post(envOk(kv), deps, GOOD);
+    return out(r, { sent: calls.writeContract.length, kv_writes: kv.m.size });
+  },
+  post_unfunded_every_criterion_sends_nothing: async () => {
+    const { deps, calls } = mockDeps({ balance: 0n });
+    const a = await post(envOk(kvStub()), deps, GOOD);
+    const b = await post(envOk(kvStub()), deps, { ...GOOD, criterion: "artifact_hash", expected: SHA });
+    return out({ a: a.status, b: b.status }, { sent: calls.writeContract.length });
+  },
+  post_no_quote_is_502_and_sends_nothing: async () => {
+    const kv = kvStub();
+    const { deps, calls } = mockDeps({ estimateFails: true });
+    const r = await post(envOk(kv), deps, GOOD);
+    return out(r, { sent: calls.writeContract.length, kv_writes: kv.m.size });
+  },
+  post_balance_unreadable_still_sends: async () => {
+    const { deps, calls } = mockDeps({ balanceFails: true });
+    return out(await post(envOk(kvStub()), deps, GOOD), { sent: calls.writeContract.length });
   },
   real_createaccount_derivation: async () => {
     // The well-known test key 0x00..01 -> 0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf (public vector).

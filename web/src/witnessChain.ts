@@ -10,6 +10,7 @@
  * forwarding function is needed and none exists. There is no account, key or secret here: every
  * call is a read. */
 import { CONTRACT_ADDRESS } from "./witnessView.js";
+import { bradburyChain } from "./witnessChainConfig.js";
 
 type Client = {
   readContract: (a: { address: string; functionName: string; args: unknown[] }) => Promise<unknown>;
@@ -21,7 +22,7 @@ let client: Promise<Client> | null = null;
 function getClient(): Promise<Client> {
   if (!client) {
     client = Promise.all([import("genlayer-js"), import("genlayer-js/chains")]).then(
-      ([gl, chains]) => gl.createClient({ chain: chains.testnetBradbury }) as unknown as Client,
+      ([gl, chains]) => gl.createClient({ chain: bradburyChain(chains.testnetBradbury) }) as unknown as Client,
     );
     // A failed chunk load must not poison every later attempt.
     client.catch(() => { client = null; });

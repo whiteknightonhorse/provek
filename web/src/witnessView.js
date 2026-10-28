@@ -16,9 +16,9 @@
 
 /** The deployed contract - the single place in `web/` that names it. `tests/test_witness_page.py`
  *  compares these against `integrations/genlayer-witness/deploy/deployment.json`. */
-export const CONTRACT_ADDRESS = "0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6";
+export const CONTRACT_ADDRESS = "0x99C23e1794ed35b429161fBEB00967D0c81DC491";
 export const CHAIN_ID = 4221;
-export const NETWORK_LABEL = "GenLayer testnet Bradbury (chain 4221)";
+export const NETWORK_LABEL = "GenLayer testnet Bradbury Phase 2 (chain 4221)";
 export const EXPLORER_BASE = "https://scan.bradbury.genlayer.com";
 export const DEFAULT_SUBJECT = "git:whiteknightonhorse/provek";
 

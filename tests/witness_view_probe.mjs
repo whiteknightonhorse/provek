@@ -12,6 +12,15 @@ const card = (k) => v.resultCard(fx[k].witness_id, fx[k].response);
 
 const CASES = {
   constants: () => ({ addr: v.CONTRACT_ADDRESS, chain: v.CHAIN_ID, subject: v.DEFAULT_SUBJECT }),
+  chain: async () => {
+    // the chain object the page (witnessChain.ts) and the relay both build: the INSTALLED preset, re-pointed by witnessChainConfig.js
+    const gl = await import("../web/node_modules/genlayer-js/dist/chains/index.js");
+    const cfg = await import("../web/src/witnessChainConfig.js");
+    const c = cfg.bradburyChain(gl.testnetBradbury);
+    let refused = null;
+    try { cfg.bradburyChain({ id: 1 }); } catch (e) { refused = String(e.message); }
+    return { id: c.id, http: c.rpcUrls.default.http, preset_http: gl.testnetBradbury.rpcUrls.default.http, name: c.name, preset_name: gl.testnetBradbury.name, rpc_url: cfg.RPC_URL, refused };
+  },
   pass_card: () => card("get_result_pass"),
   fail_card: () => card("get_result_fail"),
   id_list: () => v.parseIdList(fx.list_by_subject_raw),
@@ -94,4 +103,4 @@ if (!Object.prototype.hasOwnProperty.call(CASES, name)) {
   process.stderr.write(`unknown scenario ${JSON.stringify(name)}\n`);
   process.exit(2);
 }
-process.stdout.write(JSON.stringify({ scenario: name, result: CASES[name]() }));
+process.stdout.write(JSON.stringify({ scenario: name, result: await CASES[name]() }));

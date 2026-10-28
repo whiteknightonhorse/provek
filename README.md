@@ -129,10 +129,10 @@ Witness" so the two are never confused.
 | | |
 |---|---|
 | Page | https://provek.dev/witness/ |
-| Contract | `0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6` |
-| Explorer | https://scan.bradbury.genlayer.com/address/0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6 |
-| Network | GenLayer testnet Bradbury (chain 4221), RPC `https://rpc-bradbury.genlayer.com` (pre-reset network, as of 2026-10-20; GenLayer reset Bradbury on 2026-10-24 and the redeploy is pending) |
-| Client library | `genlayer-js` 1.1.8, an exact pin in `web/package.json` and `web/package-lock.json` |
+| Contract | `0x99C23e1794ed35b429161fBEB00967D0c81DC491` |
+| Explorer | https://scan.bradbury.genlayer.com/address/0x99C23e1794ed35b429161fBEB00967D0c81DC491 |
+| Network | GenLayer testnet Bradbury Phase 2 (chain 4221), RPC `https://rpc-bradbury.genlayer.com` (redeployed 2026-10-28 after GenLayer reset the testnet on 2026-10-24; the pre-reset record is kept in `deployment.json`, `previous_deployments`) |
+| Client library | `genlayer-js` 2.0.0-rc.2, an exact pin in `web/package.json` and `web/package-lock.json` |
 
 **Design: reads go straight to the chain, writes go through an operator relay.**
 
@@ -144,7 +144,9 @@ Witness" so the two are never confused.
   "Request a check" form therefore posts to `/api/witness-submit` (a Cloudflare Pages Function,
   `web/functions/api/witness-submit.js`), which validates the request exactly as the contract does
   (a bad request is a `400` naming the field, never a wasted transaction), applies rate limits,
-  signs with the operator key held as the Pages secret `GL_OPERATOR_KEY`, and answers `202` with
+  signs with the operator key held as the Pages secret `GL_OPERATOR_KEY` (every v0.6 write carries the SDK's fee
+  estimate and FeesDistribution; if the operator wallet holds less test GEN than the quote, the answer is a `503` and nothing is
+  sent; `GET` reports `funded` and `fee_quote`), and answers `202` with
   `{tx_hash, explorer_url, track_url}`. The page then opens `/witness/?tx=<hash>` and follows the
   lifecycle by reading the chain. The relay only signs and sends; the verdict is produced by GenLayer
   validators, each fetching the evidence URL on its own, and is read back from the chain.

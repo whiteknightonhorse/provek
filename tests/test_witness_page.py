@@ -61,6 +61,24 @@ def test_constants_equal_the_deployment_record():
     assert c["subject"] == "git:whiteknightonhorse/provek"
 
 
+def test_the_chain_object_both_consumers_build_has_the_deployment_records_id_and_http_rpc():
+    c = probe("chain")
+    assert c["id"] == DEPLOYMENT["chain_id"]
+    assert c["http"] == [DEPLOYMENT["rpc_url"]] and c["rpc_url"] == DEPLOYMENT["rpc_url"]
+    # the installed RC preset names another URL, which is WHY the helper exists: one source, never two
+    assert c["preset_http"] != c["http"]
+    assert c["name"] == c["preset_name"]
+    assert c["refused"] == "the genlayer-js preset is not chain 4221"
+
+
+def test_both_consumers_get_the_chain_from_the_one_helper():
+    page = (ROOT / "web" / "src" / "witnessChain.ts").read_text(encoding="utf-8")
+    relay = (ROOT / "web" / "functions" / "_lib" / "witnessRelay.js").read_text(encoding="utf-8")
+    assert "bradburyChain(chains.testnetBradbury)" in page and "bradburyChain(gl.testnetBradbury)" in relay
+    for src in (page, relay):
+        assert "chain: chains.testnetBradbury" not in src and "chain: testnetBradbury" not in src
+
+
 def test_a_result_card_is_exactly_what_get_result_returned():
     for key, verdict in (("get_result_pass", "PASS"), ("get_result_fail", "FAIL")):
         card = probe({"get_result_pass": "pass_card", "get_result_fail": "fail_card"}[key])
@@ -247,7 +265,7 @@ def test_the_form_source_posts_to_the_relay_and_carries_the_required_texts():
 def test_genlayer_js_is_pinned_to_an_exact_version_and_the_lockfile_agrees():
     pkg = json.loads((ROOT / "web" / "package.json").read_text(encoding="utf-8"))
     ver = pkg["dependencies"]["genlayer-js"]
-    assert re.fullmatch(r"\d+\.\d+\.\d+", ver), f"genlayer-js must be an exact version, got {ver!r}"
+    assert re.fullmatch(r"\d+\.\d+\.\d+(-[0-9A-Za-z.]+)?", ver), f"genlayer-js must be an exact version, got {ver!r}"
     lock = json.loads((ROOT / "web" / "package-lock.json").read_text(encoding="utf-8"))
     assert lock["packages"][""]["dependencies"]["genlayer-js"] == ver
     assert lock["packages"]["node_modules/genlayer-js"]["version"] == ver
@@ -291,9 +309,11 @@ def test_witness_route_is_emitted_titled_and_named_for_genlayer():
 def test_the_emitted_page_names_the_contract_network_and_explorer():
     html = _page()
     assert DEPLOYMENT["contract_address"] in html
-    assert "GenLayer testnet Bradbury (chain 4221)" in html
+    assert "GenLayer testnet Bradbury Phase 2 (chain 4221)" in html
     assert DEPLOYMENT["explorer_url"] in html
-    assert "Reads go directly from your browser to the Bradbury RPC" in html
+    assert "Reads go directly from your browser to the Bradbury Phase 2 RPC (" + DEPLOYMENT["rpc_url"].removeprefix("https://") + ")" in html
+    assert "Redeployed on Bradbury Phase 2 on 2026-10-28 after GenLayer reset the testnet on 2026-10-24" in html
+    assert "previous_deployments" in html and "while it still answers" not in html
 
 
 def test_the_emitted_page_carries_no_record_value():

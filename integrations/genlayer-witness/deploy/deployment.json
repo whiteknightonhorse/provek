@@ -1,20 +1,28 @@
 {
   "network": "testnet_bradbury",
   "chain_id": 4221,
-  "network_note": "pre-reset Bradbury; redeploy pending (GLR)",
+  "network_note": "Bradbury Phase 2 (GenLayer reset the testnet on 2026-10-24); redeployed 2026-10-28 by the dispatcher from the T-GLR-04 commit",
   "rpc_url": "https://rpc-bradbury.genlayer.com",
-  "contract_address": "0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6",
-  "explorer_url": "https://scan.bradbury.genlayer.com/address/0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6",
-  "deploy_tx": "07d54ea656a583b980f3071587775a66d0aa56da1042c7f77f2f5228d3d6f754",
+  "contract_address": "0x99C23e1794ed35b429161fBEB00967D0c81DC491",
+  "explorer_url": "https://scan.bradbury.genlayer.com/address/0x99C23e1794ed35b429161fBEB00967D0c81DC491",
+  "deploy_tx": "9db09de355c88fc1b187f71fcd9b8f5a21b6a073821ecae90daf6c03480a75bd",
   "deploy_tx_status": "ACCEPTED",
-  "deploy_tx_consensus_result": "AGREE",
+  "deploy_tx_consensus_result": "MAJORITY_AGREE",
   "deploy_tx_execution_result": "FINISHED_WITH_RETURN",
   "deployer": "0x2c111FCD3082083C9B287DD9DA5995f190968Ef9",
-  "commit": "5e28d5f933329c124c058996da28b2abd4da5d37",
+  "commit": "11474b4cfc94dada3a3e5301d19d1262713027ac",
+  "runner_header": "# v0.3.0 / # { \"Depends\": \"py-genlayer:babwp9t37jw9g4j2bccgn14g6x7x9s1f7dsmh7emvz735pz4zxa0\" }",
+  "fees": {
+    "deploy_quoted": "0.100000000000010352",
+    "deploy_charged": "not_measured",
+    "write_quoted": "0.100000000000010352",
+    "write_charged": "0.0000984",
+    "unit": "GEN (test GEN, Bradbury Phase 2); quoted = the fee deposit held per transaction; charged = the part not refunded at finalization; the node exposes no per-transaction gas, so charges are balance steps (deploy_charged: not_measured per transaction; all 10 transactions together netted 0.001056359060011646 GEN)"
+  },
   "_note_tx_hashes": "deploy_tx and every live_records[].tx below have their 0x prefix stripped - scripts/secret_scan.sh blocks the literal pattern 0x + 64 hex chars (GL-00 ruling-1); see evidence/MEASURED-012-* for the 0x-prefixed originals in their source transcripts.",
   "live_records": [
     {
-      "witness_id": "0645571a8dea1e2601e441eb3c451b3eb6ab60f2f1c5af68c70129c03ae13453",
+      "witness_id": "4c76714ac8273e260f6e9d58b4b3ace90eff0b56bb22301975c9698aa606cd1f",
       "subject_id": "git:whiteknightonhorse/provek",
       "criterion": "artifact_hash",
       "evidence_url": "https://raw.githubusercontent.com/whiteknightonhorse/provek/5e28d5f933329c124c058996da28b2abd4da5d37/LICENSE",
@@ -22,25 +30,25 @@
       "evidence_digest": "c61e9a12ff00f711d1d42a15430de1f7191c369adcc20cab7d33e7c1cbcf8660",
       "observation": "status=200",
       "result": "PASS",
-      "checked_at": "2026-09-28T06:51:33Z",
-      "tx": "45388e3b02dba0295c5960a7aabefadf4175198a1d71b90008689772dfd68c7a",
-      "tx_status": "ACCEPTED"
+      "checked_at": "2026-10-28T09:11:56Z",
+      "tx": "06ab4278640e2d34547dea084133371974ed6edafd1e6dbc9963381b144a36a2",
+      "tx_status": "FINALIZED"
     },
     {
-      "witness_id": "cfa668c12868beb9e0e211c3b5d3179dae39ff699a9747d1f2600305e5c84521",
+      "witness_id": "5d29505503b6186a0a75fd0131aa02aaed7f7bd82c22d6a932a0666d879dd1f9",
       "subject_id": "git:whiteknightonhorse/provek",
       "criterion": "url_reachable",
       "evidence_url": "https://provek.dev/",
       "expected": "",
-      "evidence_digest": "4a2163ff682b70fd98d600abea37117cbaf93dc77e4c866aa8e89afa6c3903d8",
+      "evidence_digest": "3ce51f190f5730efa6da01ea2f17ef279f22762be2ab3f6d16eb58efa5d6d084",
       "observation": "status=200",
       "result": "PASS",
-      "checked_at": "2026-09-28T06:51:50Z",
-      "tx": "46986cb115b20fd0b4c81a823b5aefea1e754e785080df459d67ce9ced5fa566",
-      "tx_status": "ACCEPTED"
+      "checked_at": "2026-10-28T09:15:01Z",
+      "tx": "3c2af1cbae29bab7c8747d190bfe4e6c864ac38d72959a9f02b39fe1f26587d1",
+      "tx_status": "FINALIZED"
     },
     {
-      "witness_id": "ca1f8567919cf99f1cde6fcb464971920e5ea122f3eea8c7fb019d6fa7c97e1f",
+      "witness_id": "0dd5d3827df4c87c434c51dca54fad31e69d9c5964096d4961a3e844204397f3",
       "subject_id": "git:whiteknightonhorse/provek",
       "criterion": "artifact_hash",
       "evidence_url": "https://raw.githubusercontent.com/whiteknightonhorse/provek/5e28d5f933329c124c058996da28b2abd4da5d37/LICENSE",
@@ -48,25 +56,93 @@
       "evidence_digest": "c61e9a12ff00f711d1d42a15430de1f7191c369adcc20cab7d33e7c1cbcf8660",
       "observation": "sha256 mismatch",
       "result": "FAIL",
-      "checked_at": "2026-09-28T06:52:07Z",
-      "tx": "4973f49c975270b4550623e5ee4cfd7ee4f75cddd60591c3d0bb12cb9e36234f",
-      "tx_status": "ACCEPTED"
+      "checked_at": "2026-10-28T09:19:50Z",
+      "tx": "fb1c6a3d98e4bb41bb7c45ea9c367558727f1e751dfa7423cc0dda7cff0ece86",
+      "tx_status": "FINALIZED"
     }
   ],
-  "studionet_integration_tests": {
-    "network": "studionet",
-    "command": "gltest --network studionet tests/integration -v -s",
-    "result": "4 passed in 100.13s",
-    "evidence": "evidence/MEASURED-011-gl-05-studionet-integration-tests-green.txt"
-  },
   "known_sdk_limitations": [
-    "genlayer-py 0.18.0 (latest on PyPI as of this deploy) has no entry for transaction status 14 (LEADER_REVEALING) in its status map, though Bradbury emits it and genlayer-js already recognizes it; treated as non-terminal (REVEALING) while polling. No contract code change.",
-    "On testnet the transaction receipt field tx_data_decoded is None, so gltest.utils.extract_contract_address raises TypeError; the deployed contract address was instead read from the deploy transaction's own recipient field. No contract code change.",
-    "gen_call on Bradbury returns an object of the shape {\"data\": <hex>, \"status\": ...}, where genlayer-py 0.18.0 expects a bare hex string; the dispatcher's read helper unwraps the data field before decoding. No contract code change."
+    "The genlayer CLI read path answers \"gen_call does not exist\" on this network's default RPC; reads were captured as raw gen_call on https://rpc-bradbury.genlayer.com with hand-encoded GenVM calldata. The page and the relay therefore read through deployment.json's rpc_url, not the SDK preset URL.",
+    "The CLI argument parser turns an empty string and 64 zeros into the number 0; the s# string-argument rule was used for the retried writes (two earlier attempts FINISHED_WITH_ERROR, no record written).",
+    "The node's own gas figures are not available on rpc-bradbury (eth_getTransactionByHash returns null for consensus transaction ids), so no per-transaction gas is recorded."
   ],
   "evidence": [
-    "evidence/MEASURED-011-gl-05-studionet-integration-tests-green.txt",
-    "evidence/MEASURED-012-gl-05-bradbury-live-deploy-and-three-witness-records.txt"
+    "evidence/MEASURED-017-glr-05-bradbury-phase2-deploy-and-three-records.txt",
+    "evidence/MEASURED-018-glr-05-phase2-reads.txt"
   ],
-  "source_transcripts": "~/taskloop/briefs/GL-05-transcripts/ (dispatcher-captured; this task made no GenLayer network call and did not read ~/orchestra/gl/)"
+  "source_transcripts": "~/taskloop/briefs/GLR-05-transcripts/ (dispatcher-captured; this task made no GenLayer network call and did not read ~/orchestra/gl/)",
+  "previous_deployments": [
+    {
+      "network": "testnet_bradbury",
+      "chain_id": 4221,
+      "network_note": "pre-reset Bradbury (chain reset by GenLayer 2026-10-24); records not carried over; RPC still answered on 2026-10-25",
+      "rpc_url": "https://rpc-bradbury.genlayer.com",
+      "contract_address": "0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6",
+      "explorer_url": "https://scan.bradbury.genlayer.com/address/0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6",
+      "deploy_tx": "07d54ea656a583b980f3071587775a66d0aa56da1042c7f77f2f5228d3d6f754",
+      "deploy_tx_status": "ACCEPTED",
+      "deploy_tx_consensus_result": "AGREE",
+      "deploy_tx_execution_result": "FINISHED_WITH_RETURN",
+      "deployer": "0x2c111FCD3082083C9B287DD9DA5995f190968Ef9",
+      "commit": "5e28d5f933329c124c058996da28b2abd4da5d37",
+      "_note_tx_hashes": "deploy_tx and every live_records[].tx below have their 0x prefix stripped - scripts/secret_scan.sh blocks the literal pattern 0x + 64 hex chars (GL-00 ruling-1); see evidence/MEASURED-012-* for the 0x-prefixed originals in their source transcripts.",
+      "live_records": [
+        {
+          "witness_id": "0645571a8dea1e2601e441eb3c451b3eb6ab60f2f1c5af68c70129c03ae13453",
+          "subject_id": "git:whiteknightonhorse/provek",
+          "criterion": "artifact_hash",
+          "evidence_url": "https://raw.githubusercontent.com/whiteknightonhorse/provek/5e28d5f933329c124c058996da28b2abd4da5d37/LICENSE",
+          "expected": "c61e9a12ff00f711d1d42a15430de1f7191c369adcc20cab7d33e7c1cbcf8660",
+          "evidence_digest": "c61e9a12ff00f711d1d42a15430de1f7191c369adcc20cab7d33e7c1cbcf8660",
+          "observation": "status=200",
+          "result": "PASS",
+          "checked_at": "2026-09-28T06:51:33Z",
+          "tx": "45388e3b02dba0295c5960a7aabefadf4175198a1d71b90008689772dfd68c7a",
+          "tx_status": "ACCEPTED"
+        },
+        {
+          "witness_id": "cfa668c12868beb9e0e211c3b5d3179dae39ff699a9747d1f2600305e5c84521",
+          "subject_id": "git:whiteknightonhorse/provek",
+          "criterion": "url_reachable",
+          "evidence_url": "https://provek.dev/",
+          "expected": "",
+          "evidence_digest": "4a2163ff682b70fd98d600abea37117cbaf93dc77e4c866aa8e89afa6c3903d8",
+          "observation": "status=200",
+          "result": "PASS",
+          "checked_at": "2026-09-28T06:51:50Z",
+          "tx": "46986cb115b20fd0b4c81a823b5aefea1e754e785080df459d67ce9ced5fa566",
+          "tx_status": "ACCEPTED"
+        },
+        {
+          "witness_id": "ca1f8567919cf99f1cde6fcb464971920e5ea122f3eea8c7fb019d6fa7c97e1f",
+          "subject_id": "git:whiteknightonhorse/provek",
+          "criterion": "artifact_hash",
+          "evidence_url": "https://raw.githubusercontent.com/whiteknightonhorse/provek/5e28d5f933329c124c058996da28b2abd4da5d37/LICENSE",
+          "expected": "0000000000000000000000000000000000000000000000000000000000000000",
+          "evidence_digest": "c61e9a12ff00f711d1d42a15430de1f7191c369adcc20cab7d33e7c1cbcf8660",
+          "observation": "sha256 mismatch",
+          "result": "FAIL",
+          "checked_at": "2026-09-28T06:52:07Z",
+          "tx": "4973f49c975270b4550623e5ee4cfd7ee4f75cddd60591c3d0bb12cb9e36234f",
+          "tx_status": "ACCEPTED"
+        }
+      ],
+      "studionet_integration_tests": {
+        "network": "studionet",
+        "command": "gltest --network studionet tests/integration -v -s",
+        "result": "4 passed in 100.13s",
+        "evidence": "evidence/MEASURED-011-gl-05-studionet-integration-tests-green.txt"
+      },
+      "known_sdk_limitations": [
+        "genlayer-py 0.18.0 (latest on PyPI as of this deploy) has no entry for transaction status 14 (LEADER_REVEALING) in its status map, though Bradbury emits it and genlayer-js already recognizes it; treated as non-terminal (REVEALING) while polling. No contract code change.",
+        "On testnet the transaction receipt field tx_data_decoded is None, so gltest.utils.extract_contract_address raises TypeError; the deployed contract address was instead read from the deploy transaction's own recipient field. No contract code change.",
+        "gen_call on Bradbury returns an object of the shape {\"data\": <hex>, \"status\": ...}, where genlayer-py 0.18.0 expects a bare hex string; the dispatcher's read helper unwraps the data field before decoding. No contract code change."
+      ],
+      "evidence": [
+        "evidence/MEASURED-011-gl-05-studionet-integration-tests-green.txt",
+        "evidence/MEASURED-012-gl-05-bradbury-live-deploy-and-three-witness-records.txt"
+      ],
+      "source_transcripts": "~/taskloop/briefs/GL-05-transcripts/ (dispatcher-captured; this task made no GenLayer network call and did not read ~/orchestra/gl/)"
+    }
+  ]
 }

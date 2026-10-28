@@ -42,10 +42,10 @@ Witness" so the two are never confused.
 | | |
 |---|---|
 | Page | https://provek.dev/witness/ |
-| Contract | `0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6` |
-| Explorer | https://scan.bradbury.genlayer.com/address/0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6 |
-| Network | GenLayer testnet Bradbury (chain 4221), RPC `https://rpc-bradbury.genlayer.com` (pre-reset network, as of 2026-10-20; GenLayer reset Bradbury on 2026-10-24 and the redeploy is pending) |
-| Client library | `genlayer-js` 1.1.8, an exact pin in `web/package.json` and `web/package-lock.json` |
+| Contract | `0x99C23e1794ed35b429161fBEB00967D0c81DC491` |
+| Explorer | https://scan.bradbury.genlayer.com/address/0x99C23e1794ed35b429161fBEB00967D0c81DC491 |
+| Network | GenLayer testnet Bradbury Phase 2 (chain 4221), RPC `https://rpc-bradbury.genlayer.com` (redeployed 2026-10-28 after GenLayer reset the testnet on 2026-10-24; the pre-reset record is kept in `deployment.json`, `previous_deployments`) |
+| Client library | `genlayer-js` 2.0.0-rc.2, an exact pin in `web/package.json` and `web/package-lock.json` |
 
 **Design: reads go straight to the chain, writes go through an operator relay.**
 
@@ -57,7 +57,9 @@ Witness" so the two are never confused.
   "Request a check" form therefore posts to `/api/witness-submit` (a Cloudflare Pages Function,
   `web/functions/api/witness-submit.js`), which validates the request exactly as the contract does
   (a bad request is a `400` naming the field, never a wasted transaction), applies rate limits,
-  signs with the operator key held as the Pages secret `GL_OPERATOR_KEY`, and answers `202` with
+  signs with the operator key held as the Pages secret `GL_OPERATOR_KEY` (every v0.6 write carries the SDK's fee
+  estimate and FeesDistribution; if the operator wallet holds less test GEN than the quote, the answer is a `503` and nothing is
+  sent; `GET` reports `funded` and `fee_quote`), and answers `202` with
   `{tx_hash, explorer_url, track_url}`. The page then opens `/witness/?tx=<hash>` and follows the
   lifecycle by reading the chain. The relay only signs and sends; the verdict is produced by GenLayer
   validators, each fetching the evidence URL on its own, and is read back from the chain.
@@ -143,7 +145,7 @@ integrations/genlayer-witness/
                                read the contract's own `_url_reachable_digest`)
   deploy/
     README.md                — the Deployment record (Bradbury address, explorer, three records
-                               as of 2026-10-20 on the pre-reset network, three named SDK limitations) — see "How to deploy" below
+                               as of 2026-10-28 on Bradbury Phase 2, three named tooling limitations) — see "How to deploy" below
     deployment.json           — the same record's real, measured fields
 ```
 
@@ -158,8 +160,8 @@ construction (see "Why this is not part of Provek scoring" for why there is no p
 mode). Results are stored on-chain, immutably, and can be read back at any later time by
 `get_result(witness_id)` or listed per subject by `list_by_subject(subject_id)`.
 
-It is deployed on **GenLayer Testnet Bradbury** (chain id `4221`) at
-[`0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6`](https://scan.bradbury.genlayer.com/address/0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6) —
+It is deployed on **GenLayer Testnet Bradbury Phase 2** (chain id `4221`) at
+[`0x99C23e1794ed35b429161fBEB00967D0c81DC491`](https://scan.bradbury.genlayer.com/address/0x99C23e1794ed35b429161fBEB00967D0c81DC491) —
 see "How to deploy" and `deploy/README.md` for the full, measured record.
 
 ## 2. Why it exists
@@ -427,19 +429,19 @@ deploy path** — it is a difference in which client library and receipt field t
 operational script uses.
 
 **The real, measured Bradbury deployment** — network, chain id, RPC, contract address, explorer
-URL, deploy transaction, the three PASS/PASS/FAIL records (as of 2026-10-20, pre-reset network), and the three SDK workarounds
+URL, deploy transaction, the three PASS/PASS/FAIL records (as of 2026-10-28, Bradbury Phase 2), the quoted and charged fees, and the three tooling limitations
 needed to reach them — is recorded in `deploy/README.md` ("Deployment record") and
 `deploy/deployment.json`, both written by GL-05b directly from the dispatcher's own transcripts.
 This section does not repeat that record; see it for the full, current detail. In short: **network**
-GenLayer Testnet Bradbury, chain id `4221`, RPC `https://rpc-bradbury.genlayer.com`; **contract**
-[`0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6`](https://scan.bradbury.genlayer.com/address/0x499eD0E23CbCdC8Fc7735709dca32bCb01638fd6);
-**deploy tx** ACCEPTED, validators AGREE, execution FINISHED_WITH_RETURN, from commit
-`5e28d5f933329c124c058996da28b2abd4da5d37`.
+GenLayer Testnet Bradbury Phase 2, chain id `4221`, RPC `https://rpc-bradbury.genlayer.com`; **contract**
+[`0x99C23e1794ed35b429161fBEB00967D0c81DC491`](https://scan.bradbury.genlayer.com/address/0x99C23e1794ed35b429161fBEB00967D0c81DC491);
+**deploy tx** ACCEPTED, validators MAJORITY_AGREE, execution FINISHED_WITH_RETURN, from commit
+`11474b4cfc94dada3a3e5301d19d1262713027ac`.
 
 ## 11. Example request/result
 
-Taken verbatim from the first record of the Bradbury deployment (as of 2026-10-20, pre-reset network) (`deploy/deployment.json`,
-`live_records[0]`; full transaction detail in `evidence/MEASURED-012-*`).
+Taken verbatim from the first record of the Bradbury Phase 2 deployment (as of 2026-10-28) (`deploy/deployment.json`,
+`live_records[0]`; full transaction detail in `evidence/MEASURED-017-*`).
 
 **Request** (`witness()`, sent by the operator):
 
@@ -454,7 +456,7 @@ contract.witness(
 ).transact()
 ```
 
-**Result** (`get_result(witness_id)`, read back after the transaction reached `ACCEPTED`):
+**Result** (`get_result(witness_id)`, read back after the transaction reached `FINALIZED`):
 
 ```json
 {
@@ -464,14 +466,14 @@ contract.witness(
   "expected": "c61e9a12ff00f711d1d42a15430de1f7191c369adcc20cab7d33e7c1cbcf8660",
   "result": "PASS",
   "evidence_digest": "c61e9a12ff00f711d1d42a15430de1f7191c369adcc20cab7d33e7c1cbcf8660",
-  "checked_at": "2026-09-28T06:51:33Z",
+  "checked_at": "2026-10-28T09:11:56Z",
   "observation": "status=200"
 }
 ```
 
-`witness_id`: `0645571a8dea1e2601e441eb3c451b3eb6ab60f2f1c5af68c70129c03ae13453`. Transaction status:
-`ACCEPTED` (tx hash, `0x`-stripped for the secret-scan gate per GL-00 ruling-1:
-`45388e3b02dba0295c5960a7aabefadf4175198a1d71b90008689772dfd68c7a`). See `deploy/deployment.json`
+`witness_id`: `4c76714ac8273e260f6e9d58b4b3ace90eff0b56bb22301975c9698aa606cd1f`. Transaction status:
+`FINALIZED` (tx hash, `0x`-stripped for the secret-scan gate per GL-00 ruling-1:
+`06ab4278640e2d34547dea084133371974ed6edafd1e6dbc9963381b144a36a2`). See `deploy/deployment.json`
 for the other two records (a second PASS on `url_reachable` against `https://provek.dev/`,
 and a FAIL on the same LICENSE artefact checked against a deliberately wrong digest — the FAIL path
 shown on-chain, not merely asserted by a test).

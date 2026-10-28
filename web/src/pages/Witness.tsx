@@ -528,16 +528,16 @@ export default function Witness() {
         <RequestCheck criteria={criteria} />
         <div className="mt-8">
           <Strip tone="warn">
-            <strong>Notice, 2026-10-24.</strong> GenLayer reset the Bradbury testnet on 2026-10-24. The records below are read from the
-            pre-reset network (rpc-bradbury.genlayer.com, chain 4221) while it still answers; the witness contract is being redeployed on
-            the new network and this page will switch to it then.
+            Redeployed on Bradbury Phase 2 on 2026-10-28 after GenLayer reset the testnet on
+            2026-10-24. Records written before the reset were not carried over; their deployment record is kept in the repository
+            (deployment.json, previous_deployments).
           </Strip>
         </div>
         <LookUp />
         <Tracker />
 
         <p className="mt-10 text-xs text-[var(--color-ink-3)]">
-          Reads go directly from your browser to the Bradbury RPC (rpc-bradbury.genlayer.com); there
+          Reads go directly from your browser to the Bradbury Phase 2 RPC (rpc-bradbury.genlayer.com); there
           is no Provek server in between. Only a request for a new check goes through Provek&apos;s relay. Bradbury is a test network: a record here is a testnet
           fact, not a Provek score.
         </p>

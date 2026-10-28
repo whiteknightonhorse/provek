@@ -18,6 +18,15 @@
  * with the field and the reason, and never a transaction. `tests/test_witness_relay.py` pins the two
  * implementations against each other by running the contract's own rules on the same cases.
  *
+ * FEES (consensus v0.6, genlayer-js 2.0.0-rc.2). A write carries a fee deposit: the SDK's own
+ * `estimateTransactionFees()` returns `{ distribution, feeValue }`, and `writeContract` takes them as
+ * `fees` with `value: 0n` (the deposit sent is `value + fees.feeValue`; the unused part is refunded at
+ * finalization). Before anything is sent, the operator balance is read and compared with that quote:
+ * a wallet that holds less is a 503 and NO transaction. GET reports the same two measurements
+ * (`funded`, `fee_quote`), each `"not_measured"` when the read failed. A balance that cannot be read
+ * does not block a POST (the chain itself refuses a deposit the wallet cannot cover); a quote that
+ * cannot be read does (the RC API has no write without one), as a 502.
+ *
  * RATE LIMITS are counters in KV (`WITNESS_RL`): 3 per client per hour, 50 per UTC day overall. KV
  * has no atomic increment, so two simultaneous requests can both read the same count; the day cap is
  * therefore a bound within a few requests, not an exact figure, and it is documented as such. Only
@@ -25,10 +34,13 @@
  * the address under a per-day message, so it cannot be joined across days).
  */
 import { CONTRACT_ADDRESS, explorerTxUrl } from "../../src/witnessView.js";
+import { bradburyChain } from "../../src/witnessChainConfig.js";
 
 export const LIMITS = Object.freeze({ per_ip_per_hour: 3, per_day_global: 50 });
 export const CRITERIA = Object.freeze(["url_reachable", "artifact_hash"]);
 const MAX_BODY_BYTES = 8192;
+const MEASURE_TIMEOUT_MS = 8000;
+export const NOT_MEASURED = "not_measured";
 const TX_HASH = /^0x[0-9a-fA-F]{64}$/;
 const KEY_HEX = /^(0x)?[0-9a-fA-F]{64}$/;
 
@@ -155,8 +167,8 @@ async function count(kv, key) {
   return n;
 }
 
-/** Read both counters; refuse if either is at its limit; else increment both. */
-async function takeSlot(kv, ip, secret, now) {
+/** Read both counters; `ok: false` names the limit that is reached. Nothing is written. */
+async function checkSlot(kv, ip, secret, now) {
   const day = dayOf(now);
   const hour = `${day}${pad(now.getUTCHours())}`;
   const ipKey = `rl:ip:${await clientKey(ip, day, secret)}:${hour}`;
@@ -166,11 +178,60 @@ async function takeSlot(kv, ip, secret, now) {
   const toNextDay = 86400 - (now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds());
   if (ipN >= LIMITS.per_ip_per_hour) return { ok: false, scope: "per_ip_per_hour", retry: toNextHour };
   if (dayN >= LIMITS.per_day_global) return { ok: false, scope: "per_day_global", retry: toNextDay };
+  return { ok: true, ipKey, dayKey, ipN, dayN };
+}
+
+/** Increment both counters once the request is going to be sent. */
+async function commitSlot(kv, slot) {
   await Promise.all([
-    kv.put(ipKey, String(ipN + 1), { expirationTtl: 7200 }),
-    kv.put(dayKey, String(dayN + 1), { expirationTtl: 172800 }),
+    kv.put(slot.ipKey, String(slot.ipN + 1), { expirationTtl: 7200 }),
+    kv.put(slot.dayKey, String(slot.dayN + 1), { expirationTtl: 172800 }),
   ]);
-  return { ok: true };
+}
+
+// ----------------------------------------------------------------------------- fees and funding
+
+function withTimeout(promise, ms) {
+  let timer;
+  const limit = new Promise((_, reject) => { timer = setTimeout(() => reject(new Error("timed out")), ms); });
+  return Promise.race([promise, limit]).finally(() => clearTimeout(timer));
+}
+
+/** wei -> a decimal GEN string with no trailing zeros ("0.100000000000010352"). */
+export function formatGen(wei) {
+  const s = wei.toString().padStart(19, "0");
+  const whole = s.slice(0, -18);
+  const frac = s.slice(-18).replace(/0+$/, "");
+  return frac ? `${whole}.${frac}` : whole;
+}
+
+const isWei = (x) => typeof x === "bigint" && x >= 0n;
+
+/**
+ * Build the signing client and take the two measurements. Never throws for a failed read: each
+ * failure is `null` in its slot (with the reason in `quote_error`) so the caller can say
+ * "not_measured". `funded` is `true`/`false` only when BOTH numbers are known.
+ */
+async function measureFunding(gl, key) {
+  const account = gl.createAccount(key);
+  const client = gl.createClient({ chain: bradburyChain(gl.testnetBradbury), account });
+  let estimate = null;
+  let quote_error = null;
+  let balance = null;
+  try {
+    const e = await withTimeout(client.estimateTransactionFees(), MEASURE_TIMEOUT_MS);
+    if (e && isWei(e.feeValue) && e.distribution && typeof e.distribution === "object") estimate = e;
+    else quote_error = "the fee estimate has no feeValue and distribution";
+  } catch (err) {
+    quote_error = sanitise(err, key);
+  }
+  try {
+    const b = await withTimeout(client.getBalance({ address: account.address }), MEASURE_TIMEOUT_MS);
+    if (isWei(b)) balance = b;
+  } catch { /* balance stays null: not measured */ }
+  const quote = estimate ? estimate.feeValue : null;
+  const funded = quote === null || balance === null ? NOT_MEASURED : balance >= quote;
+  return { account, client, estimate, quote, quote_error, balance, funded };
 }
 
 // ----------------------------------------------------------------------------- handlers
@@ -198,9 +259,17 @@ export async function handleGet({ env }, deps = defaultDeps) {
   const cfg = configState(env);
   let operator = null;
   let operator_error = null;
+  let funded = NOT_MEASURED;
+  let fee_quote = NOT_MEASURED;
   if (cfg.key) {
     try {
-      operator = (await deps.loadGenlayer()).createAccount(cfg.key).address;
+      const gl = await deps.loadGenlayer();
+      operator = gl.createAccount(cfg.key).address;
+      try {
+        const m = await measureFunding(gl, cfg.key);
+        funded = m.funded;
+        if (m.quote !== null) fee_quote = formatGen(m.quote);
+      } catch { /* both stay not_measured */ }
     } catch (e) {
       operator_error = sanitise(e, cfg.key);
     }
@@ -209,6 +278,8 @@ export async function handleGet({ env }, deps = defaultDeps) {
     enabled: cfg.enabled && operator !== null,
     operator,
     contract: CONTRACT_ADDRESS,
+    funded,
+    fee_quote,
     limits: LIMITS,
     ...(cfg.reason ? { reason: cfg.reason } : {}),
     ...(operator_error ? { reason: `the operator address could not be derived: ${operator_error}` } : {}),
@@ -241,7 +312,7 @@ export async function handlePost({ request, env }, deps = defaultDeps) {
   const now = deps.now();
   let slot;
   try {
-    slot = await takeSlot(cfg.kv, request.headers.get("cf-connecting-ip") || "unknown", cfg.key, now);
+    slot = await checkSlot(cfg.kv, request.headers.get("cf-connecting-ip") || "unknown", cfg.key, now);
   } catch {
     // Fail closed: a limiter that cannot be read is not a limiter.
     return json({ ok: false, error: "The rate limiter is unavailable, so the request was not sent." }, 503);
@@ -254,12 +325,33 @@ export async function handlePost({ request, env }, deps = defaultDeps) {
       429, { "retry-after": String(slot.retry) });
   }
 
+  // The fee quote and the wallet balance come BEFORE the slot is spent and before anything is sent.
+  let m;
+  try {
+    m = await measureFunding(await deps.loadGenlayer(), cfg.key);
+  } catch (e) {
+    const message = sanitise(e, cfg.key);
+    console.error(`witness-submit upstream failure: ${message}`);
+    return json({ ok: false, error: `The GenLayer network refused the request: ${message}` }, 502);
+  }
+  if (m.estimate === null) {
+    console.error(`witness-submit: no fee estimate: ${m.quote_error}`);
+    return json({ ok: false, error: `The fee for this request could not be estimated, so it was not sent: ${m.quote_error}` }, 502);
+  }
+  if (m.funded === false) {
+    return json({ ok: false, error: "The operator wallet holds less test GEN than this request needs." }, 503);
+  }
+  try {
+    await commitSlot(cfg.kv, slot);
+  } catch {
+    return json({ ok: false, error: "The rate limiter is unavailable, so the request was not sent." }, 503);
+  }
+
   let hash;
   try {
-    const { createAccount, createClient, testnetBradbury } = await deps.loadGenlayer();
-    const account = createAccount(cfg.key);
-    const client = createClient({ chain: testnetBradbury, account });
-    hash = await client.writeContract({ address: CONTRACT_ADDRESS, functionName: "witness", args: v.args, value: 0n });
+    const fees = { distribution: m.estimate.distribution, feeValue: m.estimate.feeValue };
+    if (m.estimate.messageAllocations) fees.messageAllocations = m.estimate.messageAllocations;
+    hash = await m.client.writeContract({ address: CONTRACT_ADDRESS, functionName: "witness", args: v.args, value: 0n, fees });
   } catch (e) {
     const message = sanitise(e, cfg.key);
     console.error(`witness-submit upstream failure: ${message}`);

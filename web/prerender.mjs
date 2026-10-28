@@ -349,7 +349,7 @@ written.push(write("/challenge/", page("/challenge/", TITLES["/challenge/"],
 // chain reads happen in the reader's browser, so the emitted HTML holds the explanation and empty
 // forms and no record.
 written.push(write("/witness/", page("/witness/", TITLES["/witness/"],
-  "Look up records of the GenLayer Evidence Witness contract (pre-reset Bradbury testnet). "
+  "Look up records of the GenLayer Evidence Witness contract (Bradbury Phase 2 testnet). "
   + "Not Provek's own WitnessRecord pages.",
   ldOrganization())));
 // The description is the page's refusal, not its subject. A summary reading "commission work from a

@@ -134,9 +134,17 @@ def test_a_valid_request_is_202_with_the_hash_exactly_as_returned():
     }
     (w,) = r["calls"]["writeContract"]
     assert w == {"address": DEPLOYMENT["contract_address"], "functionName": "witness", "value": "0",
-                 "args": ["git:whiteknightonhorse/provek", "url_reachable", "https://provek.dev/", ""]}
+                 "args": ["git:whiteknightonhorse/provek", "url_reachable", "https://provek.dev/", ""],
+                 # v0.6: the SDK's own estimate, passed unchanged as `fees`; the deposit is feeValue, value stays 0
+                 "fees": {"distribution": {"leaderTimeunitsAllocation": "100", "validatorTimeunitsAllocation": "200",
+                                           "rotations": ["3"]},
+                          "feeValue": "100000000000010352"}}
+    assert r["calls"]["estimate"] == 1
     assert r["calls"]["createAccount"] == [FAKE_KEY]
-    assert r["calls"]["createClient"][0]["chain"]["id"] == 4221
+    chain = r["calls"]["createClient"][0]["chain"]
+    assert chain["id"] == 4221
+    # the relay builds its chain from witnessChainConfig.js, so the mock preset's own URL is replaced
+    assert chain["rpcUrls"]["default"]["http"] == [DEPLOYMENT["rpc_url"]] != ["https://preset.example"]
     assert r["result"]["headers"]["cache-control"] == "no-store"
 
 
@@ -169,6 +177,53 @@ def test_health_reports_enabled_with_the_derived_operator_and_the_contract():
     assert probe("route_get_uses_the_same_handler")["result"]["body"]["enabled"] is False
 
 
+# ---------------------------------------------------------------- v0.6 fees: the quote, the balance, the 503
+
+QUOTE_GEN = "0.100000000000010352"  # the D2 quote, wei 100000000000010352 (evidence/MEASURED-017-*)
+UNFUNDED = "The operator wallet holds less test GEN than this request needs."
+
+
+def test_get_reports_funded_true_and_the_quote_when_the_balance_covers_it():
+    b = probe("health_funded")["result"]["body"]
+    assert b["funded"] is True and b["fee_quote"] == QUOTE_GEN
+    assert probe("health_exactly_funded")["result"]["body"]["funded"] is True  # balance == quote is enough
+
+
+def test_get_reports_funded_false_one_wei_short_and_still_shows_the_quote():
+    b = probe("health_unfunded")["result"]["body"]
+    assert b["funded"] is False and b["fee_quote"] == QUOTE_GEN
+
+
+def test_get_says_not_measured_when_a_read_fails_and_never_a_guess():
+    bal = probe("health_balance_unreadable")["result"]["body"]
+    assert bal["funded"] == "not_measured" and bal["fee_quote"] == QUOTE_GEN
+    quo = probe("health_quote_unreadable")["result"]["body"]
+    assert quo["funded"] == "not_measured" and quo["fee_quote"] == "not_measured"
+    for scenario in ("health_no_secret", "health_bad_key"):
+        b = probe(scenario)["result"]["body"]
+        assert b["funded"] == "not_measured" and b["fee_quote"] == "not_measured"
+
+
+def test_an_underfunded_wallet_is_a_503_and_no_transaction_is_sent_and_no_slot_is_spent():
+    p = probe("post_unfunded_is_503_and_sends_nothing")
+    assert p["result"]["status"] == 503
+    assert p["result"]["body"] == {"ok": False, "error": UNFUNDED}
+    assert p["sent"] == 0 and p["kv_writes"] == 0
+    q = probe("post_unfunded_every_criterion_sends_nothing")
+    assert q["result"] == {"a": 503, "b": 503} and q["sent"] == 0
+
+
+def test_without_a_fee_quote_nothing_is_sent_either():
+    p = probe("post_no_quote_is_502_and_sends_nothing")
+    assert p["result"]["status"] == 502 and "could not be estimated" in p["result"]["body"]["error"]
+    assert p["sent"] == 0 and p["kv_writes"] == 0
+
+
+def test_a_balance_that_cannot_be_read_does_not_block_a_post():
+    p = probe("post_balance_unreadable_still_sends")
+    assert p["result"]["status"] == 202 and p["sent"] == 1  # the chain refuses an uncovered deposit itself
+
+
 def test_the_real_create_account_derives_the_known_address_with_or_without_the_prefix():
     r = probe("real_createaccount_derivation")["result"]
     for k in ("with_prefix", "without_prefix"):
@@ -183,7 +238,7 @@ def test_without_the_secret_health_says_disabled_and_post_is_503_and_nothing_is_
     p = probe("post_missing_secret")
     assert p["result"]["status"] == 503 and "GL_OPERATOR_KEY is not set" in p["result"]["body"]["error"]
     # genlayer-js `createAccount("")` GENERATES a key; the relay must never reach it without a real one.
-    assert p["calls"] == {"createAccount": [], "createClient": [], "writeContract": []}
+    assert p["calls"] == {"createAccount": [], "createClient": [], "writeContract": [], "estimate": 0, "getBalance": []}
     assert h["calls"]["createAccount"] == []
 
 
@@ -314,7 +369,7 @@ def test_the_live_app_section_is_in_both_readmes_identical_and_carries_the_repro
     assert main == mirror, "the mirrored README section drifted from the main one"
     for must in (
         "https://provek.dev/witness/", DEPLOYMENT["contract_address"], DEPLOYMENT["explorer_url"],
-        "GenLayer testnet Bradbury (chain 4221)", "only the operator may request a witness check",
+        "GenLayer testnet Bradbury Phase 2 (chain 4221)", "only the operator may request a witness check",
         "GL_OPERATOR_KEY", "WITNESS_RL", "git:whiteknightonhorse/provek", "url_reachable",
         "https://provek.dev/", "FINALIZED", "artifact_hash", "64\n   zeros", "FAIL",
         "pytest tests/test_witness_relay.py", "push.sh --gates-only", "get_operator()",
