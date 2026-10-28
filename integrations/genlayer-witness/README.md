@@ -57,9 +57,9 @@ Witness" so the two are never confused.
   "Request a check" form therefore posts to `/api/witness-submit` (a Cloudflare Pages Function,
   `web/functions/api/witness-submit.js`), which validates the request exactly as the contract does
   (a bad request is a `400` naming the field, never a wasted transaction), applies rate limits,
-  signs with the operator key held as the Pages secret `GL_OPERATOR_KEY` (every v0.6 write carries the SDK's fee
-  estimate and FeesDistribution; if the operator wallet holds less test GEN than the quote, the answer is a `503` and nothing is
-  sent; `GET` reports `funded` and `fee_quote`), and answers `202` with
+  signs with the operator key held as the Pages secret `GL_OPERATOR_KEY` (every v0.6 write carries one fixed fee object, the one that finalized
+  the D2 writes, because the SDK's fee estimate fails on Phase 2; if the operator wallet, read with `eth_getBalance`, holds less
+  test GEN than its deposit, the answer is a `503` and nothing is sent; `GET` reports `funded` and `fee_quote`), and answers `202` with
   `{tx_hash, explorer_url, track_url}`. The page then opens `/witness/?tx=<hash>` and follows the
   lifecycle by reading the chain. The relay only signs and sends; the verdict is produced by GenLayer
   validators, each fetching the evidence URL on its own, and is read back from the chain.

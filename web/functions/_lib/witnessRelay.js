@@ -18,14 +18,16 @@
  * with the field and the reason, and never a transaction. `tests/test_witness_relay.py` pins the two
  * implementations against each other by running the contract's own rules on the same cases.
  *
- * FEES (consensus v0.6, genlayer-js 2.0.0-rc.2). A write carries a fee deposit: the SDK's own
- * `estimateTransactionFees()` returns `{ distribution, feeValue }`, and `writeContract` takes them as
+ * FEES (consensus v0.6, genlayer-js 2.0.0-rc.2). A write carries a fee deposit: `writeContract` takes
  * `fees` with `value: 0n` (the deposit sent is `value + fees.feeValue`; the unused part is refunded at
- * finalization). Before anything is sent, the operator balance is read and compared with that quote:
- * a wallet that holds less is a 503 and NO transaction. GET reports the same two measurements
- * (`funded`, `fee_quote`), each `"not_measured"` when the read failed. A balance that cannot be read
- * does not block a POST (the chain itself refuses a deposit the wallet cannot cover); a quote that
- * cannot be read does (the RC API has no write without one), as a 502.
+ * finalization). The fee is the fixed object `WITNESS_FEES` below, NOT the SDK's `estimateTransactionFees()`:
+ * that call takes no sender, simulates from the zero address and fails on Phase 2 for every caller
+ * (InsufficientFundsError, D2c probe 2026-10-28), so a relay that required it never sent. Before anything is
+ * sent, the operator balance is read with `eth_getBalance` on the deployment's `rpc_url` (the Phase 2 read
+ * path, `witnessChainConfig.js`) and compared with the deposit: a wallet that holds less is a 503 and NO
+ * transaction. GET reports the same two measurements (`funded`, `fee_quote`); `fee_quote` is the constant,
+ * `funded` is `"not_measured"` when the balance read failed. A balance that cannot be read does not block a
+ * POST (the chain itself refuses a deposit the wallet cannot cover).
  *
  * RATE LIMITS are counters in KV (`WITNESS_RL`): 3 per client per hour, 50 per UTC day overall. KV
  * has no atomic increment, so two simultaneous requests can both read the same count; the day cap is
@@ -34,7 +36,7 @@
  * the address under a per-day message, so it cannot be joined across days).
  */
 import { CONTRACT_ADDRESS, explorerTxUrl } from "../../src/witnessView.js";
-import { bradburyChain } from "../../src/witnessChainConfig.js";
+import { bradburyChain, RPC_URL } from "../../src/witnessChainConfig.js";
 
 export const LIMITS = Object.freeze({ per_ip_per_hour: 3, per_day_global: 50 });
 export const CRITERIA = Object.freeze(["url_reachable", "artifact_hash"]);
@@ -208,36 +210,61 @@ export function formatGen(wei) {
 const isWei = (x) => typeof x === "bigint" && x >= 0n;
 
 /**
- * Build the signing client and take the two measurements. Never throws for a failed read: each
- * failure is `null` in its slot (with the reason in `quote_error`) so the caller can say
- * "not_measured". `funded` is `true`/`false` only when BOTH numbers are known.
+ * The fee every relay write carries. Equal to the object that finalized all ten D2 writes on Bradbury
+ * Phase 2 (`exp/d2c/fee_witness_deploy.json`, D2c probe 2026-10-28): deposit 0.100000000000010352 GEN,
+ * leader/validator allocation 100/200, execution budget 0.025 GEN per round, 3 rotations, max price 2.
+ * The unused deposit is refunded at finalization (net 0.001056 GEN for ten transactions). ONE place.
  */
-async function measureFunding(gl, key) {
+export const WITNESS_FEES = Object.freeze({
+  distribution: Object.freeze({
+    leaderTimeunitsAllocation: "100",
+    validatorTimeunitsAllocation: "200",
+    appealRounds: "0",
+    executionBudgetPerRound: "25000000000000000",
+    executionConsumed: "0",
+    totalMessageFees: "0",
+    rotations: Object.freeze(["3"]),
+    maxPriceGenPerTimeUnit: "2",
+    storageFeeMaxGasPrice: "300000000",
+    receiptFeeMaxGasPrice: "300000000",
+  }),
+  feeValue: 100000000000010352n,
+});
+
+/** `eth_getBalance` on the Phase 2 RPC, as wei (bigint). Throws when the node does not answer a quantity. */
+async function rpcBalance(address) {
+  const res = await fetch(RPC_URL, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_getBalance", params: [address, "latest"] }),
+  });
+  const j = await res.json();
+  if (!res.ok || typeof j.result !== "string" || !/^0x[0-9a-fA-F]+$/.test(j.result)) throw new Error("no balance in the RPC answer");
+  return BigInt(j.result);
+}
+
+/**
+ * Build the signing client and take the measurements. Never throws for a failed read: a balance that
+ * cannot be read is `null` ("not_measured"). `funded` is `true`/`false` only when the balance is known.
+ */
+async function measureFunding(gl, key, deps) {
   const account = gl.createAccount(key);
   const client = gl.createClient({ chain: bradburyChain(gl.testnetBradbury), account });
-  let estimate = null;
-  let quote_error = null;
+  const fees = { distribution: { ...WITNESS_FEES.distribution, rotations: [...WITNESS_FEES.distribution.rotations] }, feeValue: WITNESS_FEES.feeValue };
   let balance = null;
   try {
-    const e = await withTimeout(client.estimateTransactionFees(), MEASURE_TIMEOUT_MS);
-    if (e && isWei(e.feeValue) && e.distribution && typeof e.distribution === "object") estimate = e;
-    else quote_error = "the fee estimate has no feeValue and distribution";
-  } catch (err) {
-    quote_error = sanitise(err, key);
-  }
-  try {
-    const b = await withTimeout(client.getBalance({ address: account.address }), MEASURE_TIMEOUT_MS);
+    const b = await withTimeout(deps.getBalance(account.address), MEASURE_TIMEOUT_MS);
     if (isWei(b)) balance = b;
   } catch { /* balance stays null: not measured */ }
-  const quote = estimate ? estimate.feeValue : null;
-  const funded = quote === null || balance === null ? NOT_MEASURED : balance >= quote;
-  return { account, client, estimate, quote, quote_error, balance, funded };
+  const funded = balance === null ? NOT_MEASURED : balance >= fees.feeValue;
+  return { account, client, fees, quote: fees.feeValue, balance, funded };
 }
 
 // ----------------------------------------------------------------------------- handlers
 
 export const defaultDeps = {
   now: () => new Date(),
+  getBalance: rpcBalance,
   loadGenlayer: async () => {
     const [gl, chains] = await Promise.all([import("genlayer-js"), import("genlayer-js/chains")]);
     return { createAccount: gl.createAccount, createClient: gl.createClient, testnetBradbury: chains.testnetBradbury };
@@ -266,9 +293,9 @@ export async function handleGet({ env }, deps = defaultDeps) {
       const gl = await deps.loadGenlayer();
       operator = gl.createAccount(cfg.key).address;
       try {
-        const m = await measureFunding(gl, cfg.key);
+        const m = await measureFunding(gl, cfg.key, deps);
         funded = m.funded;
-        if (m.quote !== null) fee_quote = formatGen(m.quote);
+        fee_quote = formatGen(m.quote);
       } catch { /* both stay not_measured */ }
     } catch (e) {
       operator_error = sanitise(e, cfg.key);
@@ -325,18 +352,14 @@ export async function handlePost({ request, env }, deps = defaultDeps) {
       429, { "retry-after": String(slot.retry) });
   }
 
-  // The fee quote and the wallet balance come BEFORE the slot is spent and before anything is sent.
+  // The wallet balance is read BEFORE the slot is spent and before anything is sent.
   let m;
   try {
-    m = await measureFunding(await deps.loadGenlayer(), cfg.key);
+    m = await measureFunding(await deps.loadGenlayer(), cfg.key, deps);
   } catch (e) {
     const message = sanitise(e, cfg.key);
     console.error(`witness-submit upstream failure: ${message}`);
     return json({ ok: false, error: `The GenLayer network refused the request: ${message}` }, 502);
-  }
-  if (m.estimate === null) {
-    console.error(`witness-submit: no fee estimate: ${m.quote_error}`);
-    return json({ ok: false, error: `The fee for this request could not be estimated, so it was not sent: ${m.quote_error}` }, 502);
   }
   if (m.funded === false) {
     return json({ ok: false, error: "The operator wallet holds less test GEN than this request needs." }, 503);
@@ -349,9 +372,7 @@ export async function handlePost({ request, env }, deps = defaultDeps) {
 
   let hash;
   try {
-    const fees = { distribution: m.estimate.distribution, feeValue: m.estimate.feeValue };
-    if (m.estimate.messageAllocations) fees.messageAllocations = m.estimate.messageAllocations;
-    hash = await m.client.writeContract({ address: CONTRACT_ADDRESS, functionName: "witness", args: v.args, value: 0n, fees });
+    hash = await m.client.writeContract({ address: CONTRACT_ADDRESS, functionName: "witness", args: v.args, value: 0n, fees: m.fees });
   } catch (e) {
     const message = sanitise(e, cfg.key);
     console.error(`witness-submit upstream failure: ${message}`);

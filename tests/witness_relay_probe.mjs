@@ -21,7 +21,6 @@ const NOW = new Date("2026-10-12T10:15:30Z");
 const HASH = "0x" + "aB09".repeat(16); // mixed case on purpose: it must come back exactly as given
 const CONTRACT = "0x99C23e1794ed35b429161fBEB00967D0c81DC491";
 const QUOTE = 100000000000010352n; // the D2 quote (evidence/MEASURED-017-*), in wei
-const DISTRIBUTION = { leaderTimeunitsAllocation: "100", validatorTimeunitsAllocation: "200", rotations: ["3"] };
 
 const logs = [];
 for (const m of ["log", "info", "warn", "error", "debug"]) console[m] = (...a) => logs.push(a.map(String).join(" "));
@@ -35,10 +34,11 @@ function kvStub({ unreadable = false } = {}) {
   };
 }
 
-function mockDeps({ write, hash = HASH, balance = 20n * 10n ** 18n, quote = QUOTE, estimateFails = false, balanceFails = false } = {}) {
+function mockDeps({ write, hash = HASH, balance = 20n * 10n ** 18n, estimateFails = false, balanceFails = false } = {}) {
   const calls = { createAccount: [], createClient: [], writeContract: [], estimate: 0, getBalance: [] };
   const deps = {
     now: () => NOW,
+    getBalance: async (a) => { calls.getBalance.push(a); if (balanceFails) throw new Error("rpc down"); return balance; },
     loadGenlayer: async () => ({
       createAccount: (k) => { calls.createAccount.push(k); return { address: "0x" + "12".repeat(20) }; },
       createClient: (cfg) => {
@@ -47,9 +47,8 @@ function mockDeps({ write, hash = HASH, balance = 20n * 10n ** 18n, quote = QUOT
           estimateTransactionFees: async () => {
             calls.estimate += 1;
             if (estimateFails) throw new Error("fee manager unreachable");
-            return { distribution: DISTRIBUTION, feeValue: quote, policy: { enabled: true } };
+            return { distribution: {}, feeValue: 1n, policy: { enabled: true } }; // never used: the relay sends WITNESS_FEES
           },
-          getBalance: async (a) => { calls.getBalance.push(a); if (balanceFails) throw new Error("rpc down"); return balance; },
           writeContract: async (a) => { calls.writeContract.push(a); if (write) return write(a); return hash; },
         };
       },
@@ -108,7 +107,7 @@ const CASES = {
     const kv = kvStub();
     const { deps, calls } = mockDeps();
     const r = await post(envOk(kv), deps, GOOD);
-    return out(r, { calls: { ...calls, writeContract: calls.writeContract.map((a) => ({ ...a, value: String(a.value), fees: { ...a.fees, feeValue: String(a.fees && a.fees.feeValue) } })) }, kv: [...kv.m.entries()] });
+    return out(r, { calls: { ...calls, writeContract: calls.writeContract.map((a) => ({ ...a, value: String(a.value), fees: { ...a.fees, feeValue: String(a.fees && a.fees.feeValue), bigint: typeof (a.fees && a.fees.feeValue) } })) }, kv: [...kv.m.entries()] });
   },
   post_artifact_hash_uppercase_is_normalised: async () => {
     const { deps, calls } = mockDeps();
@@ -298,21 +297,32 @@ const CASES = {
     const b = await post(envOk(kvStub()), deps, { ...GOOD, criterion: "artifact_hash", expected: SHA });
     return out({ a: a.status, b: b.status }, { sent: calls.writeContract.length });
   },
-  post_no_quote_is_502_and_sends_nothing: async () => {
+  post_estimate_fails_still_sends_the_fixed_fee: async () => {
     const kv = kvStub();
     const { deps, calls } = mockDeps({ estimateFails: true });
     const r = await post(envOk(kv), deps, GOOD);
-    return out(r, { sent: calls.writeContract.length, kv_writes: kv.m.size });
+    return out(r, { calls: { ...calls, writeContract: calls.writeContract.map((a) => ({ ...a, value: String(a.value), fees: { ...a.fees, feeValue: String(a.fees.feeValue) } })) }, kv_writes: kv.m.size });
   },
   post_balance_unreadable_still_sends: async () => {
     const { deps, calls } = mockDeps({ balanceFails: true });
     return out(await post(envOk(kvStub()), deps, GOOD), { sent: calls.writeContract.length });
   },
+  default_balance_read: async () => {
+    const seen = {};
+    globalThis.fetch = async (url, init) => {
+      seen.url = url; seen.body = JSON.parse(init.body);
+      return new Response(JSON.stringify({ jsonrpc: "2.0", id: 1, result: "0x" + (20n * 10n ** 18n).toString(16) }));
+    };
+    const { deps } = mockDeps();
+    delete deps.getBalance; // the relay's own default
+    const r = await snap(await relay.handleGet({ env: envOk(kvStub()) }, { ...relay.defaultDeps, now: deps.now, loadGenlayer: deps.loadGenlayer }));
+    return out({ ...seen, funded: r.body.funded, fee_quote: r.body.fee_quote });
+  },
   real_createaccount_derivation: async () => {
     // The well-known test key 0x00..01 -> 0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf (public vector).
     const gl = await import("../web/node_modules/genlayer-js/dist/index.js");
     const k = "0x" + "00".repeat(31) + "01";
-    const real = { now: () => NOW, loadGenlayer: async () => ({ createAccount: gl.createAccount, createClient: gl.createClient, testnetBradbury: {} }) };
+    const real = { now: () => NOW, getBalance: async () => { throw new Error("offline"); }, loadGenlayer: async () => ({ createAccount: gl.createAccount, createClient: gl.createClient, testnetBradbury: {} }) };
     const r = await snap(await relay.handleGet({ env: { GL_OPERATOR_KEY: k, WITNESS_RL: kvStub() } }, real));
     const bare = await snap(await relay.handleGet({ env: { GL_OPERATOR_KEY: k.slice(2), WITNESS_RL: kvStub() } }, real));
     return out({ with_prefix: r.body, without_prefix: bare.body });

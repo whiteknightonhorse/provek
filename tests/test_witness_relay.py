@@ -33,6 +33,12 @@ URL_CASES = json.loads((ROOT / "tests" / "fixtures" / "witness_relay_url_cases.j
 DEPLOYMENT = json.loads(
     (ROOT / "integrations" / "genlayer-witness" / "deploy" / "deployment.json").read_text(encoding="utf-8")
 )
+# the fee object that finalized all ten D2 writes (D2c probe 2026-10-28, exp/d2c/fee_witness_deploy.json)
+D2_FEES = {
+    "distribution": {"leaderTimeunitsAllocation": "100", "validatorTimeunitsAllocation": "200", "appealRounds": "0",
+                     "executionBudgetPerRound": "25000000000000000", "executionConsumed": "0", "totalMessageFees": "0",
+                     "rotations": ["3"], "maxPriceGenPerTimeUnit": "2", "storageFeeMaxGasPrice": "300000000",
+                     "receiptFeeMaxGasPrice": "300000000"}}
 FAKE_KEY = "0x" + "ab12" * 16
 CACHE: dict[str, dict] = {}
 
@@ -135,11 +141,9 @@ def test_a_valid_request_is_202_with_the_hash_exactly_as_returned():
     (w,) = r["calls"]["writeContract"]
     assert w == {"address": DEPLOYMENT["contract_address"], "functionName": "witness", "value": "0",
                  "args": ["git:whiteknightonhorse/provek", "url_reachable", "https://provek.dev/", ""],
-                 # v0.6: the SDK's own estimate, passed unchanged as `fees`; the deposit is feeValue, value stays 0
-                 "fees": {"distribution": {"leaderTimeunitsAllocation": "100", "validatorTimeunitsAllocation": "200",
-                                           "rotations": ["3"]},
-                          "feeValue": "100000000000010352"}}
-    assert r["calls"]["estimate"] == 1
+                 # v0.6: the fixed D2 fee object (WITNESS_FEES), never a zero field; the deposit is feeValue, value stays 0
+                 "fees": {"distribution": D2_FEES["distribution"], "feeValue": "100000000000010352", "bigint": "bigint"}}
+    assert r["calls"]["estimate"] == 0  # the SDK estimate simulates from the zero address and is not called
     assert r["calls"]["createAccount"] == [FAKE_KEY]
     chain = r["calls"]["createClient"][0]["chain"]
     assert chain["id"] == 4221
@@ -194,14 +198,17 @@ def test_get_reports_funded_false_one_wei_short_and_still_shows_the_quote():
     assert b["funded"] is False and b["fee_quote"] == QUOTE_GEN
 
 
-def test_get_says_not_measured_when_a_read_fails_and_never_a_guess():
+def test_get_says_not_measured_when_the_balance_read_fails_and_never_a_guess():
     bal = probe("health_balance_unreadable")["result"]["body"]
     assert bal["funded"] == "not_measured" and bal["fee_quote"] == QUOTE_GEN
-    quo = probe("health_quote_unreadable")["result"]["body"]
-    assert quo["funded"] == "not_measured" and quo["fee_quote"] == "not_measured"
     for scenario in ("health_no_secret", "health_bad_key"):
         b = probe(scenario)["result"]["body"]
         assert b["funded"] == "not_measured" and b["fee_quote"] == "not_measured"
+
+
+def test_get_shows_numeric_funded_and_fee_quote_even_when_the_sdk_estimate_would_fail():
+    p = probe("health_quote_unreadable")
+    assert p["result"]["body"]["funded"] is True and p["result"]["body"]["fee_quote"] == QUOTE_GEN
 
 
 def test_an_underfunded_wallet_is_a_503_and_no_transaction_is_sent_and_no_slot_is_spent():
@@ -213,10 +220,15 @@ def test_an_underfunded_wallet_is_a_503_and_no_transaction_is_sent_and_no_slot_i
     assert q["result"] == {"a": 503, "b": 503} and q["sent"] == 0
 
 
-def test_without_a_fee_quote_nothing_is_sent_either():
-    p = probe("post_no_quote_is_502_and_sends_nothing")
-    assert p["result"]["status"] == 502 and "could not be estimated" in p["result"]["body"]["error"]
-    assert p["sent"] == 0 and p["kv_writes"] == 0
+def test_an_estimate_failure_does_not_stop_the_request_the_fixed_fee_is_sent():
+    p = probe("post_estimate_fails_still_sends_the_fixed_fee")
+    assert p["result"]["status"] == 202 and p["calls"]["estimate"] == 0
+    (w,) = p["calls"]["writeContract"]
+    assert w["value"] == "0" and w["fees"]["feeValue"] == "100000000000010352"
+    assert w["fees"]["distribution"] == D2_FEES["distribution"]
+    assert all(v not in ("0", 0, None) for k, v in w["fees"]["distribution"].items()
+               if k not in ("appealRounds", "executionConsumed", "totalMessageFees"))
+    assert p["kv_writes"] == 2
 
 
 def test_a_balance_that_cannot_be_read_does_not_block_a_post():
@@ -375,3 +387,10 @@ def test_the_live_app_section_is_in_both_readmes_identical_and_carries_the_repro
         "pytest tests/test_witness_relay.py", "push.sh --gates-only", "get_operator()",
     ):
         assert must in main, must
+
+
+def test_the_default_balance_read_is_eth_get_balance_on_the_deployments_rpc_url():
+    p = probe("default_balance_read")["result"]
+    assert p["url"] == DEPLOYMENT["rpc_url"]
+    assert p["body"]["method"] == "eth_getBalance" and p["body"]["params"] == ["0x" + "12" * 20, "latest"]
+    assert p["funded"] is True and p["fee_quote"] == QUOTE_GEN
