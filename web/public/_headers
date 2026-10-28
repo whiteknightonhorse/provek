@@ -27,9 +27,30 @@
 # `rel="alternate"` already used on <link> in the page head, so a crawler reading only headers and
 # one reading the HTML learn the same thing) and the RFC 9727 API catalog, whose own registered
 # relation type is `api-catalog`.
+#
+# SECURITY HEADERS (T-0579). The Content-Security-Policy is measured, not guessed:
+# `python3 scripts/csp_inventory.py` walks web/dist and lists what the pages load, and
+# tests/test_csp_covers_what_the_pages_load.py holds this block to that list in both directions
+# (a loaded origin that the policy omits fails; an origin the policy allows that nothing loads fails).
+#
+#   script-src 'unsafe-inline'  IS A NAMED, TEMPORARY ALLOWANCE. prerender.mjs writes an inline
+#                 `window.__PROVEK__={...}` bootstrap into every page, and its bytes change with every
+#                 nightly registry refresh, so a static file cannot pin its hash. The test makes the
+#                 allowance conditional: the day the dist has no executable inline script, a policy that
+#                 still says 'unsafe-inline' goes red. JSON-LD blocks are data and need nothing.
+#   style-src 'unsafe-inline'  the pages carry style="..." attributes (25 of 31 pages, measured).
+#   img-src / frame-src       the YouTube facade: the poster comes from i.ytimg.com, the player from
+#                 youtube-nocookie.com after a click.
+#   connect-src               the Cloudflare beacon reports to cloudflareinsights.com; the witness page
+#                 reads the Bradbury RPC straight from the browser (witnessChainConfig.js RPC_URL).
+#   Strict-Transport-Security has no `preload`: that is an operator decision, not a header default.
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; connect-src 'self' https://cloudflareinsights.com https://rpc-bradbury.genlayer.com; img-src 'self' https://i.ytimg.com; style-src 'self' 'unsafe-inline'; font-src 'self'; frame-src https://www.youtube-nocookie.com; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'
+  X-Frame-Options: DENY
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
   Link: <https://provek.dev/data/registry.json>; rel="alternate"; type="application/json", <https://provek.dev/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"
 
 # RFC 9727 requires this exact media type; a static file with no extension would otherwise be

@@ -173,6 +173,11 @@ scripts/verify_action_pins.py:    [ABI-32-1, ABI-16-11]
 scripts/verify_pip_pins.py:       [ABI-32-1, ABI-16-11]
 scripts/dated_promises.py:        [ABI-16-11, ABI-33-4]
 
+# T-0579. The Content-Security-Policy in web/public/_headers is measured from what the built pages
+# load; this is the measuring. Same requirement pair as verify_action_pins.py: it reads a built
+# artefact and a published rule and fails when they disagree, rather than trusting a hand-written list.
+scripts/csp_inventory.py:         [ABI-32-1, ABI-16-11]
+
 # T-MY-02. The advisory mypy backlog may not grow. ABI-16-11 because a mypy that did not run, or ran
 # as the wrong version, is not_measured and never a clean baseline; ABI-33-4 because the verdict is
 # taken by code from a measured count against a ceiling keyed by the pinned version.
