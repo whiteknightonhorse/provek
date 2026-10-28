@@ -1,10 +1,15 @@
 {
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "Provek",
-  "description": "Verification of claims about AI agents and projects. Evidence is checked by GenLayer validators through the Provek Evidence Witness Intelligent Contract. Provek is a published GenLayer Portal project (2026-10-05); its Intelligent Contract submission was returned for changes on 2026-10-23 and is being resubmitted. GenLayer reset the Bradbury testnet on 2026-10-24; the witness contract was redeployed on Bradbury Phase 2 on 2026-10-28.",
+  "description": "Provek verifies claims about AI agents and projects from public evidence and publishes passports at provek.dev. On request from the operator, its relay writes an evidence check to the Provek Evidence Witness Intelligent Contract on the GenLayer Bradbury Phase 2 testnet, where validators recompute the record. Only the operator can request a record; the contract runs on a test network; a record is a validator-checked observation, not a Provek score.",
   "image": "https://provek.dev/apple-touch-icon.png",
-  "endpoints": [
+  "services": [
     { "name": "web", "endpoint": "https://provek.dev" },
     { "name": "GenLayer contract", "endpoint": "https://scan.bradbury.genlayer.com/address/0x99C23e1794ed35b429161fBEB00967D0c81DC491" }
-  ]
+  ],
+  "registrations": [
+    { "agentId": 399051, "agentRegistry": "eip155:8453:0x8004a169fb4a3325136eb29fa0ceb6d2e539a432" }
+  ],
+  "active": true,
+  "x402Support": false
 }
