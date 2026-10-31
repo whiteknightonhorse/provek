@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-10-30T03:43:04.127068+00:00",
-    "valid_until": "2026-11-29T03:43:04.127068+00:00",
+    "issued_at": "2026-10-31T03:43:04.313960+00:00",
+    "valid_until": "2026-11-30T03:43:04.313960+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -17,8 +17,8 @@
       "evidence_window_days": 30
     },
     "evidence_window": {
-      "start": "2026-09-30T03:43:04.127068+00:00",
-      "end": "2026-10-30T03:43:04.127068+00:00"
+      "start": "2026-10-01T03:43:04.313960+00:00",
+      "end": "2026-10-31T03:43:04.313960+00:00"
     },
     "verified": {
       "operations": [
@@ -50,7 +50,7 @@
       "projection_absent_reason": null,
       "observations": {
         "signed_commit_share": {
-          "value": 0.024,
+          "value": 0.025,
           "measured": true,
           "absent_reason": null
         },
@@ -65,7 +65,7 @@
           "absent_reason": null
         },
         "workflow_runs": {
-          "value": 5441,
+          "value": 5447,
           "measured": true,
           "absent_reason": null
         },
@@ -174,7 +174,7 @@
       "reason": null,
       "confidence": "measured",
       "declared": true,
-      "checked_at": "2026-10-30T03:43:04.127068+00:00"
+      "checked_at": "2026-10-31T03:43:04.313960+00:00"
     },
     "task_history": [],
     "mandate_ref": "self-mandate-0001",
