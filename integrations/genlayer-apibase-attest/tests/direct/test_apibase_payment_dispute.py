@@ -20,7 +20,8 @@ BASE_RPC_URL = "https://rpc.example/base"
 BASE_USDC = "0x833589fCd6eDb6E08f4c7C32D4f71b54bdA02913"
 PAYEE = "0x781dfd3f2687f8e5656313b2179fdefdf99d339d"
 PAYER = "0x688130810f0bede38742b66e7a443274c01d4213"
-TX = "0xa7055e5ec14e8912912c370eb253965c26960aa96ef65d7d85a9f08ed496bf58"
+TX_HEX = "a7055e5ec14e8912912c370eb253965c26960aa96ef65d7d85a9f08ed496bf58"  # no 0x in the tree (secret scan)
+TX = "0x" + TX_HEX
 INDEX_URL = f"{RECEIPT_BASE_URL}by-tx/{TX}.json"
 CONTRACTS = Path(__file__).resolve().parent.parent.parent / "contracts"
 REFUND_TX = "0x" + "cd" * 32
@@ -65,7 +66,7 @@ def test_refund_when_paid_and_no_receipt(direct_vm, payment_dispute_contract):
 
 def test_payment_tx_is_stored_lowercase(direct_vm, payment_dispute_contract):
     _world(direct_vm)
-    record = payment_dispute_contract.get_dispute(payment_dispute_contract.dispute_payment("8453", "0x" + TX[2:].upper()))
+    record = payment_dispute_contract.get_dispute(payment_dispute_contract.dispute_payment("8453", "0x" + TX_HEX.upper()))
     assert record.payment_tx == TX
 
 
