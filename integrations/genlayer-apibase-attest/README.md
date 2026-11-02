@@ -7,6 +7,12 @@ receipt published by APIbase for a paid tool call, asks a configured Base JSON-R
 transaction that receipt names, and records `PASS`, `FAIL` or `NOT_FOUND`. GenLayer's leader/validator
 consensus replaces a single process's word with several independent fetches.
 
+Beside it sit two **dispute contracts**, one per closed claim, both `REFUND` / `RELEASE` witnesses:
+`ApibaseReceiptDispute` (`contracts/apibase_receipt_dispute.py`, claim `upstream_failed_but_billed`, reads
+the receipt only) and `ApibasePaymentDispute` (`contracts/apibase_payment_dispute.py`, claim
+`paid_without_receipt`, reads APIbase's index and Base). They are described in *The refund policy and the
+two claims*; the rest of this file describes the attest unless it says otherwise.
+
 **What it is not.** There is no LLM in it. It never makes a paid call and never spends anything. It
 does not judge the tool's response, only that the payment the receipt claims is the payment on the
 chain. It covers one rail and billed calls only (see *v0 limits*). It does not take part in Provek's
@@ -117,6 +123,61 @@ different things on purpose.
   `payer`, `payee`, `amount_atomic`, `tool`, `upstream_status`, `billed`, `response_sha256`, `result`,
   `observation`, `checked_at`, `requester`.
 
+## The refund policy and the two claims
+
+Two further contracts decide whether APIbase should refund a paid call. Each decides ONE claim, so that
+each file stays small enough for D-67's 19 000 B rule (a single file for both claims measured 25 331 B;
+D-80). Both pin the published refund policy in storage (`set_policy(version, sha256)`, operator only; a
+dispute while no policy is pinned reverts `refund policy not published`) and copy that pair into every
+record, so a verdict names the policy text it was decided under. Validators recompute the claim from
+published documents; there is no LLM and no judgement call.
+
+**A verdict never pays by itself.** REFUND is an instruction to APIbase's refund worker, which recomputes the same rule, pays within the published window under its own caps, and publishes `refunds/<dispute_id>.json`; the refund is verifiable on Base from that document (on-chain confirmation, `confirm_refund`, is v1.1). Bradbury is a test network; the verdict moves real USDC only through that capped worker.
+
+| claim | contract | recomputed from | REFUND when | RELEASE reasons (also in the record) | revert, nothing written |
+|---|---|---|---|---|---|
+| `upstream_failed_but_billed` | `ApibaseReceiptDispute.dispute_receipt(receipt_id)` | the receipt `{receipt_base_url}{receipt_id}.json` | `billed` and `upstream_status >= 500`, and no earlier REFUND for the same `payment_tx` | `not_billed`; `upstream_status_<n>` (n < 500); `refund_verdict_exists:<dispute_id>` | receipt not readable, malformed (`malformed receipt: <key>`), unsupported rail |
+| `paid_without_receipt` | `ApibasePaymentDispute.dispute_payment(chain_id, payment_tx)` | the index `{receipt_base_url}by-tx/<tx>.json`, then the transaction on Base | the index lists no receipt and no refund, no earlier REFUND for the tx, the transaction succeeded and carries a USDC transfer to the chain's configured `payee` (the first such transfer fixes `payer` and `amount_atomic`) | `already_refunded`; `receipt_exists:<id>`; `refund_verdict_exists:<dispute_id>`; `tx_not_found`; `tx_reverted`; `no_payment_to_apibase` | index not readable (HTTP ≠ 200 or any shape but the published one), RPC failure, chain not configured |
+
+An index that cannot be read is unmeasured, not "no receipt": the call reverts and writes nothing.
+
+**The sibling-URL contract.** Receipts stay byte-immutable, so refund state lives at sibling URLs of the
+receipt base, never inside a receipt and never in a verdict record:
+
+- `by-tx/<tx>.json` — always answers 200 for a well-formed transaction hash:
+  `{"schema": "apibase-receipt-index/1", "payment_tx": "<tx, lowercase>", "receipt_ids": [...], "refund_tx": "0x…" | null}`.
+  Any other status or shape is an unreadable index.
+- `refunds/<dispute_id>.json` — written once by the refund worker, after it paid:
+  `{"schema": "apibase-refund/1", "dispute_id", "refund_tx", "chain_id", "to", "amount_atomic"}`.
+  Nothing in these contracts reads it yet.
+
+`refund_verdicts` (`payment_tx` → `dispute_id` of the first REFUND) is kept per contract: a second REFUND
+on the same `payment_tx` becomes `RELEASE` / `refund_verdict_exists:<id>`. A claim-1 REFUND and a claim-2
+REFUND for one payment are excluded by the index (a payment with a receipt gets `receipt_exists`); the
+residual case, a receipt published after a claim-2 REFUND and then disputed under claim 1, is stopped
+by the refund worker's one-refund-per-`payment_tx` ledger.
+
+**Interface**, both contracts: `__init__(operator, receipt_base_url)`; `set_policy(version, sha256)`
+(operator only); `get_dispute(dispute_id)`, `list_by_subject(receipt_id | payment_tx)` (JSON list, `[]`
+default), `list_recent()` (JSON list of the last 200 dispute ids, newest last), `get_config()` (JSON:
+operator, receipt base URL, policy version and sha-256; the payment contract adds the configured chain
+ids). Receipt contract: `dispute_receipt(receipt_id) -> dispute_id`, permissionless;
+`dispute_id = sha256(json(["receipt", receipt_id, checked_at, sender]))`. Payment contract:
+`set_chain(chain_id, rpc_url, usdc, payee)` (operator only; `payee` is APIbase's receiving wallet on that
+chain, stored lowercased), `get_chain(chain_id)`, `dispute_payment(chain_id, payment_tx) -> dispute_id`,
+permissionless; `dispute_id = sha256(json(["payment", chain_id, payment_tx, checked_at, sender]))`.
+The record (`Dispute`, byte-identical in both files, immutable once written) carries `dispute_id`,
+`claim`, `receipt_id` (empty for a payment claim), `chain_id`, `payment_tx`, `payer`, `payee`,
+`amount_atomic`, `policy_version`, `policy_sha256`, `verdict`, `reason`, `evidence_sha256` (the receipt's
+or the index's SHA-256), `checked_at`, `requester`.
+
+The validators of both contracts vote by whole-observation equality, as the attest does (D-76); a
+validator whose own fetch fails votes `False`. `test_dispute_shares_attest_helpers` proves the helpers
+(`_validate_receipt`, `_error_observation`, `_rpc_request_body`, `_parse_transfers`, `_observe_rpc`) are
+verbatim copies of the attest's, because a GenVM contract is one file and cannot import another.
+
+Not deployed yet: deployment from the merged commit's bytes is a later, separate step (D-67).
+
 ## Commands
 
 Run from this directory, with the isolated Python 3.12 toolchain of D-63 (the door uses `~/orchestra/glenv-babwp`, with `GENVM_VERSION=v0.6.0-rc10`, `GENVM_ALLOW_PRERELEASE=1`):
@@ -124,16 +185,18 @@ Run from this directory, with the isolated Python 3.12 toolchain of D-63 (the do
 The contract's version line `# v0.3.0` must be line 1, with the `# { "Depends": "py-genlayer:babwp9t3…" }` line second ([why](../genlayer-witness/README.md)): Bradbury Phase 2 runs the babwp runner as of 2026-10-28, and the documentation's `1jb45…` id fails there (D-79).
 
 ```
-python3 scripts/check_genvm_lint.py          # genvm-lint check, with the two named E014 warnings
+python3 scripts/check_genvm_lint.py          # genvm-lint check on all three contracts, with the named E014 warnings
 python3 -m pytest tests/direct -v            # direct-mode tests: mocks only, no network
 gltest --network studionet tests/integration # live; skipped unless ATTEST_CONTRACT and APIBASE_RECEIPT_ID are set
 ```
 
-`genvm-lint check` itself has no allowlist, so `scripts/check_genvm_lint.py` runs it with `--json` and
-demands that the warning set be exactly the two known false positives: the linter (0.11.1rc2) only knows the
-v0.2 storage decorator name `allow_storage`, so it reports `ChainConfig` and `Attestation`, decorated with the
-v0.3.0 `gl.storage.allow`, as E014; its SDK-semantic validation, which builds the real schema, passes. Any
-other shape is red.
+`genvm-lint check` itself has no allowlist, so `scripts/check_genvm_lint.py` runs it with `--json`, once per
+contract, and demands that the warning set be exactly the known false positives: the linter (0.11.1rc2) only
+knows the v0.2 storage decorator name `allow_storage`, so it reports the classes decorated with the v0.3.0
+`gl.storage.allow` as E014 - `ChainConfig` (line 40) and `Attestation` (line 50) in the attest, `Dispute`
+(line 37) in `apibase_receipt_dispute.py`, `ChainConfig` (line 37) and `Dispute` (line 47) in
+`apibase_payment_dispute.py`; its SDK-semantic validation, which builds the real schema, passes. Any other
+shape is red.
 
 `tests/fixtures/rpc_receipt_real_base_usdc.json` is a real `eth_getTransactionReceipt` answer from
 `https://mainnet.base.org` (transaction `0xa7055e5e…bf58`, block 52589696): two logs, one of them a USDC
@@ -148,6 +211,10 @@ transfer of 1 USDC; `test_parse_transfers_golden_vector` parses it.
   checks that they agree. A receipt APIbase never published is `not readable`.
 - **It attests payment, not service**: `response_sha256` and `upstream_status` are copied into the
   record for whoever holds the response; the contract does not see it.
+- **Disputes: the same one rail and one asset**, and two closed claims only. `response_mismatch` (the
+  response differs from what was promised) and `double_billed` are deliberately absent: they cannot be
+  recomputed from a published document, and a witness that guesses is not a witness. Verdict records are
+  immutable; refund confirmation on chain is a later contract (v1.1).
 
 ## The RPC trust assumption
 
@@ -156,7 +223,8 @@ operator alone with `set_chain`. The contract therefore proves "the configured n
 operator who points a chain at a node that lies can make it attest a transfer that did not happen.
 The URL is public (`get_chain`), which makes the assumption auditable; letting each validator choose its
 own node would remove it and is a different, later design. At deployment the Base endpoint is
-`https://mainnet.base.org`.
+`https://mainnet.base.org`. `ApibaseReceiptDispute` makes no such assumption: it asks no chain, only
+APIbase's own receipt document; `ApibasePaymentDispute` makes it exactly as the attest does.
 
 ## ApibaseReceiptAttest — contract reference
 

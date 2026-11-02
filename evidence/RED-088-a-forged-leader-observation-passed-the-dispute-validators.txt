@@ -1,0 +1,41 @@
+tree: 351512a091e95816b93f70a744cf4a4de279a0e1 (dirty)
+RED-088 - a forged leader observation passed the dispute validators (T-GD-01)
+Mon Nov  2 06:39:55 AM UTC 2026
+
+## RED: copies of the two new contracts whose validator_fn bodies are 'return True' (scratch tree /tmp/gdred, produced by regex replacement of the body up to run_nondet)
+$ pytest tests/direct/test_apibase_receipt_dispute.py -q -k 'forged or validator'   (cwd /tmp/gdred/integrations/genlayer-apibase-attest)
+FAILED tests/direct/test_apibase_receipt_dispute.py::test_validator_disagrees_when_the_receipt_changes
+FAILED tests/direct/test_apibase_receipt_dispute.py::test_validator_returns_false_when_its_own_fetch_raises
+FAILED tests/direct/test_apibase_receipt_dispute.py::test_validator_rejects_a_malformed_leader_result
+FAILED tests/direct/test_apibase_receipt_dispute.py::test_forged_leader_observation_is_rejected[upstream_status]
+FAILED tests/direct/test_apibase_receipt_dispute.py::test_forged_leader_observation_is_rejected[billed]
+FAILED tests/direct/test_apibase_receipt_dispute.py::test_forged_leader_observation_is_rejected[payer]
+FAILED tests/direct/test_apibase_receipt_dispute.py::test_forged_leader_observation_is_rejected[sha]
+FAILED tests/direct/test_apibase_receipt_dispute.py::test_a_forged_receipt_with_the_true_sha_is_rejected
+8 failed, 1 passed, 32 deselected in 9.86s
+rc=1
+$ pytest tests/direct/test_apibase_payment_dispute.py -q -k 'forged or validator'   (cwd /tmp/gdred/integrations/genlayer-apibase-attest)
+FAILED tests/direct/test_apibase_payment_dispute.py::test_validator_disagrees_when_the_index_is_not_readable
+FAILED tests/direct/test_apibase_payment_dispute.py::test_validator_disagrees_when_a_receipt_appears
+FAILED tests/direct/test_apibase_payment_dispute.py::test_validator_returns_false_when_only_its_rpc_fetch_raises
+FAILED tests/direct/test_apibase_payment_dispute.py::test_validator_rejects_a_malformed_leader_result
+FAILED tests/direct/test_apibase_payment_dispute.py::test_forged_leader_observation_is_rejected[ids-added]
+FAILED tests/direct/test_apibase_payment_dispute.py::test_forged_leader_observation_is_rejected[refund-tx-set]
+FAILED tests/direct/test_apibase_payment_dispute.py::test_forged_leader_observation_is_rejected[tx_status]
+FAILED tests/direct/test_apibase_payment_dispute.py::test_forged_leader_observation_is_rejected[chain_found]
+FAILED tests/direct/test_apibase_payment_dispute.py::test_forged_leader_observation_is_rejected[amount]
+FAILED tests/direct/test_apibase_payment_dispute.py::test_forged_leader_observation_is_rejected[payer]
+FAILED tests/direct/test_apibase_payment_dispute.py::test_forged_leader_observation_is_rejected[sha]
+FAILED tests/direct/test_apibase_payment_dispute.py::test_forged_empty_receipt_ids_on_a_world_with_a_receipt_is_rejected
+FAILED tests/direct/test_apibase_payment_dispute.py::test_forged_refund_tx_nulled_on_a_refunded_payment_is_rejected
+13 failed, 1 passed, 36 deselected in 15.11s
+rc=1
+
+## GREEN control: the real contracts, same commands
+Mon Nov  2 06:40:23 AM UTC 2026
+$ pytest tests/direct/test_apibase_receipt_dispute.py -q -k 'forged or validator'   (cwd integrations/genlayer-apibase-attest)
+9 passed, 32 deselected in 9.87s
+rc=0
+$ pytest tests/direct/test_apibase_payment_dispute.py -q -k 'forged or validator'   (cwd integrations/genlayer-apibase-attest)
+14 passed, 36 deselected in 14.76s
+rc=0

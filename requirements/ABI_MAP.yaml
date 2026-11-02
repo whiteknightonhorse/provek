@@ -262,8 +262,12 @@ integrations/genlayer-witness/scripts/check_genvm_lint.py:                [ABI-1
 # the code reads, not by the network) and ABI-16-11 (a verdict that fails to be tested reads as a
 # pass) on the same kinds of module.
 integrations/genlayer-apibase-attest/contracts/apibase_receipt_attest.py:  [ABI-5-3, ABI-16-11]
+integrations/genlayer-apibase-attest/contracts/apibase_receipt_dispute.py:  [ABI-5-3, ABI-16-11]
+integrations/genlayer-apibase-attest/contracts/apibase_payment_dispute.py:  [ABI-5-3, ABI-16-11]
 integrations/genlayer-apibase-attest/tests/direct/conftest.py:             [ABI-5-3, ABI-16-11]
 integrations/genlayer-apibase-attest/tests/direct/test_apibase_receipt_attest.py: [ABI-16-11]
+integrations/genlayer-apibase-attest/tests/direct/test_apibase_receipt_dispute.py: [ABI-16-11]
+integrations/genlayer-apibase-attest/tests/direct/test_apibase_payment_dispute.py: [ABI-16-11]
 integrations/genlayer-apibase-attest/tests/integration/__init__.py:        [ABI-16-11]
 integrations/genlayer-apibase-attest/tests/integration/fixtures.py:        [ABI-5-3, ABI-16-11]
 integrations/genlayer-apibase-attest/tests/integration/test_apibase_receipt_attest_live.py: [ABI-16-11]

@@ -4419,3 +4419,34 @@ imports `genlayer._internal.get_schema` (was `genlayer.py.get_schema`).
 
 **Not decided here.** The redeploy on Bradbury, the three witness records, `set_chain` and the attest
 call are the dispatcher's, with the merged bytes.
+
+
+## D-80. Disputes are two sibling contracts, one per recomputable claim, with a storage-pinned policy; a verdict instructs, never pays; refund state lives beside the receipt, never in it and never in a verdict record
+
+**Decision.** `integrations/genlayer-apibase-attest/contracts/` gains `apibase_receipt_dispute.py`
+(`ApibaseReceiptDispute`, claim `upstream_failed_but_billed`: the receipt alone, no RPC) and
+`apibase_payment_dispute.py` (`ApibasePaymentDispute`, claim `paid_without_receipt`: APIbase's
+`by-tx/<tx>.json` index, then Base). Each decides `REFUND` or `RELEASE` from documents the validators
+recompute independently (whole-observation equality, D-76); the refund policy is pinned in storage
+(`set_policy(version, sha256)`) and copied into every record. A verdict never pays: `REFUND` is an
+instruction to APIbase's capped refund worker, which publishes `refunds/<dispute_id>.json`. Refund
+state lives at those sibling URLs of the receipt base, never inside a receipt (receipts stay
+byte-immutable) and never in a verdict record (`Dispute` is one immutable 15-field shape, byte-identical
+in both files, proven by `ast.dump`). `response_mismatch` and `double_billed` are out: they are not
+recomputable from a published document. `confirm_refund` (on-chain confirmation of the refund) is v1.1.
+
+**Why two files.** Ruling GENLAYER-DISPUTE-1102 q-1 ruling-1 (2026-11-02). The single-file draft with both
+claims and `confirm_refund` measured 25 331 B; the executor's floor with every docstring and comment
+removed was 19 263 B; with `confirm_refund` dropped, 21 801 B. D-67 (19 000 B, 778 gas per byte against
+the 16 777 216 per-transaction cap, measured 2026-10-20 on Phase 1) stays: the Phase 2 size cost was never
+measured (D2 transcript: the node exposes no per-tx gas), so `not_measured`, not lifted. The split built
+here measures 12 191 B (receipt claim) and 15 868 B (payment claim); the attest is 17 706 B. The receipt
+claim has no RPC trust assumption at all. The helpers are verbatim copies of the attest's (a GenVM
+contract is one file and cannot import another); `test_dispute_shares_attest_helpers` proves it.
+
+**Builds on / supersedes.** Builds on D-66 (permissionless attestation), D-67 (the byte cap, deploy equals
+committed bytes), D-76 (whole-observation equality) and D-79 (the babwp runner and API names). It
+supersedes nothing: the attest contract is unchanged.
+
+**Not decided here.** Deployment (D3 deploys the merged commit's bytes, with a Phase 2 size probe beside
+it), the refund worker, the sibling documents' publisher, and `confirm_refund`.

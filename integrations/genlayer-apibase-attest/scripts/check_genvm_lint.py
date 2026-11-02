@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""T-GA-01 - COPY OF `integrations/genlayer-witness/scripts/check_genvm_lint.py` (T-GL-04), adapted in
+"""T-GD-01 - `CONTRACTS` now names the attest and the two dispute contracts, each with its own
+`EXPECTED_WARNINGS` (read from the linter's own `--json`: E014 on `Dispute` in the receipt-claim
+file; on `ChainConfig` and `Dispute` in the payment-claim file); one linter run per contract, all
+must be clean. The rest of this docstring describes the attest and holds for each file.
+
+T-GA-01 - COPY OF `integrations/genlayer-witness/scripts/check_genvm_lint.py` (T-GL-04), adapted in
 exactly two places: `CONTRACT` names this directory's contract, and `EXPECTED_WARNINGS` is the two
 E014 false positives this contract produces (its two `@gl.storage.allow` classes, the same decorator-name
 false positive the witness has once). Everything else is the witness's text.
@@ -45,19 +50,27 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-CONTRACT = HERE.parent / "contracts" / "apibase_receipt_attest.py"
+CONTRACTS_DIR = HERE.parent / "contracts"
 
 # The exact, confirmed-false-positive warning set this project has decided to keep rather than
-# silence (see this directory's README.md, "Known genvm-lint check warnings"). `col` is not
-# compared: it is the one field the linter's own line/message pair does not need to make the
-# identification unambiguous, and pinning it too would make this script brittle to a change in the
-# linter's own column-counting convention rather than to a change in THIS contract.
-EXPECTED_WARNINGS = [
-    {"code": "E014", "line": 40,
-     "msg": "Class 'ChainConfig' used in storage needs @allow_storage decorator"},
-    {"code": "E014", "line": 50,
-     "msg": "Class 'Attestation' used in storage needs @allow_storage decorator"},
-]
+# silence (see this directory's README.md, "Known genvm-lint check warnings"), per contract file.
+# `col` is not compared: it is the one field the linter's own line/message pair does not need to make
+# the identification unambiguous, and pinning it too would make this script brittle to a change in
+# the linter's own column-counting convention rather than to a change in THESE contracts.
+_E014 = "Class '{}' used in storage needs @allow_storage decorator"
+EXPECTED_WARNINGS = {
+    "apibase_receipt_attest.py": [
+        {"code": "E014", "line": 40, "msg": _E014.format("ChainConfig")},
+        {"code": "E014", "line": 50, "msg": _E014.format("Attestation")},
+    ],
+    "apibase_receipt_dispute.py": [
+        {"code": "E014", "line": 37, "msg": _E014.format("Dispute")},
+    ],
+    "apibase_payment_dispute.py": [
+        {"code": "E014", "line": 37, "msg": _E014.format("ChainConfig")},
+        {"code": "E014", "line": 47, "msg": _E014.format("Dispute")},
+    ],
+}
 
 
 def _genvm_lint() -> Path:
@@ -68,7 +81,8 @@ def _genvm_lint() -> Path:
     return Path(sys.executable).parent / "genvm-lint"
 
 
-def main() -> int:
+def check(name: str, expected: list) -> int:
+    CONTRACT = CONTRACTS_DIR / name
     if not CONTRACT.is_file():
         print(f"NOT MEASURED: {CONTRACT} does not exist", file=sys.stderr)
         return 1
@@ -101,10 +115,10 @@ def main() -> int:
                               for w in lint.get("warnings") or []), key=lambda w: w["line"] or 0)
 
     problems = []
-    if actual_warnings != EXPECTED_WARNINGS:
+    if actual_warnings != expected:
         problems.append(
             "lint warnings changed from the named false positives in README.md:\n"
-            f"  expected: {json.dumps(EXPECTED_WARNINGS)}\n"
+            f"  expected: {json.dumps(expected)}\n"
             f"  actual:   {json.dumps(actual_warnings)}\n"
             "A new or different warning may be a real regression; a warning that disappeared "
             "means README.md's note is stale and should be removed in the same commit as this "
@@ -114,15 +128,24 @@ def main() -> int:
         problems.append(f"SDK-semantic validation failed: {json.dumps(validate)}")
 
     if problems:
-        print("X check_genvm_lint.py:")
+        print(f"X check_genvm_lint.py: {name}")
         for p in problems:
             print(f"  - {p}")
         return 1
 
-    print(f"check_genvm_lint.py: clean (exactly the {len(EXPECTED_WARNINGS)} named E014 false "
+    print(f"check_genvm_lint.py: {name} clean (exactly the {len(expected)} named E014 false "
           f"positives, validate ok - contract {validate.get('contract')}, "
           f"{validate.get('methods')} methods)")
     return 0
+
+
+def main() -> int:
+    failed = [name for name, expected in EXPECTED_WARNINGS.items() if check(name, expected) != 0]
+    on_disk = sorted(p.name for p in CONTRACTS_DIR.glob("*.py"))
+    if on_disk != sorted(EXPECTED_WARNINGS):
+        print(f"X check_genvm_lint.py: contracts on disk {on_disk} != checked {sorted(EXPECTED_WARNINGS)}")
+        return 1
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":
