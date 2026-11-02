@@ -29,7 +29,7 @@ In `integrations/genlayer-witness/tests/direct/test_provek_evidence_witness.py`:
   https://scan.bradbury.genlayer.com/address/0x99C23e1794ed35b429161fBEB00967D0c81DC491
 - Three live records, all FINALIZED (PASS `artifact_hash`, PASS `url_reachable`, FAIL `artifact_hash`):
   `evidence/MEASURED-017-glr-05-bradbury-phase2-deploy-and-three-records.txt`
-- CI run of the merge commit: <CI_RUN_URL>
+- CI run of the merge commit: https://github.com/whiteknightonhorse/provek/actions/runs/40667989976 (workflow `gates`, push to main, commit `8a46f53`, conclusion success)
 - Contract file in the mirror repository `whiteknightonhorse/provek-genlayer-witness`:
   `contracts/provek_evidence_witness.py`, at the bytes deployed from Provek commit
   `11474b4cfc94dada3a3e5301d19d1262713027ac`.
