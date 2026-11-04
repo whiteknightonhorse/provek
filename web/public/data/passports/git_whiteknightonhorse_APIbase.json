@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-11-03T03:43:04.555737+00:00",
-    "valid_until": "2026-12-03T03:43:04.555737+00:00",
+    "issued_at": "2026-11-04T03:43:04.504577+00:00",
+    "valid_until": "2026-12-04T03:43:04.504577+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -17,8 +17,8 @@
       "evidence_window_days": 30
     },
     "evidence_window": {
-      "start": "2026-10-04T03:43:04.555737+00:00",
-      "end": "2026-11-03T03:43:04.555737+00:00"
+      "start": "2026-10-05T03:43:04.504577+00:00",
+      "end": "2026-11-04T03:43:04.504577+00:00"
     },
     "verified": {
       "operations": [
@@ -50,7 +50,7 @@
       "projection_absent_reason": null,
       "observations": {
         "signed_commit_share": {
-          "value": 0.022,
+          "value": 0.02,
           "measured": true,
           "absent_reason": null
         },
@@ -60,12 +60,12 @@
           "absent_reason": null
         },
         "bot_author_share": {
-          "value": 0.013,
+          "value": 0.011,
           "measured": true,
           "absent_reason": null
         },
         "workflow_runs": {
-          "value": 5642,
+          "value": 5791,
           "measured": true,
           "absent_reason": null
         },
@@ -89,7 +89,7 @@
           "measured": true,
           "absent_reason": null
         },
-        "head_sha": "e25c313db04dce6e9c39b8cab26cb04e07693c10"
+        "head_sha": "45b7dfa7892c377ddea380a35df5e5ea9153e040"
       },
       "control_map_valid": true,
       "control_map_cap": 5,
@@ -112,7 +112,7 @@
       "private": false,
       "declaration": {
         "present": true,
-        "pinned_sha": "e25c313db04dce6e9c39b8cab26cb04e07693c10",
+        "pinned_sha": "45b7dfa7892c377ddea380a35df5e5ea9153e040",
         "schema_version": "1.1.0"
       }
     },
@@ -174,7 +174,7 @@
       "reason": null,
       "confidence": "measured",
       "declared": true,
-      "checked_at": "2026-11-03T03:43:04.555737+00:00"
+      "checked_at": "2026-11-04T03:43:04.504577+00:00"
     },
     "task_history": [],
     "mandate_ref": "self-mandate-0001",
