@@ -38,8 +38,8 @@ def _map_videos() -> dict[str, dict]:
 
 
 def _provek_data(html: str) -> dict:
-    m = re.search(r"window\.__PROVEK__=(\{.*?\})</script>", html)
-    assert m, "no window.__PROVEK__=... inline script found on the page"
+    m = re.search(r'<script type="application/json" id="provek-bootstrap">(.*?)</script>', html)
+    assert m, "no provek-bootstrap JSON block found on the page"
     return json.loads(m.group(1))
 
 

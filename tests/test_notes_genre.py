@@ -107,7 +107,7 @@ def test_the_genre_holds_on_every_emitted_page_under_method():
     pages = sorted((DIST / "method").rglob("index.html"))
     assert pages, "nothing was emitted under /method/"
     for page in pages:
-        body = page.read_text(encoding="utf-8").split('<script>window.__PROVEK__', 1)[0]
+        body = page.read_text(encoding="utf-8").split('<script type="application/json" id="provek-bootstrap"', 1)[0]
         text = strip_tags(body)
         for pat in INSTRUCTION + FILLER:
             m = re.search(pat, text, re.I)

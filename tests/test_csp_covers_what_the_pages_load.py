@@ -113,4 +113,20 @@ def test_mutation_a_dist_without_inline_scripts_makes_unsafe_inline_red(tmp_path
     )
     mutated = csp_inventory.inventory(copy)
     assert mutated["inline_script_needs_unsafe_inline"] is False
-    assert any("drop 'unsafe-inline'" in p for p in _problems(HEADERS.read_text(encoding="utf-8"), mutated))
+    text = HEADERS.read_text(encoding="utf-8")
+    assert not any("unsafe-inline" in p and p.startswith("script-src") for p in _problems(text, mutated))
+    loosened = text.replace("script-src 'self'", "script-src 'self' 'unsafe-inline'", 1)
+    assert any("drop 'unsafe-inline'" in p for p in _problems(loosened, mutated))
+
+
+def test_bootstrap_is_a_json_data_block_that_parses():
+    import json
+    import re
+
+    page = (DIST / "index.html").read_text(encoding="utf-8")
+    m = re.search(r'<script type="application/json" id="provek-bootstrap">(.*?)</script>', page, re.S)
+    assert m, "index.html has no provek-bootstrap JSON block"
+    assert not re.search(r"window\.__PROVEK__\s*=", page)
+    body = m.group(1)
+    assert not any(c in body for c in "<>&\u2028\u2029")
+    assert "registry" in json.loads(body)

@@ -33,11 +33,10 @@
 # tests/test_csp_covers_what_the_pages_load.py holds this block to that list in both directions
 # (a loaded origin that the policy omits fails; an origin the policy allows that nothing loads fails).
 #
-#   script-src 'unsafe-inline'  IS A NAMED, TEMPORARY ALLOWANCE. prerender.mjs writes an inline
-#                 `window.__PROVEK__={...}` bootstrap into every page, and its bytes change with every
-#                 nightly registry refresh, so a static file cannot pin its hash. The test makes the
-#                 allowance conditional: the day the dist has no executable inline script, a policy that
-#                 still says 'unsafe-inline' goes red. JSON-LD blocks are data and need nothing.
+#   script-src    has no 'unsafe-inline' (T-0579b). prerender.mjs writes the bootstrap as a JSON data
+#                 block (`<script type="application/json" id="provek-bootstrap">`), which the browser
+#                 never executes, so nothing needs a hash. The test goes red if an executable inline
+#                 script returns while the policy lacks the allowance, or the allowance returns without one.
 #   style-src 'unsafe-inline'  the pages carry style="..." attributes (25 of 31 pages, measured).
 #   img-src / frame-src       the YouTube facade: the poster comes from i.ytimg.com, the player from
 #                 youtube-nocookie.com after a click.
@@ -47,7 +46,7 @@
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; connect-src 'self' https://cloudflareinsights.com https://rpc-bradbury.genlayer.com; img-src 'self' https://i.ytimg.com; style-src 'self' 'unsafe-inline'; font-src 'self'; frame-src https://www.youtube-nocookie.com; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; connect-src 'self' https://cloudflareinsights.com https://rpc-bradbury.genlayer.com; img-src 'self' https://i.ytimg.com; style-src 'self' 'unsafe-inline'; font-src 'self'; frame-src https://www.youtube-nocookie.com; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'
   X-Frame-Options: DENY
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains

@@ -242,7 +242,7 @@ function page(route, title, description, ld, data) {
             : "",
   ].join("\n    ");
 
-  const inline = `<script>window.__PROVEK__=${JSON.stringify({
+  const inline = `<script type="application/json" id="provek-bootstrap">${JSON.stringify({
     registry,
     ...(data?.passport ? { passport: data.passport } : {}),
     ...(data?.templatesIndex ? { templates: data.templatesIndex } : {}),
@@ -252,7 +252,7 @@ function page(route, title, description, ld, data) {
     // budget (T-02 ruling-1) has no room for it.
     ...(data?.templateSummaries ? { templateSummaries: data.templateSummaries } : {}),
     ...(data?.buildIndexVideo !== undefined ? { buildIndexVideo: data.buildIndexVideo } : {}),
-  }).replace(/</g, "\\u003c")}</script>`;
+  }).replace(/[<>&\u2028\u2029]/g, (c) => "\\u" + c.charCodeAt(0).toString(16).padStart(4, "0"))}</script>`;
 
   out = out.replace("</head>", `    ${blocks}\n  </head>`);
   out = out.replace('<div id="root"></div>', `<div id="root">${html}</div>\n    ${inline}`);

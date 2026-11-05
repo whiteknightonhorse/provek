@@ -251,4 +251,4 @@ def test_a_note_ships_without_the_application_bundle():
         pytest.skip("site not built in this checkout")
     for slug, html in pages.items():
         assert '<script type="module"' not in html, f"{slug}: ships the application entry"
-        assert "window.__PROVEK__" not in html, f"{slug}: ships bootstrap data it cannot use"
+        assert "provek-bootstrap" not in html, f"{slug}: ships bootstrap data it cannot use"

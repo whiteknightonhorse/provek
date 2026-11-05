@@ -58,6 +58,22 @@ declare global {
   }
 }
 
+/** T-0579b: the bootstrap is a JSON data block (`<script type="application/json" id="provek-bootstrap">`),
+ * not executable JS, so the CSP needs no 'unsafe-inline' in script-src. Parsed once, then kept on
+ * `window.__PROVEK__` for anything that already reads that global. */
+function readBootstrap(): Window["__PROVEK__"] {
+  if (typeof document === "undefined") return undefined;
+  if (window.__PROVEK__) return window.__PROVEK__;
+  const el = document.getElementById("provek-bootstrap");
+  if (!el?.textContent) return undefined;
+  try {
+    window.__PROVEK__ = JSON.parse(el.textContent);
+  } catch {
+    return undefined;
+  }
+  return window.__PROVEK__;
+}
+
 const norm = (p: string) => (p.endsWith("/") ? p : p + "/");
 
 /** `#main` is focused by SCRIPT on every route change (see the effect in `App` below), not by the
@@ -375,7 +391,7 @@ export function Shell({
 
 export default function App() {
   const route = useRoute(norm(typeof location === "undefined" ? "/" : location.pathname));
-  const inlined = typeof window !== "undefined" ? window.__PROVEK__ : undefined;
+  const inlined = readBootstrap();
 
   const [reg, setReg] = useState<Load<R>>(
     inlined?.registry ? { state: "ready", data: inlined.registry } : { state: "loading" },

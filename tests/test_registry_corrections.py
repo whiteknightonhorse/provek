@@ -99,7 +99,7 @@ emitted = pytest.mark.skipif(not CORRECTIONS_PAGE.exists(), reason="site not bui
 
 def _main_text(html_path: Path) -> str:
     html = html_path.read_text(encoding="utf-8")
-    body = html.split("<script>window.__PROVEK__", 1)[0]
+    body = html.split('<script type="application/json" id="provek-bootstrap"', 1)[0]
     m = re.search(r"<main\b.*?</main>", body, re.S)
     assert m, f"{html_path} has no <main>"
     return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", m.group(0))).strip()

@@ -42,8 +42,8 @@ def _pre_text(page_html: str, slug: str) -> str:
 
 
 def _provek_data(page_html: str) -> dict:
-    m = re.search(r"window\.__PROVEK__=(\{.*?\})</script>", page_html)
-    assert m, "no window.__PROVEK__=... inline script found on the page"
+    m = re.search(r'<script type="application/json" id="provek-bootstrap">(.*?)</script>', page_html)
+    assert m, "no provek-bootstrap JSON block found on the page"
     return json.loads(m.group(1))
 
 
