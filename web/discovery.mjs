@@ -180,6 +180,7 @@ export function buildLlmsTxt(entries, site = SITE, templates = []) {
 - [Registry](${site}/data/registry.json)
 ${passportLines}
 - [Templates](${site}/data/templates.json)
+- [Pages feed](${site}/feed/pages.json): the method notes and build guides, newest first, with dates and word counts; \`Accept: text/markdown\` on a page returns its article body only.
 
 ## Briefs and badges
 

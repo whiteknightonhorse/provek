@@ -35,6 +35,7 @@ WHAT THIS ENFORCES, in three layers.
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 from pathlib import Path
 
@@ -148,6 +149,12 @@ def test_dist_carries_a_markdown_sibling_for_every_passport_page(live_markdown):
 #: gets its sibling from `html_to_markdown.mjs`, so this list is the whole of the exception.
 DATA_BUILT = ("", "registry")
 
+#: T-WB-06 (CCH-MEDIUM-01): the method notes and the build guides carry an ARTICLE-ONLY copy built
+#: by `web/pages_feed.mjs` from the article's own source (no breadcrumb, FAQ, provenance or
+#: buttons), because a mirror must not republish our chrome. It is a second exception beside
+#: DATA_BUILT, and it is held byte for byte by `tests/test_pages_feed.py` rather than left free.
+ARTICLE_BUILT = re.compile(r"method/notes/[^/]+|build/[^/]+")
+
 #: Losses this converter DECLARES rather than hides: the page chrome outside `<main>`, the sr-only
 #: spans that duplicate what the eye reads, and inline SVG (two method notes draw charts whose axis
 #: labels read as a word salad in prose order). Named here as well as in the converter because a
@@ -158,7 +165,7 @@ DECLARED_LOSSES = ("outside <main>", "sr-only spans", "inline <svg>")
 def _derived_routes():
     for html in sorted(DIST.rglob("index.html")):
         rel = str(html.parent.relative_to(DIST)).replace(".", "")
-        if rel in DATA_BUILT or rel.startswith("p/"):
+        if rel in DATA_BUILT or rel.startswith("p/") or ARTICLE_BUILT.fullmatch(rel):
             continue
         yield rel, html.parent
 

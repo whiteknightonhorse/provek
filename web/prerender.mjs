@@ -22,6 +22,7 @@ import { slugOf, withdrawnSlugs, passportRows } from "./discovery.mjs";
 import { buildRegistryMarkdown, buildPassportMarkdown, buildLandingMarkdown }
   from "./markdown.mjs";
 import { pageMarkdown } from "./html_to_markdown.mjs";
+import { buildPagesArtefacts } from "./pages_feed.mjs";
 
 const DIST = "dist";
 const SITE = "https://provek.dev";
@@ -656,6 +657,20 @@ writeFileSync(join(DIST, "sitemap.xml"),
 const robotsSource = readFileSync("public/robots.txt", "utf8").trimEnd();  // same relative form as registry.json above
 writeFileSync(join(DIST, "robots.txt"), `${robotsSource}\n\nSitemap: ${SITE}/sitemap.xml\n`);
 
+
+// PAGES FEED AND ARTICLE-ONLY MARKDOWN (T-WB-06, CCH-MEDIUM-01). The notes and the build guides
+// get a purpose-built `index.md` (title and body, no chrome) BEFORE the sweep below, so the sweep's
+// "wx" write leaves them alone; `_middleware.js` serves it for `Accept: text/markdown`. The feed is
+// written to DIST (public/ was already copied by vite before this script runs).
+{
+  const { feed, markdown } = buildPagesArtefacts();
+  for (const [route, md] of Object.entries(markdown)) {
+    writeFileSync(join(DIST, route.slice(1), "index.md"), md);
+  }
+  mkdirSync(join(DIST, "feed"), { recursive: true });
+  writeFileSync(join(DIST, "feed", "pages.json"), JSON.stringify(feed, null, 2) + "\n");
+  console.log(`pages feed: ${feed.length} entries, ${feed.filter((r) => r.medium_eligible).length} medium_eligible`);
+}
 
 // EVERY PAGE ROUTE ANSWERS MARKDOWN, INCLUDING THE ONES NOBODY WROTE A BUILDER FOR.
 //

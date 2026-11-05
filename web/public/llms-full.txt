@@ -33,6 +33,7 @@
 - [git:whiteknightonhorse/provek](https://provek.dev/data/passports/git_whiteknightonhorse_provek.json): autonomy passport, JSON
 - [git:whiteknightonhorse/provek-method](https://provek.dev/data/passports/git_whiteknightonhorse_provek-method.json): autonomy passport, JSON
 - [Templates](https://provek.dev/data/templates.json)
+- [Pages feed](https://provek.dev/feed/pages.json): the method notes and build guides, newest first, with dates and word counts; `Accept: text/markdown` on a page returns its article body only.
 
 ## Briefs and badges
 
