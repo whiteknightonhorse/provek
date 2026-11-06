@@ -168,7 +168,7 @@ function page(p, slug) {
 <meta property="og:image" content="${SITE}/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Provek, evidence, not claims. How much of a business really runs without people? Autonomy measured from public-repo evidence, one operation at a time.">
+<meta property="og:image:alt" content="Provek: how much of a business runs without people? Five business operations, each with how much runs without a human; checked ones carry evidence, one is unverified, verdicts expire.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="${SITE}/og-image.png">
 <link rel="canonical" href="${SITE}/p/${esc(slug)}/brief">

@@ -15,8 +15,8 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "web" / "dist"
 MAX_DESCRIPTION = 160
-# T-WB-05: the operator's designed card (provek-og-image.png, 1200x630). The hash is the design's.
-EXPECTED_SHA256 = "993e35e9f3288fa9ace3709baa9bac27bb5694d1cacf9dfed52e10d076f4a00f"
+# T-WB-07: the operator's illustrated card (og-provek-1200x630.png, 1200x630). The hash is the design's.
+EXPECTED_SHA256 = "7e6574018f56ab6de5da0fc486768fb5df714fa6edd7e77d382e9a883d2dcf5a"
 
 built = pytest.mark.skipif(not (DIST / "index.html").exists(), reason="site not built in this checkout")
 
