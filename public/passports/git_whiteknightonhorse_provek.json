@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-11-05T03:43:04.324963+00:00",
-    "valid_until": "2026-12-05T03:43:04.324963+00:00",
+    "issued_at": "2026-11-06T03:43:04.510475+00:00",
+    "valid_until": "2026-12-06T03:43:04.510475+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -17,8 +17,8 @@
       "evidence_window_days": 30
     },
     "evidence_window": {
-      "start": "2026-10-06T03:43:04.324963+00:00",
-      "end": "2026-11-05T03:43:04.324963+00:00"
+      "start": "2026-10-07T03:43:04.510475+00:00",
+      "end": "2026-11-06T03:43:04.510475+00:00"
     },
     "verified": {
       "operations": [
@@ -50,7 +50,7 @@
       "projection_absent_reason": null,
       "observations": {
         "signed_commit_share": {
-          "value": 0.254,
+          "value": 0.212,
           "measured": true,
           "absent_reason": null
         },
@@ -60,12 +60,12 @@
           "absent_reason": null
         },
         "bot_author_share": {
-          "value": 0.254,
+          "value": 0.212,
           "measured": true,
           "absent_reason": null
         },
         "workflow_runs": {
-          "value": 1320,
+          "value": 1327,
           "measured": true,
           "absent_reason": null
         },
@@ -89,7 +89,7 @@
           "measured": true,
           "absent_reason": null
         },
-        "head_sha": "b5f214dd975f67b27b3603c38c92867fee1cf6db"
+        "head_sha": "4f2deec3d8309e2d23ca62dd8d8a97475bad0eb1"
       },
       "control_map_valid": true,
       "control_map_cap": 5,
@@ -112,7 +112,7 @@
       "private": false,
       "declaration": {
         "present": true,
-        "pinned_sha": "b5f214dd975f67b27b3603c38c92867fee1cf6db",
+        "pinned_sha": "4f2deec3d8309e2d23ca62dd8d8a97475bad0eb1",
         "schema_version": "1.0.0"
       }
     },
