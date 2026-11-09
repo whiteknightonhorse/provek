@@ -262,3 +262,44 @@ def test_receipt_dispute_header_names_the_babwp_runner():
     head = (CONTRACTS / "apibase_receipt_dispute.py").read_text(encoding="utf-8").splitlines()[:2]
     assert head == ["# v0.3.0",
                     '# { "Depends": "py-genlayer:babwp9t37jw9g4j2bccgn14g6x7x9s1f7dsmh7emvz735pz4zxa0" }']
+
+
+# --- the Bradbury Phase 2 deployment record (deploy/deployment.json, "dispute_contract") --------
+# The record names the sha256 of the contract file at the commit the dispatcher deployed from. The
+# fixtures are byte copies of both contract files at 9055f93, so the pin holds under a depth-1 CI
+# checkout (no `git show`). Nothing here touches the network.
+
+DEPLOYED_COMMIT = "9055f93"
+
+
+def _dispute_record():
+    path = Path(__file__).resolve().parent.parent.parent / "deploy" / "deployment.json"
+    return json.loads(path.read_text(encoding="utf-8"))["dispute_contract"]
+
+
+@pytest.mark.parametrize("key,fixture,sha", [
+    ("receipt_dispute", "apibase_receipt_dispute.9055f93.py.txt",
+     "91e2fea2867b018e8f4c6b4899c93503d6b5195fbac1ea7c185813eab004f71c"),
+    ("payment_dispute", "apibase_payment_dispute.9055f93.py.txt",
+     "c041f51b26654cec30e5d2528d6482d9d7a1be8906c55490f561240d10a19651"),
+])
+def test_deployment_record_pins_the_deployed_file(key, fixture, sha):
+    record = _dispute_record()
+    assert record["commit"] == DEPLOYED_COMMIT and DEPLOYED_COMMIT in fixture
+    raw = (FIXTURES / fixture).read_bytes()
+    assert hashlib.sha256(raw).hexdigest() == sha, "fixture is not the 9055f93 file"
+    assert record[key]["contract_sha256"] == sha
+    assert record[key]["contract_bytes"] == len(raw)
+    # The fixture is the committed file today: no later edit may leave the record describing other bytes.
+    name = "apibase_" + key + ".py"
+    assert (CONTRACTS / name).read_bytes() == raw, f"{name} changed since the deployed commit; add a new record"
+    assert record["runner_header"] == " / ".join(raw.decode("utf-8").splitlines()[:2])
+
+
+def test_deployment_record_hashes_carry_no_0x_prefix_and_zero_disputes_is_stated():
+    record = _dispute_record()
+    for key in ("receipt_dispute", "payment_dispute"):
+        for tx in (record[key]["deploy_tx"], record[key]["set_policy"]["tx"]):
+            assert re.fullmatch(r"[0-9a-f]{64}", tx), tx
+    assert re.fullmatch(r"[0-9a-f]{64}", record["payment_dispute"]["set_chain"]["tx"])
+    assert record["live_disputes"] == [] and any("list_recent" in item for item in record["not_measured"])

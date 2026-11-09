@@ -101,5 +101,102 @@
       "evidence": [],
       "source_transcripts": "none (the transcripts of the 2026-10-20 deployment, ~/taskloop/briefs/GA-05-transcripts/, do not exist)"
     }
-  ]
+  ],
+  "dispute_contract": {
+    "network": "testnet_bradbury",
+    "chain_id": 4221,
+    "network_note": "Bradbury Phase 2; two sibling contracts (T-GD-01, D-80) deployed 2026-11-09 by the dispatcher (D3 session) from commit 9055f93; test GEN only",
+    "rpc_url": "https://rpc-bradbury.genlayer.com",
+    "deployer": "0x2c111FCD3082083C9B287DD9DA5995f190968Ef9",
+    "commit": "9055f93",
+    "commit_note": "abbreviated, as the transcript states it ('Contracts from incubator origin/main 9055f93'); both contract files are unchanged since e25eb22 (git log -- contracts)",
+    "runner_header": "# v0.3.0 / # { \"Depends\": \"py-genlayer:babwp9t37jw9g4j2bccgn14g6x7x9s1f7dsmh7emvz735pz4zxa0\" }",
+    "receipt_dispute": {
+      "contract": "ApibaseReceiptDispute (claim upstream_failed_but_billed)",
+      "contract_address": "0xe4e75ac47bf8350Ff705a552b7453Cf7726eF893",
+      "explorer_url": "https://explorer-bradbury.genlayer.com/address/0xe4e75ac47bf8350Ff705a552b7453Cf7726eF893",
+      "deploy_tx": "d4505d0eeeae0fef545b5b28f218f9149ee8a9ace5b3130c94ccda8286335e84",
+      "deploy_tx_status": "ACCEPTED",
+      "deploy_tx_consensus_result": "MAJORITY_AGREE",
+      "deploy_tx_execution_result": "FINISHED_WITH_RETURN",
+      "constructor_args": {
+        "operator": "0x2c111FCD3082083C9B287DD9DA5995f190968Ef9",
+        "receipt_base_url": "https://apibase.pro/r/"
+      },
+      "contract_bytes": 12191,
+      "contract_sha256": "91e2fea2867b018e8f4c6b4899c93503d6b5195fbac1ea7c185813eab004f71c",
+      "fixture": "tests/fixtures/apibase_receipt_dispute.9055f93.py.txt",
+      "set_policy": {
+        "tx": "2a9ab011565565d02e56312341cd03d3f7a4118c8e403e097d4d8177dcebda8d",
+        "tx_status": "ACCEPTED",
+        "tx_consensus_result": "MAJORITY_AGREE",
+        "execution_result": "FINISHED_WITH_RETURN",
+        "version": "2026-11-04.3",
+        "sha256": "d1cb13c3fa7ac84fcac3762caba66d208e2d1f9e95f934f4913a82b287b9d4fb"
+      },
+      "set_chain": "not_applicable: this contract has no chain configuration",
+      "get_config": "operator 0x2c111F..8Ef9, policy_version 2026-11-04.3, policy_sha256 d1cb13c3..d4fb, receipt_base_url https://apibase.pro/r/ (read 2026-11-09T01:42:04Z)"
+    },
+    "payment_dispute": {
+      "contract": "ApibasePaymentDispute (claim paid_without_receipt)",
+      "contract_address": "0x34e8335b70546fb37c9f2c06d472208b13b8f168",
+      "explorer_url": "https://explorer-bradbury.genlayer.com/address/0x34e8335b70546fb37c9f2c06d472208b13b8f168",
+      "deploy_tx": "9ff38ae8358f03a43591408a2f34370cc0b1ef937665faf044431cf7d6b9cb4e",
+      "deploy_tx_status": "ACCEPTED",
+      "deploy_tx_consensus_result": "MAJORITY_AGREE",
+      "deploy_tx_execution_result": "FINISHED_WITH_RETURN",
+      "constructor_args": {
+        "operator": "0x2c111FCD3082083C9B287DD9DA5995f190968Ef9",
+        "receipt_base_url": "https://apibase.pro/r/"
+      },
+      "contract_bytes": 15868,
+      "contract_sha256": "c041f51b26654cec30e5d2528d6482d9d7a1be8906c55490f561240d10a19651",
+      "fixture": "tests/fixtures/apibase_payment_dispute.9055f93.py.txt",
+      "set_policy": {
+        "tx": "298706918b74ee7ea70445aea0c1ba39721aaa082e402f0235fae263ac0368cc",
+        "tx_status": "ACCEPTED",
+        "tx_consensus_result": "MAJORITY_AGREE",
+        "execution_result": "FINISHED_WITH_RETURN",
+        "version": "2026-11-04.3",
+        "sha256": "d1cb13c3fa7ac84fcac3762caba66d208e2d1f9e95f934f4913a82b287b9d4fb"
+      },
+      "set_chain": {
+        "tx": "fcffc3e9f2ba6170854443973666a81c31e6626d21108feec3ab1c9d56a851b8",
+        "tx_status": "ACCEPTED",
+        "tx_consensus_result": "MAJORITY_AGREE",
+        "execution_result": "FINISHED_WITH_RETURN",
+        "chain_id": "8453",
+        "rpc_url": "https://mainnet.base.org",
+        "usdc": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "payee": "0x50EbDa9dA5dC19c302Ca059d7B9E06e264936480"
+      },
+      "get_config": "chains [\"8453\"], operator 0x2c111F..8Ef9, policy_version 2026-11-04.3, policy_sha256 d1cb13c3..d4fb, receipt_base_url https://apibase.pro/r/ (read 2026-11-09T01:42:04Z)"
+    },
+    "fees": {
+      "deploy_quoted": "0.100000000000010352",
+      "deploy_charged": "not_measured",
+      "write_quoted": "0.100000000000010352",
+      "write_charged": "not_measured",
+      "unit": "GEN (test GEN, Bradbury Phase 2); quoted = the fee deposit held per transaction (the same figure printed for both deploys and all three writes in the transcript); the charge is not in the transcript"
+    },
+    "_note_tx_hashes": "every tx hash in this object has its 0x prefix stripped, as above (scripts/secret_scan.sh, GL-00 ruling-1); evidence/MEASURED-021-* and -022-* strip it the same way and nothing else.",
+    "live_disputes": [],
+    "live_disputes_note": "No dispute was submitted in the D3 session (the transcript holds no dispute_receipt/dispute_payment write), so the list is empty. The end-to-end tests the team runs with its own wallets are recorded in the dispatcher's ledger, not here, and are not customer disputes.",
+    "not_measured": [
+      "list_recent and get_dispute reads of either contract (the D3 reads file holds get_config only; so 'zero disputes on chain' is inferred from the absence of any dispute write in the transcript, not read)",
+      "any dispute that reached REFUND or RELEASE (none was submitted)",
+      "FINALIZED status of the five D3 transactions (the transcript shows ACCEPTED)",
+      "the per-transaction charge of any dispute-contract transaction",
+      "a studionet gltest integration run for either dispute contract",
+      "a byte-for-byte check of the deployed code: the transcript's deploy receipts print the first 4993 bytes of each contract's calldata, which equal the committed files' first 4993 bytes; the rest of the code is in the transcript's printed source listing only"
+    ],
+    "evidence": [
+      "evidence/MEASURED-021-gd-03-bradbury-phase2-dispute-deploy.txt",
+      "evidence/MEASURED-022-gd-03-dispute-reads.txt"
+    ],
+    "source_transcripts": [
+      "~/taskloop/briefs/GLR-05-transcripts/D3-session-2026-11-09.md",
+      "~/taskloop/briefs/GLR-05-transcripts/D3-dispute-read-2026-11-09.json"
+    ]
+  }
 }

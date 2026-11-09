@@ -222,6 +222,20 @@ Live records, as of 2026-10-28 (read back with `list_by_receipt` and `get_attest
 Not measured: a live `FAIL` or `NOT_FOUND` record (none was requested), and a studionet integration run for this contract.
 The deployment record is `integrations/genlayer-apibase-attest/deploy/DEPLOYMENT.md`.
 
+## APIbase dispute contracts — live on Bradbury Phase 2
+
+`ApibaseReceiptDispute` and `ApibasePaymentDispute` (`integrations/genlayer-apibase-attest/`) are deployed on the GenLayer test
+network, test GEN only, from commit `9055f93` on 2026-11-09, with the refund policy `2026-11-04.3` pinned. 0 disputes as of
+2026-11-09: none had been submitted in the deployment session (`list_recent` was not read; see `not_measured` in
+`integrations/genlayer-apibase-attest/deploy/deployment.json`, `dispute_contract`).
+
+| Contract | Address | Explorer | Configured |
+|---|---|---|---|
+| `ApibaseReceiptDispute` | `0xe4e75ac47bf8350Ff705a552b7453Cf7726eF893` | https://explorer-bradbury.genlayer.com/address/0xe4e75ac47bf8350Ff705a552b7453Cf7726eF893 | `set_policy("2026-11-04.3", ...)` |
+| `ApibasePaymentDispute` | `0x34e8335b70546fb37c9f2c06d472208b13b8f168` | https://explorer-bradbury.genlayer.com/address/0x34e8335b70546fb37c9f2c06d472208b13b8f168 | `set_policy`, and `set_chain("8453", ...)` with payee `0x50EbDa9dA5dC19c302Ca059d7B9E06e264936480` |
+
+Record: `integrations/genlayer-apibase-attest/deploy/DEPLOYMENT.md`; transcripts `evidence/MEASURED-021-*` and `evidence/MEASURED-022-*`.
+
 ## Where the rest is
 
 - [`SPEC.md`](SPEC.md) — what each screen and rule must be

@@ -1,0 +1,29 @@
+# tree: 9055f9396b409a2c582d96ce6cea78598828f53a
+MEASURED-022 - GD-03: raw gen_call get_config reads of both dispute contracts on GenLayer testnet Bradbury Phase 2
+(chain 4221), 2026-11-09. list_recent and get_dispute were NOT captured in this file (see deploy/deployment.json not_measured).
+Dispatcher session, 2026-11-09. Source: ~/taskloop/briefs/GLR-05-transcripts/D3-dispute-read-2026-11-09.json,
+sha256 of the source file: 8ebf16f85729001965a67897ba89ce9cbf7e4dabfd7d3adb3bb9a0e63a2bbad0.
+ONE TRANSFORM, and only this one: the `0x` prefix is stripped from every `0x` + 64 hex string
+(transaction hashes, seeds, hashes), because `scripts/secret_scan.sh` blocks that pattern anywhere in the tree
+(GL-00 ruling-1; the same rule evidence/MEASURED-017-* followed). Everything else is the source, byte
+for byte, below the line.
+-----------------------------------------------------------------------------------------------
+{
+  "source": "raw gen_call (1 param) via rd.py, D3 dispatcher step GL-D3-1104 ruling-1",
+  "read_at": "2026-11-09T01:42:04.708313Z",
+  "head": "9055f93",
+  "receipt_dispute": {
+    "address": "0xe4e75ac47bf8350Ff705a552b7453Cf7726eF893",
+    "get_config": {
+      "decoded": "{\"operator\": \"0x2c111FCD3082083C9B287DD9DA5995f190968Ef9\", \"policy_sha256\": \"d1cb13c3fa7ac84fcac3762caba66d208e2d1f9e95f934f4913a82b287b9d4fb\", \"policy_version\": \"2026-11-04.3\", \"receipt_base_url\": \"https://apibase.pro/r/\"}",
+      "raw": "fc0d7b226f70657261746f72223a2022307832633131314643443330383230383343394232383744443944413539393566313930393638456639222c2022706f6c6963795f736861323536223a202264316362313363336661376163383466636163333736326361626136366432303865326431663965393566393334663439313361383262323837623964346662222c2022706f6c6963795f76657273696f6e223a2022323032362d31312d30342e33222c2022726563656970745f626173655f75726c223a202268747470733a2f2f617069626173652e70726f2f722f227d"
+    }
+  },
+  "payment_dispute": {
+    "address": "0x34e8335b70546fb37c9f2c06d472208b13b8f168",
+    "get_config": {
+      "decoded": "{\"chains\": [\"8453\"], \"operator\": \"0x2c111FCD3082083C9B287DD9DA5995f190968Ef9\", \"policy_sha256\": \"d1cb13c3fa7ac84fcac3762caba66d208e2d1f9e95f934f4913a82b287b9d4fb\", \"policy_version\": \"2026-11-04.3\", \"receipt_base_url\": \"https://apibase.pro/r/\"}",
+      "raw": "9c0f7b22636861696e73223a205b2238343533225d2c20226f70657261746f72223a2022307832633131314643443330383230383343394232383744443944413539393566313930393638456639222c2022706f6c6963795f736861323536223a202264316362313363336661376163383466636163333736326361626136366432303865326431663965393566393334663439313361383262323837623964346662222c2022706f6c6963795f76657273696f6e223a2022323032362d31312d30342e33222c2022726563656970745f626173655f75726c223a202268747470733a2f2f617069626173652e70726f2f722f227d"
+    }
+  }
+}

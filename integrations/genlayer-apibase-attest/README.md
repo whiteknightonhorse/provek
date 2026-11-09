@@ -55,6 +55,18 @@ Live records, as of 2026-10-28 (read back with `list_by_receipt` and `get_attest
 Not measured: a live `FAIL` or `NOT_FOUND` record (none was requested), and a studionet integration run for this contract.
 The deployment record is `deploy/DEPLOYMENT.md`.
 
+## Dispute contracts — live on Bradbury Phase 2
+
+Deployed 2026-11-09 from commit `9055f93` (runner `babwp`, header `# v0.3.0`), policy `2026-11-04.3` pinned; test GEN only.
+0 disputes as of 2026-11-09 (none submitted in the deployment session; `list_recent` not read).
+
+| Contract | Address | Explorer |
+|---|---|---|
+| `ApibaseReceiptDispute` | `0xe4e75ac47bf8350Ff705a552b7453Cf7726eF893` | https://explorer-bradbury.genlayer.com/address/0xe4e75ac47bf8350Ff705a552b7453Cf7726eF893 |
+| `ApibasePaymentDispute` | `0x34e8335b70546fb37c9f2c06d472208b13b8f168` | https://explorer-bradbury.genlayer.com/address/0x34e8335b70546fb37c9f2c06d472208b13b8f168 (`set_chain("8453", ...)` configured) |
+
+Every field is in `deploy/deployment.json` (`dispute_contract`) and `deploy/DEPLOYMENT.md`; the transcripts are `evidence/MEASURED-021-*` and `-022-*`.
+
 ## The receipt: `apibase-receipt/1`
 
 The contract fetches `{receipt_base_url}{receipt_id}.json`. `receipt_id` is 32–64 lowercase hex
