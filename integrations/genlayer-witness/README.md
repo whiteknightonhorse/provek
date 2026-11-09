@@ -2,115 +2,7 @@
 
 [![contract tests](https://github.com/whiteknightonhorse/provek-genlayer-witness/actions/workflows/contract-tests.yml/badge.svg)](https://github.com/whiteknightonhorse/provek-genlayer-witness/actions/workflows/contract-tests.yml)
 
-A reusable GenLayer Intelligent Contract, built beside — not inside — the
-[Provek](https://provek.dev/) repository this directory lives in
-(`integrations/genlayer-witness/` in `whiteknightonhorse/provek`). It gives a single
-machine-checkable evidence claim (does a URL answer? does the artefact at a URL match a declared
-hash?) a second, consensus-backed opinion, independent of Provek's own single-process check.
-
-**Where this code lives.** The source of record is `integrations/genlayer-witness/` in
-[`whiteknightonhorse/provek`](https://github.com/whiteknightonhorse/provek/tree/main/integrations/genlayer-witness),
-where Provek's gates check it (D-63). The same directory is published, with its history, as
-`whiteknightonhorse/provek-genlayer-witness` — a read-only mirror made with `git subtree split`
-for the GenLayer Builder programme (Intelligent Contracts track), which requires a
-contract-focused repository. The mirror is never edited directly: every change enters Provek and
-is re-split (D-64). Paths such as `src/witness/witness.py`, `tests/test_genlayer_witness_*.py`,
-`evidence/MEASURED-*`, `DECISIONS.md` and `docs/adr/` refer to the root of the Provek repository,
-and `taskloop/...` and `~/orchestra/...` are the operator's private working records, not
-published. Dependabot is not configured in the mirror — action pins are updated through Provek.
-
-This file follows the operator's brief (`taskloop/briefs/GL-00-operator-task.txt`, section
-"README") section by section. The governing design decisions this contract implements are recorded
-in full in `taskloop/disputes/GL-00-genlayer-witness-design.ruling-1.md` / `...ruling-2.md` /
-`...ruling-3.md`; `DECISIONS.md` D-63 and `docs/adr/ADR-0012-a-second-isolated-toolchain-is-admitted-without-merging-into-the-first.md`
-record how this integration is wired into the rest of the repository's gates without merging into
-it. This README does not repeat those documents' reasoning in full — it states the contract's
-externally-visible behaviour, points at the source of record for each design choice, and gives the
-commands to reproduce every claim made here.
-
-## GenLayer Evidence Witness — live app
-
-**What it does.** A web page, [https://provek.dev/witness/](https://provek.dev/witness/), for the
-GenLayer Intelligent Contract described in this repository's witness integration
-(`integrations/genlayer-witness/`). A visitor can look up the records the contract holds for a
-subject, request a new check, and watch that request go through GenLayer consensus until it is
-`FINALIZED` and a `PASS` or `FAIL` record exists. Two criteria exist: `url_reachable` (does the URL
-answer) and `artifact_hash` (do the exact bytes at the URL hash to a declared sha256). It is not
-Provek's own WitnessRecord pages under `/w/`; the nav and every heading say "GenLayer Evidence
-Witness" so the two are never confused.
-
-| | |
-|---|---|
-| Page | https://provek.dev/witness/ |
-| Contract | `0x99C23e1794ed35b429161fBEB00967D0c81DC491` |
-| Explorer | https://scan.bradbury.genlayer.com/address/0x99C23e1794ed35b429161fBEB00967D0c81DC491 |
-| Network | GenLayer testnet Bradbury Phase 2 (chain 4221), RPC `https://rpc-bradbury.genlayer.com` (redeployed 2026-10-28 after GenLayer reset the testnet on 2026-10-24; the pre-reset record is kept in `deployment.json`, `previous_deployments`) |
-| Client library | `genlayer-js` 2.0.0-rc.2, an exact pin in `web/package.json` and `web/package-lock.json` |
-
-**Design: reads go straight to the chain, writes go through an operator relay.**
-
-- *Reads* (look-up, supported criteria, transaction tracking) run in the visitor's browser against
-  the Bradbury RPC, which allows browser origins, so no Provek server sits in between and nothing on
-  the page is a stored copy: every record shown is an RPC answer received in that session.
-- *Writes* need a relay. The contract's `witness(...)` accepts only the operator as caller
-  (`only the operator may request a witness check`), so a visitor's wallet cannot submit. The page's
-  "Request a check" form therefore posts to `/api/witness-submit` (a Cloudflare Pages Function,
-  `web/functions/api/witness-submit.js`), which validates the request exactly as the contract does
-  (a bad request is a `400` naming the field, never a wasted transaction), applies rate limits,
-  signs with the operator key held as the Pages secret `GL_OPERATOR_KEY` (every v0.6 write carries one fixed fee object, the one that finalized
-  the D2 writes, because the SDK's fee estimate fails on Phase 2; if the operator wallet, read with `eth_getBalance`, holds less
-  test GEN than its deposit, the answer is a `503` and nothing is sent; `GET` reports `funded` and `fee_quote`), and answers `202` with
-  `{tx_hash, explorer_url, track_url}`. The page then opens `/witness/?tx=<hash>` and follows the
-  lifecycle by reading the chain. The relay only signs and sends; the verdict is produced by GenLayer
-  validators, each fetching the evidence URL on its own, and is read back from the chain.
-- *Limits*: 3 requests per client per hour and 50 per UTC day for the whole service (`429` with
-  `Retry-After`). Counters live in the KV binding `WITNESS_RL`; they hold counts only, never a request
-  body, and the client key is a keyed hash of the address under a per-day message, never the address.
-  KV has no atomic increment, so the daily cap is exact to within a few simultaneous requests.
-- *Failure modes*: no secret (or a malformed one) means `GET /api/witness-submit` reports
-  `{"enabled": false, ...}`, `POST` answers `503`, and the page shows "submissions temporarily
-  disabled" while the read path keeps working. An upstream failure is a `502` carrying the upstream
-  message with any key material removed. The key is never logged and never present in a response.
-
-**How a reviewer reproduces the whole workflow** (no wallet needed):
-
-1. Open https://provek.dev/witness/. The supported criteria are read live from the contract.
-2. Under "Look up records for a subject" the subject `git:whiteknightonhorse/provek` is pre-filled;
-   the records it lists were written by earlier checks.
-3. Under "Request a check" choose `url_reachable`, enter `https://provek.dev/` and submit. The page
-   moves to `/witness/?tx=<hash>`.
-4. Watch the observed lifecycle (for example `PENDING`, `PROPOSING`, `COMMITTING`, `REVEALING`,
-   `ACCEPTED`) until `FINALIZED`. A just-submitted hash may show "not indexed yet" for up to a minute.
-5. The matching record appears with `PASS`, its observation, evidence digest and a link to the
-   transaction in the explorer.
-6. For a `FAIL`: request `artifact_hash` for `https://provek.dev/` with an expected digest of 64
-   zeros. The validators fetch the bytes, compute the real sha256, find it differs from the
-   declaration, and the record reads `FAIL` with the digest they computed.
-7. `UNDETERMINED` is a possible honest outcome (validators could not agree, typically because the
-   URL was unavailable to them); the page says so and claims no record.
-
-**Tests** (from the Provek repository root; no network, no real key):
-
-```bash
-(cd web && npm ci && npm run build)
-python3 -m pytest tests/test_witness_relay.py tests/test_witness_page.py -q
-./scripts/push.sh --gates-only
-```
-
-`tests/test_witness_relay.py` runs the relay under Node with a mocked `genlayer-js` client and a
-fake key. It compares the relay's URL rules, case by case, with the contract's own `_validate_url`,
-and asserts that the key appears in no response, header, log line or stored value.
-
-**Deployment notes.**
-
-- Create a KV namespace and put its id in the `WITNESS_RL` entry of `web/wrangler.toml` (the
-  committed id is a placeholder).
-- Set the secret `GL_OPERATOR_KEY` (hex private key of the contract's operator) on the Pages project
-  from standard input, never on a command line, and never commit it.
-- After deploying, `GET https://provek.dev/api/witness-submit` must report `enabled: true` and an
-  `operator` address equal to the contract's `get_operator()`.
-- The Workers runtime is not exercised by the tests; the first live submission after a deploy is the
-  runtime check.
+`ProvekEvidenceWitness` is a reusable GenLayer Intelligent Contract. It gives one machine-checkable evidence claim (does a URL answer? do the bytes at a URL match a declared sha256?) a consensus-backed verdict: the leader fetches the URL, every validator fetches it independently, and a record is written only when they agree on the whole record. It is deployed on GenLayer Testnet Bradbury Phase 2 at [`0x99C23e1794ed35b429161fBEB00967D0c81DC491`](https://scan.bradbury.genlayer.com/address/0x99C23e1794ed35b429161fBEB00967D0c81DC491). This repository is the contract-focused publication of `integrations/genlayer-witness/` in [`whiteknightonhorse/provek`](https://github.com/whiteknightonhorse/provek/tree/main/integrations/genlayer-witness), produced with `git subtree split` and never edited directly; changes land there and are re-split. Design decisions cited as D-nn below are entries of Provek's public [`DECISIONS.md`](https://github.com/whiteknightonhorse/provek/blob/main/DECISIONS.md).
 
 ## Directory layout
 
@@ -124,7 +16,7 @@ integrations/genlayer-witness/
                                inert inside Provek, live once this directory is a repository root
   pyproject.toml             — pytest rootdir + the `integration` marker
   requirements.txt           — pinned versions, for human readers (CI's own hash-pinned set lives
-                               in requirements/ci-genlayer.{in,txt} at the repository root, D-63)
+                               in requirements/ci-genlayer.{in,txt} at the Provek repository root, D-63)
   requirements/
     ci-genlayer.txt          — hash-pinned CI set, a byte-identical copy of the root
                                `requirements/ci-genlayer.txt`, held equal in Provek by
@@ -139,9 +31,9 @@ integrations/genlayer-witness/
     integration/              — `gltest --network studionet tests/integration -v -s` (real
                                 consensus; not run at the door, not run in CI — dispatcher-only)
     fixtures/
-      digest_golden.json     — one digest formula, two readers (this repository's 3.10
+      digest_golden.json     — one digest formula, two readers (the Provek repository's 3.10
                                `tests/test_genlayer_witness_digest_matches_provek.py` reads
-                               `src.witness.witness._digest`, this directory's 3.12 direct tests
+                               `src.witness.witness._digest`, the contract directory's 3.12 direct tests
                                read the contract's own `_url_reachable_digest`)
   deploy/
     README.md                — the Deployment record (Bradbury address, explorer, three records
@@ -164,10 +56,12 @@ It is deployed on **GenLayer Testnet Bradbury Phase 2** (chain id `4221`) at
 [`0x99C23e1794ed35b429161fBEB00967D0c81DC491`](https://scan.bradbury.genlayer.com/address/0x99C23e1794ed35b429161fBEB00967D0c81DC491) —
 see "How to deploy" and `deploy/README.md` for the full, measured record.
 
+A public page that reads this contract and relays the operator's write requests exists in the Provek product repository and is documented there; it is not part of this repository.
+
 ## 2. Why it exists
 
 Provek's own witness mechanism (`src/witness/witness.py`, `WitnessRecord` v0) runs an anonymous,
-credential-free HTTP GET from a single untrusted process (this repository's own CI/cron host) and
+credential-free HTTP GET from a single untrusted process (Provek's own CI/cron host) and
 publishes whatever that one process happened to observe — reproducible in principle (anyone can
 repeat the same GET), but backed, in practice, by exactly one observer. `ProvekEvidenceWitness`
 adds a second, structurally different guarantee over the same two criterion types: GenLayer's
@@ -240,7 +134,7 @@ either way, exactly `src.witness.witness._check_artifact_hash`'s own choice. For
 `sha256("url_reachable|" + url + "|" + result + "|" + checked_at)` — byte-for-byte
 `src.witness.witness._digest("url_reachable", url, result, checked_at)`, proven equal by a shared
 golden vector (`tests/fixtures/digest_golden.json`, read by both this contract's direct tests and
-this repository's own `tests/test_genlayer_witness_digest_matches_provek.py`, D-63 §3). For
+Provek's own `tests/test_genlayer_witness_digest_matches_provek.py`, D-63 §3). For
 `artifact_hash` when the fetch itself failed (`fetch` is `"error"` or `"too_large"`): a **named
 departure** from Provek's own formula. Provek's `_check_artifact_hash` hashes
 `"artifact_hash|url|unreachable|" + str(e) + "|checked_at"`, where `str(e)` is the caught
@@ -271,7 +165,7 @@ bridge exists today; see "Why this is not part of Provek scoring"):
 reaching consensus. The actual evidence fetch runs inside
 `gl.vm.run_nondet(leader_fn, validator_fn)` (the v0.3.0 SDK's name for what the v0.2 SDK called
 `run_nondet_unsafe`: the validator runs unsandboxed and an uncaught exception in it is *Disagree*;
-see `taskloop/disputes/GL-00-genlayer-witness-design.ruling-2.md` §2 "Why not `strict_eq`" for why
+see "Why a custom validator, not `strict_eq`" in section 6 for why
 a custom leader/validator pair is used — the v0.3.0 SDK has no `genlayer.gl.vm` alias module, so the
 fully-dotted form is the only one, T-GLR-04).
 
@@ -314,7 +208,7 @@ the observation is not a dict with the expected keys and a recognized `fetch` st
 validator's own `gl.nondet.web.get(evidence_url)` call raises an exception; or if the validator's
 own `_bound(...)` tuple differs from the leader's in any field, fetch state included. The body is
 not bound for `url_reachable` (it is not written to the record) and `bytes` is never bound. Verdict-only
-agreement was incomplete in the design (GL-00 ruling-2), not a build defect; the Portal steward rejected
+agreement was incomplete in the design (the first design), not a build defect; the Portal steward rejected
 it on 2026-10-23 (D-76).
 
 **The validator's own fetch failing is "undetermined", never "the claim is false".** If the
@@ -357,12 +251,11 @@ in-process against a Python 3.12 interpreter, with `gl.nondet.web.get` calls ans
 `scripts/push.sh`'s door step `9/9` and `.github/workflows/gates.yml`'s `genlayer` job both run.
 
 ```
-~/orchestra/glenv-babwp/bin/python3 -m pytest tests/direct -v
-~/orchestra/glenv-babwp/bin/python3 scripts/check_genvm_lint.py
+python3 -m pytest tests/direct -v
+python3 scripts/check_genvm_lint.py
 ```
 
-Both commands need the isolated Python 3.12 venv at `~/orchestra/glenv-babwp` (this repository's own
-interpreter is 3.10 — see `GL-harness-notes.md`; built from the hash-pinned `requirements/ci-genlayer.txt`:
+Both commands need a Python 3.12 environment built from the hash-pinned `requirements/ci-genlayer.txt` exactly as `.github/workflows/contract-tests.yml` builds it, with
 `genlayer-test==0.30.0rc2`, `genvm-linter==0.11.1rc2`, `genlayer-py==0.19.0rc2`), `GENVM_VERSION=v0.6.0-rc10`
 and `GENVM_ALLOW_PRERELEASE=1` in the environment, and
 `~/.cache/gltest-direct/bundles-v2/genvm-universal-v0.6.0-rc10.tar.xz` (copied to
@@ -387,7 +280,7 @@ positives.
 
 Real leader, real validators, real `gl.nondet.web.get` — against a real GenLayer network. **Not**
 run at the door, **not** run in CI (see "Limitations"): they need a funded account on a real
-network, which this repository's own automated gates never hold.
+network, which Provek's own automated gates never hold.
 
 ```
 cd integrations/genlayer-witness
@@ -411,8 +304,8 @@ for Studionet beyond running the integration tests themselves.
 
 **Testnet Bradbury** (the canonical deployment target — a public explorer, unlike Studionet, whose
 own state is not proven stable across resets): deployment needs a funded account and its private
-key, held outside this repository (`~/orchestra/gl/key.hex`, never committed, never read by any
-automated gate — GL-00 ruling-2 §"Networks"/"Secrets"). This repository's tests and gates make **no
+key, held outside the repository (a file outside the repository, never committed, never read by any
+automated gate). Provek's tests and gates make **no
 GenLayer network call of any kind** and never read that key; only the dispatcher, operating
 outside the automated door, performs a live deployment. The dispatcher's actual deploy path uses
 `genlayer_py.create_client(chain=testnet_bradbury, account=...)` directly —
@@ -472,7 +365,7 @@ contract.witness(
 ```
 
 `witness_id`: `4c76714ac8273e260f6e9d58b4b3ace90eff0b56bb22301975c9698aa606cd1f`. Transaction status:
-`FINALIZED` (tx hash, `0x`-stripped for the secret-scan gate per GL-00 ruling-1:
+`FINALIZED` (tx hash, `0x`-stripped for the secret-scan gate for the secret-scan gate:
 `06ab4278640e2d34547dea084133371974ed6edafd1e6dbc9963381b144a36a2`). See `deploy/deployment.json`
 for the other two records (a second PASS on `url_reachable` against `https://provek.dev/`,
 and a FAIL on the same LICENSE artefact checked against a deliberately wrong digest — the FAIL path
@@ -487,7 +380,7 @@ E014: Class 'WitnessResult' used in storage needs @allow_storage decorator
 ```
 
 **It is a false positive, confirmed by reading `genvm_linter`'s own source
-(`genvm_linter/lint/structure.py`, the pinned version in `~/orchestra/glenv-babwp`).** The E014 check
+(`genvm_linter/lint/structure.py`, the pinned `genvm-linter==0.11.1rc2`).** The E014 check
 accepts only the decorator names `allow_storage` and `gl.allow_storage`, the v0.2 spelling. The v0.3.0 SDK
 renamed the decorator to `gl.storage.allow` (`genlayer/storage/_internal/generate.py`, the babwp runner's
 `py-lib-genlayer-std`; the SDK's own migration note `v0.3.rst`), the contract uses that name, and the
@@ -508,8 +401,8 @@ this contract raises `gl.vm.UserError(...)`, not a bare `Exception`/`ValueError`
   that run's pass/fail outcome, not an address. **Testnet Bradbury is the canonical address** for
   any external reference to this contract (`deploy/README.md`).
 - **Integration tests are not run in CI, and not run at the door.** `tests/integration/` needs a
-  funded account on a real network — a resource this repository's automated gates deliberately
-  never hold (`GL-00 ruling-2 §"Networks"/"Secrets"`). They are run manually, by the dispatcher, against
+  funded account on a real network — a resource Provek's automated gates deliberately
+  never hold. They are run manually, by the dispatcher, against
   Studionet; see "How to run integration tests" above and `evidence/MEASURED-011-*` for the last
   recorded run.
 - **No bridge writes this contract's on-chain results back into Provek's own `WitnessRecord`

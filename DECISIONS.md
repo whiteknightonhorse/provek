@@ -3998,7 +3998,7 @@ not rewritten and the contract does not move.
 4. **Licence.** The root `LICENSE` listed `src/, tests/, scripts/, requirements/, web/, templates/`
    under Apache-2.0 and did not name `integrations/`, so the contract was formally unlicensed. One
    line changed: `integrations/` is added to that list. Nothing else in `LICENSE` moved.
-5. **README.** The subdirectory README gained exactly three edits: the CI badge, the paragraph
+5. **README.** (as of 2026-10-05; README scope now D-81) The subdirectory README gained exactly three edits: the CI badge, the paragraph
    "Where this code lives", and four rows in "Directory layout". The contract, the tests and
    `deploy/` are byte-for-byte unchanged, so the deployed contract's sha256 still matches.
 6. **No Dependabot in the mirror.** Action pins there are updated through provek and re-split.
@@ -4450,3 +4450,11 @@ supersedes nothing: the attest contract is unchanged.
 
 **Not decided here.** Deployment (D3 deploys the merged commit's bytes, with a Phase 2 size probe beside
 it), the refund worker, the sibling documents' publisher, and `confirm_refund`.
+
+## D-81. The mirror README is contract-scoped: the page and the relay are documented in the product repository only
+
+The Portal steward, on 2026-11-09 (submission 59f77b8e): "a separate Intelligent Contract submission should contain only the contract-focused repository and its contract tooling." The mirror `whiteknightonhorse/provek-genlayer-witness` is a subtree split of `integrations/genlayer-witness` (D-64), so the fix lands there and is re-split.
+
+**Rule.** The integration README states what the contract decides, how validators agree, how to test and deploy it, and one sentence pointing at the product repository for the page. Product routes, secrets, bindings and private operator records never appear in it. The page and the relay are documented once, in the root `README.md` section "GenLayer Evidence Witness — live app". `tests/test_witness_relay.py` holds the rule (`test_the_live_app_section_is_in_the_product_readme_only`).
+
+Extends D-64 §5 (README). The contract, `deploy/deployment.json` and the deployed address are unchanged.

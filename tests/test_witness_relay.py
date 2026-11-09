@@ -375,10 +375,14 @@ def _section(path: Path) -> str:
     return text[start:end]
 
 
-def test_the_live_app_section_is_in_both_readmes_identical_and_carries_the_reproduction():
+def test_the_live_app_section_is_in_the_product_readme_only():
     main = _section(ROOT / "README.md")
-    mirror = _section(ROOT / "integrations" / "genlayer-witness" / "README.md")
-    assert main == mirror, "the mirrored README section drifted from the main one"
+    integration = (ROOT / "integrations" / "genlayer-witness" / "README.md").read_text(encoding="utf-8")
+    for banned in (
+        "## GenLayer Evidence Witness — live app", "/api/witness-submit", "WITNESS_RL",
+        "GL_OPERATOR_KEY", "taskloop/", "~/orchestra/",
+    ):
+        assert banned not in integration, banned
     for must in (
         "https://provek.dev/witness/", DEPLOYMENT["contract_address"], DEPLOYMENT["explorer_url"],
         "GenLayer testnet Bradbury Phase 2 (chain 4221)", "only the operator may request a witness check",

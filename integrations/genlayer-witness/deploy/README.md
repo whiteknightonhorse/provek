@@ -1,8 +1,6 @@
 # Deployment
 
-Not deployed by T-GL-03-contract itself; deployment (Studionet, then Testnet Bradbury) was GL-05's
-(dispatcher + operator) and GL-05b's (this record) job — see `PHASE2-RESUME.md`. `deployment.json`
-in this directory holds the real, measured fields this file summarizes below.
+Deployment was performed by the operator from a laptop, outside this repository's tests (Studionet, then Testnet Bradbury). `deployment.json` in this directory holds the real, measured fields this file summarizes below.
 
 ## Deployment record
 
@@ -12,7 +10,7 @@ in this directory holds the real, measured fields this file summarizes below.
 deployed from commit `11474b4cfc94dada3a3e5301d19d1262713027ac` (`origin/main`) by
 `0x2c111FCD3082083C9B287DD9DA5995f190968Ef9`. The deploy transaction was ACCEPTED (later FINALIZED), with
 validators in MAJORITY_AGREE (5/5) and execution result FINISHED_WITH_RETURN (its hash, `0x`-stripped for the
-secret-scan gate per GL-00 ruling-1, is `deploy_tx` in `deployment.json`).
+secret-scan gate for the secret-scan gate, is `deploy_tx` in `deployment.json`).
 
 **Fees (consensus v0.6):** every write carries a fee deposit, quoted by the SDK's estimate. Quoted 0.100000000000010352 GEN per
 transaction (deploy and `witness` write alike); the unused part is refunded at finalization, and all 10 transactions of the
