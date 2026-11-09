@@ -208,7 +208,7 @@ the observation is not a dict with the expected keys and a recognized `fetch` st
 validator's own `gl.nondet.web.get(evidence_url)` call raises an exception; or if the validator's
 own `_bound(...)` tuple differs from the leader's in any field, fetch state included. The body is
 not bound for `url_reachable` (it is not written to the record) and `bytes` is never bound. Verdict-only
-agreement was incomplete in the design (the first design), not a build defect; the Portal steward rejected
+agreement was incomplete in the first design, not a build defect; the Portal steward rejected
 it on 2026-10-23 (D-76).
 
 **The validator's own fetch failing is "undetermined", never "the claim is false".** If the
@@ -256,7 +256,7 @@ python3 scripts/check_genvm_lint.py
 ```
 
 Both commands need a Python 3.12 environment built from the hash-pinned `requirements/ci-genlayer.txt` exactly as `.github/workflows/contract-tests.yml` builds it, with
-`genlayer-test==0.30.0rc2`, `genvm-linter==0.11.1rc2`, `genlayer-py==0.19.0rc2`), `GENVM_VERSION=v0.6.0-rc10`
+`genlayer-test==0.30.0rc2`, `genvm-linter==0.11.1rc2`, `genlayer-py==0.19.0rc2`, `GENVM_VERSION=v0.6.0-rc10`
 and `GENVM_ALLOW_PRERELEASE=1` in the environment, and
 `~/.cache/gltest-direct/bundles-v2/genvm-universal-v0.6.0-rc10.tar.xz` (copied to
 `~/.cache/genvm-linter/genvm-universal-genlayerlabs-genvm-manager-v0.6.0-rc10.tar.xz`) pre-populated,
@@ -304,7 +304,7 @@ for Studionet beyond running the integration tests themselves.
 
 **Testnet Bradbury** (the canonical deployment target — a public explorer, unlike Studionet, whose
 own state is not proven stable across resets): deployment needs a funded account and its private
-key, held outside the repository (a file outside the repository, never committed, never read by any
+key, held in a file outside the repository, never committed, never read by any
 automated gate). Provek's tests and gates make **no
 GenLayer network call of any kind** and never read that key; only the dispatcher, operating
 outside the automated door, performs a live deployment. The dispatcher's actual deploy path uses
@@ -324,7 +324,7 @@ operational script uses.
 **The real, measured Bradbury deployment** — network, chain id, RPC, contract address, explorer
 URL, deploy transaction, the three PASS/PASS/FAIL records (as of 2026-10-28, Bradbury Phase 2), the quoted and charged fees, and the three tooling limitations
 needed to reach them — is recorded in `deploy/README.md` ("Deployment record") and
-`deploy/deployment.json`, both written by GL-05b directly from the dispatcher's own transcripts.
+`deploy/deployment.json`, both written directly from the dispatcher's own transcripts.
 This section does not repeat that record; see it for the full, current detail. In short: **network**
 GenLayer Testnet Bradbury Phase 2, chain id `4221`, RPC `https://rpc-bradbury.genlayer.com`; **contract**
 [`0x99C23e1794ed35b429161fBEB00967D0c81DC491`](https://scan.bradbury.genlayer.com/address/0x99C23e1794ed35b429161fBEB00967D0c81DC491);
@@ -365,7 +365,7 @@ contract.witness(
 ```
 
 `witness_id`: `4c76714ac8273e260f6e9d58b4b3ace90eff0b56bb22301975c9698aa606cd1f`. Transaction status:
-`FINALIZED` (tx hash, `0x`-stripped for the secret-scan gate for the secret-scan gate:
+`FINALIZED` (tx hash, `0x`-stripped for the secret-scan gate:
 `06ab4278640e2d34547dea084133371974ed6edafd1e6dbc9963381b144a36a2`). See `deploy/deployment.json`
 for the other two records (a second PASS on `url_reachable` against `https://provek.dev/`,
 and a FAIL on the same LICENSE artefact checked against a deliberately wrong digest — the FAIL path
@@ -389,7 +389,7 @@ warnings this section used to name are gone: the linter recognises the fully-dot
 that v0.3.0 forces. If a later `genvm-linter` release learns `gl.storage.allow`, this note becomes stale
 and should be removed along with a re-run of `genvm-lint check`.
 
-No other warnings survive. The three "Bare Python exception" warnings GL-harness-notes observed
+No other warnings survive. The three "Bare Python exception" warnings observed earlier
 in the boilerplate's own `football_bets.py` do not apply here: every deterministic revert path in
 this contract raises `gl.vm.UserError(...)`, not a bare `Exception`/`ValueError`.
 
