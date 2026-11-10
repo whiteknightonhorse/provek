@@ -1,0 +1,35 @@
+RED-092 - the API had no description, and auth.md named one write of two (T-AEO-03, D-83)
+tree: 29f7810c31b71177a4e5d3493494c38f1316fb3a (dirty)
+base: aeo02 29f7810 (origin/main aa1988c + T-AEO-02, which has not landed)
+Run 2026-11-10T12:44:54Z in ~/incubator-worktrees/aeo03. Each mutation is applied to the REAL tree, the real suite is run, the mutation is reverted.
+
+== 0. Before any mutation (control): rc must be 0 except the dist test needs a build, which exists
+...........................                                              [100%]
+27 passed in 0.21s
+
+== 1. An added stub function file web/functions/api/stub.js (no path documented)
+E       AssertionError: assert ['function fi...h: /api/stub'] == []
+E         Left contains one more item: 'function file with no documented path: /api/stub'
+E         At index 0 diff: 'function file with no documented path: /api/stub' != "/api/stub: handlers ['get'] != documented []"
+E       AssertionError: assert ['function fi...: /api/ghost'] == ['documented ...: /api/ghost']
+E         At index 0 diff: 'function file with no documented path: /api/stub' != 'documented path with no function file: /api/ghost'
+FAILED tests/test_openapi_matches_the_functions.py::test_the_path_set_is_the_function_tree_plus_the_two_data_paths
+FAILED tests/test_openapi_matches_the_functions.py::test_methods_per_path_are_the_exported_handlers
+FAILED tests/test_openapi_matches_the_functions.py::test_checks_are_green_on_the_real_tree_before_any_mutation
+
+== 2. A removed status code (502 dropped from POST /api/witness-submit in web/openapi.mjs; file regenerated)
+E         Left contains one more item: "/api/witness-submit: source ['200', '202', '400', '403', '405', '429', '502', '503'] != documented ['200', '202', '400', '403', '405', '429', '503']"
+E         Right contains one more item: "/api/witness-submit: source ['200', '202', '400', '403', '405', '429', '502', '503'] != documented ['200', '202', '400', '403', '405', '429', '503']"
+FAILED tests/test_openapi_matches_the_functions.py::test_documented_status_codes_are_the_status_literals_of_the_api_handlers
+FAILED tests/test_openapi_matches_the_functions.py::test_built_openapi_is_byte_identical_to_the_source
+FAILED tests/test_openapi_matches_the_functions.py::test_checks_are_green_on_the_real_tree_before_any_mutation
+FAILED tests/test_openapi_matches_the_functions.py::test_a_removed_status_code_turns_the_status_check_red
+4 failed, 23 passed in 0.28s
+
+== 3. auth.md back to naming one write (POST /api/witness-submit removed)
+FAILED tests/test_auth_md_declares_no_auth.py::test_built_auth_md_is_byte_identical_to_the_source
+FAILED tests/test_auth_md_declares_no_auth.py::test_every_anonymous_write_in_openapi_is_named_in_auth_md_and_the_reverse
+2 failed, 25 passed in 0.18s
+
+== 4. After reverting all three: green again
+27 passed in 0.17s

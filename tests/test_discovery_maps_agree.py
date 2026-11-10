@@ -203,10 +203,21 @@ def test_api_catalog_names_only_resources_that_exist():
     cannot fetch is the exact defect this project marks other subjects down for."""
     catalog = json.loads(API_CATALOG.read_text(encoding="utf-8"))
     hrefs = {item["href"] for item in catalog["linkset"][0]["item"]}
-    allowed_exact = {f"{SITE}/data/registry.json", f"{SITE}/api/apply", f"{SITE}/sitemap.xml"}
+    allowed_exact = {f"{SITE}/data/registry.json", f"{SITE}/api/apply", f"{SITE}/sitemap.xml",
+                     f"{SITE}/openapi.json"}
     passport_prefix = f"{SITE}/data/passports/"
     stray = [h for h in hrefs if h not in allowed_exact and not h.startswith(passport_prefix)]
     assert not stray, f"api-catalog names a resource outside the allowed set: {stray}"
+
+
+def test_api_catalog_links_the_openapi_description_as_service_desc():
+    """RFC 9727 / RFC 8631: `service-desc` is the machine-readable API description. It exists since
+    D-83, so the catalog names it (and `item` still never does)."""
+    entry = json.loads(API_CATALOG.read_text(encoding="utf-8"))["linkset"][0]
+    assert entry["service-desc"] == [{"href": f"{SITE}/openapi.json", "type": "application/json"}]
+    assert f"{SITE}/openapi.json" not in {i["href"] for i in entry["item"]}
+    assert f"({SITE}/openapi.json)" in LLMS_TXT.read_text(encoding="utf-8")
+    assert LLMS_TXT.read_text(encoding="utf-8").count("/openapi.json") == 1
 
 
 def test_ai_catalog_names_only_resources_that_exist():
@@ -277,6 +288,9 @@ def test_checked_in_files_match_a_fresh_run_of_the_generator(live_report):
     fresh_catalog = json.dumps(live_report["apiCatalog"], indent=2) + "\n"
     assert API_CATALOG.read_text(encoding="utf-8") == fresh_catalog, (
         "the checked-in api-catalog is not what web/discovery.mjs produces right now")
+    openapi = WEB / "public" / "openapi.json"
+    assert openapi.read_text(encoding="utf-8") == json.dumps(live_report["openapi"], indent=2) + "\n", (
+        "the checked-in openapi.json is not what web/openapi.mjs produces right now")
     assert LLMS_TXT.read_text(encoding="utf-8") == live_report["llmsTxt"], (
         "the checked-in llms.txt is not what web/discovery.mjs produces right now")
     assert LLMS_FULL_TXT.read_text(encoding="utf-8") == live_report["llmsFullTxt"], (

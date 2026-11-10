@@ -2,6 +2,12 @@
   "linkset": [
     {
       "anchor": "https://provek.dev/",
+      "service-desc": [
+        {
+          "href": "https://provek.dev/openapi.json",
+          "type": "application/json"
+        }
+      ],
       "item": [
         {
           "href": "https://provek.dev/data/registry.json",

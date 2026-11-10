@@ -25,8 +25,8 @@ const MAX = 2000;
 // Repository: "https://github.com/" (19) + owner (39) + "/" (1) + name (100) + trailing "/" (1) = 160.
 // (The brief's 7 + 11 + 39 + 1 + 100 + 1 sums to 159 and drops the "/" after the host, which would
 // refuse the longest valid URL by one character.)
-const REPO_MAX = 19 + 39 + 1 + 100 + 1;
-const CONTACT_MAX = 254;
+export const REPO_MAX = 19 + 39 + 1 + 100 + 1;
+export const CONTACT_MAX = 254;
 
 function bad(reason, status = 400) {
   return Response.json({ ok: false, error: reason }, { status });

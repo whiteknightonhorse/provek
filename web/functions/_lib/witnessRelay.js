@@ -40,7 +40,7 @@ import { bradburyChain, RPC_URL } from "../../src/witnessChainConfig.js";
 
 export const LIMITS = Object.freeze({ per_ip_per_hour: 3, per_day_global: 50 });
 export const CRITERIA = Object.freeze(["url_reachable", "artifact_hash"]);
-const MAX_BODY_BYTES = 8192;
+export const MAX_BODY_BYTES = 8192;
 const MEASURE_TIMEOUT_MS = 8000;
 export const NOT_MEASURED = "not_measured";
 const TX_HASH = /^0x[0-9a-fA-F]{64}$/;

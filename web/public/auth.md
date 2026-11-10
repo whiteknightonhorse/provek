@@ -18,9 +18,14 @@ Every resource is public and served to anonymous requests. There is no registrat
 - /llms.txt
 - /.well-known/agent-skills/index.json
 
-## The one write
+## The two anonymous writes
 
-`POST /api/apply` submits a public repository for verification. It is anonymous. It needs the repository owner's consent, given inside the form, which is why no agent credential exists for it. `GET /api/apply/<id>` reads the state of one request.
+Both are anonymous and open to any caller, and both answer same-origin browser requests only: `/api/apply` sends no cross-origin allowance, and `/api/witness-submit` refuses a different Origin with 403. Neither takes a credential.
+
+- `POST /api/apply` submits a public repository for verification. It needs the repository owner's consent, given inside the form, which is why no agent credential exists for it. Limited per IP at the edge (5 per 10 s). `GET /api/apply/<id>` reads the state of one request.
+- `POST /api/witness-submit` asks the GenLayer Evidence Witness for a check, signed by the operator's key held server-side. Limited to 3 per client per hour and 50 per UTC day for the whole service. See /witness/.
+
+Every route, status code and body field of both is in /openapi.json, which declares no security scheme because none exists.
 
 ## If this changes
 

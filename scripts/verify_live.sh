@@ -47,6 +47,8 @@ CHECKS=(
   "/phase-2/:200"
   "/registry/corrections/:200"
   "/api/apply:405"
+  # T-AEO-03: the generated OpenAPI description is a served static file; a deploy that lost it answers 404.
+  "/openapi.json:200"
   # The note surface, added when the first capture was published (T-C4). Both addresses are here
   # rather than the index alone: the index is emitted whenever ANY note exists, so on its own it
   # would stay green over a build that dropped the article and kept the list - which is the shape
