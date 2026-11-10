@@ -1,0 +1,39 @@
+RED-091 - the ai-catalog did not name its host (T-AEO-02)
+tree: aa1988cc247a9cf39427f2989f33bc7707de4977 (dirty)
+base: origin/main aa1988c
+            "the checked-in api-catalog is not what web/discovery.mjs produces right now")
+        assert LLMS_TXT.read_text(encoding="utf-8") == live_report["llmsTxt"], (
+            "the checked-in llms.txt is not what web/discovery.mjs produces right now")
+        assert LLMS_FULL_TXT.read_text(encoding="utf-8") == live_report["llmsFullTxt"], (
+            "the checked-in llms-full.txt is not what web/discovery.mjs produces right now")
+        fresh_ai_catalog = json.dumps(live_report["aiCatalog"], indent=2) + "\n"
+>       assert AI_CATALOG.read_text(encoding="utf-8") == fresh_ai_catalog, (
+            "the checked-in ai-catalog.json is not what web/discovery.mjs produces right now")
+E       AssertionError: the checked-in ai-catalog.json is not what web/discovery.mjs produces right now
+E       assert '{\n  "specVe...  }\n  ]\n}\n' == '{\n  "specVe...  }\n  ]\n}\n'
+E         
+E         Skipping 88 identical leading characters in diff, use -v to show
+E         - rovek.dev",
+E         ?           -
+E         + rovek.dev"
+E         -     "identifier": "urn:air:provek.dev"
+E             },...
+E         
+E         ...Full output truncated (123 lines hidden), use '-vv' to show
+
+tests/test_discovery_maps_agree.py:285: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_discovery_maps_agree.py::test_ai_catalog_has_specversion_and_host
+FAILED tests/test_discovery_maps_agree.py::test_checked_in_files_match_a_fresh_run_of_the_generator
+2 failed, 1 passed, 29 deselected in 0.18s
+
+
+--- mutation (generator output with host.identifier deleted, test run on it) ---
+  E       AssertionError: ai-catalog.json host.identifier is missing or does not name provek.dev
+  E       assert (False)
+  E        +  where False = isinstance(None, str)
+  
+  tests/test_discovery_maps_agree.py:265: AssertionError
+  =========================== short test summary info ============================
+  FAILED tests/test_discovery_maps_agree.py::test_ai_catalog_has_specversion_and_host
+  1 failed, 31 deselected in 0.21s

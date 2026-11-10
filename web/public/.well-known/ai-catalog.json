@@ -2,7 +2,8 @@
   "specVersion": "1.0",
   "host": {
     "displayName": "Provek",
-    "url": "https://provek.dev"
+    "url": "https://provek.dev",
+    "identifier": "urn:air:provek.dev"
   },
   "entries": [
     {

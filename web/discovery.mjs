@@ -222,7 +222,8 @@ ${JSON.stringify(catalog, null, 2)}
  *  runs it, and a query implying otherwise would make the catalog itself the kind of overclaim
  *  this project marks other subjects down for. */
 export function buildAiCatalog(entries, site = SITE) {
-  const host = { displayName: "Provek", url: site };
+  // The host is named by the domain the site is served from: the prefix every entry identifier below carries.
+  const host = { displayName: "Provek", url: site, identifier: `urn:air:${new URL(site).hostname}` };
 
   const registryEntry = {
     identifier: "urn:air:provek.dev:registry:subjects",

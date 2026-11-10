@@ -261,6 +261,11 @@ def test_ai_catalog_has_specversion_and_host():
     assert catalog.get("specVersion"), "ai-catalog.json is missing specVersion"
     assert isinstance(catalog.get("host"), dict) and catalog["host"], (
         "ai-catalog.json is missing a host object")
+    ident = catalog["host"].get("identifier")
+    assert isinstance(ident, str) and "provek.dev" in ident, (
+        "ai-catalog.json host.identifier is missing or does not name provek.dev")
+    bad = [e["identifier"] for e in catalog["entries"] if not e["identifier"].startswith(ident + ":")]
+    assert not bad, f"entry identifiers outside host.identifier {ident!r}: {bad}"
 
 
 def test_checked_in_files_match_a_fresh_run_of_the_generator(live_report):
