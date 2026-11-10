@@ -4470,3 +4470,13 @@ Ruling PROVEK-AEO-1110 ruling-1 item 4 (2026-11-10). `/openapi.json` was a 404 w
 **Not decided here, unchanged.** There is still no OAuth discovery, no MCP server and no A2A agent card (PROVEK-AGENT-READY-1026 ruling-1); the other scanner findings stay true.
 
 **Supersedes.** The `web/discovery.mjs` comment "this project has none" (rewritten in the same change). No earlier DECISIONS entry states that the project has no formal API description (`grep -n "service-desc\|formal API description" DECISIONS.md` returned nothing before this entry). Evidence: `evidence/RED-092-the-api-had-no-description-and-auth-md-named-one-write-of-two.txt`.
+
+## D-82. The edge answers every user agent the way robots.txt says; the training preference is a Content-Signal, not a 403
+
+Ruling PROVEK-AEO-1110 ruling-1 item 1 (2026-11-10). `web/public/robots.txt` says `User-agent: *`, `Allow: /` and `Content-Signal: search=yes, ai-input=yes, ai-train=no`, while on 2026-11-10 `GPTBot/1.1`, `ClaudeBot/1.0` and `CCBot/2.0` got 403 from the edge and the default UA got 200 (`ua-matrix-before.txt`). Nothing in this tree answers by User-Agent; the 403 was a Cloudflare zone setting, changed by the operator at 2026-11-10 14:13Z: AI Crawler and Agent access policies, Training, Disallow -> Allow (do not block).
+
+**Rule.** The training preference is a Content-Signal, not a 403. The setting lives in the Cloudflare zone, outside the tree, so it is measured after every deploy by `scripts/verify_live.sh` rather than argued: it reads `/` as each of nine agents (`AGENT_UAS`) and an agent answering a code other than the default UA's is a red deploy, `AGENT UA BLOCKED`. If the default UA cannot read `/`, parity is `not_measured` and no agent is judged; an unreadable agent read is UNREADABLE, never BLOCKED. `tests/test_agent_uas_match_robots.py` holds the list to robots.txt.
+
+**Cost.** A crawler that ignores Content-Signal is not stopped.
+
+Evidence: `evidence/RED-090-the-edge-refused-the-agents-robots-allows.txt`.

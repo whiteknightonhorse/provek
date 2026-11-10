@@ -74,14 +74,26 @@ class _Origin:
     manufacture an applicant nobody applied for. That is asserted below rather than trusted to the
     reading of a `-w` flag."""
 
-    def __init__(self, codes: dict[str, int]) -> None:
+    def __init__(self, codes: dict[str, int], ua_codes: dict[str, int | None] | None = None) -> None:
         self.codes = codes
+        # T-AEO-01: a fixed answer for `/` per User-Agent substring; None = close without answering.
+        self.ua_codes = ua_codes or {}
         self.methods: list[str] = []
         origin = self
 
         class Handler(http.server.BaseHTTPRequestHandler):
             def _answer(self) -> None:
                 origin.methods.append(self.command)
+                if self.path == "/":
+                    ua = self.headers.get("User-Agent", "")
+                    for needle, ua_code in origin.ua_codes.items():
+                        if needle in ua:
+                            if ua_code is None:
+                                self.close_connection = True
+                                return
+                            self.send_response(ua_code)
+                            self.end_headers()
+                            return
                 # An unlisted path is 404 - the same answer a real static-only deployment gives to
                 # /api/apply, which is what makes the 404 case below a faithful stand-in.
                 self.send_response(origin.codes.get(self.path, 404))
@@ -244,3 +256,47 @@ def test_the_floor_pins_the_code_and_not_only_the_path():
     wrong = {p: (HEALTHY.get(p), c) for p, c in REQUIRED.items()
              if p in HEALTHY and HEALTHY[p] != c}
     assert not wrong, f"{SCRIPT.name} expects the wrong code for {wrong} (got, wanted)"
+
+
+# T-AEO-01 / D-82: the edge must answer every agent robots.txt allows the way it answers the default.
+def _agent_lines(out: str) -> list[str]:
+    return [ln for ln in out.splitlines() if ln.startswith("  agent ")]
+
+
+def test_all_agents_200_reads_green_with_nine_agent_lines():
+    with _Origin(dict(HEALTHY)) as origin:
+        run = _run(origin.base)
+    assert run.returncode == 0, run.stdout + run.stderr
+    assert len(_agent_lines(run.stdout)) == 9
+    assert "AGENT UA BLOCKED" not in run.stdout
+
+
+def test_one_agent_403_is_red_and_names_that_agent():
+    with _Origin(dict(HEALTHY), {"GPTBot": 403}) as origin:
+        run = _run(origin.base)
+    assert run.returncode == 1, run.stdout
+    blocked = [ln for ln in run.stdout.splitlines() if ln.startswith("AGENT UA BLOCKED")]
+    assert len(blocked) == 1 and "GPTBot/1.1 -> 403, default UA -> 200" in blocked[0]
+    assert "Cloudflare zone setting" in blocked[0] and "D-82" in blocked[0]
+
+
+def test_default_ua_500_is_not_measured_and_judges_no_agent():
+    codes = dict(HEALTHY)
+    codes["/"] = 500
+    with _Origin(codes) as origin:
+        run = _run(origin.base)
+    assert run.returncode == 1
+    assert "not_measured" in run.stdout
+    assert "AGENT UA BLOCKED" not in run.stdout
+    assert not _agent_lines(run.stdout)
+
+
+def test_an_unreadable_agent_read_is_UNREADABLE_not_BLOCKED():
+    # One port cannot refuse per User-Agent, so the stub closes the connection without answering
+    # (curl exit 52): the same class - we could not ask - which must never read as a wrong code.
+    with _Origin(dict(HEALTHY), {"ClaudeBot": None}) as origin:
+        run = _run(origin.base)
+    assert run.returncode == 1
+    assert "AGENT UA BLOCKED" not in run.stdout
+    line = [ln for ln in _agent_lines(run.stdout) if "ClaudeBot/1.0" in ln]
+    assert line and "UNREADABLE" in line[0] and "without answering" in line[0]

@@ -1,0 +1,76 @@
+# RED-090 the edge refused the agents robots.txt allows (T-AEO-01, D-82)
+tree: e12beca463220e5b5da9882071350513f2d4efb0 (dirty)
+base: origin/main e12beca (T-AEO-03); Run 2026-11-10 in ~/incubator-worktrees/aeo01.
+
+## 1. The live red - ua-matrix-before.txt, verbatim
+# ua-matrix-before 2026-11-10T11:38:07Z (dispatcher, D-1 step 1)
+default 200
+GPTBot/1.1 403
+OAI-SearchBot/1.0 200
+ChatGPT-User/1.0 200
+ClaudeBot/1.0 403
+Claude-SearchBot/1.0 200
+Claude-User/1.0 200
+PerplexityBot/1.0 200
+Perplexity-User/1.0 200
+CCBot/2.0 403
+
+## 2. and 3. The new check against the stub origin: red, then green
+----- RED: stub, GPTBot/ClaudeBot/CCBot 403 (as the live site was) -> exit 1
+== live reading of http://127.0.0.1:<port> (GET only; a POST here would create an intake record) ==
+  /            200          expected 200
+  /apply/      200          expected 200
+  /registry/   200          expected 200
+  /method/     200          expected 200
+  /phase-2/    200          expected 200
+  /registry/corrections/ 200          expected 200
+  /api/apply   405          expected 405
+  /openapi.json 200          expected 200
+  /method/notes/ 200          expected 200
+  /method/notes/not-measured-is-not-zero/ 200          expected 200
+  /badge/git_whiteknightonhorse_provek.svg 200          expected 200
+  /p/git_whiteknightonhorse_provek/brief 200          expected 200
+== agent parity: GET / as each user agent robots.txt allows ==
+  agent GPTBot/1.1           403          EXPECTED 200
+AGENT UA BLOCKED: GPTBot/1.1 -> 403, default UA -> 200; robots.txt allows it; this is a Cloudflare zone setting (Block AI bots / AI Crawl Control), not this tree - D-82
+  agent OAI-SearchBot/1.0    200          expected 200
+  agent ChatGPT-User/1.0     200          expected 200
+  agent ClaudeBot/1.0        403          EXPECTED 200
+AGENT UA BLOCKED: ClaudeBot/1.0 -> 403, default UA -> 200; robots.txt allows it; this is a Cloudflare zone setting (Block AI bots / AI Crawl Control), not this tree - D-82
+  agent Claude-SearchBot/1.0 200          expected 200
+  agent Claude-User/1.0      200          expected 200
+  agent PerplexityBot/1.0    200          expected 200
+  agent Perplexity-User/1.0  200          expected 200
+  agent CCBot/2.0            403          EXPECTED 200
+AGENT UA BLOCKED: CCBot/2.0 -> 403, default UA -> 200; robots.txt allows it; this is a Cloudflare zone setting (Block AI bots / AI Crawl Control), not this tree - D-82
+LIVE READING RED: 3 address(es) did not answer as they must.
+
+----- GREEN: stub, all agents 200 -> exit 0
+== live reading of http://127.0.0.1:<port> (GET only; a POST here would create an intake record) ==
+  /            200          expected 200
+  /apply/      200          expected 200
+  /registry/   200          expected 200
+  /method/     200          expected 200
+  /phase-2/    200          expected 200
+  /registry/corrections/ 200          expected 200
+  /api/apply   405          expected 405
+  /openapi.json 200          expected 200
+  /method/notes/ 200          expected 200
+  /method/notes/not-measured-is-not-zero/ 200          expected 200
+  /badge/git_whiteknightonhorse_provek.svg 200          expected 200
+  /p/git_whiteknightonhorse_provek/brief 200          expected 200
+== agent parity: GET / as each user agent robots.txt allows ==
+  agent GPTBot/1.1           200          expected 200
+  agent OAI-SearchBot/1.0    200          expected 200
+  agent ChatGPT-User/1.0     200          expected 200
+  agent ClaudeBot/1.0        200          expected 200
+  agent Claude-SearchBot/1.0 200          expected 200
+  agent Claude-User/1.0      200          expected 200
+  agent PerplexityBot/1.0    200          expected 200
+  agent Perplexity-User/1.0  200          expected 200
+  agent CCBot/2.0            200          expected 200
+LIVE READING GREEN: all 12 addresses answered as they must, /api/apply included, and / read the same for 9 agent user agents.
+
+## 4. Mutation: robots.txt with 'User-agent: GPTBot / Disallow: /' fails the drift test naming GPTBot
+.                                                                        [100%]
+1 passed, 1 deselected in 0.33s

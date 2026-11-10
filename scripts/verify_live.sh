@@ -83,6 +83,7 @@ curl_reason() {
     6)  echo "the host name did not resolve" ;;
     7)  echo "the connection was refused" ;;
     28) echo "no answer within ${TIMEOUT_S}s" ;;
+    52) echo "the server closed the connection without answering" ;;
     35) echo "the TLS handshake failed - the host may serve no certificate at all" ;;
     60) echo "the certificate did not verify" ;;
     *)  echo "curl exit ${1}, which this script has no name for - look it up before believing it" ;;
@@ -133,6 +134,37 @@ for entry in "${CHECKS[@]}"; do
   failed=$((failed + 1))
 done
 
+# T-AEO-01 (PROVEK-AEO-1110 ruling-1 item 1, D-82): read `/` once more as each agent robots.txt
+# allows. On 2026-11-10 `GPTBot/1.1`, `ClaudeBot/1.0` and `CCBot/2.0` got 403 from the edge while the
+# default UA got 200 and web/public/robots.txt says `Allow: /` - a Cloudflare zone setting, nothing
+# in this tree answers by User-Agent - and every deploy was green over it because this script read
+# with one UA only. tests/test_agent_uas_match_robots.py holds this list to robots.txt, so the list
+# and the published policy cannot drift apart. GET only, as above.
+AGENT_UAS=( "GPTBot/1.1" "OAI-SearchBot/1.0" "ChatGPT-User/1.0" "ClaudeBot/1.0" "Claude-SearchBot/1.0" "Claude-User/1.0" "PerplexityBot/1.0" "Perplexity-User/1.0" "CCBot/2.0" )
+
+echo "== agent parity: GET / as each user agent robots.txt allows =="
+default_code=$(curl -sS -o /dev/null -w '%{http_code}' -m "$TIMEOUT_S" "${BASE}/" 2>/dev/null)
+default_rc=$?
+if [ "$default_rc" != "0" ] || [ "$default_code" != "200" ]; then
+  echo "  parity not_measured: the default UA did not read / as 200 (curl exit ${default_rc}, code ${default_code}); the check above is already red and no agent line is judged."
+else
+  for ua in "${AGENT_UAS[@]}"; do
+    code=$(curl -sS -o /dev/null -w '%{http_code}' -m "$TIMEOUT_S" -A "$ua" "${BASE}/" 2>/dev/null)
+    rc=$?
+    if [ "$rc" != "0" ]; then
+      printf '  agent %-20s UNREADABLE   %s\n' "$ua" "$(curl_reason "$rc")"
+      unreadable=$((unreadable + 1))
+      failed=$((failed + 1))
+    elif [ "$code" = "$default_code" ]; then
+      printf '  agent %-20s %s          expected %s\n' "$ua" "$code" "$default_code"
+    else
+      printf '  agent %-20s %s          EXPECTED %s\n' "$ua" "$code" "$default_code"
+      echo "AGENT UA BLOCKED: ${ua} -> ${code}, default UA -> ${default_code}; robots.txt allows it; this is a Cloudflare zone setting (Block AI bots / AI Crawl Control), not this tree - D-82"
+      failed=$((failed + 1))
+    fi
+  done
+fi
+
 if [ "$unreadable" != "0" ]; then
   echo "LIVE READING INCOMPLETE: ${unreadable} address(es) could not be read at all."
   echo "That is not a verdict about the site - it is the absence of one, and it is red for"
@@ -145,4 +177,4 @@ if [ "$failed" != "0" ]; then
   exit 1
 fi
 
-echo "LIVE READING GREEN: all ${#CHECKS[@]} addresses answered as they must, /api/apply included."
+echo "LIVE READING GREEN: all ${#CHECKS[@]} addresses answered as they must, /api/apply included, and / read the same for ${#AGENT_UAS[@]} agent user agents."
