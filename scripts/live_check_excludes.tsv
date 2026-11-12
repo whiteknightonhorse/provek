@@ -1,2 +1,3 @@
 # path<TAB>reason; a reason names the writer with file:line
 /robots.txt	web/prerender.mjs:658 rewrites dist/robots.txt at build: public/robots.txt plus the Sitemap line
+/_headers	not served: Cloudflare Pages reads this file at deploy as response-header rules and answers 404 for its URL; its effect is checked by the row headers-file-applied of scripts/live_claims.tsv (web/public/_headers:49)

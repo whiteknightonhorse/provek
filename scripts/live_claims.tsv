@@ -18,3 +18,4 @@ old-not-in-a-later-one	*	lacks	not in a later one
 old-three-corrections	*	lacks	Three corrections
 old-three-exist	*	lacks	Three exist
 old-youtube-channel-operations-agent	*	lacks	YouTube channel operations agent
+headers-file-applied	/	header	content-security-policy: default-src 'self'
