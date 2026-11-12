@@ -50,10 +50,8 @@ SURFACES = (
     ("SECURITY.md", "SECURITY.md"),
     ("provek.json", "provek.json"),
     ("integrations/*/README.md", "integrations/*/README.md"),
-    ("test_readme_fragment_is_verbatim", "tests/test_readme_fragment_is_verbatim.py"),
-    ("test_brief_copy_matches_passport_page", "tests/test_brief_copy_matches_passport_page.py"),
-    ("test_apply_*", "tests/test_apply_*.py"),
-    ("scripts/dated_promises.py", "scripts/dated_promises.py"),
+    ("scripts/live_check.py", "scripts/live_check.py"),
+    ("scripts/live_claims.tsv", "scripts/live_claims.tsv"),
     ("enforced_by.yaml", "enforced_by.yaml"),
     ("web/src", "web/src/pages/*.tsx"),
 )
@@ -132,10 +130,10 @@ def test_a_renamed_permanent_check_turns_red(tmp_path):
     copy = _claude_copy(tmp_path)
     copy.write_text(
         copy.read_text(encoding="utf-8").replace(
-            "test_readme_fragment_is_verbatim", "test_readme_fragment_is_verbatim2", 1),
+            "scripts/live_check.py", "scripts/live_check.py2", 1),
         encoding="utf-8",
     )
-    assert any("test_readme_fragment_is_verbatim" in p for p in check(ROOT, copy))
+    assert any("scripts/live_check.py" in p for p in check(ROOT, copy))
 
 
 def test_a_missing_surface_file_turns_red(tmp_path):
