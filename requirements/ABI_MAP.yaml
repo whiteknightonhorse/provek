@@ -132,6 +132,11 @@ scripts/sync_main.sh:             [ABI-32-1, ABI-16-5]
 # CALLED". Same two requirements because it is the same door and the same kind of refusal; the
 # module is separate because the two callers have opposite exemptions, not because the subject is.
 scripts/deploy_label.py:          [ABI-32-1, ABI-16-5]
+# T-DL-02: the content half of the live reading that verify_live.sh starts. ABI-16-11 alone, as in
+# build_brand_icons.py: the load-bearing property is the three-state exit (0 ok, 1 failures, 2 could
+# not run) - "the site answered wrongly" and "we could not read the site" stay apart, and a check that
+# did not run is never reported as ok or as a failure of the site.
+scripts/live_check.py:            [ABI-16-11]
 src/collector/github.py:          [ABI-5-1, ABI-5-2, ABI-4-4, ABI-30-7]
 scripts/ratchet_language.py:      [ABI-32-1, ABI-32-3]
 scripts/cohort.py:                [ABI-18-3, ABI-31-3, ABI-31-4]

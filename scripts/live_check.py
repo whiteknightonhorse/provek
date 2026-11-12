@@ -48,6 +48,9 @@ USER_AGENT = "provek-live-check/1"
 TIMEOUT_S = 30
 ROOT = Path(__file__).resolve().parents[1]
 PUBLIC_DIR = "web/public"
+# Row shape of live_claims.tsv: id, target, kind, text are required, accept is optional.
+ROW_REQUIRED_COLS = 4
+ROW_MAX_COLS = 5
 KINDS = ("has", "lacks", "status", "header", "same", "head", "heads", "about")
 
 
@@ -235,11 +238,11 @@ class Checker:
             if not line.strip() or line.startswith("#"):
                 continue
             cols = line.split("\t")
-            if len(cols) < 4 or cols[2] not in KINDS:
+            if len(cols) < ROW_REQUIRED_COLS or cols[2] not in KINDS:
                 self.fail("claims", cols[0] or f"line{n}", "malformed row (id, target, kind, text, [accept])")
                 continue
-            ident, target, kind, text = cols[:4]
-            accept = cols[4] if len(cols) > 4 else ""
+            ident, target, kind, text = cols[:ROW_REQUIRED_COLS]
+            accept = cols[ROW_REQUIRED_COLS] if len(cols) >= ROW_MAX_COLS else ""
             self.counts["rows"] += 1
             try:
                 self.row(ident, target, kind, text, accept, sitemap)
