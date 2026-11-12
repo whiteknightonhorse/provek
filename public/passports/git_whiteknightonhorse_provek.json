@@ -1,6 +1,6 @@
 {
   "subject_id": "git:whiteknightonhorse/provek",
-  "projection": 60,
+  "projection": 40,
   "passport": {
     "schema_version": "2.0.0",
     "subject_id": "git:whiteknightonhorse/provek",
@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-11-11T03:43:04.425772+00:00",
-    "valid_until": "2026-12-11T03:43:04.425772+00:00",
+    "issued_at": "2026-11-12T03:43:03.223503+00:00",
+    "valid_until": "2026-12-12T03:43:03.223503+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -17,14 +17,14 @@
       "evidence_window_days": 30
     },
     "evidence_window": {
-      "start": "2026-10-12T03:43:04.425772+00:00",
-      "end": "2026-11-11T03:43:04.425772+00:00"
+      "start": "2026-10-13T03:43:03.223503+00:00",
+      "end": "2026-11-12T03:43:03.223503+00:00"
     },
     "verified": {
       "operations": [
         {
           "operation": "development_initiation",
-          "level": "L3",
+          "level": "L2",
           "measured": true,
           "confidence": "inferred",
           "limiters_applied": [
@@ -46,11 +46,11 @@
           "limiters_applied": []
         }
       ],
-      "projection": 60,
+      "projection": 40,
       "projection_absent_reason": null,
       "observations": {
         "signed_commit_share": {
-          "value": 0.244,
+          "value": 0.252,
           "measured": true,
           "absent_reason": null
         },
@@ -60,36 +60,36 @@
           "absent_reason": null
         },
         "bot_author_share": {
-          "value": 0.244,
+          "value": 0.252,
           "measured": true,
           "absent_reason": null
         },
         "workflow_runs": {
-          "value": 1415,
+          "value": 1423,
           "measured": true,
           "absent_reason": null
         },
         "scheduled_runs_in_window": {
-          "value": 40,
+          "value": 38,
           "measured": true,
           "absent_reason": null
         },
         "identity_window_closed": {
-          "value": true,
+          "value": false,
           "measured": true,
           "absent_reason": null
         },
         "unlinked_commit_share": {
-          "value": 0.0,
+          "value": 0.008,
           "measured": true,
           "absent_reason": null
         },
         "unlinked_key_count": {
-          "value": 0,
+          "value": 1,
           "measured": true,
           "absent_reason": null
         },
-        "head_sha": "bb71f39925e2d846a7d10e71d5080a6eaca03793"
+        "head_sha": "c57c7798a8478bf82e69cf28ad60d04e19724fc8"
       },
       "control_map_valid": true,
       "control_map_cap": 5,
@@ -112,7 +112,7 @@
       "private": false,
       "declaration": {
         "present": true,
-        "pinned_sha": "bb71f39925e2d846a7d10e71d5080a6eaca03793",
+        "pinned_sha": "c57c7798a8478bf82e69cf28ad60d04e19724fc8",
         "schema_version": "1.0.0"
       }
     },
