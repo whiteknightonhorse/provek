@@ -1,0 +1,20 @@
+# id	target	kind	text	accept
+home-markdown	/	header	content-type: text/markdown	text/markdown
+llms-has-method	/llms.txt	has	- [Method](https://provek.dev/method/): how a level is assigned to an operation, how evidence is classed, and what the score does not measure.
+llms-full-has-method	/llms-full.txt	has	- [Method](https://provek.dev/method/): how a level is assigned to an operation, how evidence is classed, and what the score does not measure.
+openapi-status	/openapi.json	status	200
+catalog-status	/.well-known/api-catalog	status	200
+security-txt	/.well-known/security.txt	has	Contact:
+github-main	gh:whiteknightonhorse/provek	head	rev
+mirror-witness-readme	https://raw.githubusercontent.com/whiteknightonhorse/provek-genlayer-witness/main/README.md	same	integrations/genlayer-witness/README.md
+mirror-attest-readme	https://raw.githubusercontent.com/whiteknightonhorse/apibase-genlayer-attest/main/README.md	same	integrations/genlayer-apibase-attest/README.md
+about-provek	gh:whiteknightonhorse/provek	about	Evidence, not claims — an ERC-8004
+old-specified-and-not-in-service	*	lacks	specified and not in service
+old-published-in-full	*	lacks	Published in full
+old-three-absences	*	lacks	Three absences
+old-four-absences-are-distinguished	*	lacks	Four absences are distinguished
+old-licensed-for-reuse	*	lacks	licensed for reuse
+old-not-in-a-later-one	*	lacks	not in a later one
+old-three-corrections	*	lacks	Three corrections
+old-three-exist	*	lacks	Three exist
+old-youtube-channel-operations-agent	*	lacks	YouTube channel operations agent
