@@ -10,6 +10,11 @@ Run as `python3 -I scripts/live_check.py [--base URL] [--rev REV] [--quiet]`.
 Output: one `live-check: FAIL <check> <id>: <detail>` line per failure; the last line is
 `live-check: ok`, `live-check: <N> failure(s)` or `live-check: could not run: <why>`.
 Exit 0 / 1 / 2. "Could not run" is its own state, never a pass and never a failure of the site.
+A rate-limit answer of api.github.com (403/429 with `x-ratelimit-remaining: 0` or `retry-after`, or a 401
+to a request that carried the token) is NOT MEASURED: one `live-check: NOT-MEASURED <check> <id>: ...` line,
+no FAIL; with no FAIL line the run ends `could not run: <K> row(s) not measured (<ids>)`, exit 2.
+A request to api.github.com carries PROVEK_GITHUB_TOKEN (the environment, else the line of the home
+directory's env file) and follows no redirect; no other host ever receives it.
 
 Checks: label, files (web/public of the rev against the live bytes, minus
 scripts/live_check_excludes.tsv), sitemap (every <loc> answers 200), claims (scripts/live_claims.tsv).
@@ -30,6 +35,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import subprocess
 import sys
@@ -54,6 +60,38 @@ ROW_MAX_COLS = 5
 KINDS = ("has", "lacks", "status", "header", "same", "head", "heads", "about")
 
 
+def github_token() -> str | None:
+    """PROVEK_GITHUB_TOKEN from the environment, else the line of <home>/.env (read as text, never executed)."""
+    val = os.environ.get("PROVEK_GITHUB_TOKEN", "")
+    if not val:
+        try:
+            text = (Path.home() / ".env").read_text(encoding="utf-8")
+        except (OSError, RuntimeError, UnicodeDecodeError):
+            return None
+        for line in text.splitlines():
+            m = re.match(r"\s*(?:export\s+)?PROVEK_GITHUB_TOKEN=(.*)$", line)
+            if m:
+                val = m.group(1).strip()
+                q = re.fullmatch(r"([\"'])(.*)\1", val)   # one pair of quotes
+                if q:
+                    val = q.group(2)
+                break
+    return val or None
+
+
+def is_api_url(url: str) -> bool:
+    """True for a URL under GITHUB_API: same scheme and exact host:port, path below the API prefix."""
+    u, a = urllib.parse.urlsplit(url), urllib.parse.urlsplit(GITHUB_API)
+    return (u.scheme, u.netloc) == (a.scheme, a.netloc) and u.path.startswith(a.path)
+
+
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    """A request that carries the token follows nothing: the 3xx answer is the answer."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
 class CouldNotRun(Exception):
     pass
 
@@ -65,6 +103,7 @@ class Refused(Exception):
 class Fetched:
     def __init__(self, status: int, headers, body: bytes):
         self.status, self.headers, self.body = status, headers, body
+        self.carried_token = False
 
     @property
     def text(self) -> str:
@@ -78,6 +117,7 @@ class Checker:
         self.rev_arg = rev_arg
         self.allowed = set(ALLOWED_HOSTS) | {urllib.parse.urlsplit(self.base).hostname or ""}
         self.failures: list[str] = []
+        self.not_measured: list[tuple[str, str]] = []   # (line, id)
         self.cache: dict = {}
         self.rev: str | None = None
         self.counts = {"files": 0, "urls": 0, "rows": 0}
@@ -85,6 +125,10 @@ class Checker:
     # -- plumbing ---------------------------------------------------------------------------
     def fail(self, check: str, ident: str, detail: str) -> None:
         self.failures.append(f"live-check: FAIL {check} {ident}: {detail}")
+
+    def not_measured_row(self, check: str, ident: str, reason: str, status: int) -> None:
+        self.not_measured.append(
+            (f"live-check: NOT-MEASURED {check} {ident}: api.github.com {reason} (status {status})", ident))
 
     def _opener(self):
         checker = self
@@ -110,12 +154,17 @@ class Checker:
         headers = {"User-Agent": USER_AGENT}
         if accept:
             headers["Accept"] = accept
+        token = github_token() if is_api_url(url) else None   # the one place the token is attached
+        if token:
+            headers["Authorization"] = "Bearer " + token
         req = urllib.request.Request(url, headers=headers, method="GET")
+        opener = urllib.request.build_opener(NoRedirect) if token else self._opener()
         try:
-            with self._opener().open(req, timeout=TIMEOUT_S) as r:
+            with opener.open(req, timeout=TIMEOUT_S) as r:
                 out = Fetched(r.status, r.headers, r.read())
         except urllib.error.HTTPError as e:
             out = Fetched(e.code, e.headers, e.read())
+        out.carried_token = bool(token)
         self.cache[key] = out
         return out
 
@@ -307,6 +356,11 @@ class Checker:
                 self.fail("claims", ident, f"{repo} branches are {got}, want {want}")
         elif kind == "about":
             r = self.get(GITHUB_API + repo)
+            if r.status == 401 and r.carried_token:
+                return self.not_measured_row("claims", ident, "token rejected", r.status)
+            if r.status in (403, 429) and (r.headers.get("x-ratelimit-remaining", "").strip() == "0"
+                                           or r.headers.get("retry-after") is not None):
+                return self.not_measured_row("claims", ident, "rate limit", r.status)
             if r.status != 200:
                 return self.fail("claims", ident, f"api.github.com answered {r.status}")
             desc = json.loads(r.text).get("description") or ""
@@ -340,9 +394,15 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     for line in c.failures:
         print(line)
+    for line, _ in c.not_measured:
+        print(line)
     if c.failures:
         print(f"live-check: {len(c.failures)} failure(s)")
         return 1
+    if c.not_measured:
+        ids = ", ".join(i for _, i in c.not_measured)
+        print(f"live-check: could not run: {len(c.not_measured)} row(s) not measured ({ids})")
+        return 2
     if not a.quiet:
         print(f"live-check: {c.counts['files']} files, {c.counts['urls']} sitemap urls, "
               f"{c.counts['rows']} rows at {c.rev[:12]}")

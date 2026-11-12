@@ -29,6 +29,18 @@ def _git(cwd: Path, *args: str) -> str:
                                 "GIT_COMMITTER_EMAIL": "t@t", "PATH": "/usr/bin:/bin", "HOME": str(cwd)}).stdout.strip()
 
 
+TOKEN_VALUE = "test-token-value-0123456789"
+
+
+@pytest.fixture(autouse=True)
+def no_token_and_empty_home(tmp_path_factory, monkeypatch):
+    """T-DL-05: no test reads the operator's token; HOME is an empty temporary directory."""
+    monkeypatch.delenv("PROVEK_GITHUB_TOKEN", raising=False)
+    home = tmp_path_factory.mktemp("home")
+    monkeypatch.setenv("HOME", str(home))
+    return home
+
+
 @pytest.fixture()
 def world(tmp_path, monkeypatch):
     repo = tmp_path / "repo"
@@ -52,6 +64,7 @@ def world(tmp_path, monkeypatch):
             pass
 
         def do_GET(self):
+            state.setdefault("seen", []).append((self.path, self.headers.get("Authorization")))
             if self.path == "/deploy-label.txt":
                 code, hdr, body = 200, {}, (state["rev"][:7] + "\n").encode()
             elif self.path.startswith("/api/"):
@@ -60,6 +73,8 @@ def world(tmp_path, monkeypatch):
                 code, hdr, body = state["pages"][self.path]
             else:
                 code, hdr, body = 404, {}, b"nope"
+            if self.path.startswith("/api/") and state.get("api_reply"):
+                code, hdr, body = state["api_reply"]
             self.send_response(code)
             for k, v in hdr.items():
                 self.send_header(k, v)
@@ -221,3 +236,127 @@ def test_source_holds_no_request_method_other_than_get():
     assert re.findall(r"method\s*=\s*[\"'](\w+)[\"']", src) == ["GET"]
     assert not re.search(r"[\"'](POST|PUT|DELETE|PATCH)[\"']", src)
     assert not re.search(r"\bdata\s*=", src), "a request body would make urllib send a POST"
+
+
+# T-DL-05: the token for api.github.com, and a rate-limit answer is not a failure ----------------
+ABOUT = row("about-r", "gh:own/proj", "about", "Evidence, not claims")
+
+
+def _api(world, code, hdr=None):
+    world.state["api_reply"] = (code, hdr or {}, b"{}")
+
+
+def _api_seen(world):
+    return [a for p, a in world.state["seen"] if p.startswith("/api/")]
+
+
+def _other_seen(world):
+    return [a for p, a in world.state["seen"] if not p.startswith("/api/")]
+
+
+def test_t1_rate_limit_403_is_not_measured(world, capsys):
+    _api(world, 403, {"x-ratelimit-remaining": "0"})
+    rc, out = world.run(rows=ABOUT, capsys=capsys)
+    assert rc == 2 and "FAIL" not in out
+    assert out.count("live-check: NOT-MEASURED claims about-r: api.github.com rate limit (status 403)") == 1
+    assert out.rstrip().splitlines()[-1].startswith("live-check: could not run: 1 row(s) not measured (about-r)")
+
+
+def test_t2_rate_limit_429_retry_after_is_not_measured(world, capsys):
+    _api(world, 429, {"retry-after": "60"})
+    rc, out = world.run(rows=ABOUT, capsys=capsys)
+    assert rc == 2 and "FAIL" not in out and "rate limit (status 429)" in out
+    assert out.rstrip().splitlines()[-1].startswith("live-check: could not run:")
+
+
+def test_t3_plain_403_is_a_failure(world, capsys):
+    _api(world, 403)
+    rc, out = world.run(rows=ABOUT, capsys=capsys)
+    assert rc == 1 and "FAIL claims about-r: api.github.com answered 403" in out and "NOT-MEASURED" not in out
+
+
+def test_t4_failure_wins_over_not_measured(world, capsys):
+    _api(world, 403, {"x-ratelimit-remaining": "0"})
+    rc, out = world.run(rows=ABOUT + row("bad", "/a.txt", "has", "zulu"), capsys=capsys)
+    assert rc == 1 and out.rstrip().splitlines()[-1] == "live-check: 1 failure(s)"
+    assert "NOT-MEASURED claims about-r" in out and "FAIL claims bad" in out
+
+
+def test_t5_token_only_to_the_api_host(world, capsys, monkeypatch):
+    monkeypatch.setenv("PROVEK_GITHUB_TOKEN", TOKEN_VALUE)
+    rc, out = world.run(rows=ABOUT + row("h", "/a.txt", "has", "alpha"), capsys=capsys)
+    assert rc == 0, out
+    assert _api_seen(world) == [f"Bearer {TOKEN_VALUE}"]
+    assert _other_seen(world) and set(_other_seen(world)) == {None}
+
+
+def test_t6_no_token_no_header(world, capsys):
+    rc, out = world.run(rows=ABOUT, capsys=capsys)
+    assert rc == 0, out
+    assert set(a for _, a in world.state["seen"]) == {None}
+
+
+def test_t7_token_from_the_home_env_file(world, capsys, no_token_and_empty_home):
+    (no_token_and_empty_home / ".env").write_text(f"OTHER=1\nPROVEK_GITHUB_TOKEN={TOKEN_VALUE}\n")
+    rc, out = world.run(rows=ABOUT, capsys=capsys)
+    assert rc == 0, out
+    assert _api_seen(world) == [f"Bearer {TOKEN_VALUE}"]
+    assert set(_other_seen(world)) == {None}
+
+
+@pytest.mark.parametrize("line", [f'export PROVEK_GITHUB_TOKEN="{TOKEN_VALUE}"', f"PROVEK_GITHUB_TOKEN='{TOKEN_VALUE}'"])
+def test_t7b_export_and_quotes_are_removed(line, no_token_and_empty_home):
+    (no_token_and_empty_home / ".env").write_text(line + "\n")
+    assert lc.github_token() == TOKEN_VALUE
+
+
+def test_t8_token_request_follows_no_redirect(world, capsys, monkeypatch):
+    seen = []
+
+    class H2(BaseHTTPRequestHandler):
+        def log_message(self, *a):
+            pass
+
+        def do_GET(self):
+            seen.append(self.headers.get("Authorization"))
+            self.send_response(200)
+            self.send_header("Content-Length", "2")
+            self.end_headers()
+            self.wfile.write(b"{}")
+
+    srv2 = HTTPServer(("127.0.0.1", 0), H2)
+    threading.Thread(target=srv2.serve_forever, daemon=True).start()
+    try:
+        monkeypatch.setenv("PROVEK_GITHUB_TOKEN", TOKEN_VALUE)
+        _api(world, 302, {"Location": f"http://127.0.0.1:{srv2.server_port}/x"})
+        rc, out = world.run(rows=ABOUT, capsys=capsys)
+    finally:
+        srv2.shutdown()
+    assert seen == []
+    assert rc == 1 and "api.github.com answered 302" in out
+
+
+def test_t9_rejected_token_is_not_measured(world, capsys, monkeypatch):
+    monkeypatch.setenv("PROVEK_GITHUB_TOKEN", TOKEN_VALUE)
+    _api(world, 401)
+    rc, out = world.run(rows=ABOUT, capsys=capsys)
+    assert rc == 2 and "FAIL" not in out
+    assert "NOT-MEASURED claims about-r: api.github.com token rejected (status 401)" in out
+
+
+def test_401_without_a_token_is_a_failure(world, capsys):
+    _api(world, 401)
+    rc, out = world.run(rows=ABOUT, capsys=capsys)
+    assert rc == 1 and "FAIL claims about-r: api.github.com answered 401" in out
+
+
+def test_t10_token_value_never_printed(world, capsys, monkeypatch):
+    monkeypatch.setenv("PROVEK_GITHUB_TOKEN", TOKEN_VALUE)
+    for code, hdr in ((403, {"x-ratelimit-remaining": "0"}), (401, {}), (200, None)):
+        if hdr is not None:
+            _api(world, code, hdr)
+        else:
+            world.state.pop("api_reply")
+        rc, out = world.run(rows=ABOUT, capsys=capsys)
+        err = capsys.readouterr().err
+        assert TOKEN_VALUE not in out and TOKEN_VALUE not in err
