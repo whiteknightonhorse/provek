@@ -508,11 +508,11 @@ export default function Witness() {
         <h1 className="text-2xl font-semibold tracking-tight">GenLayer Evidence Witness</h1>
         <p className="mt-2 text-sm text-[var(--color-ink-2)]">
           An Intelligent Contract on GenLayer. Each validator independently fetches an evidence URL
-          and the validators must agree on PASS or FAIL before a record is written. This page reads
+          and the validators must agree on PASS or FAIL before the contract writes a record. This page reads
           that contract, shows what it holds, and can request a new check through a relay.
         </p>
         <p className="mt-2 text-xs text-[var(--color-ink-3)]">
-          Not to be confused with Provek&apos;s own WitnessRecord pages under{" "}
+          Do not confuse it with Provek&apos;s own WitnessRecord pages under{" "}
           <code className="font-mono">/w/</code>, which are a different thing.
         </p>
 

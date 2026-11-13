@@ -280,7 +280,7 @@ export default function Apply() {
               Public repositories only. That restriction exists so we never hold your secrets
               &mdash; and so that anyone can recompute the verdict from the same source. The
               registry also lists private repositories the operator entered as his own before this
-              form existed; they are measured as unreadable, which is the method&rsquo;s answer to
+              form existed; the method measures them as unreadable, which is its answer to
               evidence only one party can see. That path is not open to applicants.
             </p>
             <input
@@ -376,7 +376,7 @@ export default function Apply() {
             {sent.state === "sending" ? "Sending…" : "Submit request"}
           </button>
           <p className="text-xs text-[var(--color-ink-3)]">
-            Nothing is charged today and Provek never holds or routes your funds. Verification may
+            Provek charges nothing today and never holds or routes your funds. Verification may
             become paid later; the registry will say so before it does.
           </p>
 
@@ -396,9 +396,9 @@ export default function Apply() {
                   and it is the count in the endpoint. */}
               <li>
                 <strong className="text-[var(--color-ink-2)]">Stored:</strong> the repository URL,
-                your address, the time, and the two-letter country your request arrived from —
+                your address, the time, and the two-letter country your request arrived from,
                 and the browser string your request arrived with (both for abuse triage; they travel with the
-                record and expire with it) &mdash; plus four fields about the
+                record and expire with it), plus four fields about the
                 record rather than about you: a random identifier, which mandate you asked for,
                 which one we applied (always the read-only one), and whether our notification to
                 the operator went through. Nothing further, and this form sets no cookie of its own.
@@ -410,11 +410,11 @@ export default function Apply() {
                     false sentence again, on the site whose product is catching those. */}
                 <strong className="text-[var(--color-ink-2)]">Your consent, as evidence:</strong>{" "}
                 only if you tick the optional updates box do we store the tick, the moment you
-                ticked it, the version of the wording, and the wording itself, word for word. An
-                unticked box is recorded as <code>false</code>, with those three left empty, and
-                your request is processed all the same. The words are stored because
+                ticked it, the version of the wording, and the wording itself, word for word. We
+                record an unticked box as <code>false</code>, with those three left empty, and
+                we process your request all the same. We store the words because
                 a consent record is worth what it can later prove, and &ldquo;they agreed&rdquo;
-                proves nothing without what they agreed to. Nothing is being sent yet: there is no
+                proves nothing without what they agreed to. We send nothing yet: there is no
                 mail sender in this project, so today these records only wait for the day a sender exists.
               </li>
               <li>

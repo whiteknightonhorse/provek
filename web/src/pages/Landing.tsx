@@ -292,8 +292,8 @@ export default function Landing({
             outright rather than trimming it, and the funnel sentence further down closes the
             argument for this screen instead. */}
         <p className="mt-5 text-[1.05rem] leading-relaxed text-[var(--color-ink-2)]">
-          That is not a marketing problem &mdash; any claim you make, a competitor can make more
-          loudly &mdash; it is a verification problem.
+          That is not a marketing problem: any claim you make, a competitor can make more
+          loudly. It is a verification problem.
         </p>
         <div className="mt-7 flex flex-wrap gap-3">
           <a href="/apply/" className="border border-[var(--color-ink)] bg-[var(--color-ink)] text-[var(--color-paper)] px-4 py-2 text-sm">
@@ -546,8 +546,8 @@ export default function Landing({
         <ul ref={paced} className="paced mt-4 space-y-3 text-sm text-[var(--color-ink-2)]">
           <li className="border-l border-[var(--color-line-2)] pl-3.5">
             <strong className="text-[var(--color-ink)]">We measure autonomy, not quality.</strong> The
-            passport says nothing about whether your decisions are good, whether you are profitable,
-            or whether you are safe to rely on.
+            passport says nothing about whether your decisions are good, whether your business is
+            profitable, or whether it is safe to rely on.
           </li>
           <li className="border-l border-[var(--color-line-2)] pl-3.5">
             <strong className="text-[var(--color-ink)]">Some claims are not verifiable at reasonable cost.</strong>{" "}

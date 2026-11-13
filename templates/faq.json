@@ -7,39 +7,39 @@
   ],
   "templates": {
     "customer-support-agent": [
-      "Sending any reply, issuing refunds, and anything with legal or safety content - nothing in this codebase has network permission to send mail.",
+      "Sending any reply, issuing refunds, and anything with legal or safety content. Nothing in this codebase has network permission to send mail.",
       "An inbox reachable by IMAP or a provider API such as the Gmail API, and an LLM API key.",
-      "Each new message lands in exactly one place: a drafted reply in outbox/ for a human to read, edit and send from their own mail client, or the untouched message in escalated/ with the reason it was routed there."
+      "Each new message lands in exactly one place. It is a drafted reply in outbox/, which a human reads, edits and sends from their own mail client. Otherwise it is the untouched message in escalated/, with the reason the program routed it there."
     ],
     "lead-generation-agent": [
-      "Approving the ideal customer profile, sending any outreach message, and deciding who actually gets contacted - the program never sends anything itself.",
+      "Approving the ideal customer profile, sending any outreach message, and deciding whom to contact. The program never sends anything itself.",
       "A source of company or contact data you already have rights to use (a CSV export or a data provider), and an LLM API key.",
-      "Every candidate ends up in outbox/ as a draft ready for review, or in rejected/ with the reason it was screened out - nothing is sent until a human reads outbox/ and sends it themselves."
+      "Every candidate ends up in outbox/ as a draft ready for review. Otherwise it ends up in rejected/, with the reason the program screened it out. The program sends nothing until a human reads outbox/ and sends it themselves."
     ],
     "ecommerce-operations-agent": [
-      "Approving every staged change - a price move, a restock, a listing edit, or a promotion draft - before it is applied to the live store; only the one approval step ever has a live write credential.",
+      "Approving every staged change: a price move, a restock, a listing edit, or a promotion draft. This happens before the approval step applies the change to the live store. Only that one approval step ever has a live write credential.",
       "Read access to the store's own catalog, order and inventory data (an export or a read-only API), and an LLM API key.",
-      "A plain-language performance summary and a set of staged change proposals wait in staged_changes/ for a human to review; nothing is applied to the live store until someone runs the separate, explicit approval step."
+      "A plain-language performance summary and a set of staged change proposals wait in staged_changes/ for a human to review. No change reaches the live store until someone runs the separate, explicit approval step."
     ],
     "market-research-agent": [
-      "Choosing the research questions for each run, reading the brief before it is shared or acted on, and deciding what to do about anything it finds.",
-      "API access to at least two independent LLM providers or model families, and a way to fetch or paste the source pages the brief should be checked against.",
-      "A dated brief file lands under briefs/ with one sourced answer per question and a note on anything the models disagreed about - the program never posts, emails, or publishes it."
+      "Choosing the research questions for each run. Reading the brief before anyone shares or acts on it. Deciding what to do about anything it finds.",
+      "API access to at least two independent LLM providers or model families. A way to fetch or paste the source pages to check the brief against.",
+      "A dated brief file lands under briefs/, with one sourced answer per question and a note on anything the models disagreed about. The program never posts, emails, or publishes it."
     ],
     "content-production-agent": [
-      "Approving the brief and its angle, publishing anything the program produces, and deciding what to do with any claim the fact-check step could not confirm.",
+      "Approving the brief and its angle. Publishing anything the program produces. Deciding what to do with any claim the fact-check step could not confirm.",
       "A content brief naming the topic, audience and allowed sources, and an LLM API key.",
-      "The finished draft lands in queue/ marked ready or flagged, with any unsupported claims listed at the top - nothing is posted, emailed, or pushed to a CMS by the program itself."
+      "The finished draft lands in queue/ marked ready or flagged, with any unsupported claims listed at the top. The program itself never posts, emails, or pushes anything to a CMS."
     ],
     "finance-operations-agent": [
-      "Reviewing and posting every categorized transaction to the actual books, resolving every reconciliation gap, and carrying out any real payment, transfer, or payroll action - none of which this template performs.",
+      "Reviewing and posting every categorized transaction to the actual books. Resolving every reconciliation gap. Carrying out any real payment, transfer, or payroll action. This template performs none of these.",
       "An export of invoices or receipts, a bank or card statement export, the chart of accounts you already use, and an LLM API key.",
-      "A dated report lands in reports/ with a category breakdown and two explicit lists - invoices with no matching statement line, and statement lines with no matching invoice - for a human to resolve. No money moves at any point."
+      "A dated report lands in reports/ with a category breakdown and two explicit lists: invoices with no matching statement line, and statement lines with no matching invoice. A human resolves both lists. No money moves at any point."
     ],
     "youtube-channel-operations-agent": [
-      "Creating the Google Cloud project, OAuth consent screen and OAuth client in a browser under their own Google account; granting the channel's first consent; watching every hidden upload and deciding when it becomes public; anything involving money or affiliate links.",
-      "A Google Cloud project with YouTube Data API v3 enabled, an OAuth client with the youtube.upload and youtube.force-ssl scopes, a refresh token, the channel ID, and finished video files with their metadata - about six uploads a day fit in a project's 10,000-unit daily quota at 1,600 units each.",
-      "The video is on the channel as unlisted, its ID recorded in journal/ alongside the day's quota spend - a human watches it and makes it public from the channel itself; the program never does."
+      "Creating the Google Cloud project, OAuth consent screen and OAuth client in a browser under their own Google account. Granting the channel's first consent. Watching every hidden upload and deciding when it becomes public. Anything involving money or affiliate links.",
+      "A Google Cloud project with YouTube Data API v3 enabled. An OAuth client with the youtube.upload and youtube.force-ssl scopes. A refresh token, the channel ID, and finished video files with their metadata. About six uploads a day fit in a project's 10,000-unit daily quota at 1,600 units each.",
+      "The video is on the channel as unlisted, with its ID recorded in journal/ alongside the day's quota spend. A human watches it and makes it public from the channel itself. The program never does."
     ]
   }
 }

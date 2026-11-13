@@ -366,7 +366,7 @@ export default function Passport({ p }: { p: P }) {
           something goes wrong &mdash; none of the three raises another. A blank field is never a
           zero: every value states what was found, or the specific reason nothing could be. The
           number under Autonomy projection measures how much of this business runs without a
-          human in the loop &mdash; not whether it is reliable, profitable, or well run.
+          human in the loop, not whether it is reliable, profitable, or well run.
         </p>
       </details>
 

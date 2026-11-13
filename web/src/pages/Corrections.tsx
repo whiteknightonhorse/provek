@@ -42,13 +42,13 @@ export default function Corrections() {
         {/* THE MOVE, NAMED. A reader who bookmarked or quoted the original location on `/registry/`
             should find the same words here, not a summary standing in for them. */}
         <p className="mt-3 text-xs text-[var(--color-ink-3)]">
-          The first two corrections below were originally published directly on the registry page.
-          They were moved to this page on 2026-09-02, unabridged, when the registry itself was given
+          We first published the first two corrections below directly on the registry page.
+          We moved them to this page on 2026-09-02, unabridged, when we gave the registry itself
           a single compact line pointing here instead of carrying the full text of every correction
-          it has ever needed. The third was published directly here, the address this page has
-          carried since that move. The fourth was added on 2026-10-23, for a change made on 2026-09-01
-          that had no notice of its own. The fifth was added on 2026-10-26, for a subject withdrawn
-          from the registry because its project was retired. The sixth was added on 2026-10-26, for a
+          it has ever needed. We published the third directly here, at the address this page has
+          carried since that move. We added the fourth on 2026-10-23, for a change made on 2026-09-01
+          that had no notice of its own. We added the fifth on 2026-10-26, for a subject withdrawn
+          from the registry because its project no longer exists. We added the sixth on 2026-10-26, for a
           method note that stated two live author counts the registry did not show.
         </p>
 
@@ -65,11 +65,11 @@ export default function Corrections() {
             <div className="mt-2 pl-4 border-l-2 border-[var(--color-line-2)]">
               <p className="text-xs text-[var(--color-ink-3)]">
                 <strong className="text-[var(--color-ink-2)]">Resolved, 2026-08-25 into 2026-09-02.</strong>{" "}
-                The re-measure above completed the same day it was announced. Every passport on the
+                The re-measure above completed the same day we announced it. Every passport on the
                 registry has carried profile 1.1.0 - the time-windowed reading this erratum promised -
                 since; the phrase &ldquo;is being re-measured&rdquo; in the paragraph above described a
-                state that no longer holds by the time a reader sees it, and is left as it was written
-                rather than quietly edited to agree with what happened afterward.
+                state that no longer holds by the time a reader sees it, and we leave it as we wrote it
+                rather than quietly editing it to agree with what happened afterward.
               </p>
             </div>
           </div>
@@ -137,8 +137,8 @@ export default function Corrections() {
         </div>
 
         <p className="mt-6 text-xs text-[var(--color-ink-3)]">
-          Nothing here disappears when a correction is superseded or resolved. A registry whose past
-          statements can quietly vanish is not one whose present statements can be trusted.
+          Nothing here disappears when we supersede or resolve a correction. A registry whose past
+          statements can quietly vanish is not one whose present statements anyone can trust.
         </p>
       </div>
     </Page>

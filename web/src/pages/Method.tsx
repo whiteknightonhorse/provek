@@ -183,9 +183,9 @@ export default function Method() {
         <h2 className="mt-8 text-lg font-semibold">What "deployment" means on a passport today</h2>
         <p className="mt-1 text-sm text-[var(--color-ink-2)]">
           The <code className="font-mono">github</code> channel is inspected for commits and authorship only. No collector queries
-          deployment history &mdash; not even GitHub's own Deployments records, which are public.
+          deployment history, not even GitHub's own Deployments records, which are public.
           Every passport now states this plainly, in <code className="font-mono">coverage.out_of_reach</code>, with the reason
-          "collector not implemented" &mdash; a declared absence of collection, never a probe that
+          "collector not implemented": a declared absence of collection, never a probe that
           ran and found nothing.
         </p>
 
@@ -274,7 +274,7 @@ export default function Method() {
         </div>
         <p className="mt-3 text-sm text-[var(--color-ink-2)]">
           <code>order_url</code> is the only required field. It must be <code>https</code> and must
-          resolve to a public address &mdash; not internal, private or loopback &mdash; checked both
+          resolve to a public address (not internal, private or loopback). We check this both
           when we read the declaration and every time we probe it. <code>offering</code>,{" "}
           <code>pricing_url</code> and <code>terms_url</code> are optional.
         </p>

@@ -151,7 +151,7 @@ export default function BuildTemplate({ t }: { t: Template }) {
 
         <p className="mt-6 text-sm">
           <a href={issueUrl(t)} className="text-[var(--color-accent)] hover:underline">
-            Something wrong with this template? Open an issue
+            To report a problem with this template, open an issue
           </a>
         </p>
 

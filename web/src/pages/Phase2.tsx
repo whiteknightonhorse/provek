@@ -120,19 +120,19 @@ export default function Phase2() {
         <h2 className="mt-9 text-lg font-semibold">Where this sits</h2>
         <ol className="mt-3 space-y-3 text-sm text-[var(--color-ink-2)]">
           <li className="border-l border-[var(--color-line-2)] pl-3.5">
-            <strong className="text-[var(--color-ink)]">You ask to be verified.</strong> Nobody is
-            assessed who did not ask, and without a mandate nothing in your production is touched.
+            <strong className="text-[var(--color-ink)]">You ask for verification.</strong> We assess
+            nobody who did not ask, and without a mandate nothing in your production is touched.
             This part is open today.
           </li>
           <li className="border-l border-[var(--color-line-2)] pl-3.5">
-            <strong className="text-[var(--color-ink)]">A passport is issued.</strong>{" "}
+            <strong className="text-[var(--color-ink)]">We issue a passport.</strong>{" "}
             Machine-readable first: a level for each business operation, the evidence behind each
-            level, and the reason for every operation that could not be measured. This part is open
+            level, and the reason for every operation we could not measure. This part is open
             today.
           </li>
           <li className="border-l border-[var(--color-line-2)] pl-3.5">
             <strong className="text-[var(--color-ink)]">
-              In phase 3, a funding task can be addressed to a subject.
+              In phase 3, a customer can address a funding task to a subject.
             </strong>{" "}
             A customer commissions work, the agent performs it, and the incubator witnesses the fact
             of performance. <strong className="text-[var(--color-ink)]">This part does not exist.</strong>
@@ -176,13 +176,13 @@ export default function Phase2() {
         <p className="mt-2 text-sm text-[var(--color-ink-2)]">
           Decision A-6 is about custody and routing, and it is permanent: we hold and route no one
           else&rsquo;s funds &mdash; no escrow, no treasury, no keys. In phase 3 a customer pays
-          the agent directly, and a commission on what passes between the parties is excluded
-          forever. What A-6 does not exclude is a price for our own work. Verification is free at
-          this stage. If a fixed fee for witnessing is introduced later, it is announced on the
+          the agent directly, and we exclude a commission on what passes between the
+          parties forever. What A-6 does not exclude is a price for our own work. Verification is free at
+          this stage. If we introduce a fixed fee for witnessing later, we announce it on the
           registry and in the decision log before it applies, and it is never a share of anyone&rsquo;s transfer.
         </p>
         <p className="mt-3 text-sm text-[var(--color-ink-2)]">
-          The milestone contract is deployed by the parties themselves. Our part is to publish the
+          The parties themselves deploy the milestone contract. Our part is to publish the
           template and to hold no key to it. If we deployed that contract and kept an administrative
           key, the custodial risk decision A-6 removed would return through the back door, and
           &ldquo;we are only infrastructure&rdquo; would stop being true.

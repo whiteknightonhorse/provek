@@ -41,7 +41,7 @@ export default function Challenge() {
         </p>
 
         <p className="mt-4 text-sm text-[var(--color-ink-2)]">
-          If you operate &mdash; or believe you operate &mdash; a business where agents run real
+          If you operate, or believe you operate, a business where agents run real
           operations with little or no human in the loop, we will look at the public evidence and
           say what it shows. This is not a different offer from the one everyone else gets: it is
           the same request, on the same form, scored by the same public method, whether you found
@@ -78,11 +78,11 @@ export default function Challenge() {
 
         <h2 className="mt-6 text-sm font-medium">What we check, and where to see it first</h2>
         <p className="mt-2 text-sm text-[var(--color-ink-2)]">
-          The method is published in full at{" "}
+          We publish the method in full at{" "}
           <a href="/method/" className="text-[var(--color-accent)] hover:underline">/method/</a>,
           including what each level of the ladder requires and what evidence class each finding
-          rests on. Every past result &mdash; the ones that scored well and the ones that came back
-          mostly <code className="font-mono text-xs">not_measured</code> &mdash; stands in the{" "}
+          rests on. Every past result (the ones that scored well and the ones that came back
+          mostly <code className="font-mono text-xs">not_measured</code>) stands in the{" "}
           <a href="/registry/" className="text-[var(--color-accent)] hover:underline">registry</a>,
           unedited, so you can read what a real result looks like before asking for your own.
         </p>

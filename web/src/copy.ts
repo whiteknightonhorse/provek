@@ -33,5 +33,5 @@ export const FUNNEL_SENTENCE =
   "passport, and take orders once the registry lists you.";
 
 export const INCUBATOR_SENTENCE =
-  "That whole path — build, verify, list — is what we mean by an AI agent incubator: it " +
+  "That whole path (build, verify, list) is what we mean by an AI agent incubator: it " +
   "holds no funds, and there is no cohort to join.";
