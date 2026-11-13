@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-11-12T03:43:03.223503+00:00",
-    "valid_until": "2026-12-12T03:43:03.223503+00:00",
+    "issued_at": "2026-11-13T03:43:04.019976+00:00",
+    "valid_until": "2026-12-13T03:43:04.019976+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -17,8 +17,8 @@
       "evidence_window_days": 30
     },
     "evidence_window": {
-      "start": "2026-10-13T03:43:03.223503+00:00",
-      "end": "2026-11-12T03:43:03.223503+00:00"
+      "start": "2026-10-14T03:43:04.019976+00:00",
+      "end": "2026-11-13T03:43:04.019976+00:00"
     },
     "verified": {
       "operations": [
@@ -89,7 +89,7 @@
           "measured": true,
           "absent_reason": null
         },
-        "head_sha": "1c063ebb7fe650b4ecaef8ab94ef0da527b27b2a"
+        "head_sha": "e2e49b867ce0d5b3fd7e108a6623852ba003589f"
       },
       "control_map_valid": true,
       "control_map_cap": 5,
@@ -111,17 +111,17 @@
       "source": "github",
       "private": false,
       "declaration": {
-        "present": true,
-        "pinned_sha": "1c063ebb7fe650b4ecaef8ab94ef0da527b27b2a",
-        "schema_version": "1.0.0"
+        "present": false,
+        "pinned_sha": "e2e49b867ce0d5b3fd7e108a6623852ba003589f",
+        "schema_version": null
       }
     },
     "accountability": {
       "emergency_stop": {
-        "value": "operator — ssh + service stop halts all automated activity for this repository",
-        "measured": true,
-        "reason": null,
-        "confidence": "assumed"
+        "value": null,
+        "measured": false,
+        "reason": "not_declared",
+        "confidence": null
       },
       "claims_addressee": {
         "value": null,
@@ -131,9 +131,9 @@
       },
       "insurance": {
         "value": null,
-        "measured": true,
-        "reason": null,
-        "confidence": "assumed"
+        "measured": false,
+        "reason": "not_declared",
+        "confidence": null
       },
       "dispute_path": {
         "value": null,
