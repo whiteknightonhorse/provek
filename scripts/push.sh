@@ -75,7 +75,22 @@ fi
 # more than the drift it would catch. If `node_modules` is absent the build fails loudly, which is
 # the correct reading - a missing instrument is a red, never a skip.
 echo "6/9 site";     ( cd web && npm run build >/dev/null )
-echo "7/9 tests";    python3 -m pytest tests -q --cov=src --cov-fail-under=70 | tail -3
+# T-DEP-03. Steps 7 and 8 run in ~/orchestra/testenv, a hash-pinned Python 3.12 venv built from
+# requirements/ci-tests.txt - the interpreter CI's `tests` and `reproduce` jobs use (Pillow 13
+# needs >= 3.11; Python 3.10 is end of life). tests/test_door_matches_ci.py compares the versions.
+# A MISSING VENV IS RED, NOT SKIP. Rebuild when ci-tests.txt moves:
+#   ~/.local/bin/python3.12 -m venv ~/orchestra/testenv && ~/orchestra/testenv/bin/pip install --quiet \
+#     --require-hashes --only-binary=:all: -r requirements/ci-tests.txt
+TESTENV="${TESTENV:-$HOME/orchestra/testenv}"
+if [ ! -x "$TESTENV/bin/python" ]; then
+  echo "REFUSED: $TESTENV (the hash-pinned Python 3.12 venv built from requirements/ci-tests.txt, T-DEP-03) is missing - a missing venv is RED, not skip." >&2
+  exit 1
+fi
+if [ "$("$TESTENV/bin/python" -c 'import sys; print("%d.%d" % sys.version_info[:2])')" != 3.12 ]; then
+  echo "REFUSED: $TESTENV is not Python 3.12, the version CI's tests and reproduce jobs run - rebuild it (recipe above)." >&2
+  exit 1
+fi
+echo "7/9 tests";    "$TESTENV/bin/python" -m pytest tests -q --cov=src --cov-fail-under=70 | tail -3
 
 # MYPY IS HERE SINCE T-MY-02, in step 5 above, through the same program CI runs
 # (scripts/check_mypy_ceiling.py): it goes red when the advisory backlog grows past the D-65
@@ -99,7 +114,7 @@ echo "7/9 tests";    python3 -m pytest tests -q --cov=src --cov-fail-under=70 | 
 # other reason. It skips under the bare "7/9 tests" run above (see its own docstring for why -
 # unguarded it would clone and run the ENTIRE suite, including itself, without a floor) and is
 # armed here instead, the same PROVEK_REPRODUCE_README=1 gates.yml's `reproduce` job sets.
-echo "8/9 reproduce"; PROVEK_REPRODUCE_README=1 python3 -m pytest tests/test_reproduce_readme.py -q
+echo "8/9 reproduce"; PROVEK_REPRODUCE_README=1 "$TESTENV/bin/python" -m pytest tests/test_reproduce_readme.py -q
 
 # T-GL-04. `integrations/genlayer-witness/` needs Python >= 3.12 (D-63) - this repository's own
 # interpreter is 3.10, so this step alone reaches outside it, into the isolated venv T-GL-02 built

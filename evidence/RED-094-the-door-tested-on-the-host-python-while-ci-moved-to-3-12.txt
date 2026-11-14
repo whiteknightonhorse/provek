@@ -1,0 +1,9 @@
+RED-094 - T-DEP-03: gates.yml tests/reproduce jobs on python-version 3.12, scripts/push.sh still
+tree: bdcb0c4fff3916a6b15a5ebe6dfc2fec27946166 (dirty)
+runs steps 7 and 8 on the host python3 (3.10). New test: test_the_door_runs_the_tests_on_the_python_ci_runs_them_on.
+Command: python3 -m pytest tests/test_door_matches_ci.py -q
+
+tests/test_door_matches_ci.py:945: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_door_matches_ci.py::test_the_door_runs_the_tests_on_the_python_ci_runs_them_on
+1 failed, 29 passed in 2.74s

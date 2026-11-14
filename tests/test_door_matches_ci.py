@@ -900,3 +900,60 @@ def test_growth_past_the_ceiling_is_red(tmp_path):
 def test_the_count_at_the_ceiling_is_advisory(tmp_path):
     rc, out = _run_ceiling(tmp_path, errors=43, rc=1)
     assert rc == 0 and "mypy: 43 errors - advisory under ceiling 43 (mypy 2.4.0, pinned)" in out
+
+
+# --- the interpreter of the tests and reproduce jobs is the door's interpreter (T-DEP-03) -------
+
+TEST_JOBS = ("tests", "reproduce")
+
+
+def ci_test_python(workflow: str) -> set[str]:
+    """The `python-version` every job in TEST_JOBS asks setup-python for, read by PyYAML."""
+    jobs = yaml.safe_load(workflow)["jobs"]
+    found: set[str] = set()
+    for name in TEST_JOBS:
+        for step in jobs[name]["steps"]:
+            if "python-version" in (step.get("with") or {}):
+                found.add(str(step["with"]["python-version"]))
+    return found
+
+
+def door_test_python_problems(workflow: str, door: str) -> list[str]:
+    """Steps 7 and 8 must run in a hash-pinned venv of the SAME Python minor CI runs them on.
+
+    The door used to run them on whatever `python3` the host had (3.10), which is how CI moving to
+    3.12 for Pillow 13 would have left the door judging a different interpreter than the arbiter.
+    """
+    versions = ci_test_python(workflow)
+    if len(versions) != 1:
+        return [f"tests/reproduce jobs name {sorted(versions)} Python versions, want exactly one"]
+    (ver,) = versions
+    code = executable_lines(door)
+    problems: list[str] = []
+    # The build recipe lives in a comment (it is run by hand, like lintenv's); the guard is code.
+    if f"python{ver} -m venv" not in door or (
+            "--require-hashes --only-binary=:all:" not in door or "ci-tests.txt" not in door):
+        problems.append(f"the door documents no hash-pinned python{ver} venv build from ci-tests.txt")
+    if f'!= {ver} ]' not in code:
+        problems.append(f"the door does not refuse a test venv that is not Python {ver}")
+    for label in ("7/9", "8/9"):
+        line = next((ln for ln in door.splitlines() if ln.startswith(f'echo "{label}')), "")
+        if "$TESTENV/bin/python" not in line or "python3 -m pytest" in line:
+            problems.append(f"door step {label} does not run pytest through the test venv")
+    return problems
+
+
+def test_the_door_runs_the_tests_on_the_python_ci_runs_them_on():
+    assert door_test_python_problems(WORKFLOW.read_text(encoding="utf-8"),
+                                     DOOR.read_text(encoding="utf-8")) == []
+
+
+def test_a_door_on_another_python_than_ci_is_a_red():
+    wf = WORKFLOW.read_text(encoding="utf-8")
+    door = DOOR.read_text(encoding="utf-8")
+    # CI's two jobs disagreeing with each other is a red too.
+    mixed = wf.replace('python-version: "3.12"', 'python-version: "3.10"', 1)
+    assert mixed != wf and any("exactly one" in p for p in door_test_python_problems(mixed, door))
+    ver = next(iter(ci_test_python(wf)))
+    assert any("refuse" in p for p in door_test_python_problems(wf, door.replace(f'!= {ver} ]', '!= 0 ]')))
+    assert any("7/9" in p for p in door_test_python_problems(wf, door.replace("$TESTENV/bin/python", "python3")))
