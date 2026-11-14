@@ -4480,3 +4480,21 @@ Ruling PROVEK-AEO-1110 ruling-1 item 1 (2026-11-10). `web/public/robots.txt` say
 **Cost.** A crawler that ignores Content-Signal is not stopped.
 
 Evidence: `evidence/RED-090-the-edge-refused-the-agents-robots-allows.txt`.
+
+## D-84. Provek names itself a verification layer; "reputation layer" is not a present claim
+
+Date: 2026-11-14. Source: MARKET-SIGNALS-PROVEK-1114-S ruling-1.
+
+Before this entry README.md ("What it is"), docs/WHY_GET_VERIFIED.md and every prerendered page description said "verification"; SPEC.md section 1, SECURITY.md (Scope) and the page shell web/index.html said "verification and reputation layer".
+
+**Decision.** The three lines say "verification layer". The canonical sentence is README.md "What it is".
+
+**Why.** Provek publishes verdicts about who performs an operation. It computes no ranking of businesses. No code under src/ or scripts/ posts or reads ERC-8004 Reputation Registry feedback, and none reads a payment; src/transport/erc8004.py stores a Reputation Registry address that no function uses. Publication to that registry is a later phase and is not built. "Reputation" for agent businesses now names measured quantities of its own: ratings posted to the Reputation Registry, and rankings of paid providers computed from payment data. Provek produces neither.
+
+**Not changed.** "the reputation of the issuer" (ADR-0001, README.md licence section) and "Reproducibility over reputation" (PRODUCT.md) use the ordinary sense of the word and stay.
+
+**Returns when.** A card ships publication to, or reading of, the Reputation Registry. That card restores the word together with the code that earns it.
+
+**Supersedes.** Nothing.
+
+Evidence: `evidence/RED-093-one-self-description-a-verification-layer.txt`.

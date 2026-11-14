@@ -40,7 +40,7 @@ reaches nobody.
 
 ## Scope
 
-This repository is the verification and reputation layer described in `SPEC.md`, plus the static
+This repository is the verification layer described in `SPEC.md`, plus the static
 site served at `provek.dev` and the one Cloudflare Pages Function behind `/api/apply`.
 
 Findings that are in scope and worth reporting even though they are not exploits:

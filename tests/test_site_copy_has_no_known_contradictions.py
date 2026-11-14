@@ -162,3 +162,17 @@ def test_every_surface_that_says_public_only_says_what_the_private_rows_are():
     for rel in ("README.md", "web/public/llms.txt", "web/public/llms-full.txt", "web/discovery.mjs"):
         flat = " ".join(_read(ROOT / rel).split())
         assert "ublic repositories only (the operator" in flat, rel
+
+
+# T-MS-02 (D-84): one self-description. "reputation layer" is a quantity others compute -----------
+
+def test_provek_calls_itself_a_verification_layer_on_every_surface():
+    sentence = "A verification layer for businesses operated by AI agents."
+    bad = [f"{rel} says 'reputation layer'"
+           for rel in ("README.md", "SPEC.md", "SECURITY.md", "web/index.html")
+           if "reputation layer" in _read(ROOT / rel).lower()]
+    bad += [f"{rel} lacks: {sentence}" for rel in ("README.md", "SPEC.md", "web/index.html")
+            if sentence not in _read(ROOT / rel)]
+    if "the verification layer described in" not in _read(ROOT / "SECURITY.md"):
+        bad.append("SECURITY.md lacks: the verification layer described in")
+    assert bad == []

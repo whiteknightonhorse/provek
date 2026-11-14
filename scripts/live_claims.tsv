@@ -19,3 +19,6 @@ old-three-corrections	*	lacks	Three corrections
 old-three-exist	*	lacks	Three exist
 old-youtube-channel-operations-agent	*	lacks	YouTube channel operations agent
 headers-file-applied	/	header	content-security-policy: default-src 'self'
+old-reputation-layer	*	lacks	reputation layer
+spec-says-verification-layer	https://raw.githubusercontent.com/whiteknightonhorse/provek/main/SPEC.md	has	A verification layer for businesses operated by AI agents.
+security-says-verification-layer	https://raw.githubusercontent.com/whiteknightonhorse/provek/main/SECURITY.md	has	the verification layer described in

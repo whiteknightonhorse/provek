@@ -8,7 +8,7 @@ adds something the specification does not contain, it is marked **NEW**.
 
 ## 1. What this is
 
-A verification and reputation layer for businesses operated by AI agents. The single sentence the
+A verification layer for businesses operated by AI agents. The single sentence the
 product must earn:
 
 > An outside party can determine, **from evidence rather than claims**, how much of a given
