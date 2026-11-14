@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 # D-65 Decision 3. The ONE place the number lives in code. Keyed by the mypy version pinned in
 # requirements/ci-lint.txt: a value may only move DOWN; a NEW key is added only with a MEASURED-0NN
 # transcript under that pin, in the same commit as the pin.
-CEILING = {"2.4.0": 43}
+CEILING = {"2.4.0": 43, "2.4.1": 41}
 
 _PIN = re.compile(r"^mypy==(\S+)")
 

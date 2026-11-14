@@ -1,0 +1,69 @@
+# tree: bf894016c266b3ae92fb6adbb0b1a537b3a45361
+
+$ date -u
+Sat Nov 14 02:06:19 PM UTC 2026
+
+$ grep -n 'mypy==' requirements/ci-lint.txt
+205:mypy==2.4.1 \
+
+$ ~/orchestra/lintenv/bin/python -m mypy --version  (hash-pinned install of the new lock)
+mypy 2.4.1 (compiled: yes)
+
+$ ~/orchestra/lintenv/bin/python -m mypy src --ignore-missing-imports --no-error-summary
+src/abs_profile/measured.py:81: error: Unsupported operand types for <= ("float" and "None")  [operator]
+src/abs_profile/measured.py:81: note: Left operand is of type "float | int | None"
+src/governance/thresholds.py:71: error: Unsupported operand types for > ("int" and "None")  [operator]
+src/governance/thresholds.py:71: note: Left operand is of type "float | int | None"
+src/governance/thresholds.py:82: error: Unsupported operand types for > ("int" and "None")  [operator]
+src/governance/thresholds.py:82: note: Left operand is of type "float | int | None"
+src/governance/thresholds.py:92: error: Unsupported operand types for <= ("int" and "None")  [operator]
+src/governance/thresholds.py:92: note: Left operand is of type "float | int | None"
+src/governance/thresholds.py:95: error: Unsupported operand types for <= ("int" and "None")  [operator]
+src/governance/thresholds.py:95: note: Left operand is of type "float | int | None"
+src/governance/thresholds.py:101: error: Argument 1 to "int" has incompatible type "float | int | None"; expected "str | Buffer | SupportsInt | SupportsIndex | SupportsTrunc"  [arg-type]
+src/collector/github.py:109: error: Unsupported operand types for < ("int" and "None")  [operator]
+src/collector/github.py:109: note: Left operand is of type "float | int | None"
+src/transport/erc8004.py:73: error: List item 10 has incompatible type "str | None"; expected "str | bytes | PathLike[str] | PathLike[bytes]"  [list-item]
+src/transport/erc8004.py:102: error: Argument 2 to "_eth_call" has incompatible type "str | None"; expected "str"  [arg-type]
+src/transport/erc8004.py:107: error: Argument 2 to "_eth_call" has incompatible type "str | None"; expected "str"  [arg-type]
+src/transport/erc8004.py:111: error: Incompatible types in assignment (expression has type "tuple[str, ...]", variable has type "tuple[()] | tuple[str]")  [assignment]
+src/liveness/commitments.py:210: error: Argument 2 to "TargetWatch" has incompatible type "**dict[str, tuple[str, ...] | str | datetime | None]"; expected "datetime | None"  [arg-type]
+src/liveness/commitments.py:210: error: Argument 2 to "TargetWatch" has incompatible type "**dict[str, tuple[str, ...] | str | datetime | None]"; expected "TargetState | None"  [arg-type]
+src/liveness/commitments.py:210: error: Argument 2 to "TargetWatch" has incompatible type "**dict[str, tuple[str, ...] | str | datetime | None]"; expected "tuple[str, ...]"  [arg-type]
+src/liveness/commitments.py:210: error: Argument 2 to "TargetWatch" has incompatible type "**dict[str, tuple[str, ...] | str | datetime | None]"; expected "str | None"  [arg-type]
+src/liveness/commitments.py:213: error: Argument 3 to "TargetWatch" has incompatible type "**dict[str, tuple[str, ...] | str | datetime | None]"; expected "TargetState | None"  [arg-type]
+src/liveness/commitments.py:213: error: Argument 3 to "TargetWatch" has incompatible type "**dict[str, tuple[str, ...] | str | datetime | None]"; expected "tuple[str, ...]"  [arg-type]
+src/liveness/commitments.py:213: error: Argument 3 to "TargetWatch" has incompatible type "**dict[str, tuple[str, ...] | str | datetime | None]"; expected "str | None"  [arg-type]
+src/liveness/commitments.py:213: error: Argument 3 to "TargetWatch" has incompatible type "**dict[str, tuple[str, ...] | str | datetime | None]"; expected "datetime | None"  [arg-type]
+src/liveness/commitments.py:519: error: Unsupported operand types for > ("datetime" and "None")  [operator]
+src/liveness/commitments.py:519: error: Unsupported operand types for < ("datetime" and "None")  [operator]
+src/liveness/commitments.py:519: error: Unsupported left operand type for > ("None")  [operator]
+src/liveness/commitments.py:519: note: Both left and right operands are unions
+src/liveness/commitments.py:522: error: Item "None" of "datetime | None" has no attribute "isoformat"  [union-attr]
+src/liveness/commitments.py:523: error: Item "None" of "datetime | None" has no attribute "isoformat"  [union-attr]
+src/liveness/commitments.py:525: error: Unsupported operand types for < ("datetime" and "None")  [operator]
+src/liveness/commitments.py:525: error: Unsupported operand types for > ("datetime" and "None")  [operator]
+src/liveness/commitments.py:525: error: Unsupported left operand type for < ("None")  [operator]
+src/liveness/commitments.py:525: note: Both left and right operands are unions
+src/liveness/commitments.py:539: error: Item "None" of "datetime | None" has no attribute "isoformat"  [union-attr]
+src/liveness/commitments.py:540: error: Item "None" of "datetime | None" has no attribute "isoformat"  [union-attr]
+src/liveness/commitments.py:567: error: Unsupported operand types for + ("None" and "timedelta")  [operator]
+src/liveness/commitments.py:567: note: Left operand is of type "datetime | None"
+src/liveness/commitments.py:569: error: Unsupported operand types for + ("None" and "timedelta")  [operator]
+src/liveness/commitments.py:569: note: Left operand is of type "datetime | None"
+src/liveness/commitments.py:570: error: Item "None" of "datetime | None" has no attribute "isoformat"  [union-attr]
+src/liveness/commitments.py:571: error: Item "timedelta" of "datetime | timedelta" has no attribute "isoformat"  [union-attr]
+src/liveness/commitments.py:572: error: Item "None" of "datetime | None" has no attribute "isoformat"  [union-attr]
+src/liveness/commitments.py:576: error: Item "None" of "TargetState | None" has no attribute "value"  [union-attr]
+src/liveness/commitments.py:577: error: Item "None" of "datetime | None" has no attribute "isoformat"  [union-attr]
+src/liveness/commitments.py:577: error: Item "timedelta" of "datetime | timedelta" has no attribute "isoformat"  [union-attr]
+src/passport/passport.py:392: error: Item "None" of "NotMeasured | None" has no attribute "value"  [union-attr]
+src/collector/reachability.py:174: error: Argument 1 to "probe_reachable" has incompatible type "object"; expected "str"  [arg-type]
+src/pipeline.py:184: error: Argument "service_url" to "Row" has incompatible type "object"; expected "str | None"  [arg-type]
+src/pipeline.py:186: error: Argument "service_reachable" to "Row" has incompatible type "object"; expected "bool | None"  [arg-type]
+rc=1
+
+$ grep -c ': error:'
+41
+
+ceiling under 2.4.0 was 43; 2.4.1 measures 41, so CEILING["2.4.1"] = 41 (D-65 Decision 3)
