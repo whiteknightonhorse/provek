@@ -118,7 +118,11 @@ def test_the_emitted_notes_carry_the_provenance_line_where_a_reader_sees_it():
     pages = emitted()
     if not pages:
         pytest.skip("site not built in this checkout")
+    recorded = {front["slug"]: front["provenance"] for front, _ in sources()}
     for slug, html in pages.items():
         text = strip_tags(html)
-        assert "claude-sonnet-5" in text and "claude-haiku-4-5" in text, (
-            f"{slug}: the models that drafted it are not disclosed on the page")
+        prov = recorded.get(slug)
+        if prov is None:
+            continue
+        assert prov["plan_model"] in text and prov["prose_model"] in text, (
+            f"{slug}: the models its source records are not disclosed on the page")

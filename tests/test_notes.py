@@ -34,6 +34,11 @@ DESC_MIN, DESC_MAX = 140, 160
 KEYS_MAX = 3
 FIG_MAX = 3
 
+# The ids a note records are what ran. Each pair is valid only on its side of the cutover date.
+OLD_MODEL_PAIR = ("claude-sonnet-5", "claude-haiku-4-5")
+NEW_MODEL_PAIR = ("claude-sonnet-5-5", "claude-haiku-5-5")
+MODEL_CUTOVER = "2026-11-15"
+
 pytestmark = pytest.mark.skipif(not sources(), reason="no method notes captured in this checkout")
 
 
@@ -174,11 +179,20 @@ def test_the_provenance_of_the_capture_is_recorded_on_the_note():
     re-read the file at the end of a capture, thirteen to sixteen minutes later, and the red run
     that reproduces the mispin is `~/orchestra/evidence/RED-H9-H10-*`, outside this tree with
     everything else about the capture (D-17).
+
+    The model ids are a record of what ran, and the pair table gains a row when the generator's
+    models change (operator 2026-11-15).
     """
     for front, _ in sources():
         p = front["provenance"]
-        assert p["plan_model"] == "claude-sonnet-5"
-        assert p["prose_model"] == "claude-haiku-4-5"
+        pair = (p["plan_model"], p["prose_model"])
+        when = str(p["generated_at"])[:10]
+        allowed = (
+            (OLD_MODEL_PAIR, when <= MODEL_CUTOVER),
+            (NEW_MODEL_PAIR, when >= MODEL_CUTOVER),
+        )
+        assert any(pair == known and in_window for known, in_window in allowed), (
+            f"{front['slug']}: models {pair} are not an allowed pair for generated_at {when}")
         for field in ("generated_at", "plan_sha256", "generator_sha256", "topics_sha256"):
             assert p.get(field), f"{front['slug']}: provenance is missing {field}"
 
