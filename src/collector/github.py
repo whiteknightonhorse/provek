@@ -330,7 +330,14 @@ constant names the shape of the night that WOULD justify rotation instead: `rema
 limit` in `remeasure_cost.jsonl` (the budget was entirely ours to spend - nobody else had touched
 it that hour) AND `github_calls_measured / limit` exceeds this share (the cohort itself, not a
 neighbour, is what emptied it). Until a logged night matches both halves, rotation stays
-undesigned rather than guessed at from one ambiguous incident."""
+undesigned rather than guessed at from one ambiguous incident.
+
+2026-11-16 (PROVEK-GH-BUDGET-1116, Fable): both halves now match. Counted from the journal with
+`python3 -c "import json; r=[json.loads(l) for l in open('/home/incubator/orchestra/logs/remeasure_cost.jsonl')]; print(len([x for x in r if x['at']>='2026-10-27' and x['remaining_before']==x['limit'] and x['github_calls_measured'] is not None and x['github_calls_measured']/x['limit']>0.5]))"`
+the answer is 15 nights between 2026-10-27 and 2026-11-16. The cause is T-0570, which added one read
+per subject that has CI. The ruling: NO rotation. The night waits for a window it can finish in
+(`scripts.budget_journal.night_need` / `wait_seconds_for`, T-GHB-01); rotation is designed when
+`night_need` exceeds `limit`. The value stays 0.5."""
 
 
 def authors_and_bot_commits(commits: list[dict]) -> tuple[set[str], int, set[str], int]:

@@ -46,7 +46,7 @@ asked to look.
 **What.** Six commands, and then a seventh step that is not a command on this host:
 
 ```bash
-python3 scripts/cohort.py                       # 24 anonymous GitHub reads, no credential needed
+python3 scripts/cohort.py                       # anonymous GitHub reads, no credential needed; the run prints its count as COST github_calls=N
 cp public/registry/registry.json web/public/data/registry.json
 cp public/passports/*.json web/public/data/passports/
 python3 -m src.liveness.commitments             # reads back what was just written

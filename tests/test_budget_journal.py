@@ -91,3 +91,77 @@ def test_seconds_per_subject_and_zero_subjects_stay_none_not_a_zero_division():
                          waited_seconds=0)
     assert row["seconds_per_subject"] is None
     assert row["subjects"] == 0
+
+
+# --- T-GHB-01 (PROVEK-GH-BUDGET-1116 ruling-1): wait when the night needs more than is left -------
+import scripts.budget_journal as bj  # noqa: E402  (attribute access, so each test fails on its own)
+
+
+def _core(remaining: int, limit: int = 60, reset: int = 1_001_500) -> dict:
+    return {"remaining": remaining, "limit": limit, "reset": reset}
+
+
+def test_MUTATION_a_budget_smaller_than_the_night_needs_waits_for_the_reset():
+    """The 2026-11-15 night: remaining 29, the night needs 36 (33 + margin 3). RED with the old rule
+    (`remaining == 0` only): it started, and stopped on the ninth subject."""
+    assert bj.wait_seconds_for(_core(29), 1_000_000, need=36) == 1500
+
+
+def test_a_budget_equal_to_the_need_waits_zero():
+    assert bj.wait_seconds_for(_core(36), 1_000_000, need=36) == 0
+
+
+def test_without_a_need_the_old_rule_stands():
+    assert bj.wait_seconds_for(_core(28), 1_000_000, need=None) == 0
+    assert bj.wait_seconds_for(_core(0), 1_000_000, need=None) == 1500
+
+
+def test_a_need_above_the_limit_waits_zero_because_a_wait_cannot_help():
+    assert bj.wait_seconds_for(_core(10), 1_000_000, need=61) == 0
+
+
+def test_an_unreadable_core_waits_zero_even_with_a_need():
+    assert bj.wait_seconds_for(None, 1_000_000, need=36) == 0
+
+
+def _rows(*counts):
+    return [{"github_calls_measured": c} for c in counts]
+
+
+def test_night_need_is_the_largest_recent_count_plus_the_margin():
+    assert bj.night_need(_rows(31, None, 33, 30)) == 33 + bj.NEED_MARGIN_CALLS == 36
+
+
+def test_night_need_is_none_when_no_row_has_a_number():
+    assert bj.night_need(_rows(None, None)) is None
+    assert bj.night_need([]) is None
+
+
+def test_night_need_ignores_a_larger_count_beyond_the_lookback():
+    rows = _rows(50, *([30] * bj.NEED_LOOKBACK_ROWS))
+    assert bj.night_need(rows) == 30 + bj.NEED_MARGIN_CALLS
+
+
+def test_cost_row_carries_both_resets_and_the_need():
+    before = parse_core({"resources": {"core": {"remaining": 29, "limit": 60, "reset": 1_000_060}}})
+    after = parse_core({"resources": {"core": {"remaining": 55, "limit": 60, "reset": 1_003_660}}})
+    row = bj.build_cost_row(at=NOW, n_subjects=9, seconds=20, before=before, after=after,
+                            waited_seconds=0, need=36)
+    assert row["reset_before"] == "1970-01-12T13:47:40+00:00"
+    assert row["reset_after"] == "1970-01-12T14:47:40+00:00"
+    assert row["reset_before"] != row["reset_after"]
+    assert row["need"] == 36
+    assert row["reset_at"] == row["reset_after"]
+
+
+def test_cost_row_resets_are_none_when_a_read_failed():
+    row = bj.build_cost_row(at=NOW, n_subjects=9, seconds=20, before=None, after=None,
+                            waited_seconds=0)
+    assert row["reset_before"] is None and row["reset_after"] is None and row["need"] is None
+
+
+def test_preflight_names_wait_need_remaining_and_the_window_opening():
+    out = bj.preflight(_core(29, reset=1_003_600), _rows(33, 31), now_epoch=1_002_100)
+    assert out == {"wait": 1500, "need": 36, "remaining": 29, "limit": 60,
+                   "window_opened": "1970-01-12T13:46:40Z"}
+    assert bj.preflight(None, _rows(33), 1)["wait"] == 0
