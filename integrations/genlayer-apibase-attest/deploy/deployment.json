@@ -222,9 +222,43 @@
         "checked_at": "2026-11-09T14:17:55Z",
         "dispute_tx": "b7e8a81109964dbd9dfc0715d6a2197aa5b0b45556a4b7ed12e7e341989e0e43",
         "source": "team-test"
+      },
+      {
+        "dispute_id": "cc9ed6e5c34cc9e869dff4122e6a84c63f5b7713a55977f0dcbde337251d2eda",
+        "contract": "0x34e8335b70546fb37c9f2c06d472208b13b8f168",
+        "claim": "paid_without_receipt",
+        "subject": "payment:8453:34e69f9c0721b3bb3d4d7a2c8fab1726c0fce08395ca53d7c6f404d712a5abc6",
+        "verdict": "REFUND",
+        "reason": "paid_without_receipt",
+        "requester": "0x2c111FCD3082083C9B287DD9DA5995f190968Ef9",
+        "payer": "0x18d76291ec67eb0e90a44353a816fd89a5de6ea4",
+        "amount_atomic": "500000",
+        "policy_version": "2026-11-09.1",
+        "policy_sha256": "0bb0d0c9aef195a349a48c44dc497b9620b3e4fee07989cf41b6931aeef1e3fb",
+        "checked_at": "2026-11-10T04:41:20Z",
+        "dispute_tx": "9aced34d31a5bc7bc4c4412c76e0e2dd8e60d213f1e89187afb18e60beddc350",
+        "source": "team-test-staged",
+        "staged": "with the operator's consent (2026-11-10) the team sent 0.50 USDC from its own wallet to the payee on Base with no API call, so that a payment without a receipt existed; made for this test, not a customer payment",
+        "evidence_sha256": "c9d541aaf285893db840568e60ef3c993767b624df9e050f35f3bf39bc646fa0",
+        "payout": {
+          "state": "booked_not_paid_out",
+          "refund_tx": "none",
+          "refund_doc": "none (HTTP 404 at 2026-11-16T10:26:38Z)",
+          "by_tx_refund_tx": "null at 2026-11-16T10:26:38Z",
+          "verdict_row": "REFUND | booked",
+          "ledger_row": "d48a64cd",
+          "ledger_reason": "paid_without_receipt",
+          "ledger_amount": "0.500000",
+          "ledger_via": "genlayer_dispute",
+          "ledger_status": "internal",
+          "booking_source": "APIbase ruling GD-PAYOUT-1116 ruling-1 (2026-11-16), as relayed to Provek",
+          "booking_rows_read": "check_did_not_run",
+          "why_not_paid_out": "the payer is a team wallet; APIbase records such a refund as internal and does not pay it out (by design, same ruling)",
+          "as_of": "2026-11-16"
+        }
       }
     ],
-    "live_disputes_note": "As of 2026-11-09 two disputes exist, both end-to-end tests the team ran with its own wallets (source team-test), not customer disputes; both verdicts are RELEASE and no REFUND verdict existed on either contract at that date. The payer and amount of the payment-contract dispute are empty in the record (RELEASE), recorded as read. Read from get_dispute in evidence/MEASURED-024-*; the writes are in evidence/MEASURED-026-*.",
+    "live_disputes_note": "As of 2026-11-16 three disputes exist, all end-to-end tests the team ran with its own wallets (sources team-test and team-test-staged), not customer disputes: two RELEASE and one REFUND. The REFUND (paid_without_receipt) is on a 0.50 USDC transfer the team staged for this test; APIbase booked it in its refund ledger and did not pay it out, because the payer is a team wallet; no refund transaction exists in this record. The payer and amount of the RELEASE payment-contract dispute are empty in the record, recorded as read. Reads: evidence/MEASURED-024-* and -029-*; writes: -026-* and -028-*; pre-write captures: -030-*; booking: -031-*.",
     "refund_test": {
       "receipt_claim": {
         "state": "nothing_qualified",
@@ -234,15 +268,17 @@
         "window": "as the capture states: billed AND upstream_status>=500 is 0 receipts ever; the 40023 is the count of receipts in the last 30 days"
       },
       "payment_claim": {
-        "state": "not_measured",
-        "as_of": "2026-11-10T03:15Z"
+        "state": "refund_booked_not_paid_out",
+        "dispute_id": "cc9ed6e5c34cc9e869dff4122e6a84c63f5b7713a55977f0dcbde337251d2eda",
+        "staged": true,
+        "as_of": "2026-11-16"
       }
     },
     "not_measured": [
-      "a REFUND verdict on either contract (none as of 2026-11-09)",
-      "the refund worker executing a verdict",
+      "a refund paid out on Base (the one REFUND is booked and not paid out)",
       "confirm_refund (v1.1, not deployed)",
       "FINALIZED status of the four D4 transactions (two set_policy, two dispute writes; the transcript shows FINISHED_WITH_RETURN)",
+      "FINALIZED status of the D4c dispute write (the transcript shows ACCEPTED, FINISHED_WITH_RETURN)",
       "FINALIZED status of the five D3 transactions (the transcript shows ACCEPTED)",
       "the per-transaction charge of any dispute-contract transaction",
       "a studionet gltest integration run for either dispute contract",
@@ -253,7 +289,11 @@
       "evidence/MEASURED-022-gd-03-dispute-reads.txt",
       "evidence/MEASURED-026-gd-03-d4-team-test-transcript.txt",
       "evidence/MEASURED-024-gd-03-d4-dispute-reads.txt",
-      "evidence/MEASURED-025-gd-03-refund-class-capture.txt"
+      "evidence/MEASURED-025-gd-03-refund-class-capture.txt",
+      "evidence/MEASURED-028-gd-04-d4c-refund-test-transcript.txt",
+      "evidence/MEASURED-029-gd-04-d4c-dispute-reads.txt",
+      "evidence/MEASURED-030-gd-04-d4c-prewrite-captures.txt",
+      "evidence/MEASURED-031-gd-04-refund-booking-capture.txt"
     ],
     "source_transcripts": [
       "~/taskloop/briefs/GLR-05-transcripts/D3-session-2026-11-09.md",
@@ -262,7 +302,11 @@
       "~/taskloop/briefs/GLR-05-transcripts/D4-dispute-read-2026-11-09.json",
       "~/taskloop/briefs/GLR-05-transcripts/D4-dispute-read-2026-11-09-writes.json",
       "~/taskloop/briefs/GD-disputes.md",
-      "~/taskloop/briefs/GD-refund-class-2026-11-10.txt"
+      "~/taskloop/briefs/GD-refund-class-2026-11-10.txt",
+      "~/taskloop/briefs/GLR-05-transcripts/D4c-refund-test-2026-11-10.md",
+      "~/taskloop/briefs/GLR-05-transcripts/D4c-dispute-read-2026-11-10.json",
+      "~/taskloop/briefs/GLR-05-transcripts/D4c-prewrite-captures-2026-11-10.md",
+      "~/taskloop/briefs/GLR-05-transcripts/D4c-booking-2026-11-16.md"
     ]
   }
 }

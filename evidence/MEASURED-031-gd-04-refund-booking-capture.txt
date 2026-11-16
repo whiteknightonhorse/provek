@@ -1,0 +1,29 @@
+# tree: e55230983cdfa0472f28452172bd1cfd03045eaf
+MEASURED-031 - GD-04: booking capture (receipt index, refunds document, list_recent on both contracts, APIbase ruling lines)
+Dispatcher capture 2026-11-16 (read-only; GD04-BOOKED-1116 ruling-1).
+Dispatcher session. Source: ~/taskloop/briefs/GLR-05-transcripts/D4c-booking-2026-11-16.md sha256 ba36d9ba450142014d6f1f1752cf7efebb9d3dce5c8bd6b05637dfc4e1ddeb05.
+ONE TRANSFORM, and only this one: `sed -E 's/0x([0-9a-fA-F]{64})/\1/g'`, that is, the `0x` prefix is stripped wherever 64 or more hex characters follow it
+(transaction hashes, seeds, hashes), because `scripts/secret_scan.sh` blocks that pattern anywhere in the tree (GL-00 ruling-1; the same rule
+evidence/MEASURED-025-* followed). Everything else is the source, byte for byte, below the line.
+-----------------------------------------------------------------------------------------------
+# D4c booking capture (dispatcher, read-only; GD04-BOOKED-1116 ruling-1)
+## by-tx
+2026-11-16T10:26:38Z
+{"schema":"apibase-receipt-index/1","payment_tx":"34e69f9c0721b3bb3d4d7a2c8fab1726c0fce08395ca53d7c6f404d712a5abc6","receipt_ids":[],"refund_tx":null,"first_seen_at":null}
+## refunds document
+2026-11-16T10:26:38Z
+http=404
+## list_recent, receipt contract 0xe4e75ac47bf8350Ff705a552b7453Cf7726eF893
+2026-11-16T10:26:39Z
+{"decoded": "[\"cf55bfa89b7c387c4f0c0b391e2bdb271cc5b0f162817b6d5073a90b5c65a2a5\"]", "raw": "a4045b2263663535626661383962376333383763346630633062333931653262646232373163633562306631363238313762366435303733613930623563363561326135225d"}
+## list_recent, payment contract 0x34e8335b70546fb37c9f2c06d472208b13b8f168
+2026-11-16T10:26:45Z
+{"decoded": "[\"be87ea2e4455ee0dbae14fe38ae5f711b699cc2897ec7597522b1bb276619cce\", \"cc9ed6e5c34cc9e869dff4122e6a84c63f5b7713a55977f0dcbde337251d2eda\"]", "raw": "c4085b2262653837656132653434353565653064626165313466653338616535663731316236393963633238393765633735393735323262316262323736363139636365222c202263633965643665356333346363396538363964666634313232653661383463363366356237373133613535393737663064636264653333373235316432656461225d"}
+## APIbase ruling GD-PAYOUT-1116 ruling-1, as relayed (two lines of the relay; sha256 of the whole file)
+90a0c96d3b0653c554f8432a709dc2d96e045335c08d6700dd7a4cdb5154e4d9  /home/incubator/taskloop/disputes/GD-PAYOUT-1116.relay-from-apibase.md
+3:Rung 2 of GD-TEST-1109 ruling-2 cannot produce a refund_tx for Wallet-2 (team wallet, booked 'internal' by design; never paid).
+7:For dispute cc9ed6e5… the proof is: the GenLayer verdict tx, `dispute_verdicts = REFUND | booked`, and ledger row d48a64cd (`paid_without_receipt`, 0.500000, `via: genlayer_dispute`, status `internal`).
+## operator answers 2026-11-16
+3:1. Rung 2b — on-chain refund proof with a fresh non-internal team wallet: NO for now (no new wallet, no payout).
+4:2. Milestone wording "booked, not paid out (team wallet)": YES.
+## apibase rows: check_did_not_run (the dispatcher did not have the exact SELECT text of apibase GD-PAYOUT-1116 ruling-1; the rows are as relayed in GD-PAYOUT-1116.relay-from-apibase.md)

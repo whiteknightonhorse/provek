@@ -1,0 +1,27 @@
+# tree: e55230983cdfa0472f28452172bd1cfd03045eaf
+MEASURED-030 - GD-04: D4c pre-write captures (Base receipt, receipt index twice, wallet list, grace)
+Dispatcher capture, files written 2026-11-10 before the dispute write, filed 2026-11-16 (GD04-BOOKED-1116 ruling-1).
+Dispatcher session. Source: ~/taskloop/briefs/GLR-05-transcripts/D4c-prewrite-captures-2026-11-10.md sha256 38b3644c01ea3323c5aceb38058345e6e91c90751073438b93375b0d10d63439.
+ONE TRANSFORM, and only this one: `sed -E 's/0x([0-9a-fA-F]{64})/\1/g'`, that is, the `0x` prefix is stripped wherever 64 or more hex characters follow it
+(transaction hashes, seeds, hashes), because `scripts/secret_scan.sh` blocks that pattern anywhere in the tree (GL-00 ruling-1; the same rule
+evidence/MEASURED-025-* followed). Everything else is the source, byte for byte, below the line.
+-----------------------------------------------------------------------------------------------
+# D4c pre-write captures, 2026-11-10: files d4c.sh wrote before the dispute_payment write; filed 2026-11-16 (GD04-BOOKED-1116 ruling-1). The transcript D4c-refund-test-2026-11-10.md is not edited.
+## files (mtime UTC, bytes, sha256)
+2026-11-10 04:38:00.983022172 +0000 1901 /home/incubator/orchestra/glcli-rc/exp/d4c/base_receipt.json
+2026-11-10 04:38:06.379064900 +0000 173 /home/incubator/orchestra/glcli-rc/exp/d4c/bytx1.json
+2026-11-10 04:39:14.451601571 +0000 173 /home/incubator/orchestra/glcli-rc/exp/d4c/bytx2.json
+4ef8817f73c4c01f0ee9d0f6139f573d227e5e4548fb2723445e9b43db9c57ba  /home/incubator/orchestra/glcli-rc/exp/d4c/base_receipt.json
+c9d541aaf285893db840568e60ef3c993767b624df9e050f35f3bf39bc646fa0  /home/incubator/orchestra/glcli-rc/exp/d4c/bytx1.json
+c9d541aaf285893db840568e60ef3c993767b624df9e050f35f3bf39bc646fa0  /home/incubator/orchestra/glcli-rc/exp/d4c/bytx2.json
+## base_receipt.json (eth_getTransactionReceipt of the payment, https://base-rpc.publicnode.com)
+{"jsonrpc":"2.0","id":1,"result":{"type":"0x2","status":"0x1","cumulativeGasUsed":"0x202a91","logs":[{"address":"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913","topics":["ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef","00000000000000000000000018d76291ec67eb0e90a44353a816fd89a5de6ea4","00000000000000000000000050ebda9da5dc19c302ca059d7b9e06e264936480"],"data":"000000000000000000000000000000000000000000000000000000000007a120","blockHash":"7c95180949142607f01a0d0378951c1356d6606e78bddc681bb4127f77bdac73","blockNumber":"0x34e2a68","blockTimestamp":"0x6af28f16","transactionHash":"34e69f9c0721b3bb3d4d7a2c8fab1726c0fce08395ca53d7c6f404d712a5abc6","transactionIndex":"0x9","logIndex":"0x33","removed":false,"blockTimestampMs":"0x1a1c37eedf0"}],"logsBloom":"00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000080000000008000000000000000000080000000000000000000000802000000000000000000000000002000000004000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000","transactionHash":"34e69f9c0721b3bb3d4d7a2c8fab1726c0fce08395ca53d7c6f404d712a5abc6","transactionIndex":"0x9","blockHash":"7c95180949142607f01a0d0378951c1356d6606e78bddc681bb4127f77bdac73","blockNumber":"0x34e2a68","gasUsed":"0xb003","effectiveGasPrice":"0x5b8d80","blobGasUsed":"0x39d0","from":"0x18d76291ec67eb0e90a44353a816fd89a5de6ea4","to":"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913","contractAddress":null,"l1GasPrice":"0x490c71b","l1GasUsed":"0x640","l1Fee":"0x2c95f9c2","l1BaseFeeScalar":"0x8dd","l1BlobBaseFee":"0x43ebc9","l1BlobBaseFeeScalar":"0x101c12","daFootprintGasScalar":"0x94"}}
+
+## bytx1.json (https://apibase.pro/r/by-tx/<payment tx>.json)
+{"schema":"apibase-receipt-index/1","payment_tx":"34e69f9c0721b3bb3d4d7a2c8fab1726c0fce08395ca53d7c6f404d712a5abc6","receipt_ids":[],"refund_tx":null,"first_seen_at":null}
+## bytx2.json (same URL, 60 s later)
+{"schema":"apibase-receipt-index/1","payment_tx":"34e69f9c0721b3bb3d4d7a2c8fab1726c0fce08395ca53d7c6f404d712a5abc6","receipt_ids":[],"refund_tx":null,"first_seen_at":null}
+## team wallet list
+2:0x18d76291ec67eb0e90a44353a816fd89a5de6ea4
+## grace
+payment block time 2026-11-10T03:27:18Z; dispute write created 2026-11-10T04:41:20Z; elapsed 4442 s; policy grace 3600 s

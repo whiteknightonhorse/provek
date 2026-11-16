@@ -304,25 +304,52 @@ def test_deployment_record_hashes_carry_no_0x_prefix():
     assert re.fullmatch(r"[0-9a-f]{64}", record["payment_dispute"]["set_chain"]["tx"])
 
 
-def test_deployment_record_holds_the_two_team_test_disputes():
+def test_deployment_record_holds_the_three_team_test_disputes():
     record = _dispute_record()
-    # The reads fixture is D4-dispute-read-2026-11-09-writes.json, `0x` stripped (evidence/MEASURED-024-*).
+    # Reads fixtures: 2026-11-09 = D4 reads (evidence/MEASURED-024-*), 2026-11-10 = D4c reads (evidence/MEASURED-029-*), `0x` stripped.
     reads = json.loads((FIXTURES / "apibase_dispute_reads.2026-11-09.json").read_text(encoding="utf-8"))
+    reads_c = json.loads((FIXTURES / "apibase_dispute_reads.2026-11-10.json").read_text(encoding="utf-8"))
+    fx = reads_c["get_dispute"]["decoded"]
+    if isinstance(fx, str):
+        fx = json.loads(fx)
     read_ids = {reads["receipt_get_dispute"]["decoded"]["dispute_id"],
-                reads["payment_get_dispute"]["decoded"]["dispute_id"]}
-    assert len(read_ids) == 2
+                reads["payment_get_dispute"]["decoded"]["dispute_id"],
+                fx["dispute_id"]}
+    assert len(read_ids) == 3
     repin = record["policy_repin"]
     assert repin["version"] == "2026-11-09.1" and repin["supersedes"] == "2026-11-04.3"
     for tx in (repin["receipt_tx"], repin["payment_tx"]):
         assert re.fullmatch(r"[0-9a-f]{64}", tx), tx
     disputes = record["live_disputes"]
-    assert {d["dispute_id"] for d in disputes} == read_ids and len(disputes) == len(read_ids)
+    assert {d["dispute_id"] for d in disputes} == read_ids and len(disputes) == 3
     for d in disputes:
         assert re.fullmatch(r"[0-9a-f]{64}", d["dispute_id"])
         assert d["verdict"] in {"REFUND", "RELEASE"}
-        assert d["source"] == "team-test"
+        assert d["source"] in {"team-test", "team-test-staged"}
         assert d["policy_version"] == repin["version"]
         assert re.fullmatch(r"[0-9a-f]{64}", d["dispute_tx"]), d["dispute_tx"]
+    refunds = [d for d in disputes if d["verdict"] == "REFUND"]
+    assert len(refunds) == 1
+    r = refunds[0]
+    assert r["dispute_id"] == fx["dispute_id"]
+    assert r["source"] == "team-test-staged"
+    assert r["reason"] == "paid_without_receipt" == fx["reason"]
+    assert r["amount_atomic"] == fx["amount_atomic"] and 0 < int(r["amount_atomic"]) <= 1000000
+    assert r["payer"].lower() == fx["payer"].lower()
+    assert r["subject"] == "payment:8453:" + fx["payment_tx"]
+    assert r["evidence_sha256"] == fx["evidence_sha256"]
+    payout = r["payout"]
+    assert payout["state"] == "booked_not_paid_out"
+    assert payout["refund_tx"] == "none"
+    assert payout["ledger_status"] == "internal"
+    assert re.search(r"[0-9a-f]{64}", json.dumps(payout)) is None
+    for d in disputes:
+        if d["verdict"] == "RELEASE":
+            assert d["source"] == "team-test" and "payout" not in d
     claim = record["refund_test"]["receipt_claim"]
     assert claim["state"] == "nothing_qualified"
     assert isinstance(claim["receipts_counted"], int) and isinstance(claim["billed_and_upstream_5xx"], int)
+    pc = record["refund_test"]["payment_claim"]
+    assert pc["state"] == "refund_booked_not_paid_out"
+    assert pc["dispute_id"] == r["dispute_id"]
+    assert pc["staged"] is True

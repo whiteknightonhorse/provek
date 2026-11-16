@@ -59,7 +59,7 @@ The deployment record is `deploy/DEPLOYMENT.md`.
 ## Dispute contracts — live on Bradbury Phase 2
 
 Deployed 2026-11-09 from commit `9055f93` (runner `babwp`, header `# v0.3.0`), policy `2026-11-09.1` (re-pinned 2026-11-09); test GEN only.
-2 disputes as of 2026-11-09, both end-to-end tests by the team with its own wallets, both RELEASE; no REFUND verdict as of that date (see `deploy/DEPLOYMENT.md`).
+3 disputes as of 2026-11-16, all end-to-end tests by the team with its own wallets: two RELEASE and one REFUND (`paid_without_receipt`, on a 0.50 USDC transfer the team staged for this test), which APIbase booked in its refund ledger and did not pay out because the payer is a team wallet (see `deploy/DEPLOYMENT.md`).
 
 | Contract | Address | Explorer |
 |---|---|---|

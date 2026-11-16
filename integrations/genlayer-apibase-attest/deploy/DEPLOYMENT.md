@@ -77,16 +77,29 @@ matches. The policy was re-pinned on both contracts to `2026-11-09.1` (sha256 `0
 
 **Fees:** each of the five writes carries a quoted fee deposit of 0.100000000000010352 GEN; the charge is `not_measured`.
 
-**Disputes:** 2 as of 2026-11-09, both end-to-end tests by the team with its own wallets (source team-test), not customer disputes:
-`cf55bfa89b7c387c4f0c0b391e2bdb271cc5b0f162817b6d5073a90b5c65a2a5` on the receipt contract (receipt `9dbc77f9fd66bcb8714cd064f5681005`,
-verdict RELEASE, reason `upstream_status_200`) and `be87ea2e4455ee0dbae14fe38ae5f711b699cc2897ec7597522b1bb276619cce` on the payment contract
-(verdict RELEASE, reason `receipt_exists:9dbc77f9fd66bcb8714cd064f5681005`; payer and amount are empty in the record, as read). Both were read back
-with `get_dispute` (`evidence/MEASURED-024-*`). No REFUND verdict as of 2026-11-09: the receipt claim is `nothing_qualified`, with 0 receipts billed with an
-upstream status of 500 or more ever and 40023 receipts in the last 30 days, as of 2026-11-10T03:15Z (`evidence/MEASURED-025-*`); the payment
-claim's REFUND test is `not_measured` in this record (state of 2026-11-10T03:15Z).
+**Disputes:** 3 as of 2026-11-16, all end-to-end tests by the team with its own wallets (sources team-test and team-test-staged), not
+customer disputes: `cf55bfa89b7c387c4f0c0b391e2bdb271cc5b0f162817b6d5073a90b5c65a2a5` on the receipt contract (receipt
+`9dbc77f9fd66bcb8714cd064f5681005`, verdict RELEASE, reason `upstream_status_200`),
+`be87ea2e4455ee0dbae14fe38ae5f711b699cc2897ec7597522b1bb276619cce` on the payment contract (verdict RELEASE, reason
+`receipt_exists:9dbc77f9fd66bcb8714cd064f5681005`; payer and amount are empty in the record, as read) and
+`cc9ed6e5c34cc9e869dff4122e6a84c63f5b7713a55977f0dcbde337251d2eda` on the payment contract (verdict REFUND, reason
+`paid_without_receipt`, 500000 atomic = 0.50 USDC, 2026-11-10T04:41:20Z). The first two were read back with `get_dispute` in
+`evidence/MEASURED-024-*`, the third in `evidence/MEASURED-029-*` (its write: `-028-*`).
 
-**`not_measured`:** a REFUND verdict on either contract (none as of 2026-11-09); the refund worker executing a verdict; `confirm_refund` (v1.1, not
-deployed); FINALIZED status of the four D4 transactions (two `set_policy`, two dispute writes) and of the five D3 transactions;
+The third dispute is staged (source team-test-staged): with the operator's consent the team sent 0.50 USDC from its wallet
+`0x18d76291ec67eb0e90a44353a816fd89a5de6ea4` to the payee on Base on 2026-11-10 with no API call, made for this test, so that a
+payment without a receipt existed (payment transaction `34e69f9c0721b3bb3d4d7a2c8fab1726c0fce08395ca53d7c6f404d712a5abc6`,
+`0x`-stripped; pre-write captures in `evidence/MEASURED-030-*`). It is not a customer payment and not an APIbase failure. The REFUND
+is booked and not paid out: APIbase's refund ledger holds it as row `d48a64cd` (`paid_without_receipt`, 0.500000, via
+`genlayer_dispute`, status `internal`), because the payer is a team wallet, which APIbase records and does not pay out (APIbase
+ruling GD-PAYOUT-1116, 2026-11-16; the rows were not re-read for this record: `check_did_not_run`). No refund transaction is
+recorded: the receipt index shows no refund for the payment (2026-11-16T10:26:38Z) and no refunds document is published for the
+dispute (HTTP 404, 2026-11-16T10:26:38Z), `evidence/MEASURED-031-*`. The receipt claim is still `nothing_qualified`, with 0 receipts
+billed with an upstream status of 500 or more ever and 40023 receipts in the last 30 days, as of 2026-11-10T03:15Z
+(`evidence/MEASURED-025-*`).
+
+**`not_measured`:** a refund paid out on Base (the one REFUND is booked and not paid out); `confirm_refund` (v1.1, not
+deployed); FINALIZED status of the four D4 transactions (two `set_policy`, two dispute writes), of the D4c dispute write and of the five D3 transactions;
 per-transaction charges; a studionet integration run; a full byte comparison of the deployed code (the deploy receipts print the first
 4993 bytes of each calldata, which equal the committed files').
 

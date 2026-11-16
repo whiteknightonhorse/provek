@@ -1,0 +1,159 @@
+# tree: e55230983cdfa0472f28452172bd1cfd03045eaf
+MEASURED-028 - GD-04: D4c session transcript, the team's staged payment-claim dispute write (ApibasePaymentDispute)
+Dispatcher capture 2026-11-10 (GD-TEST-1109 ruling-2 rung 2, team-test-staged), filed 2026-11-16.
+Dispatcher session. Source: ~/taskloop/briefs/GLR-05-transcripts/D4c-refund-test-2026-11-10.md sha256 1647e2a2919ce4eb7c521870bc000f8b9ab36ac6d9b0e2a5a1ee46ccc0009e1e.
+ONE TRANSFORM, and only this one: `sed -E 's/0x([0-9a-fA-F]{64})/\1/g'`, that is, the `0x` prefix is stripped wherever 64 or more hex characters follow it
+(transaction hashes, seeds, hashes), because `scripts/secret_scan.sh` blocks that pattern anywhere in the tree (GL-00 ruling-1; the same rule
+evidence/MEASURED-025-* followed). Everything else is the source, byte for byte, below the line.
+-----------------------------------------------------------------------------------------------
+# D4c session transcript, 2026-11-10 (dispatcher), GD-TEST-1109 ruling-2 §2 rung 2 (team-test-staged)
+
+Operator consent (chat 2026-11-10): one 0.50 USDC transfer from team Wallet-2 to the payee, labelled staged. Transfer tx 34e69f9c0721b3bb3d4d7a2c8fab1726c0fce08395ca53d7c6f404d712a5abc6 (Base block 55454312).
+
+## preconditions
+
+## policy sha 0bb0d0c9aef195a349a48c44dc497b9620b3e4fee07989cf41b6931aeef1e3fb
+
+## by-tx: {"schema":"apibase-receipt-index/1","payment_tx":"34e69f9c0721b3bb3d4d7a2c8fab1726c0fce08395ca53d7c6f404d712a5abc6","receipt_ids":[],"refund_tx":null,"first_seen_at":null}
+
+## write: dispute_payment
+
+$ node /home/incubator/orchestra/glcli-rc/node_modules/genlayer/dist/index.strarg.js write 0x34e8335b70546fb37c9f2c06d472208b13b8f168 dispute_payment --args s#8453 s#34e69f9c0721b3bb3d4d7a2c8fab1726c0fce08395ca53d7c6f404d712a5abc6 --fees {"distribution":{"leaderTimeunitsAllocation":"100","validatorTimeunitsAllocation":"200","appealRounds":"0","executionBudgetPerRound":"25000000000000000","executionConsumed":"0","totalMessageFees":"0","rotations":["3"],"maxPriceGenPerTimeUnit":"2","storageFeeMaxGasPrice":"300000000","receiptFeeMaxGasPrice":"300000000"},"feeValue":"100000000000010352","policy":{"enabled":true,"genPerTimeUnit":"1","storageUnitPrice":"250000000","receiptGasPrice":"250000000","executionBudgetFloor":"76548000000000","timeUnitOverlayBps":"1500"}}
+```
+[genlayer-js] initializeConsensusSmartContract() is deprecated and will be removed in a future release. The consensus contract is now resolved from the static chain definition.
+- Calling write method dispute_payment on contract at 0x34e8335b70546fb37c9f2c06d472208b13b8f168...
+Fee deposit: 100000000000010352 wei (~0.100000000000010352 GEN)
+Write Transaction Hash:
+9aced34d31a5bc7bc4c4412c76e0e2dd8e60d213f1e89187afb18e60beddc350
+Result:
+{
+  observedAt: 1794285711n,
+  sender: '0x2c111FCD3082083C9B287DD9DA5995f190968Ef9',
+  recipient: '0x34e8335b70546fb37c9f2c06d472208b13b8f168',
+  initialRotations: 3n,
+  txSlot: '5',
+  createdTimestamp: '1794285680',
+  lastVoteTimestamp: '1794285711',
+  randomSeed: 'b5ef16d925bf88de8666c0a24196358694f4c8c0f119bed423d42023c57bd7bd',
+  result: 1,
+  txExecutionHash: '570fda86d2d6b31ccd2fd20932b0fe7fbc256dc6de8a2897fb9ba043fe2e6ba2',
+  txCalldata: 'f864b86116007c646973707574655f7061796d656e740461726773152438343533940430783334653639663963303732316233626233643464376132633866616231373236633066636530383339356361353364376336663430346437313261356162633600',
+  eqBlocksOutputs: '0e076e645f6f7574730df310003e0b636861696e5f666f756e6410056665746368146f6b05696e646578160b726563656970745f6964730509726566756e645f7478040c726563656970745f68747470c10c0e726563656970745f736861323536840463396435343161616632383538393364623834303536386536306566336339393337363762363234646639653035306633356633626633396263363436666130097472616e73666572730d1dd402307831386437363239316563363765623065393061343433353361383136666438396135646536656134d4023078353065626461396461356463313963333032636130353964376239653036653236343933363438303c307837613132300974785f73746174757309',
+  messages: [],
+  queueType: 0,
+  queuePosition: '0',
+  activator: '0x09c066924fbB6918154a853C2e9Db316a3100939',
+  lastLeader: '0x53d9A3938C97f57731C488c9334C70577407C252',
+  status: 5,
+  txId: '9aced34d31a5bc7bc4c4412c76e0e2dd8e60d213f1e89187afb18e60beddc350',
+  readStateBlockRange: {
+    activationBlock: '271027',
+    processingBlock: '271027',
+    proposalBlock: '271028'
+  },
+  numOfRounds: '0',
+  lastRound: {
+    round: '0',
+    leaderIndex: '3',
+    votesCommitted: '5',
+    votesRevealed: '5',
+    appealBond: '0',
+    rotationsLeft: '3',
+    result: 1,
+    validatorsCount: 5n,
+    roundValidators: [
+      '0xf9e630b65b2cbCD9e84Af177245EBa4763B5e8D2',
+      '0x82c492B0e298fCCc4779C7B6DA01EFa671398497',
+      '0x9b925f790500ab245F0a7ce67Eb21D951eD9a80d',
+      '0x53d9A3938C97f57731C488c9334C70577407C252',
+      '0x140457FB2EAb027161A6ccDB378544DCe3Ea3A1D'
+    ],
+    validatorVotes: [ 1, 1, 1, 1, 1 ],
+    validatorVotesHash: [
+      'f9053377ebd0a2228f0334d0c6f0a0e750e5e8d462280528af1b93a737f12b74',
+      '17c129c5cf76ad7a772f3cfe37020ebabcb4e4bb64905e6b309c2ab3aa10dcfe',
+      'f1976e3595f7080b02fbaa90685ecece599984e5f1435a6f7dfa79bd5e369617',
+      '00b8c52344d68c420eee9b457d38a69d6243be484f5a982c5e7c14cbc843f6fe',
+      'd6ecd17654667aace7a6276c5311c52cfa09c2d7ec03df068ed85095968ccbae'
+    ],
+    validatorResultHash: [
+      'b053e90c66d86d91b21b6a39cf93efad0688fe6c5ee095a2dd8ee610555771c3',
+      'b053e90c66d86d91b21b6a39cf93efad0688fe6c5ee095a2dd8ee610555771c3',
+      'b053e90c66d86d91b21b6a39cf93efad0688fe6c5ee095a2dd8ee610555771c3',
+      'b053e90c66d86d91b21b6a39cf93efad0688fe6c5ee095a2dd8ee610555771c3',
+      'b053e90c66d86d91b21b6a39cf93efad0688fe6c5ee095a2dd8ee610555771c3'
+    ],
+    validatorVotesName: [
+      'FINISHED_WITH_RETURN',
+      'FINISHED_WITH_RETURN',
+      'FINISHED_WITH_RETURN',
+      'FINISHED_WITH_RETURN',
+      'FINISHED_WITH_RETURN'
+    ]
+  },
+  consumedValidatorsCount: 5n,
+  numOfInitialValidators: '5',
+  txExecutionResult: 1,
+  consumedValidators: [
+    '0xf9e630b65b2cbCD9e84Af177245EBa4763B5e8D2',
+    '0x82c492B0e298fCCc4779C7B6DA01EFa671398497',
+    '0x9b925f790500ab245F0a7ce67Eb21D951eD9a80d',
+    '0x53d9A3938C97f57731C488c9334C70577407C252',
+    '0x140457FB2EAb027161A6ccDB378544DCe3Ea3A1D'
+  ],
+  txData: 'f864b86116007c646973707574655f7061796d656e740461726773152438343533940430783334653639663963303732316233626233643464376132633866616231373236633066636530383339356361353364376336663430346437313261356162633600',
+  txDataDecoded: {
+    callData: Map(2) {
+      '' => 'dispute_payment',
+      'args' => [
+        '8453',
+        '34e69f9c0721b3bb3d4d7a2c8fab1726c0fce08395ca53d7c6f404d712a5abc6'
+      ]
+    },
+    leaderOnly: false,
+    type: 'call'
+  },
+  currentTimestamp: '1794285711',
+  statusName: 'ACCEPTED',
+  lifecycle: { state: 'decided', outcome: 'accepted' },
+  resultName: 'MAJORITY_AGREE',
+  txExecutionResultName: 'FINISHED_WITH_RETURN',
+  consensusStatus: 'ACCEPTED'
+}
+✔ Write operation successfully executed
+```
+
+## dispute_payment_34e69f9c0721b3bb3d4d7a2c8fab1726c0fce08395ca53d7c6f404d712a5abc6 FINISHED_WITH_RETURN (CLI receipt)
+
+## reads -> /home/incubator/taskloop/briefs/GLR-05-transcripts/D4c-dispute-read-2026-11-10.json
+{
+  "read_at": "2026-11-10T04:42:06.760735Z",
+  "list_by_subject": {
+    "decoded": "[\"cc9ed6e5c34cc9e869dff4122e6a84c63f5b7713a55977f0dcbde337251d2eda\"]",
+    "raw": "a4045b2263633965643665356333346363396538363964666634313232653661383463363366356237373133613535393737663064636264653333373235316432656461225d"
+  },
+  "get_dispute": {
+    "decoded": {
+      "amount_atomic": "500000",
+      "chain_id": "8453",
+      "checked_at": "2026-11-10T04:41:20Z",
+      "claim": "paid_without_receipt",
+      "dispute_id": "cc9ed6e5c34cc9e869dff4122e6a84c63f5b7713a55977f0dcbde337251d2eda",
+      "evidence_sha256": "c9d541aaf285893db840568e60ef3c993767b624df9e050f35f3bf39bc646fa0",
+      "payee": "0x50ebda9da5dc19c302ca059d7b9e06e264936480",
+      "payer": "0x18d76291ec67eb0e90a44353a816fd89a5de6ea4",
+      "payment_tx": "34e69f9c0721b3bb3d4d7a2c8fab1726c0fce08395ca53d7c6f404d712a5abc6",
+      "policy_sha256": "0bb0d0c9aef195a349a48c44dc497b9620b3e4fee07989cf41b6931aeef1e3fb",
+      "policy_version": "2026-11-09.1",
+      "reason": "paid_without_receipt",
+      "receipt_id": "",
+      "requester": "0x2c111FCD3082083C9B287DD9DA5995f190968Ef9",
+      "verdict": "REFUND"
+    },
+    "raw": "7e0d616d6f756e745f61746f6d69633435303030303008636861696e5f696424383435330a636865636b65645f6174a401323032362d31312d31305430343a34313a32305a05636c61696da401706169645f776974686f75745f726563656970740a646973707574655f69648404636339656436653563333463633965383639646666343132326536613834633633663562373731336135353937376630646362646533333732353164326564610f65766964656e63655f736861323536840463396435343161616632383538393364623834303536386536306566336339393337363762363234646639653035306633356633626633396263363436666130057061796565d402307835306562646139646135646331396333303263613035396437623965303665323634393336343830057061796572d4023078313864373632393165633637656230653930613434333533613831366664383961356465366561340a7061796d656e745f747894043078333465363966396330373231623362623364346437613263386661623137323663306663653038333935636135336437633666343034643731326135616263360d706f6c6963795f7368613235368404306262306430633961656631393561333439613438633434646334393762393632306233653466656530373938396366343162363933316165656631653366620e706f6c6963795f76657273696f6e64323032362d31312d30392e3106726561736f6ea401706169645f776974686f75745f726563656970740a726563656970745f69640409726571756573746572d402307832633131314643443330383230383343394232383744443944413539393566313930393638456639077665726469637434524546554e44"
+  },
+  "list_recent": {
+    "decoded": "[\"be87ea2e4455ee0dbae14fe38ae5f711b699cc2897ec7597522b1bb276619cce\", \"cc9ed6e5c34cc9e869dff4122e6a84c63f5b7713a55977f0dcbde337251d2eda\"]",
+    "raw": "c4085b2262653837656132653434353565653064626165313466653338616535663731316236393963633238393765633735393735323262316262323736363139636365222c202263633965643665356333346363396538363964666634313232653661383463363366356237373133613535393737663064636264653333373235316432656461225d"
+  }
+}
