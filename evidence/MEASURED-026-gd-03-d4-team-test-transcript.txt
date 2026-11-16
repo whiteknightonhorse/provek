@@ -1,0 +1,541 @@
+# tree: 8fbfe01b1973cb72bc80e6b824fc37ba617c77a2
+MEASURED-026 - GD-03: D4 team test on GenLayer testnet Bradbury Phase 2: policy re-pin 2026-11-09.1 on both dispute contracts and two RELEASE disputes
+Dispatcher D4 session, 2026-11-09 (GD-TEST-1109 ruling-1 steps 2-3): two set_policy writes and two dispute writes, each FINISHED_WITH_RETURN.
+Dispatcher session. Source: ~/taskloop/briefs/GLR-05-transcripts/D4-team-test-2026-11-09.md sha256 60a7b5d74289f58e82fa99bebb1759824ee8ca36ba44b78e670c8e6e2146ae18.
+ONE TRANSFORM, and only this one: the `0x` prefix is stripped from every `0x` + 64 hex string
+(transaction hashes, seeds, hashes), because `scripts/secret_scan.sh` blocks that pattern anywhere in the tree
+(GL-00 ruling-1; the same rule evidence/MEASURED-017-* followed). Everything else is the source, byte
+for byte, below the line.
+-----------------------------------------------------------------------------------------------
+# D4 session transcript, 2026-11-09 (dispatcher), GD-TEST-1109 ruling-1 §1 steps 2-3
+
+Bradbury (testnet). Test GEN only, no real money. Operator = D2 key 0x2c111FCD3082083C9B287DD9DA5995f190968Ef9 (keystore by path; nothing printed).
+
+## STEP 2. measure the live policy
+
+## address hits receipt=1 payment=1
+
+## POL_V=2026-11-09.1 POL_SHA=0bb0d0c9aef195a349a48c44dc497b9620b3e4fee07989cf41b6931aeef1e3fb
+
+## D2 balance: 14996923695469967645 14.996923695469967
+
+## STEP 3. re-pin both contracts
+
+$ node /home/incubator/orchestra/glcli-rc/node_modules/genlayer/dist/index.strarg.js write 0xe4e75ac47bf8350Ff705a552b7453Cf7726eF893 set_policy --args s#2026-11-09.1 s#0bb0d0c9aef195a349a48c44dc497b9620b3e4fee07989cf41b6931aeef1e3fb --fees {"distribution":{"leaderTimeunitsAllocation":"100","validatorTimeunitsAllocation":"200","appealRounds":"0","executionBudgetPerRound":"25000000000000000","executionConsumed":"0","totalMessageFees":"0","rotations":["3"],"maxPriceGenPerTimeUnit":"2","storageFeeMaxGasPrice":"300000000","receiptFeeMaxGasPrice":"300000000"},"feeValue":"100000000000010352","policy":{"enabled":true,"genPerTimeUnit":"1","storageUnitPrice":"250000000","receiptGasPrice":"250000000","executionBudgetFloor":"76548000000000","timeUnitOverlayBps":"1500"}}
+```
+[genlayer-js] initializeConsensusSmartContract() is deprecated and will be removed in a future release. The consensus contract is now resolved from the static chain definition.
+- Calling write method set_policy on contract at 0xe4e75ac47bf8350Ff705a552b7453Cf7726eF893...
+Fee deposit: 100000000000010352 wei (~0.100000000000010352 GEN)
+Write Transaction Hash:
+15619d170e87e710d85984799f9529cd25c123c843d370da90a74142bdf142a3
+Result:
+{
+  observedAt: 1794233692n,
+  sender: '0x2c111FCD3082083C9B287DD9DA5995f190968Ef9',
+  recipient: '0xe4e75ac47bf8350Ff705a552b7453Cf7726eF893',
+  initialRotations: 3n,
+  txSlot: '2',
+  createdTimestamp: '1794233667',
+  lastVoteTimestamp: '1794233692',
+  randomSeed: 'cbf9fb1d9c969da1ff009b506869d7ade4445bd5dc4999323739d8866cf3693b',
+  result: 1,
+  txExecutionHash: '6f6ec63e62d1a99665d3191dfacded1d52d93b46dc74bfd193f77f5c72e11aaa',
+  txCalldata: 'f865b8621600547365745f706f6c69637904617267731564323032362d31312d30392e3184043062623064306339616566313935613334396134386334346463343937623936323062336534666565303739383963663431623639333161656566316533666200',
+  eqBlocksOutputs: '0x0e076e645f6f75747305',
+  messages: [],
+  queueType: 0,
+  queuePosition: '0',
+  activator: '0x0EA95B4932417D09b373C3A9ff256A680754b0A6',
+  lastLeader: '0xDeae1476B3E18156fF4A6FCE51A14BAe0cB19251',
+  status: 5,
+  txId: '15619d170e87e710d85984799f9529cd25c123c843d370da90a74142bdf142a3',
+  readStateBlockRange: {
+    activationBlock: '263415',
+    processingBlock: '263415',
+    proposalBlock: '263416'
+  },
+  numOfRounds: '0',
+  lastRound: {
+    round: '0',
+    leaderIndex: '1',
+    votesCommitted: '5',
+    votesRevealed: '5',
+    appealBond: '0',
+    rotationsLeft: '3',
+    result: 1,
+    validatorsCount: 5n,
+    roundValidators: [
+      '0xe9f16f7Aeb26F4b985F88227793cf391e1826086',
+      '0xDeae1476B3E18156fF4A6FCE51A14BAe0cB19251',
+      '0x7d9e5882155a5fb1cb5d4B15135bF5CE7358D9e8',
+      '0x2f33669F12F93e204ccf01311419fDb80a07903d',
+      '0x0EA95B4932417D09b373C3A9ff256A680754b0A6'
+    ],
+    validatorVotes: [ 1, 1, 1, 1, 1 ],
+    validatorVotesHash: [
+      '44a56a510319a889af23d9c62c1629ea1dd3550aa0e577a59053bf01f2462dab',
+      'ea8e05fff96b62e5bdc3c09faf7f2034b057c706b62df10aacc6436cd7c6cd8c',
+      'fe971ce4743d18eac5e870ae95d20deeeda0e58d36d33c1b6f0c01d78899765f',
+      '76cd40cde63017aecbe31e18250a6ac94b56b741abcab37ab2f2659a0b205d96',
+      '9d0985d3d0c10370adac57ee14cdd4327f2721ab45309df0a428c91f8c6f52f4'
+    ],
+    validatorResultHash: [
+      '8f2c5fa4a10115f089fe7d4e71d22c62a5006aaa9f267dbddbeec4fa2c545744',
+      '8f2c5fa4a10115f089fe7d4e71d22c62a5006aaa9f267dbddbeec4fa2c545744',
+      '8f2c5fa4a10115f089fe7d4e71d22c62a5006aaa9f267dbddbeec4fa2c545744',
+      '8f2c5fa4a10115f089fe7d4e71d22c62a5006aaa9f267dbddbeec4fa2c545744',
+      '8f2c5fa4a10115f089fe7d4e71d22c62a5006aaa9f267dbddbeec4fa2c545744'
+    ],
+    validatorVotesName: [
+      'FINISHED_WITH_RETURN',
+      'FINISHED_WITH_RETURN',
+      'FINISHED_WITH_RETURN',
+      'FINISHED_WITH_RETURN',
+      'FINISHED_WITH_RETURN'
+    ]
+  },
+  consumedValidatorsCount: 5n,
+  numOfInitialValidators: '5',
+  txExecutionResult: 1,
+  consumedValidators: [
+    '0xe9f16f7Aeb26F4b985F88227793cf391e1826086',
+    '0xDeae1476B3E18156fF4A6FCE51A14BAe0cB19251',
+    '0x7d9e5882155a5fb1cb5d4B15135bF5CE7358D9e8',
+    '0x2f33669F12F93e204ccf01311419fDb80a07903d',
+    '0x0EA95B4932417D09b373C3A9ff256A680754b0A6'
+  ],
+  txData: 'f865b8621600547365745f706f6c69637904617267731564323032362d31312d30392e3184043062623064306339616566313935613334396134386334346463343937623936323062336534666565303739383963663431623639333161656566316533666200',
+  txDataDecoded: {
+    callData: Map(2) {
+      '' => 'set_policy',
+      'args' => [
+        '2026-11-09.1',
+        '0bb0d0c9aef195a349a48c44dc497b9620b3e4fee07989cf41b6931aeef1e3fb'
+      ]
+    },
+    leaderOnly: false,
+    type: 'call'
+  },
+  currentTimestamp: '1794233692',
+  statusName: 'ACCEPTED',
+  lifecycle: { state: 'decided', outcome: 'accepted' },
+  resultName: 'MAJORITY_AGREE',
+  txExecutionResultName: 'FINISHED_WITH_RETURN',
+  consensusStatus: 'ACCEPTED'
+}
+✔ Write operation successfully executed
+```
+
+## receipt_set_policy FINISHED_WITH_RETURN (CLI receipt)
+
+$ node /home/incubator/orchestra/glcli-rc/node_modules/genlayer/dist/index.strarg.js write 0x34e8335b70546fb37c9f2c06d472208b13b8f168 set_policy --args s#2026-11-09.1 s#0bb0d0c9aef195a349a48c44dc497b9620b3e4fee07989cf41b6931aeef1e3fb --fees {"distribution":{"leaderTimeunitsAllocation":"100","validatorTimeunitsAllocation":"200","appealRounds":"0","executionBudgetPerRound":"25000000000000000","executionConsumed":"0","totalMessageFees":"0","rotations":["3"],"maxPriceGenPerTimeUnit":"2","storageFeeMaxGasPrice":"300000000","receiptFeeMaxGasPrice":"300000000"},"feeValue":"100000000000010352","policy":{"enabled":true,"genPerTimeUnit":"1","storageUnitPrice":"250000000","receiptGasPrice":"250000000","executionBudgetFloor":"76548000000000","timeUnitOverlayBps":"1500"}}
+```
+[genlayer-js] initializeConsensusSmartContract() is deprecated and will be removed in a future release. The consensus contract is now resolved from the static chain definition.
+- Calling write method set_policy on contract at 0x34e8335b70546fb37c9f2c06d472208b13b8f168...
+Fee deposit: 100000000000010352 wei (~0.100000000000010352 GEN)
+Write Transaction Hash:
+7686e1adaae54147085b9a554e05fbefc5f6e31cf0433163d68cee36fe92ac03
+Result:
+{
+  observedAt: 1794233717n,
+  sender: '0x2c111FCD3082083C9B287DD9DA5995f190968Ef9',
+  recipient: '0x34e8335b70546fb37c9f2c06d472208b13b8f168',
+  initialRotations: 3n,
+  txSlot: '3',
+  createdTimestamp: '1794233695',
+  lastVoteTimestamp: '1794233717',
+  randomSeed: '4f9de2662af724fdb01e582734efee21e4aa9bac90fcb18b3b832ef29772c6fb',
+  result: 1,
+  txExecutionHash: '9d04118dfd16c00bb94e487dd243b367ea985b142b55e55425a1cd08bf1c2258',
+  txCalldata: 'f865b8621600547365745f706f6c69637904617267731564323032362d31312d30392e3184043062623064306339616566313935613334396134386334346463343937623936323062336534666565303739383963663431623639333161656566316533666200',
+  eqBlocksOutputs: '0x0e076e645f6f75747305',
+  messages: [],
+  queueType: 0,
+  queuePosition: '0',
+  activator: '0x28b6E26812644B6a924EC568226713Fa726a05Db',
+  lastLeader: '0x28b6E26812644B6a924EC568226713Fa726a05Db',
+  status: 5,
+  txId: '7686e1adaae54147085b9a554e05fbefc5f6e31cf0433163d68cee36fe92ac03',
+  readStateBlockRange: {
+    activationBlock: '263438',
+    processingBlock: '263439',
+    proposalBlock: '263441'
+  },
+  numOfRounds: '0',
+  lastRound: {
+    round: '0',
+    leaderIndex: '0',
+    votesCommitted: '5',
+    votesRevealed: '5',
+    appealBond: '0',
+    rotationsLeft: '3',
+    result: 1,
+    validatorsCount: 5n,
+    roundValidators: [
+      '0x28b6E26812644B6a924EC568226713Fa726a05Db',
+      '0x140457FB2EAb027161A6ccDB378544DCe3Ea3A1D',
+      '0x7d9e5882155a5fb1cb5d4B15135bF5CE7358D9e8',
+      '0x0008927E440Fc4C37445141DdB0E6432096107ed',
+      '0xfAc951e3fD9204eb25530f2EF000B9DdB6C2A322'
+    ],
+    validatorVotes: [ 1, 1, 1, 1, 1 ],
+    validatorVotesHash: [
+      'afe48c065341893c6d5fa1201489d872844339b92380330b7c3da644fee1ed1c',
+      '3a1da78e72c2e079333a661bec06bd42176621f8d74ebd2ffeb0fd0b234d41a3',
+      'd9dfae63807877d9ad0c37c47f13a5484db6612e54f0505b6e82c4b12ed312c1',
+      '9c04d001f0392aa421430e63f81ff849e6f326da9abee9d2992e3fab0c5e0c94',
+      'ad8b9708c3871318aa217695eb3c8a3c3647c21275fa7edbd0dc8f1523c68264'
+    ],
+    validatorResultHash: [
+      '318db1561ebd18ced08ffa0a8ee21902ec23a714c67d92aa71ac76add0819c4c',
+      '318db1561ebd18ced08ffa0a8ee21902ec23a714c67d92aa71ac76add0819c4c',
+      '318db1561ebd18ced08ffa0a8ee21902ec23a714c67d92aa71ac76add0819c4c',
+      '318db1561ebd18ced08ffa0a8ee21902ec23a714c67d92aa71ac76add0819c4c',
+      '318db1561ebd18ced08ffa0a8ee21902ec23a714c67d92aa71ac76add0819c4c'
+    ],
+    validatorVotesName: [
+      'FINISHED_WITH_RETURN',
+      'FINISHED_WITH_RETURN',
+      'FINISHED_WITH_RETURN',
+      'FINISHED_WITH_RETURN',
+      'FINISHED_WITH_RETURN'
+    ]
+  },
+  consumedValidatorsCount: 5n,
+  numOfInitialValidators: '5',
+  txExecutionResult: 1,
+  consumedValidators: [
+    '0x28b6E26812644B6a924EC568226713Fa726a05Db',
+    '0x140457FB2EAb027161A6ccDB378544DCe3Ea3A1D',
+    '0x7d9e5882155a5fb1cb5d4B15135bF5CE7358D9e8',
+    '0x0008927E440Fc4C37445141DdB0E6432096107ed',
+    '0xfAc951e3fD9204eb25530f2EF000B9DdB6C2A322'
+  ],
+  txData: 'f865b8621600547365745f706f6c69637904617267731564323032362d31312d30392e3184043062623064306339616566313935613334396134386334346463343937623936323062336534666565303739383963663431623639333161656566316533666200',
+  txDataDecoded: {
+    callData: Map(2) {
+      '' => 'set_policy',
+      'args' => [
+        '2026-11-09.1',
+        '0bb0d0c9aef195a349a48c44dc497b9620b3e4fee07989cf41b6931aeef1e3fb'
+      ]
+    },
+    leaderOnly: false,
+    type: 'call'
+  },
+  currentTimestamp: '1794233717',
+  statusName: 'ACCEPTED',
+  lifecycle: { state: 'decided', outcome: 'accepted' },
+  resultName: 'MAJORITY_AGREE',
+  txExecutionResultName: 'FINISHED_WITH_RETURN',
+  consensusStatus: 'ACCEPTED'
+}
+✔ Write operation successfully executed
+```
+
+## payment_set_policy FINISHED_WITH_RETURN (CLI receipt)
+
+## reads -> /home/incubator/taskloop/briefs/GLR-05-transcripts/D4-dispute-read-2026-11-09.json
+{
+  "source": "raw gen_call via rd.py, D4 dispatcher step GD-TEST-1109 ruling-1 \u00a71.3",
+  "read_at": "2026-11-09T14:15:40.395486Z",
+  "receipt_dispute": {
+    "address": "0xe4e75ac47bf8350Ff705a552b7453Cf7726eF893",
+    "get_config": {
+      "decoded": "{\"operator\": \"0x2c111FCD3082083C9B287DD9DA5995f190968Ef9\", \"policy_sha256\": \"0bb0d0c9aef195a349a48c44dc497b9620b3e4fee07989cf41b6931aeef1e3fb\", \"policy_version\": \"2026-11-09.1\", \"receipt_base_url\": \"https://apibase.pro/r/\"}",
+      "raw": "fc0d7b226f70657261746f72223a2022307832633131314643443330383230383343394232383744443944413539393566313930393638456639222c2022706f6c6963795f736861323536223a202230626230643063396165663139356133343961343863343464633439376239363230623365346665653037393839636634316236393331616565663165336662222c2022706f6c6963795f76657273696f6e223a2022323032362d31312d30392e31222c2022726563656970745f626173655f75726c223a202268747470733a2f2f617069626173652e70726f2f722f227d"
+    },
+    "list_recent": {
+      "decoded": "[]",
+      "raw": "145b5d"
+    }
+  },
+  "payment_dispute": {
+    "address": "0x34e8335b70546fb37c9f2c06d472208b13b8f168",
+    "get_config": {
+      "decoded": "{\"chains\": [\"8453\"], \"operator\": \"0x2c111FCD3082083C9B287DD9DA5995f190968Ef9\", \"policy_sha256\": \"0bb0d0c9aef195a349a48c44dc497b9620b3e4fee07989cf41b6931aeef1e3fb\", \"policy_version\": \"2026-11-09.1\", \"receipt_base_url\": \"https://apibase.pro/r/\"}",
+      "raw": "9c0f7b22636861696e73223a205b2238343533225d2c20226f70657261746f72223a2022307832633131314643443330383230383343394232383744443944413539393566313930393638456639222c2022706f6c6963795f736861323536223a202230626230643063396165663139356133343961343863343464633439376239363230623365346665653037393839636634316236393331616565663165336662222c2022706f6c6963795f76657273696f6e223a2022323032362d31312d30392e31222c2022726563656970745f626173655f75726c223a202268747470733a2f2f617069626173652e70726f2f722f227d"
+    },
+    "list_recent": {
+      "decoded": "[]",
+      "raw": "145b5d"
+    }
+  }
+}
+## STEP 5 selection (flag_time 2026-11-09T14:16:40Z): REFUND nothing_qualified (0 billed 5xx <= 1e6 from the 15 team wallets in public_receipts, 38552 rows); RELEASE = 9dbc77f9fd66bcb8714cd064f5681005 payer 0x672f6b63074e47988084b69a3795701a3f94ff2d (team list) amount 1000 upstream 200; public /r/9dbc77f9fd66bcb8714cd064f5681005.json 200; by-tx receipt_ids=[9dbc77f9fd66bcb8714cd064f5681005] refund_tx=null
+
+## write 1: RELEASE receipt
+
+$ node /home/incubator/orchestra/glcli-rc/node_modules/genlayer/dist/index.strarg.js write 0xe4e75ac47bf8350Ff705a552b7453Cf7726eF893 dispute_receipt --args s#9dbc77f9fd66bcb8714cd064f5681005 --fees {"distribution":{"leaderTimeunitsAllocation":"100","validatorTimeunitsAllocation":"200","appealRounds":"0","executionBudgetPerRound":"25000000000000000","executionConsumed":"0","totalMessageFees":"0","rotations":["3"],"maxPriceGenPerTimeUnit":"2","storageFeeMaxGasPrice":"300000000","receiptFeeMaxGasPrice":"300000000"},"feeValue":"100000000000010352","policy":{"enabled":true,"genPerTimeUnit":"1","storageUnitPrice":"250000000","receiptGasPrice":"250000000","executionBudgetFloor":"76548000000000","timeUnitOverlayBps":"1500"}}
+```
+[genlayer-js] initializeConsensusSmartContract() is deprecated and will be removed in a future release. The consensus contract is now resolved from the static chain definition.
+- Calling write method dispute_receipt on contract at 0xe4e75ac47bf8350Ff705a552b7453Cf7726eF893...
+Fee deposit: 100000000000010352 wei (~0.100000000000010352 GEN)
+Write Transaction Hash:
+29f9a8ab87f57e7dd717cf24c473f279f6b87414b1a2b49774aefa7c0ab02e7b
+Result:
+{
+  observedAt: 1794233869n,
+  sender: '0x2c111FCD3082083C9B287DD9DA5995f190968Ef9',
+  recipient: '0xe4e75ac47bf8350Ff705a552b7453Cf7726eF893',
+  initialRotations: 3n,
+  txSlot: '3',
+  createdTimestamp: '1794233853',
+  lastVoteTimestamp: '1794233867',
+  randomSeed: '9ec265941aef4dc6b5ef27067a582f567a255783fff93e239634e0034c986475',
+  result: 1,
+  txExecutionHash: '897208f3383252f0e76108b6d0a9a8b31b003a7344bb8a4da8d569f4722c108d',
+  txCalldata: 'f83db83a16007c646973707574655f7265636569707404617267730d8402396462633737663966643636626362383731346364303634663536383130303500',
+  eqBlocksOutputs: '0e076e645f6f7574730deb1f0026056665746368146f6b0772656365697074660d616d6f756e745f61746f6d6963243130303005617373657424555344430662696c6c65641008636861696e5f6964a99004057061796565d402307835306562646139646135646331396333303263613035396437623965303665323634393336343830057061796572d4023078363732663662363330373465343739383830383462363961333739353730316133663934666632640a7061796d656e745f74789404307833336139656166306135643833303436613736633738636532616335306636383833653030666536616531386361353136373630633933663561633265666630047261696c4c783430322d626173650f726573706f6e73655f73686132353684043234366235303238633139343166633366373937643961333165623863386562363363333264303066333965303138326364316436366138626566366466616206736368656d618c01617069626173652d726563656970742f3104746f6f6c84016d7976617269616e742e7365617263680f757073747265616d5f737461747573c10c0c726563656970745f68747470c10c0e726563656970745f736861323536840439353865626139303036623765363830366436656435366438646665656331313133343164626565373733306538383066663039646364633463663064616633',
+  messages: [],
+  queueType: 0,
+  queuePosition: '0',
+  activator: '0xa9DC34D9E923e5123768F58823EfF6615dC293c1',
+  lastLeader: '0x4E2aa9efBF40E9f9d4F944407c062e1DBa9c013D',
+  status: 5,
+  txId: '29f9a8ab87f57e7dd717cf24c473f279f6b87414b1a2b49774aefa7c0ab02e7b',
+  readStateBlockRange: {
+    activationBlock: '263498',
+    processingBlock: '263498',
+    proposalBlock: '263500'
+  },
+  numOfRounds: '0',
+  lastRound: {
+    round: '0',
+    leaderIndex: '2',
+    votesCommitted: '5',
+    votesRevealed: '5',
+    appealBond: '0',
+    rotationsLeft: '3',
+    result: 1,
+    validatorsCount: 5n,
+    roundValidators: [
+      '0x82c492B0e298fCCc4779C7B6DA01EFa671398497',
+      '0xcEc49586D30a7658eA6deBa75Cd64C82F31D9648',
+      '0x4E2aa9efBF40E9f9d4F944407c062e1DBa9c013D',
+      '0x854967Dbe3B5eb71760d4b4C49C6936d89198427',
+      '0xf9e630b65b2cbCD9e84Af177245EBa4763B5e8D2'
+    ],
+    validatorVotes: [ 1, 1, 1, 1, 1 ],
+    validatorVotesHash: [
+      '146b030c43cac6cc0cdb855c40131b2653513327f016b3110b70a25a80a9c7e8',
+      'a804fe8109c703edf7c930b616dff556bf523be766f491eee11293447a8e289f',
+      '3d3ebb567d589330a895546aff6cb5c924e2357dee38ddae5c9a8bcdc0c97e42',
+      '0d1661f33837f02d4961f72dfc57504ae320f609acc354eabe8b7d43adb26e6b',
+      'a674c956141e69d084d3c92cf18dba17bb8b7a41c251c349cbb53f195641817b'
+    ],
+    validatorResultHash: [
+      'c25577e8b608bcb3d72416d1b945141dc76c1338fc1ba8181c7975d0c84e93e5',
+      'c25577e8b608bcb3d72416d1b945141dc76c1338fc1ba8181c7975d0c84e93e5',
+      'c25577e8b608bcb3d72416d1b945141dc76c1338fc1ba8181c7975d0c84e93e5',
+      'c25577e8b608bcb3d72416d1b945141dc76c1338fc1ba8181c7975d0c84e93e5',
+      'c25577e8b608bcb3d72416d1b945141dc76c1338fc1ba8181c7975d0c84e93e5'
+    ],
+    validatorVotesName: [
+      'FINISHED_WITH_RETURN',
+      'FINISHED_WITH_RETURN',
+      'FINISHED_WITH_RETURN',
+      'FINISHED_WITH_RETURN',
+      'FINISHED_WITH_RETURN'
+    ]
+  },
+  consumedValidatorsCount: 5n,
+  numOfInitialValidators: '5',
+  txExecutionResult: 1,
+  consumedValidators: [
+    '0x82c492B0e298fCCc4779C7B6DA01EFa671398497',
+    '0xcEc49586D30a7658eA6deBa75Cd64C82F31D9648',
+    '0x4E2aa9efBF40E9f9d4F944407c062e1DBa9c013D',
+    '0x854967Dbe3B5eb71760d4b4C49C6936d89198427',
+    '0xf9e630b65b2cbCD9e84Af177245EBa4763B5e8D2'
+  ],
+  txData: 'f83db83a16007c646973707574655f7265636569707404617267730d8402396462633737663966643636626362383731346364303634663536383130303500',
+  txDataDecoded: {
+    callData: Map(2) {
+      '' => 'dispute_receipt',
+      'args' => [ '9dbc77f9fd66bcb8714cd064f5681005' ]
+    },
+    leaderOnly: false,
+    type: 'call'
+  },
+  currentTimestamp: '1794233869',
+  statusName: 'ACCEPTED',
+  lifecycle: { state: 'decided', outcome: 'accepted' },
+  resultName: 'MAJORITY_AGREE',
+  txExecutionResultName: 'FINISHED_WITH_RETURN',
+  consensusStatus: 'ACCEPTED'
+}
+✔ Write operation successfully executed
+```
+
+## dispute_receipt_9dbc77f9fd66bcb8714cd064f5681005 FINISHED_WITH_RETURN (CLI receipt)
+
+## write 2: RELEASE payment
+
+$ node /home/incubator/orchestra/glcli-rc/node_modules/genlayer/dist/index.strarg.js write 0x34e8335b70546fb37c9f2c06d472208b13b8f168 dispute_payment --args s#8453 s#33a9eaf0a5d83046a76c78ce2ac50f6883e00fe6ae18ca516760c93f5ac2eff0 --fees {"distribution":{"leaderTimeunitsAllocation":"100","validatorTimeunitsAllocation":"200","appealRounds":"0","executionBudgetPerRound":"25000000000000000","executionConsumed":"0","totalMessageFees":"0","rotations":["3"],"maxPriceGenPerTimeUnit":"2","storageFeeMaxGasPrice":"300000000","receiptFeeMaxGasPrice":"300000000"},"feeValue":"100000000000010352","policy":{"enabled":true,"genPerTimeUnit":"1","storageUnitPrice":"250000000","receiptGasPrice":"250000000","executionBudgetFloor":"76548000000000","timeUnitOverlayBps":"1500"}}
+```
+[genlayer-js] initializeConsensusSmartContract() is deprecated and will be removed in a future release. The consensus contract is now resolved from the static chain definition.
+- Calling write method dispute_payment on contract at 0x34e8335b70546fb37c9f2c06d472208b13b8f168...
+Fee deposit: 100000000000010352 wei (~0.100000000000010352 GEN)
+Write Transaction Hash:
+b7e8a81109964dbd9dfc0715d6a2197aa5b0b45556a4b7ed12e7e341989e0e43
+Result:
+{
+  observedAt: 1794233901n,
+  sender: '0x2c111FCD3082083C9B287DD9DA5995f190968Ef9',
+  recipient: '0x34e8335b70546fb37c9f2c06d472208b13b8f168',
+  initialRotations: 3n,
+  txSlot: '4',
+  createdTimestamp: '1794233875',
+  lastVoteTimestamp: '1794233899',
+  randomSeed: '7283720630bd16ea2076586ac80ac249cff1f8b672992dd8e24d7f6b49182346',
+  result: 1,
+  txExecutionHash: '2b9bb5a0a8355f3f82122724eaf16525b963c05a34bfb299fd4f5a982fe15e30',
+  txCalldata: 'f864b86116007c646973707574655f7061796d656e740461726773152438343533940430783333613965616630613564383330343661373663373863653261633530663638383365303066653661653138636135313637363063393366356163326566663000',
+  eqBlocksOutputs: '0e076e645f6f7574730de30a0026056665746368146f6b05696e646578160b726563656970745f6964730d8402396462633737663966643636626362383731346364303634663536383130303509726566756e645f7478040c726563656970745f68747470c10c0e726563656970745f736861323536840463633136386637653965616437356263386630653330393665376436313734366338613130343764303233366432313230643136626632323261353833643862',
+  messages: [],
+  queueType: 0,
+  queuePosition: '0',
+  activator: '0x8D72877003db5001Eb5E3EfC683B763e55519426',
+  lastLeader: '0x7d9e5882155a5fb1cb5d4B15135bF5CE7358D9e8',
+  status: 5,
+  txId: 'b7e8a81109964dbd9dfc0715d6a2197aa5b0b45556a4b7ed12e7e341989e0e43',
+  readStateBlockRange: {
+    activationBlock: '263522',
+    processingBlock: '263523',
+    proposalBlock: '263525'
+  },
+  numOfRounds: '0',
+  lastRound: {
+    round: '0',
+    leaderIndex: '1',
+    votesCommitted: '5',
+    votesRevealed: '5',
+    appealBond: '0',
+    rotationsLeft: '3',
+    result: 1,
+    validatorsCount: 5n,
+    roundValidators: [
+      '0x61C0cCB0Cf8a654Ee11836e3Fbc1D797d56f9a8d',
+      '0x7d9e5882155a5fb1cb5d4B15135bF5CE7358D9e8',
+      '0xe9f16f7Aeb26F4b985F88227793cf391e1826086',
+      '0x4E2aa9efBF40E9f9d4F944407c062e1DBa9c013D',
+      '0xfAc951e3fD9204eb25530f2EF000B9DdB6C2A322'
+    ],
+    validatorVotes: [ 1, 1, 1, 1, 1 ],
+    validatorVotesHash: [
+      '459086cec2195a1afdd30d0bc47ac3fde0ab2af898464e13fef295e2dbaf31ad',
+      '85a7efcbeca2d8a4afb479ebb3915f263477d339553fd81f947c074c49e20487',
+      '38fc14bd92436eb7dedcd9e3c6c2a53635cc1775eded1118040df1a5bd29136d',
+      'bf444946cedc3236237cad61a99cf3a2f9f6fb734beb9d77b9a38c5290522e50',
+      '8c54d420f06f8163ac1779b130200d205c270c2f93437377c88d0ff80556c5d9'
+    ],
+    validatorResultHash: [
+      '15a2ce1d5f31e449e9a7c875e0a3fcad7ccfbed67cc22f74399f6ea32b299812',
+      '15a2ce1d5f31e449e9a7c875e0a3fcad7ccfbed67cc22f74399f6ea32b299812',
+      '15a2ce1d5f31e449e9a7c875e0a3fcad7ccfbed67cc22f74399f6ea32b299812',
+      '15a2ce1d5f31e449e9a7c875e0a3fcad7ccfbed67cc22f74399f6ea32b299812',
+      '15a2ce1d5f31e449e9a7c875e0a3fcad7ccfbed67cc22f74399f6ea32b299812'
+    ],
+    validatorVotesName: [
+      'FINISHED_WITH_RETURN',
+      'FINISHED_WITH_RETURN',
+      'FINISHED_WITH_RETURN',
+      'FINISHED_WITH_RETURN',
+      'FINISHED_WITH_RETURN'
+    ]
+  },
+  consumedValidatorsCount: 5n,
+  numOfInitialValidators: '5',
+  txExecutionResult: 1,
+  consumedValidators: [
+    '0x61C0cCB0Cf8a654Ee11836e3Fbc1D797d56f9a8d',
+    '0x7d9e5882155a5fb1cb5d4B15135bF5CE7358D9e8',
+    '0xe9f16f7Aeb26F4b985F88227793cf391e1826086',
+    '0x4E2aa9efBF40E9f9d4F944407c062e1DBa9c013D',
+    '0xfAc951e3fD9204eb25530f2EF000B9DdB6C2A322'
+  ],
+  txData: 'f864b86116007c646973707574655f7061796d656e740461726773152438343533940430783333613965616630613564383330343661373663373863653261633530663638383365303066653661653138636135313637363063393366356163326566663000',
+  txDataDecoded: {
+    callData: Map(2) {
+      '' => 'dispute_payment',
+      'args' => [
+        '8453',
+        '33a9eaf0a5d83046a76c78ce2ac50f6883e00fe6ae18ca516760c93f5ac2eff0'
+      ]
+    },
+    leaderOnly: false,
+    type: 'call'
+  },
+  currentTimestamp: '1794233901',
+  statusName: 'ACCEPTED',
+  lifecycle: { state: 'decided', outcome: 'accepted' },
+  resultName: 'MAJORITY_AGREE',
+  txExecutionResultName: 'FINISHED_WITH_RETURN',
+  consensusStatus: 'ACCEPTED'
+}
+✔ Write operation successfully executed
+```
+
+## dispute_payment_33a9eaf0a5d83046a76c78ce2ac50f6883e00fe6ae18ca516760c93f5ac2eff0 FINISHED_WITH_RETURN (CLI receipt)
+
+## reads -> /home/incubator/taskloop/briefs/GLR-05-transcripts/D4-dispute-read-2026-11-09-writes.json
+{
+  "read_at": "2026-11-09T14:18:52.583171Z",
+  "receipt_list_by_subject": {
+    "decoded": "[\"cf55bfa89b7c387c4f0c0b391e2bdb271cc5b0f162817b6d5073a90b5c65a2a5\"]",
+    "raw": "a4045b2263663535626661383962376333383763346630633062333931653262646232373163633562306631363238313762366435303733613930623563363561326135225d"
+  },
+  "payment_list_by_subject": {
+    "decoded": "[\"be87ea2e4455ee0dbae14fe38ae5f711b699cc2897ec7597522b1bb276619cce\"]",
+    "raw": "a4045b2262653837656132653434353565653064626165313466653338616535663731316236393963633238393765633735393735323262316262323736363139636365225d"
+  },
+  "receipt_get_dispute": {
+    "decoded": {
+      "amount_atomic": "1000",
+      "chain_id": "8453",
+      "checked_at": "2026-11-09T14:17:33Z",
+      "claim": "upstream_failed_but_billed",
+      "dispute_id": "cf55bfa89b7c387c4f0c0b391e2bdb271cc5b0f162817b6d5073a90b5c65a2a5",
+      "evidence_sha256": "958eba9006b7e6806d6ed56d8dfeec111341dbee7730e880ff09dcdc4cf0daf3",
+      "payee": "0x50ebda9da5dc19c302ca059d7b9e06e264936480",
+      "payer": "0x672f6b63074e47988084b69a3795701a3f94ff2d",
+      "payment_tx": "33a9eaf0a5d83046a76c78ce2ac50f6883e00fe6ae18ca516760c93f5ac2eff0",
+      "policy_sha256": "0bb0d0c9aef195a349a48c44dc497b9620b3e4fee07989cf41b6931aeef1e3fb",
+      "policy_version": "2026-11-09.1",
+      "reason": "upstream_status_200",
+      "receipt_id": "9dbc77f9fd66bcb8714cd064f5681005",
+      "requester": "0x2c111FCD3082083C9B287DD9DA5995f190968Ef9",
+      "verdict": "RELEASE"
+    },
+    "raw": "7e0d616d6f756e745f61746f6d6963243130303008636861696e5f696424383435330a636865636b65645f6174a401323032362d31312d30395431343a31373a33335a05636c61696dd401757073747265616d5f6661696c65645f6275745f62696c6c65640a646973707574655f69648404636635356266613839623763333837633466306330623339316532626462323731636335623066313632383137623664353037336139306235633635613261350f65766964656e63655f736861323536840439353865626139303036623765363830366436656435366438646665656331313133343164626565373733306538383066663039646364633463663064616633057061796565d402307835306562646139646135646331396333303263613035396437623965303665323634393336343830057061796572d4023078363732663662363330373465343739383830383462363961333739353730316133663934666632640a7061796d656e745f747894043078333361396561663061356438333034366137366337386365326163353066363838336530306665366165313863613531363736306339336635616332656666300d706f6c6963795f7368613235368404306262306430633961656631393561333439613438633434646334393762393632306233653466656530373938396366343162363933316165656631653366620e706f6c6963795f76657273696f6e64323032362d31312d30392e3106726561736f6e9c01757073747265616d5f7374617475735f3230300a726563656970745f69648402396462633737663966643636626362383731346364303634663536383130303509726571756573746572d40230783263313131464344333038323038334339423238374444394441353939356631393039363845663907766572646963743c52454c45415345"
+  },
+  "payment_get_dispute": {
+    "decoded": {
+      "amount_atomic": "",
+      "chain_id": "8453",
+      "checked_at": "2026-11-09T14:17:55Z",
+      "claim": "paid_without_receipt",
+      "dispute_id": "be87ea2e4455ee0dbae14fe38ae5f711b699cc2897ec7597522b1bb276619cce",
+      "evidence_sha256": "cc168f7e9ead75bc8f0e3096e7d61746c8a1047d0236d2120d16bf222a583d8b",
+      "payee": "0x50ebda9da5dc19c302ca059d7b9e06e264936480",
+      "payer": "",
+      "payment_tx": "33a9eaf0a5d83046a76c78ce2ac50f6883e00fe6ae18ca516760c93f5ac2eff0",
+      "policy_sha256": "0bb0d0c9aef195a349a48c44dc497b9620b3e4fee07989cf41b6931aeef1e3fb",
+      "policy_version": "2026-11-09.1",
+      "reason": "receipt_exists:9dbc77f9fd66bcb8714cd064f5681005",
+      "receipt_id": "",
+      "requester": "0x2c111FCD3082083C9B287DD9DA5995f190968Ef9",
+      "verdict": "RELEASE"
+    },
+    "raw": "7e0d616d6f756e745f61746f6d69630408636861696e5f696424383435330a636865636b65645f6174a401323032362d31312d30395431343a31373a35355a05636c61696da401706169645f776974686f75745f726563656970740a646973707574655f69648404626538376561326534343535656530646261653134666533386165356637313162363939636332383937656337353937353232623162623237363631396363650f65766964656e63655f736861323536840463633136386637653965616437356263386630653330393665376436313734366338613130343764303233366432313230643136626632323261353833643862057061796565d402307835306562646139646135646331396333303263613035396437623965303665323634393336343830057061796572040a7061796d656e745f747894043078333361396561663061356438333034366137366337386365326163353066363838336530306665366165313863613531363736306339336635616332656666300d706f6c6963795f7368613235368404306262306430633961656631393561333439613438633434646334393762393632306233653466656530373938396366343162363933316165656631653366620e706f6c6963795f76657273696f6e64323032362d31312d30392e3106726561736f6efc02726563656970745f6578697374733a39646263373766396664363662636238373134636430363466353638313030350a726563656970745f69640409726571756573746572d40230783263313131464344333038323038334339423238374444394441353939356631393039363845663907766572646963743c52454c45415345"
+  },
+  "receipt_list_recent": {
+    "decoded": "[\"cf55bfa89b7c387c4f0c0b391e2bdb271cc5b0f162817b6d5073a90b5c65a2a5\"]",
+    "raw": "a4045b2263663535626661383962376333383763346630633062333931653262646232373163633562306631363238313762366435303733613930623563363561326135225d"
+  },
+  "payment_list_recent": {
+    "decoded": "[\"be87ea2e4455ee0dbae14fe38ae5f711b699cc2897ec7597522b1bb276619cce\"]",
+    "raw": "a4045b2262653837656132653434353565653064626165313466653338616535663731316236393963633238393765633735393735323262316262323736363139636365225d"
+  }
+}

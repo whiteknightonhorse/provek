@@ -57,8 +57,8 @@ The deployment record is `deploy/DEPLOYMENT.md`.
 
 ## Dispute contracts — live on Bradbury Phase 2
 
-Deployed 2026-11-09 from commit `9055f93` (runner `babwp`, header `# v0.3.0`), policy `2026-11-04.3` pinned; test GEN only.
-0 disputes as of 2026-11-09 (none submitted in the deployment session; `list_recent` not read).
+Deployed 2026-11-09 from commit `9055f93` (runner `babwp`, header `# v0.3.0`), policy `2026-11-09.1` (re-pinned 2026-11-09); test GEN only.
+2 disputes as of 2026-11-09, both end-to-end tests by the team with its own wallets, both RELEASE; no REFUND verdict as of that date (see `deploy/DEPLOYMENT.md`).
 
 | Contract | Address | Explorer |
 |---|---|---|

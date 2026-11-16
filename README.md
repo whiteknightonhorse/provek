@@ -226,16 +226,14 @@ The deployment record is `integrations/genlayer-apibase-attest/deploy/DEPLOYMENT
 ## APIbase dispute contracts — live on Bradbury Phase 2
 
 `ApibaseReceiptDispute` and `ApibasePaymentDispute` (`integrations/genlayer-apibase-attest/`) are deployed on the GenLayer test
-network, test GEN only, from commit `9055f93` on 2026-11-09, with the refund policy `2026-11-04.3` pinned. 0 disputes as of
-2026-11-09: none had been submitted in the deployment session (`list_recent` was not read; see `not_measured` in
-`integrations/genlayer-apibase-attest/deploy/deployment.json`, `dispute_contract`).
+network, test GEN only, from commit `9055f93` on 2026-11-09, with the refund policy `2026-11-09.1` (re-pinned 2026-11-09). 2 disputes as of 2026-11-09, both end-to-end tests by the team with its own wallets, both RELEASE; no REFUND verdict as of that date (`integrations/genlayer-apibase-attest/deploy/DEPLOYMENT.md`).
 
 | Contract | Address | Explorer | Configured |
 |---|---|---|---|
-| `ApibaseReceiptDispute` | `0xe4e75ac47bf8350Ff705a552b7453Cf7726eF893` | https://explorer-bradbury.genlayer.com/address/0xe4e75ac47bf8350Ff705a552b7453Cf7726eF893 | `set_policy("2026-11-04.3", ...)` |
+| `ApibaseReceiptDispute` | `0xe4e75ac47bf8350Ff705a552b7453Cf7726eF893` | https://explorer-bradbury.genlayer.com/address/0xe4e75ac47bf8350Ff705a552b7453Cf7726eF893 | `set_policy("2026-11-09.1", ...)` |
 | `ApibasePaymentDispute` | `0x34e8335b70546fb37c9f2c06d472208b13b8f168` | https://explorer-bradbury.genlayer.com/address/0x34e8335b70546fb37c9f2c06d472208b13b8f168 | `set_policy`, and `set_chain("8453", ...)` with payee `0x50EbDa9dA5dC19c302Ca059d7B9E06e264936480` |
 
-Record: `integrations/genlayer-apibase-attest/deploy/DEPLOYMENT.md`; transcripts `evidence/MEASURED-021-*` and `evidence/MEASURED-022-*`.
+Record: `integrations/genlayer-apibase-attest/deploy/DEPLOYMENT.md`; transcripts `evidence/MEASURED-021-*`, `-022-*`, `-024-*`, `-025-*` and `-026-*`.
 
 ## Where the rest is
 

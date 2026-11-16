@@ -132,7 +132,8 @@
         "tx_consensus_result": "MAJORITY_AGREE",
         "execution_result": "FINISHED_WITH_RETURN",
         "version": "2026-11-04.3",
-        "sha256": "d1cb13c3fa7ac84fcac3762caba66d208e2d1f9e95f934f4913a82b287b9d4fb"
+        "sha256": "d1cb13c3fa7ac84fcac3762caba66d208e2d1f9e95f934f4913a82b287b9d4fb",
+        "superseded_by": "policy_repin"
       },
       "set_chain": "not_applicable: this contract has no chain configuration",
       "get_config": "operator 0x2c111F..8Ef9, policy_version 2026-11-04.3, policy_sha256 d1cb13c3..d4fb, receipt_base_url https://apibase.pro/r/ (read 2026-11-09T01:42:04Z)"
@@ -158,7 +159,8 @@
         "tx_consensus_result": "MAJORITY_AGREE",
         "execution_result": "FINISHED_WITH_RETURN",
         "version": "2026-11-04.3",
-        "sha256": "d1cb13c3fa7ac84fcac3762caba66d208e2d1f9e95f934f4913a82b287b9d4fb"
+        "sha256": "d1cb13c3fa7ac84fcac3762caba66d208e2d1f9e95f934f4913a82b287b9d4fb",
+        "superseded_by": "policy_repin"
       },
       "set_chain": {
         "tx": "fcffc3e9f2ba6170854443973666a81c31e6626d21108feec3ab1c9d56a851b8",
@@ -180,11 +182,67 @@
       "unit": "GEN (test GEN, Bradbury Phase 2); quoted = the fee deposit held per transaction (the same figure printed for both deploys and all three writes in the transcript); the charge is not in the transcript"
     },
     "_note_tx_hashes": "every tx hash in this object has its 0x prefix stripped, as above (scripts/secret_scan.sh, GL-00 ruling-1); evidence/MEASURED-021-* and -022-* strip it the same way and nothing else.",
-    "live_disputes": [],
-    "live_disputes_note": "No dispute was submitted in the D3 session (the transcript holds no dispute_receipt/dispute_payment write), so the list is empty. The end-to-end tests the team runs with its own wallets are recorded in the dispatcher's ledger, not here, and are not customer disputes.",
+    "policy_repin": {
+      "version": "2026-11-09.1",
+      "sha256": "0bb0d0c9aef195a349a48c44dc497b9620b3e4fee07989cf41b6931aeef1e3fb",
+      "receipt_tx": "15619d170e87e710d85984799f9529cd25c123c843d370da90a74142bdf142a3",
+      "payment_tx": "7686e1adaae54147085b9a554e05fbefc5f6e31cf0433163d68cee36fe92ac03",
+      "supersedes": "2026-11-04.3",
+      "at": "2026-11-09T14:15:17Z"
+    },
+    "live_disputes": [
+      {
+        "dispute_id": "cf55bfa89b7c387c4f0c0b391e2bdb271cc5b0f162817b6d5073a90b5c65a2a5",
+        "contract": "0xe4e75ac47bf8350Ff705a552b7453Cf7726eF893",
+        "claim": "upstream_failed_but_billed",
+        "subject": "receipt:9dbc77f9fd66bcb8714cd064f5681005",
+        "verdict": "RELEASE",
+        "reason": "upstream_status_200",
+        "requester": "0x2c111FCD3082083C9B287DD9DA5995f190968Ef9",
+        "payer": "0x672f6b63074e47988084b69a3795701a3f94ff2d",
+        "amount_atomic": "1000",
+        "policy_version": "2026-11-09.1",
+        "policy_sha256": "0bb0d0c9aef195a349a48c44dc497b9620b3e4fee07989cf41b6931aeef1e3fb",
+        "checked_at": "2026-11-09T14:17:33Z",
+        "dispute_tx": "29f9a8ab87f57e7dd717cf24c473f279f6b87414b1a2b49774aefa7c0ab02e7b",
+        "source": "team-test"
+      },
+      {
+        "dispute_id": "be87ea2e4455ee0dbae14fe38ae5f711b699cc2897ec7597522b1bb276619cce",
+        "contract": "0x34e8335b70546fb37c9f2c06d472208b13b8f168",
+        "claim": "paid_without_receipt",
+        "subject": "payment:8453:33a9eaf0a5d83046a76c78ce2ac50f6883e00fe6ae18ca516760c93f5ac2eff0",
+        "verdict": "RELEASE",
+        "reason": "receipt_exists:9dbc77f9fd66bcb8714cd064f5681005",
+        "requester": "0x2c111FCD3082083C9B287DD9DA5995f190968Ef9",
+        "payer": "",
+        "amount_atomic": "",
+        "policy_version": "2026-11-09.1",
+        "policy_sha256": "0bb0d0c9aef195a349a48c44dc497b9620b3e4fee07989cf41b6931aeef1e3fb",
+        "checked_at": "2026-11-09T14:17:55Z",
+        "dispute_tx": "b7e8a81109964dbd9dfc0715d6a2197aa5b0b45556a4b7ed12e7e341989e0e43",
+        "source": "team-test"
+      }
+    ],
+    "live_disputes_note": "As of 2026-11-09 two disputes exist, both end-to-end tests the team ran with its own wallets (source team-test), not customer disputes; both verdicts are RELEASE and no REFUND verdict existed on either contract at that date. The payer and amount of the payment-contract dispute are empty in the record (RELEASE), recorded as read. Read from get_dispute in evidence/MEASURED-024-*; the writes are in evidence/MEASURED-026-*.",
+    "refund_test": {
+      "receipt_claim": {
+        "state": "nothing_qualified",
+        "as_of": "2026-11-10T03:15Z",
+        "billed_and_upstream_5xx": 0,
+        "receipts_counted": 40023,
+        "window": "as the capture states: billed AND upstream_status>=500 is 0 receipts ever; the 40023 is the count of receipts in the last 30 days"
+      },
+      "payment_claim": {
+        "state": "not_measured",
+        "as_of": "2026-11-10T03:15Z"
+      }
+    },
     "not_measured": [
-      "list_recent and get_dispute reads of either contract (the D3 reads file holds get_config only; so 'zero disputes on chain' is inferred from the absence of any dispute write in the transcript, not read)",
-      "any dispute that reached REFUND or RELEASE (none was submitted)",
+      "a REFUND verdict on either contract (none as of 2026-11-09)",
+      "the refund worker executing a verdict",
+      "confirm_refund (v1.1, not deployed)",
+      "FINALIZED status of the four D4 transactions (two set_policy, two dispute writes; the transcript shows FINISHED_WITH_RETURN)",
       "FINALIZED status of the five D3 transactions (the transcript shows ACCEPTED)",
       "the per-transaction charge of any dispute-contract transaction",
       "a studionet gltest integration run for either dispute contract",
@@ -192,11 +250,19 @@
     ],
     "evidence": [
       "evidence/MEASURED-021-gd-03-bradbury-phase2-dispute-deploy.txt",
-      "evidence/MEASURED-022-gd-03-dispute-reads.txt"
+      "evidence/MEASURED-022-gd-03-dispute-reads.txt",
+      "evidence/MEASURED-026-gd-03-d4-team-test-transcript.txt",
+      "evidence/MEASURED-024-gd-03-d4-dispute-reads.txt",
+      "evidence/MEASURED-025-gd-03-refund-class-capture.txt"
     ],
     "source_transcripts": [
       "~/taskloop/briefs/GLR-05-transcripts/D3-session-2026-11-09.md",
-      "~/taskloop/briefs/GLR-05-transcripts/D3-dispute-read-2026-11-09.json"
+      "~/taskloop/briefs/GLR-05-transcripts/D3-dispute-read-2026-11-09.json",
+      "~/taskloop/briefs/GLR-05-transcripts/D4-team-test-2026-11-09.md",
+      "~/taskloop/briefs/GLR-05-transcripts/D4-dispute-read-2026-11-09.json",
+      "~/taskloop/briefs/GLR-05-transcripts/D4-dispute-read-2026-11-09-writes.json",
+      "~/taskloop/briefs/GD-disputes.md",
+      "~/taskloop/briefs/GD-refund-class-2026-11-10.txt"
     ]
   }
 }

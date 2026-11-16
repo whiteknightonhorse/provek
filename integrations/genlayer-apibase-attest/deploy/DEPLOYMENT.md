@@ -66,19 +66,29 @@ constructor arguments (the operator and `https://apibase.pro/r/`), same runner h
 All five transactions (two deploys, two `set_policy`, one `set_chain`) show ACCEPTED, MAJORITY_AGREE, FINISHED_WITH_RETURN
 (hashes `0x`-stripped in `deployment.json`).
 
-**Configured:** `set_policy("2026-11-04.3", "d1cb13c3fa7ac84fcac3762caba66d208e2d1f9e95f934f4913a82b287b9d4fb")` on both;
+**Configured:** as of 2026-11-09T01:42Z, `set_policy("2026-11-04.3", "d1cb13c3fa7ac84fcac3762caba66d208e2d1f9e95f934f4913a82b287b9d4fb")` on both
+(superseded below);
 `set_chain("8453", "https://mainnet.base.org", USDC `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`, payee
 `0x50EbDa9dA5dC19c302Ca059d7B9E06e264936480`)` on the payment contract only. `get_config` read back on both (2026-11-09T01:42:04Z)
-matches.
+matches. The policy was re-pinned on both contracts to `2026-11-09.1` (sha256 `0bb0d0c9aef195a349a48c44dc497b9620b3e4fee07989cf41b6931aeef1e3fb`,
+`set_policy` transactions `15619d170e87e710d85984799f9529cd25c123c843d370da90a74142bdf142a3` on the receipt contract and
+`7686e1adaae54147085b9a554e05fbefc5f6e31cf0433163d68cee36fe92ac03` on the payment contract, both FINISHED_WITH_RETURN, 2026-11-09T14:15:17Z;
+`evidence/MEASURED-026-*`), and `get_config` read back on both at 2026-11-09T14:15:40Z shows it (`evidence/MEASURED-024-*`).
 
 **Fees:** each of the five writes carries a quoted fee deposit of 0.100000000000010352 GEN; the charge is `not_measured`.
 
-**Disputes:** 0 as of 2026-11-09. The session submitted none. `live_disputes` is `[]`.
+**Disputes:** 2 as of 2026-11-09, both end-to-end tests by the team with its own wallets (source team-test), not customer disputes:
+`cf55bfa89b7c387c4f0c0b391e2bdb271cc5b0f162817b6d5073a90b5c65a2a5` on the receipt contract (receipt `9dbc77f9fd66bcb8714cd064f5681005`,
+verdict RELEASE, reason `upstream_status_200`) and `be87ea2e4455ee0dbae14fe38ae5f711b699cc2897ec7597522b1bb276619cce` on the payment contract
+(verdict RELEASE, reason `receipt_exists:9dbc77f9fd66bcb8714cd064f5681005`; payer and amount are empty in the record, as read). Both were read back
+with `get_dispute` (`evidence/MEASURED-024-*`). No REFUND verdict as of 2026-11-09: the receipt claim is `nothing_qualified`, with 0 receipts billed with an
+upstream status of 500 or more ever and 40023 receipts in the last 30 days, as of 2026-11-10T03:15Z (`evidence/MEASURED-025-*`); the payment
+claim's REFUND test is `not_measured` in this record (state of 2026-11-10T03:15Z).
 
-**`not_measured`:** `list_recent` and `get_dispute` reads (the reads file holds `get_config` only, so "0 disputes" rests on the
-absence of any dispute write in the transcript); any dispute reaching REFUND or RELEASE; FINALIZED status of the five
-transactions; per-transaction charges; a studionet integration run; a full byte comparison of the deployed code (the deploy
-receipts print the first 4993 bytes of each calldata, which equal the committed files').
+**`not_measured`:** a REFUND verdict on either contract (none as of 2026-11-09); the refund worker executing a verdict; `confirm_refund` (v1.1, not
+deployed); FINALIZED status of the four D4 transactions (two `set_policy`, two dispute writes) and of the five D3 transactions;
+per-transaction charges; a studionet integration run; a full byte comparison of the deployed code (the deploy receipts print the first
+4993 bytes of each calldata, which equal the committed files').
 
 **Read it yourself:** a raw `gen_call` of `get_config()` on `https://rpc-bradbury.genlayer.com` against either address returns the
 JSON in `evidence/MEASURED-022-*`; `list_recent()` returns the last 200 dispute ids.

@@ -296,10 +296,33 @@ def test_deployment_record_pins_the_deployed_file(key, fixture, sha):
     assert record["runner_header"] == " / ".join(raw.decode("utf-8").splitlines()[:2])
 
 
-def test_deployment_record_hashes_carry_no_0x_prefix_and_zero_disputes_is_stated():
+def test_deployment_record_hashes_carry_no_0x_prefix():
     record = _dispute_record()
     for key in ("receipt_dispute", "payment_dispute"):
         for tx in (record[key]["deploy_tx"], record[key]["set_policy"]["tx"]):
             assert re.fullmatch(r"[0-9a-f]{64}", tx), tx
     assert re.fullmatch(r"[0-9a-f]{64}", record["payment_dispute"]["set_chain"]["tx"])
-    assert record["live_disputes"] == [] and any("list_recent" in item for item in record["not_measured"])
+
+
+def test_deployment_record_holds_the_two_team_test_disputes():
+    record = _dispute_record()
+    # The reads fixture is D4-dispute-read-2026-11-09-writes.json, `0x` stripped (evidence/MEASURED-024-*).
+    reads = json.loads((FIXTURES / "apibase_dispute_reads.2026-11-09.json").read_text(encoding="utf-8"))
+    read_ids = {reads["receipt_get_dispute"]["decoded"]["dispute_id"],
+                reads["payment_get_dispute"]["decoded"]["dispute_id"]}
+    assert len(read_ids) == 2
+    repin = record["policy_repin"]
+    assert repin["version"] == "2026-11-09.1" and repin["supersedes"] == "2026-11-04.3"
+    for tx in (repin["receipt_tx"], repin["payment_tx"]):
+        assert re.fullmatch(r"[0-9a-f]{64}", tx), tx
+    disputes = record["live_disputes"]
+    assert {d["dispute_id"] for d in disputes} == read_ids and len(disputes) == len(read_ids)
+    for d in disputes:
+        assert re.fullmatch(r"[0-9a-f]{64}", d["dispute_id"])
+        assert d["verdict"] in {"REFUND", "RELEASE"}
+        assert d["source"] == "team-test"
+        assert d["policy_version"] == repin["version"]
+        assert re.fullmatch(r"[0-9a-f]{64}", d["dispute_tx"]), d["dispute_tx"]
+    claim = record["refund_test"]["receipt_claim"]
+    assert claim["state"] == "nothing_qualified"
+    assert isinstance(claim["receipts_counted"], int) and isinstance(claim["billed_and_upstream_5xx"], int)

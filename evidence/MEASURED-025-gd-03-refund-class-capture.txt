@@ -1,0 +1,11 @@
+# tree: 8fbfe01b1973cb72bc80e6b824fc37ba617c77a2
+MEASURED-025 - GD-03: refund-class capture, receipts billed with an upstream 5xx (apibase production public_receipts)
+Dispatcher capture 2026-11-10T03:15Z (GD-TEST-1109 ruling-2 M1), read-only.
+Dispatcher session. Source: ~/taskloop/briefs/GD-refund-class-2026-11-10.txt sha256 a6d185190411a0f8340371c6529d363d582877544a287d474fe5869ca8a4942e.
+ONE TRANSFORM, and only this one: the `0x` prefix is stripped from every `0x` + 64 hex string
+(transaction hashes, seeds, hashes), because `scripts/secret_scan.sh` blocks that pattern anywhere in the tree
+(GL-00 ruling-1; the same rule evidence/MEASURED-017-* followed). Everything else is the source, byte
+for byte, below the line.
+-----------------------------------------------------------------------------------------------
+GD refund class measurement 2026-11-10T03:15Z (dispatcher, apibase prod public_receipts)
+billed AND upstream_status>=500: 0 receipts ever; receipts in the last 30 days: 40023
