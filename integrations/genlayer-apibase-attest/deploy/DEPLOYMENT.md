@@ -100,8 +100,9 @@ on `https://rpc-bradbury.genlayer.com` against the contract above returns the re
 
 ## After merge (dispatcher)
 
-- Re-split the mirror (D-64, never edited directly): `git subtree split --prefix=integrations/genlayer-apibase-attest`; push to
-  `whiteknightonhorse/apibase-genlayer-attest`; create the repository first if it does not exist.
+- Update the mirror (D-85, never edited directly): after the change is on Provek `main`, one new commit on
+  `whiteknightonhorse/apibase-genlayer-attest` whose tree is this directory and whose parent is the mirror's head, pushed as a
+  fast-forward and never forced.
 - Live site, nothing here changes it: `curl -sS https://provek.dev/ | grep -c 0x1bD4C0EBC9b365905d4EBC84b944d861499afe6E` expects `0`
   (the address is in GitHub docs only).
 - GitHub main, one per file: `curl -sS https://raw.githubusercontent.com/whiteknightonhorse/provek/main/README.md | grep -c 0x1bD4C0EBC9b365905d4EBC84b944d861499afe6E`

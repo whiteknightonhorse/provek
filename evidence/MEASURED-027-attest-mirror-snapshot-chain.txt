@@ -1,0 +1,31 @@
+MEASURED-027 - T-DP-04: the attest mirror is a chain of snapshot commits (D-85); read-only, nothing pushed
+Stamp (Provek commit the comparisons were taken from):
+# HEAD: eeca9d35f3d22036bfec17d4c17e9f3553378a5c
+# tree: 34e9bbab15a0eec0b7800e61c416ce82a1f56df4
+
+$ git fetch -q https://github.com/whiteknightonhorse/apibase-genlayer-attest.git refs/heads/main
+rc=0
+mirror head: 2874b89b8e335282a73afc3862cef79aa499af42
+
+$ git log --format='%h %p %T %cI %s' FETCH_HEAD
+2874b89 42967e8 2436a09b52ae730112121ca0936f6e8ff9491fa6 2026-11-16T07:16:23+00:00 Mirror of whiteknightonhorse/provek integrations/genlayer-apibase-attest at eeca9d3 (T-GD-03R: docs(genlayer): the 2026-11-09.1 re-pin and the two team-test RELEASE disputes reach main, REFUND absence dated (re-lands edab53f; transcript evidence 023 -> 026))
+42967e8 8d284b0 3a4185ddc75578c275a7f5ed7ad02d2261a25a1c 2026-11-09T02:02:34+00:00 Mirror of whiteknightonhorse/provek integrations/genlayer-apibase-attest at d58157d (T-GD-02: dispute contracts deployed on Bradbury Phase 2 - receipt 0xe4e75ac4..., payment 0x34e8335b...)
+8d284b0 ab47a50 a48871fd400c4c100ff1ae339f03648acc5d1e16 2026-11-02T07:20:00+00:00 Mirror of whiteknightonhorse/provek integrations/genlayer-apibase-attest at 72d23cf (T-GD-01: dispute contracts)
+ab47a50 0ec4788 189bce3cea6ac50707986e313775772cc8a9c733 2026-10-28T19:33:19+07:00 Snapshot of provek integrations/genlayer-apibase-attest at 0371a45: Bradbury Phase 2 redeploy record (0x1bD4C0EB...)
+0ec4788 24571f8 6f8dc41bd5d1ef121f90048cf1b5006af5d17bc3 2026-10-27T02:03:02+00:00 Mirror of provek 20178c0 (integrations/genlayer-apibase-attest after T-GLR-01 and T-GLR-03b: validators bind the whole record; # v0.2.16 version line routes the contract to the v0.2 executor)
+24571f8 8c20567 6a7106daaa4ff3ec6f88b0ffc34ceb260c618428 2026-10-26T03:46:26+00:00 Mirror of provek 47f9846 (integrations/genlayer-apibase-attest after the GenLayer Bradbury reset notice, T-0540); DEPLOYMENT.md kept as is
+8c20567  81ef4a011b4a7ccbd0df10739e440f9c95e7e12e 2026-10-20T16:31:29+07:00 APIbase Receipt Attestation: GenLayer Intelligent Contract (mirror of provek ae9c152) + live deployment record
+
+$ for each mirror commit: git rev-parse <provek sha named in its message>:integrations/genlayer-apibase-attest against the commit's tree
+2874b89 tree=2436a09b52ae730112121ca0936f6e8ff9491fa6 provek-eeca9d3=2436a09b52ae730112121ca0936f6e8ff9491fa6 EQUAL
+42967e8 tree=3a4185ddc75578c275a7f5ed7ad02d2261a25a1c provek-d58157d=3a4185ddc75578c275a7f5ed7ad02d2261a25a1c EQUAL
+8d284b0 tree=a48871fd400c4c100ff1ae339f03648acc5d1e16 provek-72d23cf=a48871fd400c4c100ff1ae339f03648acc5d1e16 EQUAL
+ab47a50 tree=189bce3cea6ac50707986e313775772cc8a9c733 provek-0371a45=189bce3cea6ac50707986e313775772cc8a9c733 EQUAL
+0ec4788 tree=6f8dc41bd5d1ef121f90048cf1b5006af5d17bc3 provek-20178c0=6f8dc41bd5d1ef121f90048cf1b5006af5d17bc3 EQUAL
+24571f8 tree=6a7106daaa4ff3ec6f88b0ffc34ceb260c618428 provek-47f9846=0aeb1bc76642561677ebc9472658fdaece42d175 DIFFER
+8c20567 tree=81ef4a011b4a7ccbd0df10739e440f9c95e7e12e provek-ae9c152=3f483b5f86cff188edc273a76513c4aa95fd9aa9 DIFFER
+
+$ git subtree split --prefix=integrations/genlayer-apibase-attest origin/main   (no branch written; progress lines dropped)
+split commit: df04514846198737ca48e6858a9b0677d3adce3c
+$ git merge-base 2874b89b8e335282a73afc3862cef79aa499af42 df04514846198737ca48e6858a9b0677d3adce3c
+rc=1

@@ -4017,6 +4017,7 @@ record stays in this repository (D-66), the mirror is never edited directly, a r
 non-fast-forward is a defect fixed here, never by force-push. Preparation is recorded in `evidence/MEASURED-020-*` (dry run, no
 push); creating the repository and pushing are the dispatcher's. The Bradbury Phase 2 deployment of that contract is recorded in
 `integrations/genlayer-apibase-attest/deploy/deployment.json` and `DEPLOYMENT.md`.
+Superseded for the mechanism by D-85 (2026-11-16): this mirror is a chain of snapshot commits, not a subtree split; the rule itself stands.
 
 ## D-65. The mypy advisory is re-dated once, to 2026-12-14, with the count that justifies it — and the second extension carries a ceiling
 
@@ -4498,3 +4499,21 @@ Before this entry README.md ("What it is"), docs/WHY_GET_VERIFIED.md and every p
 **Supersedes.** Nothing.
 
 Evidence: `evidence/RED-093-one-self-description-a-verification-layer.txt`.
+
+## D-85. The attest mirror is a chain of snapshot commits; the subtree-split wording of D-64's T-GA-02 addendum is superseded for this mirror
+
+Date: 2026-11-16. Source: the 2026-11-16 mirror consult, ruling-2.
+
+**Measured.** `whiteknightonhorse/apibase-genlayer-attest` has seven commits, each with one parent except the root `8c20567`. The five newest (`0ec4788`, `ab47a50`, `8d284b0`, `42967e8`, `2874b89`) each have a tree equal to `integrations/genlayer-apibase-attest` at the Provek commit named in their message. The two older commits (`8c20567`, `24571f8`) do not. `git subtree split --prefix=integrations/genlayer-apibase-attest origin/main` gives `df04514`, and `git merge-base` of the mirror's head and `df04514` ends with rc 1: a split shares no commit with the mirror, so pushing it would need force. The outputs are in `evidence/MEASURED-027-attest-mirror-snapshot-chain.txt`.
+
+**Decision.** One snapshot commit per change of the directory: parent = the mirror's head, tree = `integrations/genlayer-apibase-attest` on `main`, message naming the Provek commit. The history of the files stays in Provek.
+
+**What stays from D-64.** The mirror is never edited directly. It is never force-pushed. A non-fast-forward is a defect fixed in Provek.
+
+**As of 2026-10-27.** The two older commits carried a deployment record that was not in Provek at the commit they name; that is why their trees differ.
+
+**Not changed.** `provek-genlayer-witness` and its D-64 procedure are not changed by this entry.
+
+**Supersedes.** The wording "by the same `git subtree split --prefix=...` and the same procedure" and "a re-split is a fast-forward" in the T-GA-02 addendum of D-64, for this mirror only; the addendum carries the marker.
+
+Evidence: `evidence/MEASURED-027-attest-mirror-snapshot-chain.txt`.
