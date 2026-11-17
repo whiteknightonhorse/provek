@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-11-16T03:43:05.209337+00:00",
-    "valid_until": "2026-12-16T03:43:05.209337+00:00",
+    "issued_at": "2026-11-17T03:43:04.461663+00:00",
+    "valid_until": "2026-12-17T03:43:04.461663+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -17,8 +17,8 @@
       "evidence_window_days": 30
     },
     "evidence_window": {
-      "start": "2026-10-17T03:43:05.209337+00:00",
-      "end": "2026-11-16T03:43:05.209337+00:00"
+      "start": "2026-10-18T03:43:04.461663+00:00",
+      "end": "2026-11-17T03:43:04.461663+00:00"
     },
     "verified": {
       "operations": [
@@ -50,7 +50,7 @@
       "projection_absent_reason": null,
       "observations": {
         "signed_commit_share": {
-          "value": 0.065,
+          "value": 0.061,
           "measured": true,
           "absent_reason": null
         },
@@ -60,17 +60,17 @@
           "absent_reason": null
         },
         "bot_author_share": {
-          "value": 0.065,
+          "value": 0.061,
           "measured": true,
           "absent_reason": null
         },
         "workflow_runs": {
-          "value": 831,
+          "value": 846,
           "measured": true,
           "absent_reason": null
         },
         "scheduled_runs_in_window": {
-          "value": 154,
+          "value": 150,
           "measured": true,
           "absent_reason": null
         },
@@ -89,7 +89,7 @@
           "measured": true,
           "absent_reason": null
         },
-        "head_sha": "111809f71ab69f7681420214b13c06b8117d1e17"
+        "head_sha": "a829555be13b895e0fad6558368266e9a61f4881"
       },
       "control_map_valid": true,
       "control_map_cap": 5,
@@ -112,7 +112,7 @@
       "private": false,
       "declaration": {
         "present": true,
-        "pinned_sha": "111809f71ab69f7681420214b13c06b8117d1e17",
+        "pinned_sha": "a829555be13b895e0fad6558368266e9a61f4881",
         "schema_version": "1.0.0"
       }
     },
