@@ -957,3 +957,129 @@ def test_a_door_on_another_python_than_ci_is_a_red():
     ver = next(iter(ci_test_python(wf)))
     assert any("refuse" in p for p in door_test_python_problems(wf, door.replace(f'!= {ver} ]', '!= 0 ]')))
     assert any("7/9" in p for p in door_test_python_problems(wf, door.replace("$TESTENV/bin/python", "python3")))
+
+
+# --- ruff at the door is the pinned ruff, from the lint venv (T-DEP-06) ------------------------
+
+LINT_PY = "~/orchestra/lintenv/bin/python"
+LINT_TRIGGERS = ("-m ruff", "check_ruff_pin.py", "check_mypy_ceiling.py")
+
+
+def door_lint_python_problems(door: str) -> list[str]:
+    """Step 5 must run ruff, its pin check and the mypy ceiling through the hash-pinned lint venv.
+
+    The door used to run `python3 -m ruff`, the host's user-site ruff, while CI ran the pin of
+    requirements/ci-lint.txt: two versions of one instrument and nothing comparing them.
+    """
+    problems: list[str] = []
+    lines = executable_lines(door).splitlines()
+    first_run = None
+    for n, ln in enumerate(lines):
+        hits = sum(ln.count(t) for t in LINT_TRIGGERS)
+        if not hits:
+            continue
+        first_run = n if first_run is None else first_run
+        via_venv = len(re.findall(
+            re.escape(LINT_PY) + r" (?:-m ruff|scripts/check_ruff_pin\.py|scripts/check_mypy_ceiling\.py)",
+            ln))
+        if via_venv != hits:
+            problems.append(f"a lint command does not run through {LINT_PY}: `{ln.strip()}`")
+    if first_run is None:
+        return problems + ["the door runs no ruff, no pin check and no mypy ceiling"]
+    refusal = next((n for n, ln in enumerate(lines)
+                    if "[ ! -x" in ln and LINT_PY in ln), None)
+    if refusal is None or refusal > first_run:
+        problems.append("the missing-venv refusal does not precede the first lint command")
+    step5 = next((ln for ln in door.splitlines() if ln.startswith('echo "5/9')), "")
+    code5 = executable_lines(step5)
+    pin, ruff = code5.find("check_ruff_pin.py"), code5.find("-m ruff")
+    if ruff < 0:
+        problems.append("door step 5/9 does not run ruff")
+    elif pin < 0 or pin > ruff:
+        problems.append("door step 5/9 does not run check_ruff_pin.py before -m ruff")
+    else:
+        between = code5[pin:ruff]
+        if "&&" in code5 or ";" not in between:
+            problems.append("door step 5/9 must join the pin check and ruff with `;`, not `&&`: "
+                            "under set -e a failing left side of && does not stop the script")
+    return problems
+
+
+def test_the_door_lints_with_the_pinned_ruff_from_the_lint_venv():
+    assert door_lint_python_problems(DOOR.read_text(encoding="utf-8")) == []
+
+
+def test_a_door_that_lints_with_another_ruff_is_a_red():
+    door = DOOR.read_text(encoding="utf-8")
+    ruff_call = f"{LINT_PY} -m ruff check"
+    pin_call = f"{LINT_PY} scripts/check_ruff_pin.py; "
+    assert ruff_call in door and pin_call in door, "the fixtures must find the real lines"
+    host = door.replace(ruff_call, "python3 -m ruff check")
+    assert any("does not run through" in p for p in door_lint_python_problems(host))
+    no_pin = door.replace(pin_call, "")
+    assert any("check_ruff_pin.py before" in p for p in door_lint_python_problems(no_pin))
+    anded = door.replace(pin_call, f"{LINT_PY} scripts/check_ruff_pin.py && ")
+    assert any("not `&&`" in p for p in door_lint_python_problems(anded))
+    refusal = "[ ! -x ~/orchestra/lintenv/bin/python ]"
+    assert refusal in door
+    assert any("refusal" in p for p in door_lint_python_problems(door.replace(refusal, "false")))
+
+
+RUFF_STUB_MAIN = """\
+import os, sys
+if os.environ.get("STUB_RC", "0") != "0":
+    sys.stderr.write("stub ruff: cannot start\\nsecond line\\n")
+    sys.exit(int(os.environ["STUB_RC"]))
+print("ruff " + os.environ["STUB_VERSION"])
+"""
+
+
+def _run_pin(tmp_path, *, pins=("0.17.5",), version="0.17.5", rc=0, req=True):
+    stub = tmp_path / "stub" / "ruff"
+    stub.mkdir(parents=True)
+    (stub / "__init__.py").write_text("", encoding="utf-8")
+    (stub / "__main__.py").write_text(RUFF_STUB_MAIN, encoding="utf-8")
+    path = tmp_path / "req.txt"
+    if req:
+        path.write_text("".join(f"ruff=={p} \\\n    --hash=sha256:00\n" for p in pins)
+                        + "mypy==2.4.1 \\\n    --hash=sha256:00\n", encoding="utf-8")
+    env = {**os.environ, "PYTHONPATH": str(tmp_path / "stub"), "STUB_VERSION": version,
+           "STUB_RC": str(rc)}
+    r = subprocess.run([sys.executable, str(ROOT / "scripts" / "check_ruff_pin.py"),
+                        "--requirements", str(path)], env=env, capture_output=True, text=True)
+    return r.returncode, r.stdout + r.stderr
+
+
+def test_ruff_at_the_pin_passes(tmp_path):
+    rc, out = _run_pin(tmp_path)
+    assert rc == 0 and "ruff 0.17.5 is the pin" in out
+
+
+def test_ruff_not_at_the_pin_is_not_measured_and_names_the_rebuild(tmp_path):
+    rc, out = _run_pin(tmp_path, version="0.17.4")
+    assert rc == 2
+    assert "not_measured: instrument mismatch: running ruff 0.17.4, pin is 0.17.5" in out
+    assert "rebuild ~/orchestra/lintenv" in out and "--require-hashes" in out
+    assert "requirements/ci-lint.txt" in out
+
+
+def test_no_ruff_pin_line_is_unreadable(tmp_path):
+    rc, out = _run_pin(tmp_path, pins=())
+    assert rc == 2 and "not_measured: unreadable -" in out
+
+
+def test_two_ruff_pin_lines_are_unreadable(tmp_path):
+    rc, out = _run_pin(tmp_path, pins=("0.17.5", "0.17.4"))
+    assert rc == 2 and "not_measured: unreadable -" in out
+
+
+def test_a_missing_requirements_file_is_unreadable(tmp_path):
+    rc, out = _run_pin(tmp_path, req=False)
+    assert rc == 2 and "not_measured: unreadable -" in out
+
+
+def test_ruff_that_does_not_start_is_check_did_not_run(tmp_path):
+    rc, out = _run_pin(tmp_path, rc=3)
+    assert rc == 2
+    assert "not_measured: check_did_not_run - ruff did not start: 3, stub ruff: cannot start" in out
+    assert "second line" not in out

@@ -30,11 +30,11 @@ echo "4/9 language"; python3 scripts/ratchet_language.py
 # The divergence is the defect, not the five violations. Two gate lists that claim to be one list
 # are a rule written in more than one place (L-2), and this one had already survived its own
 # repeal: the header asserting the lists were identical stayed correct-sounding while they drifted.
-echo "5/9 lint";     python3 -m ruff check src tests scripts
 if [ ! -x ~/orchestra/lintenv/bin/python ]; then
   echo "REFUSED: ~/orchestra/lintenv (the hash-pinned lint venv built from requirements/ci-lint.txt, T-MY-02) is missing - a missing venv is RED, not skip." >&2
   exit 1
 fi
+echo "5/9 lint";     ~/orchestra/lintenv/bin/python scripts/check_ruff_pin.py; ~/orchestra/lintenv/bin/python -m ruff check src tests scripts
 ~/orchestra/lintenv/bin/python scripts/check_mypy_ceiling.py
 
 # THE SAME DIVERGENCE, TWICE MORE, FOUND BY WRITING THE TWO LISTS OUT SIDE BY SIDE.
@@ -104,7 +104,9 @@ echo "7/9 tests";    "$TESTENV/bin/python" -m pytest tests -q --cov=src --cov-fa
 # THE INSTRUMENT IS ~/orchestra/lintenv, NOT ~/.local. The host's user-site carried mypy 2.3.1
 # against a `mypy==2.4.0` pin (measured 2026-10-19); a shared user-site is not an instrument. The
 # venv is built from the hashed file with CI's own command, and the script refuses a mypy that is
-# not the pin. When the pin moves, rebuild it:
+# not the pin. Ruff runs from it too since T-DEP-06, and the door refuses a ruff that is not the pin
+# (scripts/check_ruff_pin.py, joined to ruff by `;` so that set -e is not bypassed by `&&`). When the
+# pin moves, rebuild it:
 #   python3 -m venv ~/orchestra/lintenv && ~/orchestra/lintenv/bin/pip install --quiet \
 #     --require-hashes --only-binary=:all: -r requirements/ci-lint.txt
 
