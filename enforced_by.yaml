@@ -610,9 +610,17 @@ laws:
   # GitHub's copy. `scripts/sync_main.sh` fetches and fast-forwards (or names a genuine divergence
   # as a refusal, never a guessed merge) before `cohort.py` reads a single passport.
   - id: LAW-ORIGIN-SYNCED-BEFORE-MEASURE
-    text: "the nightly re-measure fetches and fast-forwards onto origin/main before cohort.py takes a reading, so an auto-merged Dependabot bump reaches the site and never turns the push non-fast-forward"
+    text: "the nightly re-measure fetches and fast-forwards onto origin/main before cohort.py takes a reading, so an auto-merged Dependabot bump is in the tree the night measures and never turns the push non-fast-forward; an npm bump reaches the site only through an install the door compared with the lockfile"
     gate: scripts/sync_main.sh
     test: tests/test_sync_main_ff.py
+  # D-86 (T-DEP-05, 2026-11-17). D-55 said an auto-merged bump "reaches the site"; for npm it did not:
+  # nine bumps moved web/package-lock.json (genlayer-js rc.2 -> rc.3, vite 8.3.5 -> 8.3.8) and the door
+  # kept building the node_modules installed on 2026-10-28. scripts/check_web_install.py compares the
+  # install with the lockfile package by package, and the door runs it before the build, joined by `;`.
+  - id: LAW-SITE-BUILT-FROM-THE-LOCK
+    text: "the door builds the site only from an install that matches web/package-lock.json package by package; a drifted, absent or unreadable install is a red with its own name, never a build"
+    gate: scripts/check_web_install.py
+    test: tests/test_web_install_matches_lock.py
   # D-57 (ADR-0011, Fable 2026-09-05). An AI agent template is a specification addressed to a
   # coding agent, about a THIRD PARTY's business agent - never about this instrument. It is kept
   # in this repository rather than a second one (unlike the ADR-0009 method corpus), so the

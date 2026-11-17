@@ -1,0 +1,218 @@
+MEASURED-032 - T-DEP-05: the Bradbury reads and the site build under genlayer-js rc.2 (installed 2026-10-28) and rc.3 (npm ci --ignore-scripts, 2026-11-17)
+# HEAD: c0fd5c95b98f86185cd6711ea82f6e68b64dd2c4
+# tree: 51026a0566c6514c9bb6805868273aa0ded8fba3 (dirty)
+# Raw output of the commands named inline; nothing below is typed by hand except lines starting '# ----'.
+# node: v20.20.2; date -u: Tue Nov 17 09:52:21 AM UTC 2026
+
+# ---- the probe (outside the tree: ~/orchestra/parked/T-DEP-05-2026-11-17/probe.mjs), read-only, no account
+$ sha256sum probe.mjs
+8e0e7784bbcbcaef6eed206ce93c951cd2d0f1b0095b3b409c323185788ed80b  probe.mjs
+$ grep -c -e writeContract -e createAccount -e privateKey probe.mjs
+0
+# source:
+// T-DEP-05 probe: read-only. Run as: ( cd web && node --input-type=module - < probe.mjs )
+// so that "genlayer-js" resolves to web/node_modules. No account, no signing, no write.
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { pathToFileURL } from "node:url";
+
+const cwd = process.cwd();
+const sha = (s) => createHash("sha256").update(s).digest("hex");
+const redact = (s) => String(s).replace(/(0x)?[0-9a-fA-F]{64}/g, "[64hex]");
+function canon(v) {
+  if (typeof v === "bigint") return v.toString();
+  if (v instanceof Map) return canon(Object.fromEntries([...v.entries()].map(([k, x]) => [String(k), x])));
+  if (v instanceof Uint8Array) return "bytes:" + Buffer.from(v).toString("hex");
+  if (Array.isArray(v)) return v.map(canon);
+  if (v && typeof v === "object") {
+    return Object.fromEntries(Object.keys(v).sort().map((k) => [k, canon(v[k])]));
+  }
+  return v;
+}
+const canonJson = (v) => JSON.stringify(canon(v));
+
+const gl = await import("genlayer-js");
+const chains = await import("genlayer-js/chains");
+const pkg = JSON.parse(readFileSync(`${cwd}/node_modules/genlayer-js/package.json`, "utf8"));
+console.log(`version ${pkg.version}`);
+
+const preset = chains.testnetBradbury;
+console.log(`preset id ${preset.id}`);
+console.log(`preset name ${preset.name}`);
+console.log(`preset rpcUrls.default.http ${JSON.stringify(preset.rpcUrls.default.http)}`);
+for (const k of Object.keys(preset).filter((k) => k.endsWith("Contract")).sort()) {
+  const c = preset[k];
+  console.log(`preset ${k}.address ${c.address}`);
+  console.log(`preset ${k}.abi ${c.abi === undefined ? "absent" : sha(canonJson(c.abi))}`);
+}
+
+const cfg = await import(pathToFileURL(`${cwd}/src/witnessChainConfig.js`).href);
+const view = await import(pathToFileURL(`${cwd}/src/witnessView.js`).href);
+const chain = cfg.bradburyChain(preset);
+console.log(`chain id=${chain.id} http=${chain.rpcUrls.default.http[0]}`);
+
+const dep = JSON.parse(readFileSync(`${cwd}/../integrations/genlayer-witness/deploy/deployment.json`, "utf8"));
+const rec = dep.live_records[0];
+const client = gl.createClient({ chain });
+const address = view.CONTRACT_ADDRESS;
+
+async function call(name, fn) {
+  try {
+    const r = await fn();
+    console.log(`call ${name} ok ${sha(canonJson(r))}`);
+  } catch (e) {
+    console.log(`call ${name} threw ${redact(String(e && (e.shortMessage || e.message) || e).split("\n")[0]).slice(0, 200)}`);
+  }
+}
+await call("get_operator", () => client.readContract({ address, functionName: "get_operator", args: [] }));
+await call("supported_criteria", () => client.readContract({ address, functionName: "supported_criteria", args: [] }));
+await call("get_result", () => client.readContract({ address, functionName: "get_result", args: [rec.witness_id] }));
+await call("list_by_subject", () => client.readContract({ address, functionName: "list_by_subject", args: [rec.subject_id] }));
+await call("getTransaction", () => client.getTransaction({ hash: "0x" + rec.tx }));
+
+# ---- A1: installed genlayer-js rc.2 ( cd web && node --input-type=module - < probe.mjs )
+version 2.0.0-rc.2
+preset id 4221
+preset name Genlayer Bradbury Testnet
+preset rpcUrls.default.http ["https://rpc.testnet-chain.genlayer.com"]
+preset appealsContract.address 0xdc953c3bCf8837987853ca05a78D52fFC3E18651
+preset appealsContract.abi 2839b450d235089de3636a883482b1f50ef079668119f138ba63b5367ab69b0b
+preset consensusDataContract.address 0xc5FA6f82BEe53598825d6edf7E3e24613082c75B
+preset consensusDataContract.abi 9fcf34858a3a3881b7e67a0fa02cab326783ad917303e3df46f6e45ea6d19479
+preset consensusMainContract.address 0x2E2766cbc3E5e61Ce93bBcdCBb3eAcB82082A019
+preset consensusMainContract.abi 635c6bd8f9d063143081a12d8ad39048d12a07d567278c38cb7177a7d739ba58
+preset feeManagerContract.address 0x7678587A847712f2A96082AC07883A88D0fc7245
+preset feeManagerContract.abi a9cca63acad8d35be1aa9d7cd6c2f708607cba4b3b99429e1438866ad64da004
+preset roundsStorageContract.address 0x4038d4F72C7aAbA5a442cC0dA946012B9E3f4B8a
+preset roundsStorageContract.abi e93e98a2395085b416e247d5a46efd8d2ecd61fc507336e4625392fac01ef325
+preset stakingContract.address 0xD8fBa96C0dBB0257028dBc0107060b958e5c7113
+preset stakingContract.abi cdce91b5bea35206332363308605f130ab225c16322c6098c1b1788066f55287
+chain id=4221 http=https://rpc-bradbury.genlayer.com
+call get_operator ok a1e46f653b1e07ff632ec9e84ab24300e6221a5fa9b0a1da8210607ace6badb3
+call supported_criteria ok aaf785e0d58c94dad242d77e8707fe94cdb82021ba1f718c56ac7c0e687c4625
+call get_result ok 38b5f7c31ddf5bf6c909576986fd2949004d6ab4753123ac5b205c3ef387818b
+call list_by_subject ok ef218b45fed0740db2c88d54c9a0ad972d9db8f9979176ceae39da02ea30e705
+call getTransaction ok 4f82767ad5e5550ddf4d623c0d197c8dfa562e406cc7cae4216d049421cd60db
+
+# ---- A2: one minute later (after a 62 s wait; 09:48:04Z to 09:49:06Z by date -u)
+version 2.0.0-rc.2
+preset id 4221
+preset name Genlayer Bradbury Testnet
+preset rpcUrls.default.http ["https://rpc.testnet-chain.genlayer.com"]
+preset appealsContract.address 0xdc953c3bCf8837987853ca05a78D52fFC3E18651
+preset appealsContract.abi 2839b450d235089de3636a883482b1f50ef079668119f138ba63b5367ab69b0b
+preset consensusDataContract.address 0xc5FA6f82BEe53598825d6edf7E3e24613082c75B
+preset consensusDataContract.abi 9fcf34858a3a3881b7e67a0fa02cab326783ad917303e3df46f6e45ea6d19479
+preset consensusMainContract.address 0x2E2766cbc3E5e61Ce93bBcdCBb3eAcB82082A019
+preset consensusMainContract.abi 635c6bd8f9d063143081a12d8ad39048d12a07d567278c38cb7177a7d739ba58
+preset feeManagerContract.address 0x7678587A847712f2A96082AC07883A88D0fc7245
+preset feeManagerContract.abi a9cca63acad8d35be1aa9d7cd6c2f708607cba4b3b99429e1438866ad64da004
+preset roundsStorageContract.address 0x4038d4F72C7aAbA5a442cC0dA946012B9E3f4B8a
+preset roundsStorageContract.abi e93e98a2395085b416e247d5a46efd8d2ecd61fc507336e4625392fac01ef325
+preset stakingContract.address 0xD8fBa96C0dBB0257028dBc0107060b958e5c7113
+preset stakingContract.abi cdce91b5bea35206332363308605f130ab225c16322c6098c1b1788066f55287
+chain id=4221 http=https://rpc-bradbury.genlayer.com
+call get_operator ok a1e46f653b1e07ff632ec9e84ab24300e6221a5fa9b0a1da8210607ace6badb3
+call supported_criteria ok aaf785e0d58c94dad242d77e8707fe94cdb82021ba1f718c56ac7c0e687c4625
+call get_result ok 38b5f7c31ddf5bf6c909576986fd2949004d6ab4753123ac5b205c3ef387818b
+call list_by_subject ok ef218b45fed0740db2c88d54c9a0ad972d9db8f9979176ceae39da02ea30e705
+call getTransaction ok b0b9207602d0b0f8ba00df4f6e6495fed69df23c7cf8b6e1776fb70643d6e8db
+
+# ---- A1 vs A2 (diff; only getTransaction differs, it is not stable and is not counted)
+22c22
+< call getTransaction ok 4f82767ad5e5550ddf4d623c0d197c8dfa562e406cc7cae4216d049421cd60db
+---
+> call getTransaction ok b0b9207602d0b0f8ba00df4f6e6495fed69df23c7cf8b6e1776fb70643d6e8db
+
+# ---- park + install: mv web/node_modules -> ~/orchestra/parked/T-DEP-05-2026-11-17/node_modules.rc2 (rc 0), then ( cd web && /usr/bin/time -v npm ci --ignore-scripts )
+npm ci exit status / wall clock / maximum resident set size:
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:07.22
+	Maximum resident set size (kbytes): 457496
+	Exit status: 0
+npm ci output tail:
+added 327 packages, and audited 334 packages in 7s
+
+141 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+$ python3 scripts/check_web_install.py
+match: 394 packages installed as the lockfile names them (61 optional absent)
+exit=0
+
+# ---- B1: installed genlayer-js rc.3
+version 2.0.0-rc.3
+preset id 4221
+preset name Genlayer Bradbury Testnet
+preset rpcUrls.default.http ["https://rpc.testnet-chain.genlayer.com"]
+preset appealsContract.address 0xdc953c3bCf8837987853ca05a78D52fFC3E18651
+preset appealsContract.abi 2839b450d235089de3636a883482b1f50ef079668119f138ba63b5367ab69b0b
+preset consensusDataContract.address 0xc5FA6f82BEe53598825d6edf7E3e24613082c75B
+preset consensusDataContract.abi 9fcf34858a3a3881b7e67a0fa02cab326783ad917303e3df46f6e45ea6d19479
+preset consensusMainContract.address 0x2E2766cbc3E5e61Ce93bBcdCBb3eAcB82082A019
+preset consensusMainContract.abi 635c6bd8f9d063143081a12d8ad39048d12a07d567278c38cb7177a7d739ba58
+preset feeManagerContract.address 0x7678587A847712f2A96082AC07883A88D0fc7245
+preset feeManagerContract.abi a9cca63acad8d35be1aa9d7cd6c2f708607cba4b3b99429e1438866ad64da004
+preset roundsStorageContract.address 0x4038d4F72C7aAbA5a442cC0dA946012B9E3f4B8a
+preset roundsStorageContract.abi e93e98a2395085b416e247d5a46efd8d2ecd61fc507336e4625392fac01ef325
+preset stakingContract.address 0xD8fBa96C0dBB0257028dBc0107060b958e5c7113
+preset stakingContract.abi cdce91b5bea35206332363308605f130ab225c16322c6098c1b1788066f55287
+chain id=4221 http=https://rpc-bradbury.genlayer.com
+call get_operator ok a1e46f653b1e07ff632ec9e84ab24300e6221a5fa9b0a1da8210607ace6badb3
+call supported_criteria ok aaf785e0d58c94dad242d77e8707fe94cdb82021ba1f718c56ac7c0e687c4625
+call get_result ok 38b5f7c31ddf5bf6c909576986fd2949004d6ab4753123ac5b205c3ef387818b
+call list_by_subject ok ef218b45fed0740db2c88d54c9a0ad972d9db8f9979176ceae39da02ea30e705
+call getTransaction ok a9eb67eb7b0fbcad42e585529808fb3ebca29f92cd6c96f9e71ec48b296821f5
+
+# ---- B2: one minute later
+version 2.0.0-rc.3
+preset id 4221
+preset name Genlayer Bradbury Testnet
+preset rpcUrls.default.http ["https://rpc.testnet-chain.genlayer.com"]
+preset appealsContract.address 0xdc953c3bCf8837987853ca05a78D52fFC3E18651
+preset appealsContract.abi 2839b450d235089de3636a883482b1f50ef079668119f138ba63b5367ab69b0b
+preset consensusDataContract.address 0xc5FA6f82BEe53598825d6edf7E3e24613082c75B
+preset consensusDataContract.abi 9fcf34858a3a3881b7e67a0fa02cab326783ad917303e3df46f6e45ea6d19479
+preset consensusMainContract.address 0x2E2766cbc3E5e61Ce93bBcdCBb3eAcB82082A019
+preset consensusMainContract.abi 635c6bd8f9d063143081a12d8ad39048d12a07d567278c38cb7177a7d739ba58
+preset feeManagerContract.address 0x7678587A847712f2A96082AC07883A88D0fc7245
+preset feeManagerContract.abi a9cca63acad8d35be1aa9d7cd6c2f708607cba4b3b99429e1438866ad64da004
+preset roundsStorageContract.address 0x4038d4F72C7aAbA5a442cC0dA946012B9E3f4B8a
+preset roundsStorageContract.abi e93e98a2395085b416e247d5a46efd8d2ecd61fc507336e4625392fac01ef325
+preset stakingContract.address 0xD8fBa96C0dBB0257028dBc0107060b958e5c7113
+preset stakingContract.abi cdce91b5bea35206332363308605f130ab225c16322c6098c1b1788066f55287
+chain id=4221 http=https://rpc-bradbury.genlayer.com
+call get_operator ok a1e46f653b1e07ff632ec9e84ab24300e6221a5fa9b0a1da8210607ace6badb3
+call supported_criteria ok aaf785e0d58c94dad242d77e8707fe94cdb82021ba1f718c56ac7c0e687c4625
+call get_result ok 38b5f7c31ddf5bf6c909576986fd2949004d6ab4753123ac5b205c3ef387818b
+call list_by_subject ok ef218b45fed0740db2c88d54c9a0ad972d9db8f9979176ceae39da02ea30e705
+call getTransaction ok 67e2da7022b1ad7ab48ad8a5f1d62de1a462be87a2f2797a50afee6e1c15210f
+
+# ---- B1 vs B2 (diff)
+22c22
+< call getTransaction ok a9eb67eb7b0fbcad42e585529808fb3ebca29f92cd6c96f9e71ec48b296821f5
+---
+> call getTransaction ok 67e2da7022b1ad7ab48ad8a5f1d62de1a462be87a2f2797a50afee6e1c15210f
+
+# ---- control: eth_chainId on https://rpc-bradbury.genlayer.com after B
+{"jsonrpc":"2.0","result":"0x107d","id":1}
+
+
+# ---- build: ( cd web && npm run build ) exit code
+0
+# ---- pytest: ~/orchestra/testenv/bin/python -m pytest tests/test_witness_page.py tests/test_witness_relay.py -q -k "not hand_written_mention" (exit code, then summary)
+0
+72 passed, 1 deselected in 5.66s
+
+# ---- the rule (python3 ~/orchestra/parked/T-DEP-05-2026-11-17/rule.py A1 A2 B1 B2 control build_rc pytest_rc)
+stable in A: ['get_operator', 'get_result', 'list_by_subject', 'supported_criteria'] (4)
+control eth_chainId == 0x107d: True
+  get_operator: A-sha == B1 == B2 : True
+  get_result: A-sha == B1 == B2 : True
+  list_by_subject: A-sha == B1 == B2 : True
+  supported_criteria: A-sha == B1 == B2 : True
+chain id 4221 in both B runs: True
+build rc: 0  pytest rc: 0
+RULE: FORWARD
+# rule.py sha256:
+36acea2666d12bf1dc253b22300c84e2af71e1bd52439bbea0ab5fdad77bf7d2  rule.py

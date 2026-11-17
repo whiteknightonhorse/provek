@@ -25,6 +25,14 @@ name: dependabot auto-merge
 # "full access" was granted as the right to act without asking, not the right to stop looking, and
 # a major version is exactly the class of change this project's own operator drew that line at.
 #
+# AN EXACT PIN NEVER AUTO-MERGES (D-86). A dependency that a watched `package.json` pins to an exact
+# version (today `genlayer-js` in /web and `@amadeus-protocol/sdk` in /demo/amadeus) is pinned so that
+# moving it is a decision with a measurement. The merge step's `if:` excludes those names, so the pull
+# request stays open with its checks as the notice, exactly as for a major bump, and the pin moves by a
+# card. The parentheses in that `if:` are load-bearing: `&&` binds tighter than `||`, and without them
+# the exclusion would apply to the minor case only. `tests/test_dependabot_auto_merge_polling.py`
+# builds the expected condition from the `package.json` files and compares it for equality.
+#
 # WHY `pull_request_target`. Dependabot's branches live in THIS repository (never a fork), so the
 # elevated-token risk that trigger exists to warn about does not apply here, and it is the trigger
 # that actually carries write permission to call `gh pr merge`.
@@ -94,7 +102,7 @@ jobs:
       # rather than passing) - so this loop now requires `count -gt 0` before treating `pending -eq
       # 0` as done, and an all-empty run times out with its own named reason instead of merging.
       - name: wait for the other checks, then merge patch and minor updates
-        if: steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor'
+        if: (steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor') && !contains(steps.metadata.outputs.dependency-names, '@amadeus-protocol/sdk') && !contains(steps.metadata.outputs.dependency-names, 'genlayer-js')
         run: |
           set -euo pipefail
           deadline=$(( $(date +%s) + WAIT_LIMIT_SECONDS ))

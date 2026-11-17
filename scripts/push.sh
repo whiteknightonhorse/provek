@@ -70,11 +70,16 @@ fi
 # in CI - and the divergence is named rather than left for the day it stops being harmless. Found
 # by Fable.
 #
-# The door builds with the `node_modules` already on this host while CI installs from the lockfile
-# with `npm ci`. That difference is named rather than closed: a clean install at every push costs
-# more than the drift it would catch. If `node_modules` is absent the build fails loudly, which is
-# the correct reading - a missing instrument is a red, never a skip.
-echo "6/9 site";     ( cd web && npm run build >/dev/null )
+# T-DEP-05 (D-86). The door builds with the `node_modules` on this host, and first compares that
+# install with `web/package-lock.json` package by package (scripts/check_web_install.py). This used to
+# be a named difference with CI's `npm ci`, on the argument that a clean install at every push costs
+# more than the drift it would catch; on 2026-11-17 nine auto-merged bumps moved the lockfile
+# (genlayer-js rc.2 -> rc.3, vite 8.3.5 -> 8.3.8) while the door went on building the 2026-10-28
+# install, and nothing said so. Drift, an absent install and an unreadable one are three different
+# reds. The door does not install: it refuses and prints the command (`cd web && npm ci
+# --ignore-scripts`). The check and the build are joined by `;`, never `&&`: under `set -e` a
+# failing left side of `&&` does not stop the script, so `&&` would print `drift:` and build anyway.
+echo "6/9 site";     python3 scripts/check_web_install.py; ( cd web && npm run build >/dev/null )
 # T-DEP-03. Steps 7 and 8 run in ~/orchestra/testenv, a hash-pinned Python 3.12 venv built from
 # requirements/ci-tests.txt - the interpreter CI's `tests` and `reproduce` jobs use (Pillow 13
 # needs >= 3.11; Python 3.10 is end of life). tests/test_door_matches_ci.py compares the versions.

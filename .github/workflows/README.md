@@ -61,8 +61,9 @@ this repository has not adopted; a low true number is worth more than a high tun
 
 ## `dependabot-auto-merge.yml` — the human step this file used to require, automated
 
-Merges a Dependabot pull request itself once its own checks are green; a major bump is left open
-for a human, on purpose, because "act without asking" was never "stop looking at major bumps".
+Merges a Dependabot pull request itself once its own checks are green; a major bump, and any bump
+of a dependency that a `package.json` pins to an exact version, is left open for a human, on purpose,
+because "act without asking" was never "stop looking".
 `dependabot/fetch-metadata` reports whether the bump is patch, minor or major.
 
 **Branch-protection required status checks were tried first and reverted the same day.** They

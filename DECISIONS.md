@@ -3432,6 +3432,8 @@ had not looked for yet.
 clean, `ratchet_scope.py` and `ratchet_decisions.py` both clean with the new gate/test tracked and
 bound.
 
+Superseded for npm dependencies by D-86 (2026-11-17): the fast-forward brings a bump into the tree; it reaches the site only through an install the door compared with the lockfile. The rule itself stands.
+
 ## D-56. AUD-002: `pipeline.verify` ("the single entry point") still ran the errata'd 50-commit
 count window and neither platform closure nor the bot-exclusion rule, because it never called
 `collect_github` at all
@@ -4517,3 +4519,19 @@ Date: 2026-11-16. Source: the 2026-11-16 mirror consult, ruling-2.
 **Supersedes.** The wording "by the same `git subtree split --prefix=...` and the same procedure" and "a re-split is a fast-forward" in the T-GA-02 addendum of D-64, for this mirror only; the addendum carries the marker.
 
 Evidence: `evidence/MEASURED-027-attest-mirror-snapshot-chain.txt`.
+
+## D-86. The site is built from what the lockfile names, and an exact pin moves only with a measurement; D-55's "reaches the site" is superseded for npm
+
+Date: 2026-11-17. Source: the 2026-11-17 landing of nine Dependabot merges, ruling-3 (T-DEP-05).
+
+**Measured.** On 2026-11-17 Dependabot auto-merged nine bumps; `web/package.json` pins `genlayer-js` 2.0.0-rc.3 and `web/package-lock.json` names vite 8.3.8, while the `web/node_modules` every build on this host used was installed on 2026-10-28 (genlayer-js rc.2, vite 8.3.5). `scripts/check_web_install.py`, run on the real tree before any install, exited 1 with `drift: 21 of 394`, among them `node_modules/genlayer-js lock=2.0.0-rc.3 installed=2.0.0-rc.2`, `node_modules/vite lock=8.3.8 installed=8.3.5`, `node_modules/@vitejs/plugin-react lock=6.3.0 installed=6.1.2` and `node_modules/preact-render-to-string lock=6.8.3 installed=6.8.1`. The probe of `evidence/MEASURED-032-genlayer-js-rc3-reads.txt` (read-only, no account) read the Bradbury contract through the `bradburyChain` object under the installed rc.2 twice and, after `cd web && npm ci --ignore-scripts` (7.22 s wall, 457 496 kB maximum resident set size, exit 0), under rc.3 twice: four calls (`get_operator`, `supported_criteria`, `get_result`, `list_by_subject`) were stable in A and gave the same sha256 in both B runs; `getTransaction` was not stable (its answer differed between two runs one minute apart, under rc.2 and under rc.3 alike) and is not counted; the chain id was 4221; the `eth_chainId` control answered `0x107d`; `npm run build` exited 0; the witness page and relay tests passed (72). The rule printed `RULE: FORWARD`, and that is the branch taken. The preset URL of rc.3 is the same as rc.2's, so the sentence in `web/src/witnessChainConfig.js` keeps its URL. The red runs are in `evidence/RED-096-site-not-built-from-the-lock.txt`.
+
+**Decision.** The door compares the installed web packages with the lockfile before it builds, and a drifted, absent or unreadable install is a red with its own name; it does not install, it prints `cd web && npm ci --ignore-scripts`. A dependency that a watched `package.json` pins to an exact version is not auto-merged: the pull request stays open with its checks as the notice, and the pin moves by a card with a measurement. `genlayer-js` stays at 2.0.0-rc.3, the version the measurement moved the site to; README.md and the two comments name it, and `tests/test_witness_page.py` compares them with `web/package.json`.
+
+**Not changed.** `scripts/sync_main.sh` and the fast-forward of D-55. The hash-pinned Python sets of D-30. A major bump stays open for a human.
+
+**As of 2026-11-17.** The write path through the relay (`writeContract` with the fixed fee object) is `check_did_not_run` under rc.3 until the first live request after the deploy; this measurement made no write. Nothing installs automatically after a fast-forward, so the door is red after an auto-merged npm bump until `npm ci --ignore-scripts` is run on the host.
+
+**Supersedes.** D-55's statement that an auto-merged bump "reaches the site", for npm dependencies only; D-55 carries the marker. The rule of D-55 stands.
+
+Evidence: `evidence/RED-096-site-not-built-from-the-lock.txt`, `evidence/MEASURED-032-genlayer-js-rc3-reads.txt`.

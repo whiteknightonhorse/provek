@@ -1,7 +1,7 @@
 /**
  * The one place the page and the relay get their Bradbury chain object from.
  *
- * WHY NOT THE SDK PRESET. genlayer-js 2.0.0-rc.2 ships `chains.testnetBradbury` with the http RPC
+ * WHY NOT THE SDK PRESET. genlayer-js 2.0.0-rc.3 ships `chains.testnetBradbury` with the http RPC
  * `https://rpc.testnet-chain.genlayer.com`. On Bradbury Phase 2 the read path that answers is
  * `https://rpc-bradbury.genlayer.com` (raw `gen_call`, measured in `evidence/MEASURED-017-*`), the
  * `rpc_url` of `integrations/genlayer-witness/deploy/deployment.json`. So the preset is used for

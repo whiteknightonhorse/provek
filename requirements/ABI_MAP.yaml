@@ -191,6 +191,11 @@ scripts/style-lint.py:              [ABI-32-1, ABI-16-5]
 # taken by code from a measured count against a ceiling keyed by the pinned version.
 scripts/check_mypy_ceiling.py:    [ABI-16-11, ABI-33-4]
 
+# T-DEP-05 (D-86). The door compares the installed web packages with web/package-lock.json before it
+# builds. ABI-32-1 + ABI-16-5 as for sync_main.sh: a named refusal at the door, with drift, an absent
+# install and an unreadable one kept as three different results rather than a swallowed exit code.
+scripts/check_web_install.py:    [ABI-32-1, ABI-16-5]
+
 # T-IN-07. A subject leaves the published surface by one recorded edit, and a refusal (an unknown
 # repository, a second withdrawal) is an exit, never a silent no-op. Same pair as cohort.py's rows.
 scripts/withdraw_subject.py:      [ABI-18-3, ABI-31-4]

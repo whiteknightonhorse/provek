@@ -18,7 +18,7 @@
  * with the field and the reason, and never a transaction. `tests/test_witness_relay.py` pins the two
  * implementations against each other by running the contract's own rules on the same cases.
  *
- * FEES (consensus v0.6, genlayer-js 2.0.0-rc.2). A write carries a fee deposit: `writeContract` takes
+ * FEES (consensus v0.6, genlayer-js 2.0.0-rc.3). A write carries a fee deposit: `writeContract` takes
  * `fees` with `value: 0n` (the deposit sent is `value + fees.feeValue`; the unused part is refunded at
  * finalization). The fee is the fixed object `WITNESS_FEES` below, NOT the SDK's `estimateTransactionFees()`:
  * that call takes no sender, simulates from the zero address and fails on Phase 2 for every caller

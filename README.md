@@ -132,7 +132,7 @@ Witness" so the two are never confused.
 | Contract | `0x99C23e1794ed35b429161fBEB00967D0c81DC491` |
 | Explorer | https://scan.bradbury.genlayer.com/address/0x99C23e1794ed35b429161fBEB00967D0c81DC491 |
 | Network | GenLayer testnet Bradbury Phase 2 (chain 4221), RPC `https://rpc-bradbury.genlayer.com` (redeployed 2026-10-28 after GenLayer reset the testnet on 2026-10-24; the pre-reset record is kept in `deployment.json`, `previous_deployments`) |
-| Client library | `genlayer-js` 2.0.0-rc.2, an exact pin in `web/package.json` and `web/package-lock.json` |
+| Client library | `genlayer-js` 2.0.0-rc.3, an exact pin in `web/package.json` and `web/package-lock.json` |
 
 **Design: reads go straight to the chain, writes go through an operator relay.**
 

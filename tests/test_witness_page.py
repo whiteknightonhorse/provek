@@ -271,6 +271,31 @@ def test_genlayer_js_is_pinned_to_an_exact_version_and_the_lockfile_agrees():
     assert lock["packages"]["node_modules/genlayer-js"]["version"] == ver
 
 
+# A version token after the name, with or without the backticks the README puts round it.
+_GENLAYER_JS_VERSION = re.compile(r"genlayer-js`?\s+(\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:\.[0-9A-Za-z]+)*)?)")
+
+
+def test_every_hand_written_mention_of_the_genlayer_js_version_names_the_pin():
+    """T-DEP-05 (D-86). Three hand-written places state which genlayer-js the site is built on. They
+    drifted from `web/package.json` the day Dependabot moved the pin (README.md and two comments said
+    rc.2 while the pin said rc.3), and nothing compared them. A place with no version token is a
+    failure of its own, not a pass: a file that stopped naming the version proves nothing."""
+    pin = json.loads((ROOT / "web" / "package.json").read_text(encoding="utf-8"))["dependencies"]["genlayer-js"]
+    readme_rows = [ln for ln in (ROOT / "README.md").read_text(encoding="utf-8").splitlines()
+                   if ln.startswith("| Client library |")]
+    assert len(readme_rows) == 1, f"README.md must have exactly one '| Client library |' row, found {len(readme_rows)}"
+    places = {
+        "README.md (the '| Client library |' row)": readme_rows[0],
+        "web/src/witnessChainConfig.js": (ROOT / "web" / "src" / "witnessChainConfig.js").read_text(encoding="utf-8"),
+        "web/functions/_lib/witnessRelay.js": (ROOT / "web" / "functions" / "_lib" / "witnessRelay.js").read_text(encoding="utf-8"),
+    }
+    for where, text in places.items():
+        tokens = _GENLAYER_JS_VERSION.findall(text)
+        assert tokens, f"{where} names no genlayer-js version at all (zero tokens is not a pass)"
+        stale = sorted({t for t in tokens if t != pin})
+        assert not stale, f"{where} says genlayer-js {stale}, web/package.json pins {pin}"
+
+
 def test_no_forwarding_function_exists_because_the_rpc_allows_a_browser_origin():
     assert not (ROOT / "web" / "functions" / "api" / "witness-rpc.js").exists()
     measured = sorted((ROOT / "evidence").glob("MEASURED-*-pw01-bradbury-reads.txt"))

@@ -30,6 +30,7 @@ from __future__ import annotations
 import json
 import os
 import pathlib
+import re
 import subprocess
 
 import yaml
@@ -230,3 +231,36 @@ def test_major_bumps_never_reach_the_merge_step():
     assert "semver-patch" in condition
     assert "semver-minor" in condition
     assert "major" not in condition.lower()
+
+
+def _exact_pins_in_the_watched_npm_directories() -> list[str]:
+    """Every dependency whose `package.json` version is an exact one, in each npm directory that
+    `.github/dependabot.yml` names. Read from the files, never typed here."""
+    cfg = yaml.safe_load((ROOT / ".github" / "dependabot.yml").read_text())
+    names: set[str] = set()
+    for update in cfg["updates"]:
+        if update["package-ecosystem"] != "npm":
+            continue
+        pkg = json.loads((ROOT / update["directory"].lstrip("/") / "package.json").read_text())
+        for kind in ("dependencies", "devDependencies", "optionalDependencies"):
+            for name, spec in (pkg.get(kind) or {}).items():
+                if re.fullmatch(r"\d+\.\d+\.\d+(-[0-9A-Za-z.]+)?", spec):
+                    names.add(name)
+    return sorted(names)
+
+
+def test_an_exact_pin_never_reaches_the_merge_step():
+    """T-DEP-05 (D-86). On 2026-11-17 the workflow merged a bump of `genlayer-js`, the one exact pin of
+    `web/package.json` - a pin that exists so that a move of it is a decision with a measurement - and
+    nothing installed it afterwards. The step's `if:` now excludes every dependency a watched
+    `package.json` pins exactly. The condition is built here from those files and compared for
+    equality; zero collected pins is a failure, not a pass (invariant 1)."""
+    names = _exact_pins_in_the_watched_npm_directories()
+    assert names, "no exact pin found in any watched package.json: nothing was measured"
+    doc = yaml.safe_load(WORKFLOW.read_text())
+    step = next(s for s in doc["jobs"]["auto-merge"]["steps"] if s.get("name") == STEP_NAME)
+    expected = (
+        "(steps.metadata.outputs.update-type == 'version-update:semver-patch' || "
+        "steps.metadata.outputs.update-type == 'version-update:semver-minor')"
+        + "".join(f" && !contains(steps.metadata.outputs.dependency-names, '{n}')" for n in names))
+    assert step["if"] == expected, f"the merge step's `if:` is not the exact-pin exclusion:\n{step['if']}\n!=\n{expected}"

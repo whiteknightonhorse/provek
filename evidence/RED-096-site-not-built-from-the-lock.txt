@@ -1,0 +1,96 @@
+RED-096 - the site was built from an install the lockfile does not name (T-DEP-05, D-86, 2026-11-17)
+# HEAD: c0fd5c95b98f86185cd6711ea82f6e68b64dd2c4
+# tree: 51026a0566c6514c9bb6805868273aa0ded8fba3 (dirty)
+# Raw output of the commands named inline; nothing below is typed by hand except lines starting '# ----'.
+
+# ---- RED 1/4: test A on today's tree (README row, witnessChainConfig.js, witnessRelay.js still say rc.2; pin is rc.3)
+# date -u: Tue Nov 17 09:45:50 AM UTC 2026
+$ ~/orchestra/testenv/bin/python -m pytest tests/test_witness_page.py -q -k hand_written_mention
+        """T-DEP-05 (D-86). Three hand-written places state which genlayer-js the site is built on. They
+        drifted from `web/package.json` the day Dependabot moved the pin (README.md and two comments said
+        rc.2 while the pin said rc.3), and nothing compared them. A place with no version token is a
+        failure of its own, not a pass: a file that stopped naming the version proves nothing."""
+        pin = json.loads((ROOT / "web" / "package.json").read_text(encoding="utf-8"))["dependencies"]["genlayer-js"]
+        readme_rows = [ln for ln in (ROOT / "README.md").read_text(encoding="utf-8").splitlines()
+                       if ln.startswith("| Client library |")]
+        assert len(readme_rows) == 1, f"README.md must have exactly one '| Client library |' row, found {len(readme_rows)}"
+        places = {
+            "README.md (the '| Client library |' row)": readme_rows[0],
+            "web/src/witnessChainConfig.js": (ROOT / "web" / "src" / "witnessChainConfig.js").read_text(encoding="utf-8"),
+            "web/functions/_lib/witnessRelay.js": (ROOT / "web" / "functions" / "_lib" / "witnessRelay.js").read_text(encoding="utf-8"),
+        }
+        for where, text in places.items():
+            tokens = _GENLAYER_JS_VERSION.findall(text)
+            assert tokens, f"{where} names no genlayer-js version at all (zero tokens is not a pass)"
+            stale = sorted({t for t in tokens if t != pin})
+>           assert not stale, f"{where} says genlayer-js {stale}, web/package.json pins {pin}"
+E           AssertionError: README.md (the '| Client library |' row) says genlayer-js ['2.0.0-rc.2'], web/package.json pins 2.0.0-rc.3
+E           assert not ['2.0.0-rc.2']
+
+tests/test_witness_page.py:296: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_witness_page.py::test_every_hand_written_mention_of_the_genlayer_js_version_names_the_pin
+1 failed, 39 deselected in 0.19s
+
+# ---- RED 2/4: the fixture tests and the door test, before scripts/check_web_install.py exists and before the door calls it
+# date -u: Tue Nov 17 09:46:28 AM UTC 2026
+$ ls scripts/check_web_install.py
+ls: cannot access 'scripts/check_web_install.py': No such file or directory
+$ ~/orchestra/testenv/bin/python -m pytest tests/test_web_install_matches_lock.py -q
+FAILED tests/test_web_install_matches_lock.py::test_an_install_that_matches_the_lock_is_a_match
+FAILED tests/test_web_install_matches_lock.py::test_a_version_drift_names_both_versions_and_the_door_command
+FAILED tests/test_web_install_matches_lock.py::test_a_required_package_that_is_missing_is_drift
+FAILED tests/test_web_install_matches_lock.py::test_an_optional_package_that_is_absent_is_not_drift_and_is_counted
+FAILED tests/test_web_install_matches_lock.py::test_an_optional_package_that_is_installed_at_another_version_is_still_drift
+FAILED tests/test_web_install_matches_lock.py::test_a_nested_package_is_compared_where_the_lock_puts_it
+FAILED tests/test_web_install_matches_lock.py::test_no_node_modules_is_check_did_not_run_not_drift
+FAILED tests/test_web_install_matches_lock.py::test_a_lockfile_that_is_not_json_is_unreadable
+FAILED tests/test_web_install_matches_lock.py::test_a_lockfile_that_is_absent_is_unreadable
+FAILED tests/test_web_install_matches_lock.py::test_an_installed_package_json_that_is_not_json_is_unreadable_not_drift
+FAILED tests/test_web_install_matches_lock.py::test_a_lockfile_that_names_no_package_is_nothing_qualified_never_a_match
+FAILED tests/test_web_install_matches_lock.py::test_the_three_not_measured_reasons_are_three_different_lines
+FAILED tests/test_web_install_matches_lock.py::test_the_door_checks_the_install_against_the_lock_before_it_builds
+FAILED tests/test_web_install_matches_lock.py::test_the_door_check_is_able_to_fail
+14 failed, 1 passed in 0.55s
+
+# ---- RED 3/4: the real tree, BEFORE npm ci (step 7). Must exit 1 and name genlayer-js and vite.
+# date -u: Tue Nov 17 09:46:49 AM UTC 2026
+$ python3 scripts/check_web_install.py
+drift: 21 of 394
+node_modules/@jridgewell/sourcemap-codec lock=1.6.0 installed=1.5.5
+node_modules/@oxc-project/types lock=0.156.0 installed=0.155.0
+node_modules/@rolldown/binding-linux-x64-gnu lock=1.2.19 installed=1.2.15
+node_modules/@rolldown/binding-linux-x64-musl lock=1.2.19 installed=1.2.15
+node_modules/@tailwindcss/node lock=4.3.5 installed=4.3.3
+node_modules/@tailwindcss/node/node_modules/magic-string lock=1.4.5 installed=missing
+node_modules/@tailwindcss/oxide lock=4.3.5 installed=4.3.3
+node_modules/@tailwindcss/oxide-linux-x64-gnu lock=4.3.5 installed=4.3.3
+node_modules/@tailwindcss/oxide-linux-x64-musl lock=4.3.5 installed=4.3.3
+node_modules/@tailwindcss/vite lock=4.3.5 installed=4.3.3
+node_modules/@vitejs/plugin-react lock=6.3.0 installed=6.1.2
+node_modules/enhanced-resolve lock=5.26.1 installed=5.24.5
+node_modules/genlayer-js lock=2.0.0-rc.3 installed=2.0.0-rc.2
+node_modules/lightningcss lock=1.33.0 installed=1.32.0
+node_modules/lightningcss-linux-x64-gnu lock=1.33.0 installed=1.32.0
+node_modules/lightningcss-linux-x64-musl lock=1.33.0 installed=1.32.0
+node_modules/postcss lock=8.5.32 installed=8.5.31
+node_modules/preact-render-to-string lock=6.8.3 installed=6.8.1
+node_modules/rolldown lock=1.2.19 installed=1.2.15
+node_modules/tailwindcss lock=4.3.5 installed=4.3.3
+node_modules/vite lock=8.3.8 installed=8.3.5
+Door: cd web && npm ci --ignore-scripts
+exit=1
+
+# ---- RED 4/4: the auto-merge exclusion, on today's workflow (the merge step's if: excludes nothing)
+# date -u: Tue Nov 17 09:46:58 AM UTC 2026
+$ ~/orchestra/testenv/bin/python -m pytest tests/test_dependabot_auto_merge_polling.py -q -k exact_pin
+E       AssertionError: the merge step's `if:` is not the exact-pin exclusion:
+E         steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor'
+E         !=
+E         (steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor') && !contains(steps.metadata.outputs.dependency-names, '@amadeus-protocol/sdk') && !contains(steps.metadata.outputs.dependency-names, 'genlayer-js')
+E       assert "steps.metada...semver-minor'" == "(steps.metad...genlayer-js')"
+E         
+E         - (steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor') && !contains(steps.metadata.outputs.dependency-names, '@amadeus-protocol/sdk') && !contains(steps.metadata.outputs.dependency-names, 'genlayer-js')
+E         + steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor'
+FAILED tests/test_dependabot_auto_merge_polling.py::test_an_exact_pin_never_reaches_the_merge_step
+1 failed, 7 deselected in 0.09s
