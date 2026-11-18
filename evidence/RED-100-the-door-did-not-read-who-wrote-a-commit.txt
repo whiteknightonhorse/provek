@@ -1,0 +1,49 @@
+RED-100 - the door did not read who wrote a commit (T-ID-01, 2026-11-18)
+tree: 0ff7efa0f6756ac552c8a32e5548838f9d1b5165 (dirty)
+command: ~/orchestra/testenv/bin/python -m pytest tests/test_check_commit_identity.py -q (tests written, scripts/check_commit_identity.py and the push.sh line not yet written)
+
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-101/test_no_origin_main_is_unreada0')
+    def test_no_origin_main_is_unreadable_not_empty(tmp_path):
+        work = _repo(tmp_path, fetch=False)
+        rc, out = _run(work)
+>       assert rc == 2 and out.startswith("identity: unreadable "), out
+E       AssertionError: /home/incubator/orchestra/testenv/bin/python: can't open file '/home/incubator/incubator/scripts/check_commit_identity.py': [Errno 2] No such file or directory
+E         
+E       assert (2 == 2 and False)
+E        +  where False = <built-in method startswith of str object at 0x7fe080edd620>('identity: unreadable ')
+E        +    where <built-in method startswith of str object at 0x7fe080edd620> = "/home/incubator/orchestra/testenv/bin/python: can't open file '/home/incubator/incubator/scripts/check_commit_identity.py': [Errno 2] No such file or directory\n".startswith
+tests/test_check_commit_identity.py:100: AssertionError
+___________________ test_an_empty_range_is_nothing_to_check ____________________
+tmp_path = PosixPath('/tmp/pytest-of-incubator/pytest-101/test_an_empty_range_is_nothing0')
+    def test_an_empty_range_is_nothing_to_check(tmp_path):
+        work = _repo(tmp_path)
+        rc, out = _run(work)
+>       assert rc == 0 and "identity: nothing_to_check" in out, out
+E       AssertionError: /home/incubator/orchestra/testenv/bin/python: can't open file '/home/incubator/incubator/scripts/check_commit_identity.py': [Errno 2] No such file or directory
+E         
+E       assert (2 == 0)
+tests/test_check_commit_identity.py:107: AssertionError
+__________ test_the_door_runs_it_before_step_one_and_not_through_and ___________
+    def test_the_door_runs_it_before_step_one_and_not_through_and():
+        lines = DOOR.read_text(encoding="utf-8").splitlines()
+        step1 = next(n for n, ln in enumerate(lines) if ln.startswith('echo "1/9'))
+        hits = [n for n, ln in enumerate(lines) if "check_commit_identity.py" in ln
+                and not ln.lstrip().startswith("#")]
+>       assert len(hits) == 1 and hits[0] < step1, hits
+E       AssertionError: []
+E       assert (0 == 1)
+E        +  where 0 = len([])
+tests/test_check_commit_identity.py:115: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_check_commit_identity.py::test_allowed_identity_is_ok - Ass...
+FAILED tests/test_check_commit_identity.py::test_a_commit_made_with_the_2026_11_12_command_is_refused_and_named
+FAILED tests/test_check_commit_identity.py::test_allowed_author_with_a_foreign_committer_is_refused
+FAILED tests/test_check_commit_identity.py::test_no_origin_main_is_unreadable_not_empty
+FAILED tests/test_check_commit_identity.py::test_an_empty_range_is_nothing_to_check
+FAILED tests/test_check_commit_identity.py::test_the_door_runs_it_before_step_one_and_not_through_and
+6 failed in 1.53s
+
+--- the script's own output in a temporary repository, after the 2026-11-12 command (git -c user.name=incubator -c user.email=incubator@localhost commit), script written:
+identity: REFUSED 0aab361 author incubator@localhost committer incubator@localhost
+on the unpushed commit run `git commit --amend --reset-author --no-edit`; if it is not HEAD, report to the dispatcher; never force-push
+exit 1

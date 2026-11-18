@@ -15,6 +15,10 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+# T-ID-01. Who wrote the unpushed commits: on 2026-11-12 one carried `incubator@localhost` and opened
+# the repository's identity window. Unnumbered, so the nine labels stay; it runs in both modes, on a
+# line of its own - never joined by `&&`, which under `set -e` would not stop the script.
+python3 scripts/check_commit_identity.py
 echo "1/9 secrets";  ./scripts/secret_scan.sh
 echo "2/9 scope";    python3 scripts/ratchet_scope.py
 echo "3/9 laws";     python3 scripts/ratchet_decisions.py

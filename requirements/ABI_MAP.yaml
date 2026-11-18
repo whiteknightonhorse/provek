@@ -193,6 +193,10 @@ scripts/check_mypy_ceiling.py:    [ABI-16-11, ABI-33-4]
 # T-DEP-06. The same pair for the same reason, one instrument over: a ruff that is not the pin, or did
 # not start, or a pin that cannot be read, is not_measured and never a clean lint.
 scripts/check_ruff_pin.py:    [ABI-16-11, ABI-33-4]
+# T-ID-01. A commit written under an address other than the repository's own opened its identity
+# window on 2026-11-12. ABI-32-1 because it is a named refusal at the door; ABI-16-11 because an
+# unreadable range (no origin/main, git failed) is never an empty one.
+scripts/check_commit_identity.py: [ABI-32-1, ABI-16-11]
 
 # T-DEP-05 (D-86). The door compares the installed web packages with web/package-lock.json before it
 # builds. ABI-32-1 + ABI-16-5 as for sync_main.sh: a named refusal at the door, with drift, an absent

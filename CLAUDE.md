@@ -16,7 +16,7 @@
    permissions is a defect.
 7. **The entire GitHub surface is ENGLISH ONLY** - code, comments, documents, commit messages.
    Working documents on the operator's laptop stay in Russian; the repository is what others read.
-8. Never `--no-verify`, never `push --force` to main. The only door for code is `scripts/push.sh`; the only door for the site is `~/orchestra/deploy.sh`, run after it; both are the dispatcher's, never the executor's.
+8. Never `--no-verify`, never `push --force` to main. The only door for code is `scripts/push.sh`; the only door for the site is `~/orchestra/deploy.sh`, run after it; both are the dispatcher's, never the executor's. Commits carry the identity this repository is configured with: never pass `-c user.name`, `-c user.email` or `--author` to git.
 
 # Documentation law (FLEET-DOCS-LAW-1026, operator ruling 2026-10-24)
 Observable change = anything a user, agent, integrator or self-hoster can see: behaviour, routes and response fields, MCP tools and prompts, error codes and messages, limits, prices and fees, headers, env/config defaults, CLI flags, served files, page text.
