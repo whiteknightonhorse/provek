@@ -980,6 +980,8 @@ acted. The active mandate is therefore a NEW one, `self-mandate-0002`, declared 
 what eight artefacts already in public say they were produced under. Writing the read mandate down
 is a task of its own.
 
+As of 2026-11-18 self-mandate-0002 has lapsed; renewed as self-mandate-0003 by D-87.
+
 **Armed.** `LAW-PROBE-NEEDS-MANDATE` (`tests/test_prober.py`) asserts against the TRANSPORT and not
 against the check: a recording `fetch` must hold nothing at all after each of the five denial
 reasons, and the reasons are enumerated from the `Denial` enum so a sixth cannot arrive untested.
@@ -4535,3 +4537,18 @@ Date: 2026-11-17. Source: the 2026-11-17 landing of nine Dependabot merges, ruli
 **Supersedes.** D-55's statement that an auto-merged bump "reaches the site", for npm dependencies only; D-55 carries the marker. The rule of D-55 stands.
 
 Evidence: `evidence/RED-096-site-not-built-from-the-lock.txt`, `evidence/MEASURED-032-genlayer-js-rc3-reads.txt`.
+
+
+## D-87. The prober's self-mandate is renewed as self-mandate-0003
+
+**Decided 2026-11-18, by the operator.** In the dispatcher menu of that day the operator chose, option (a) "renew for 90 days (recommended)" (translated; the menu text is Russian and is kept in the dispatcher file named below) - renew for 90 days as `self-mandate-0003` with this decision (MARKET-SIGNALS-PROVEK-1117, question E1; recorded in `taskloop/disputes/MARKET-SIGNALS-PROVEK-1117.operator-1.md`). This entry only writes the renewal down; the act is the operator's.
+
+**What lapsed.** `self-mandate-0002` ran 2026-08-20 to 2026-11-18 (D-23) and authorised one probe, `evidence/PROBE-001.txt`. On 2026-11-18 it expired. `tests/test_prober.py::test_the_incubators_own_mandate_has_not_lapsed` went red, as designed, and the door (`scripts/push.sh`, step 7/9 tests: `1 failed, 1671 passed`) stopped the 2026-11-18 nightly at 03:45Z. The nightly's data commit was removed (tree returned to de8e981). The red run is `evidence/RED-098-the-self-mandate-lapsed-and-the-door-stopped-the-night.txt`.
+
+**The new window.** `self-mandate-0003`: `valid_from` 2026-11-18, `valid_until` 2027-02-16, ninety days, the length 0002 had. The dated test is unchanged.
+
+**The scope is unchanged.** Only `ref`, `valid_from` and `valid_until` differ from 0002; every other field is byte-equal: `subject_id` `git:whiteknightonhorse/provek`; `permitted_actions` exactly `{ACTION}`; `max_calls_per_hour` 12; `blast_radius` "read-only HTTP requests to https://provek.dev only. No POST to /api/apply ... Nothing else on the origin is touched, and no request carries a credential."; `liability` the operator, who owns both the verifier and the subject; `abort_condition` any 5xx from the origin, or a control request that stops answering 2xx; `notes` unchanged. The prober's User-Agent in `scripts/probe_self.py` now names `mandate self-mandate-0003`.
+
+**The next lapse stops the door again.** On 2027-02-16 the same test goes red and the night stops again. The renewal is owed before that date, as a decision entry like this one, not as a new date typed to make the build green.
+
+**Supersedes.** D-23's statement that `self-mandate-0002` is the active mandate; D-23 carries an "as of 2026-11-18" line. `evidence/PROBE-001.txt` is dated evidence and is not edited.

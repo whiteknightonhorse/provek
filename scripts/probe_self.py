@@ -28,7 +28,7 @@ from src.prober.self_probe import SELF_MANDATE, SOURCE_EXPOSURE_CLAIM  # noqa: E
 
 TIMEOUT_S = 20
 
-USER_AGENT = "provek-verifier/0.1 (+https://provek.dev; mandate self-mandate-0002)"
+USER_AGENT = "provek-verifier/0.1 (+https://provek.dev; mandate self-mandate-0003)"
 """THE PROBE SAYS WHO IT IS AND UNDER WHAT AUTHORITY, and both halves are load-bearing.
 
 An unauthenticated access attempt arriving anonymously is indistinguishable, in the subject's logs,

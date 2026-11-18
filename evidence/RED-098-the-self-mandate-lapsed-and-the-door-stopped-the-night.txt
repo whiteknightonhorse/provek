@@ -1,0 +1,41 @@
+RED-098 - the self-mandate lapsed and the door stopped the night (T-MAND-01, 2026-11-18)
+tree: de8e9811c2845586e7ca30fd259240de820a9a73 (dirty)
+command: ~/orchestra/testenv/bin/python -m pytest tests/test_prober.py -q (run before any edit)
+
+...............F                                                         [100%]
+=================================== FAILURES ===================================
+________________ test_the_incubators_own_mandate_has_not_lapsed ________________
+
+    def test_the_incubators_own_mandate_has_not_lapsed() -> None:
+        """A DATED GATE, and its red is the correct behaviour rather than a defect to route around.
+    
+        A standing permission to send unauthenticated requests at a live system should expire, and
+        somebody should have to renew it deliberately. When this goes red, the mandate has lapsed: the
+        prober is already fail-closed against that, and what is owed is a decision, not a new date.
+    
+        Asked through `may_probe` against the real clock rather than through a helper of its own. The
+        first version called an `is_live()` in `self_probe.py` whose docstring said the runner read it
+        before spending a call - and the runner never called it, so the only caller was this line and
+        the docstring was false. Fable found it. `may_probe` is what actually stops the probe when the
+        mandate lapses, so it is what this asserts against; a second implementation of the same
+        condition is a copy that can drift from the one that runs (L-2).
+        """
+        ok, why = may_probe(SELF_MANDATE, ACTION, datetime.now(timezone.utc))
+        reason = why.value if why is not None else "no reason given"
+>       assert ok, (
+            f"the self-mandate {SELF_MANDATE.ref} does not permit a probe today ({reason}); it runs to "
+            f"{SELF_MANDATE.valid_until.date().isoformat()}. Renew it in src/prober/self_probe.py as an "
+            "act somebody takes, with a decision entry - do not widen the window to make this green."
+        )
+E       AssertionError: the self-mandate self-mandate-0002 does not permit a probe today (expired); it runs to 2026-11-18. Renew it in src/prober/self_probe.py as an act somebody takes, with a decision entry - do not widen the window to make this green.
+E       assert False
+
+tests/test_prober.py:253: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_prober.py::test_the_incubators_own_mandate_has_not_lapsed
+1 failed, 15 passed in 0.08s
+
+--- ~/orchestra/logs/cohort_refresh.log, 2026-11-18T03:45 (night stopped at the door) ---
+1 failed, 1671 passed, 3 skipped in 85.43s (0:01:25)
+[2026-11-18T03:45:16Z] дерево: дерево возвращено к de8e981
+[2026-11-18T03:45:17Z] ОСТАНОВЛЕН на шаге scripts/push.sh (дверь: гейты, тесты, чистота дерева) — коммит данных снят; завтра ночь пересоберёт — тревога отправлена

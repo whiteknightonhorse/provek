@@ -18,8 +18,9 @@ subject whose permission the operator can actually give.
 THE MANDATE IS A NEW ONE AND THAT IS DELIBERATE. Eight published passports reference
 `self-mandate-0001`, and they were issued for read-only verification under ADR-0006. Widening that
 reference to cover active probing would change, retroactively, what eight artefacts already in
-public say they were produced under. The active mandate is therefore `self-mandate-0002` and it
-grants exactly one action against exactly one origin.
+public say they were produced under. The active mandate is therefore a separate one and it grants
+exactly one action against exactly one origin: `self-mandate-0002` ran 2026-08-20 to 2026-11-18 and
+authorised one probe (evidence/PROBE-001.txt); `self-mandate-0003` is active by D-87.
 
 ADJACENT, AND RECORDED RATHER THAN QUIETLY FIXED: `self-mandate-0001` has no document anywhere in
 this repository. It is a bare string in `scripts/cohort.py` that eight published passports point at,
@@ -38,7 +39,7 @@ SUBJECT_ID = "git:whiteknightonhorse/provek"
 ORIGIN = "https://provek.dev"
 
 SELF_MANDATE = Mandate(
-    ref="self-mandate-0002",
+    ref="self-mandate-0003",
     subject_id=SUBJECT_ID,
     permitted_actions=frozenset({ACTION}),
     # Twelve an hour, against a site with no customers. The number is small because the ceiling is
@@ -63,12 +64,12 @@ SELF_MANDATE = Mandate(
         "already wrong. The prober reaches this by refusing to produce a reading rather than by "
         "retrying (src/prober/prober.py, ORIGIN_UNREADABLE)."
     ),
-    valid_from=datetime(2026, 8, 20, tzinfo=timezone.utc),
+    valid_from=datetime(2026, 11, 18, tzinfo=timezone.utc),
     # NINETY DAYS, AND THE EXPIRY IS THE FEATURE. A mandate without an end is a permission that
     # outlives the reason it was given, and this one is checked against the real clock by
     # `tests/test_prober.py`, which goes red when it lapses. That red is correct: renewing a
     # standing permission to touch a live system is an act somebody should have to perform.
-    valid_until=datetime(2026, 11, 18, tzinfo=timezone.utc),
+    valid_until=datetime(2027, 2, 16, tzinfo=timezone.utc),
     notes=[
         "Granted by the operator under ADR-0006's identity predicate: the subject is the owner of "
         "the verifier, so this is not a third party's production system.",
