@@ -1,4 +1,4 @@
-/** The corrections log, in full. All six corrections this project has ever published, byte-for-byte.
+/** The corrections log, in full. All seven corrections this project has ever published, byte-for-byte.
  *
  * WHY THIS PAGE EXISTS (the corrections-log step of the phase-2 plan). `/registry/` used to carry both errata in full,
  * as two `<Strip>` blocks above the table - honest, and increasingly not what a reader who has
@@ -36,7 +36,7 @@ export default function Corrections() {
 
         <h1 className="text-2xl font-semibold tracking-tight">All corrections</h1>
         <p className="mt-2 text-sm text-[var(--color-ink-2)]">
-          Every erratum this project has published, in full and unabridged. Six exist today.
+          Every erratum this project has published, in full and unabridged. Seven exist today.
         </p>
 
         {/* THE MOVE, NAMED. A reader who bookmarked or quoted the original location on `/registry/`
@@ -50,6 +50,7 @@ export default function Corrections() {
           that had no notice of its own. We added the fifth on 2026-10-26, for a subject withdrawn
           from the registry because its project no longer exists. We added the sixth on 2026-10-26, for a
           method note that stated two live author counts the registry did not show.
+          We added the seventh on 2026-11-18, for a change of 2026-11-12 that had no notice of its own.
         </p>
 
         <div className="mt-6 space-y-4">
@@ -132,6 +133,22 @@ export default function Corrections() {
               by the committer, so the count is a lower bound only for a subject that does not forge
               it. No score, threshold or rule changed. Interested party: the operator&rsquo;s own
               subjects; found by an external audit (Opus, 2026-10-24).
+            </Strip>
+          </div>
+
+          <div>
+            <Strip tone="warn">
+              <strong>Correction, 2026-11-12.</strong> provek&rsquo;s autonomy projection moved from 60
+              to 40 and its development-initiation level from L3 to L2 when it was re-measured that
+              day. No defect in the rule or in the earlier data was found. Between the two
+              measurements the repository&rsquo;s head moved, and the 30-day window then held one
+              commit that the platform did not attribute to an account (unlinked commit share 0.0 to
+              0.008; one unlinked key). It is commit c57c779: one of our own task sessions wrote it
+              under a name and address typed on the command line instead of the identity this
+              repository is configured with. Under platform closure an open identity window floors
+              the level at L2. The figure of 40 is a true reading and stands for as long as that
+              commit is inside the window; we do not rewrite published history to move it.
+              Interested party: the operator&rsquo;s own subject.
             </Strip>
           </div>
         </div>

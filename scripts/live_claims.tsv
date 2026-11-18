@@ -22,3 +22,6 @@ headers-file-applied	/	header	content-security-policy: default-src 'self'
 old-reputation-layer	*	lacks	reputation layer
 spec-says-verification-layer	https://raw.githubusercontent.com/whiteknightonhorse/provek/main/SPEC.md	has	A verification layer for businesses operated by AI agents.
 security-says-verification-layer	https://raw.githubusercontent.com/whiteknightonhorse/provek/main/SECURITY.md	has	the verification layer described in
+old-six-corrections	*	lacks	Six corrections are on record
+corrections-12nov	/registry/corrections/	has	Correction, 2026-11-12.
+registry-seven-corrections	/registry/	has	Seven corrections are on record

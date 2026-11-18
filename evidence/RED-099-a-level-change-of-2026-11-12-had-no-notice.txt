@@ -1,0 +1,44 @@
+RED-099 - a level change of 2026-11-12 had no notice (T-MS-04, 2026-11-18)
+tree: 9be506ca1fb36649b0889eb0cf8c039673d5c4f3 (dirty)
+command: ~/orchestra/testenv/bin/python -m pytest tests/test_registry_corrections.py tests/test_site_copy_has_no_known_contradictions.py -q (tests written, pages not yet edited; the dist was the old build)
+
+        assert EXPECTED_03SEP in text
+        assert EXPECTED_01SEP in text
+        assert EXPECTED_26OCT in text
+        assert EXPECTED_26OCT_NOTE in text
+>       assert EXPECTED_12NOV in text
+E       AssertionError: assert 'Correction, 2026-11-12. provek’s autonomy projection moved from 60 to 40 and its development-initiation level from L3...it is inside the window; we do not rewrite published history to move it. Interested party: the operator’s own subject.' in '# All corrections Both corrections this project has published, in full: the 2026-08-25 evidence-window erratum (with ...tps://provek.dev/registry/corrections/ — this markdown is derived from the page it serves, so the two cannot disagree.'
+
+tests/test_registry_corrections.py:152: AssertionError
+______________ test_registry_carries_exactly_one_correction_line _______________
+
+    @emitted
+    def test_registry_carries_exactly_one_correction_line():
+        text = _main_text(REGISTRY_PAGE)
+        assert text.count("Erratum, 2026-08-25.") == 0
+        assert text.count("Erratum, 2026-08-31.") == 0
+        assert text.count("Erratum, 2026-09-03.") == 0
+        assert text.count("Correction, 2026-09-01.") == 0
+>       assert text.count("Seven corrections are on record for this registry.") == 1
+E       AssertionError: assert 0 == 1
+E        +  where 0 = <built-in method count of str object at 0x3d86c810>('Seven corrections are on record for this registry.')
+E        +    where <built-in method count of str object at 0x3d86c810> = 'Registry Every business submitted to the method, what could be established about each, and the evidence behind it — a...ability, decision quality, profitability, or the presence of an accountable party. An absent projection is not a zero.'.count
+
+tests/test_registry_corrections.py:180: AssertionError
+_________ test_the_corrections_count_is_seven_everywhere_it_is_printed _________
+
+    def test_the_corrections_count_is_seven_everywhere_it_is_printed():
+        for page in ("Corrections.tsx", "Registry.tsx"):
+            src = _read(PAGES / page)
+            assert "Three corrections" not in src and "Three exist" not in src, page
+>       assert "Seven exist today" in _read(PAGES / "Corrections.tsx")
+E       AssertionError: assert 'Seven exist today' in '/** The corrections log, in full. All six corrections this project has ever published, byte-for-byte.\n *\n * WHY THI...ietly vanish is not one whose present statements anyone can trust.\n        </p>\n      </div>\n    </Page>\n  );\n}\n'
+E        +  where '/** The corrections log, in full. All six corrections this project has ever published, byte-for-byte.\n *\n * WHY THI...ietly vanish is not one whose present statements anyone can trust.\n        </p>\n      </div>\n    </Page>\n  );\n}\n' = _read((PosixPath('/home/incubator/incubator/web/src/pages') / 'Corrections.tsx'))
+
+tests/test_site_copy_has_no_known_contradictions.py:135: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_registry_corrections.py::test_all_seven_corrections_are_preserved_byte_for_byte_on_the_corrections_page
+FAILED tests/test_registry_corrections.py::test_all_seven_corrections_survive_into_the_no_js_markdown_sibling
+FAILED tests/test_registry_corrections.py::test_registry_carries_exactly_one_correction_line
+FAILED tests/test_site_copy_has_no_known_contradictions.py::test_the_corrections_count_is_seven_everywhere_it_is_printed
+4 failed, 19 passed in 0.42s

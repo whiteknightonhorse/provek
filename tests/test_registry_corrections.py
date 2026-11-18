@@ -94,6 +94,23 @@ EXPECTED_26OCT_NOTE = (
     "external audit (Opus, 2026-10-24)."
 )
 
+# The seventh entry (T-MS-04): why provek moved from 60 to 40 on 2026-11-12. Facts: the passport
+# diff 51d04e6..80ac842 (L3 -> L2, unlinked commit share 0.0 -> 0.008, one unlinked key) and the
+# author line of commit c57c779. The claim of a missing verified signature is left out: the
+# platform API was unreadable (HTTP 403) when this entry was written.
+EXPECTED_12NOV = (
+    "Correction, 2026-11-12. provek\u2019s autonomy projection moved from 60 to 40 and its "
+    "development-initiation level from L3 to L2 when it was re-measured that day. No defect in the "
+    "rule or in the earlier data was found. Between the two measurements the repository\u2019s head "
+    "moved, and the 30-day window then held one commit that the platform did not attribute to an "
+    "account (unlinked commit share 0.0 to 0.008; one unlinked key). It is commit c57c779: one of "
+    "our own task sessions wrote it under a name and address typed on the command line instead of "
+    "the identity this repository is configured with. Under platform closure an open identity "
+    "window floors the level at L2. The figure of 40 is a true reading and stands for as long as "
+    "that commit is inside the window; we do not rewrite published history to move it. Interested "
+    "party: the operator\u2019s own subject."
+)
+
 emitted = pytest.mark.skipif(not CORRECTIONS_PAGE.exists(), reason="site not built in this checkout")
 
 
@@ -106,7 +123,7 @@ def _main_text(html_path: Path) -> str:
 
 
 @emitted
-def test_all_six_corrections_are_preserved_byte_for_byte_on_the_corrections_page():
+def test_all_seven_corrections_are_preserved_byte_for_byte_on_the_corrections_page():
     text = _main_text(CORRECTIONS_PAGE)
     assert EXPECTED_25AUG in text, "the 2026-08-25 erratum's text drifted from what was moved here"
     assert EXPECTED_31AUG in text, "the 2026-08-31 erratum's text drifted from what was moved here"
@@ -114,10 +131,11 @@ def test_all_six_corrections_are_preserved_byte_for_byte_on_the_corrections_page
     assert EXPECTED_01SEP in text, "the 2026-09-01 correction's text drifted from what was published"
     assert EXPECTED_26OCT in text, "the 2026-10-26 correction's text drifted from what was published"
     assert EXPECTED_26OCT_NOTE in text, "the 2026-10-26 note correction's text drifted from what was published"
+    assert EXPECTED_12NOV in text, "the 2026-11-12 correction's text drifted from what was published"
 
 
 @pytest.mark.skipif(not CORRECTIONS_MD.exists(), reason="markdown sibling not built in this checkout")
-def test_all_six_corrections_survive_into_the_no_js_markdown_sibling():
+def test_all_seven_corrections_survive_into_the_no_js_markdown_sibling():
     """"prerender, no JS" is the whole point of moving this content to its own page - the markdown
     twin `web/markdown.mjs` derives from every page is what proves a reader (or a crawler) with no
     JavaScript still gets the exact same words."""
@@ -131,6 +149,7 @@ def test_all_six_corrections_survive_into_the_no_js_markdown_sibling():
     assert EXPECTED_01SEP in text
     assert EXPECTED_26OCT in text
     assert EXPECTED_26OCT_NOTE in text
+    assert EXPECTED_12NOV in text
 
 
 @emitted
@@ -145,6 +164,7 @@ def test_the_full_erratum_text_no_longer_lives_on_the_registry_page():
     assert EXPECTED_01SEP not in text
     assert EXPECTED_26OCT not in text
     assert EXPECTED_26OCT_NOTE not in text
+    assert EXPECTED_12NOV not in text
     assert "will be re-issued together" not in text
     assert "signature share the published" not in text
     assert "verification of the operator's own project" not in text
@@ -157,8 +177,8 @@ def test_registry_carries_exactly_one_correction_line():
     assert text.count("Erratum, 2026-08-31.") == 0
     assert text.count("Erratum, 2026-09-03.") == 0
     assert text.count("Correction, 2026-09-01.") == 0
-    assert text.count("Six corrections are on record for this registry.") == 1
-    assert text.count("All corrections (6)") == 1
+    assert text.count("Seven corrections are on record for this registry.") == 1
+    assert text.count("All corrections (7)") == 1
     links = re.findall(r'<a\b[^>]*href="([^"]+)"[^>]*>\s*All corrections',
                        REGISTRY_PAGE.read_text(encoding="utf-8"))
     assert links == ["/registry/corrections/"]
