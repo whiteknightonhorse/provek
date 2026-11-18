@@ -1,0 +1,31 @@
+RED-101 - a style-skip outside the template pages fails the pin (T-SH-03, 2026-11-18)
+tree: 2a7123c9346bfe9f23638d1cedbfd36d1265ba92 (dirty)
+command: python3 -m pytest -q tests/test_style_skip_marks_only_the_artefact.py (after adding data-style-skip to web/src/pages/Landing.tsx:127 and npm run build)
+
+mutation: web/src/pages/Landing.tsx:127 <section data-style-skip="x">, then npm run build
+2026-11-18T16:35:43Z
+
+    def test_dist_carries_the_attribute_only_on_the_seven_template_pages_equally():
+        assert (DIST / "index.html").is_file(), f"{DIST}/index.html is missing: {HINT}"
+        slugs = _slugs()
+        assert len(slugs) == 7, slugs
+        found = {}
+        for p in DIST.rglob("*.html"):
+            n = p.read_text(encoding="utf-8").count(ATTR)
+            if n:
+                found[p.relative_to(DIST).as_posix()] = n
+        want = {f"build/{s}/index.html": PINNED_IN_SOURCE for s in slugs}
+>       assert found == want, f"found {found}"
+E       AssertionError: found {'index.html': 1, 'build/lead-generation-agent/index.html': 4, 'build/finance-operations-agent/index.html': 4, 'build/content-production-agent/index.html': 4, 'build/market-research-agent/index.html': 4, 'build/youtube-channel-operations-agent/index.html': 4, 'build/ecommerce-operations-agent/index.html': 4, 'build/customer-support-agent/index.html': 4}
+E       assert {'index.html'...html': 4, ...} == {'build/conte...html': 4, ...}
+E         
+E         Omitting 7 identical items, use -vv to show
+E         Left contains 1 more item:
+E         {'index.html': 1}
+E         Use -v to get more diff
+
+tests/test_style_skip_marks_only_the_artefact.py:46: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_style_skip_marks_only_the_artefact.py::test_source_carries_the_attribute_only_in_build_template_at_the_pinned_count
+FAILED tests/test_style_skip_marks_only_the_artefact.py::test_dist_carries_the_attribute_only_on_the_seven_template_pages_equally
+2 failed, 1 passed in 0.07s

@@ -82,8 +82,8 @@ export default function BuildTemplate({ t }: { t: Template }) {
 
       <div className="max-w-[46rem]">
         <h1 className="text-2xl font-semibold tracking-tight">{t.title}</h1>
-        <p className="mt-1.5 text-sm text-[var(--color-ink-2)]">{t.businessOperation}</p>
-        <p className="mt-1 text-xs text-[var(--color-ink-3)]">For {t.forWhom}</p>
+        <p data-style-skip="artefact" className="mt-1.5 text-sm text-[var(--color-ink-2)]">{t.businessOperation}</p>
+        <p data-style-skip="artefact" className="mt-1 text-xs text-[var(--color-ink-3)]">For {t.forWhom}</p>
 
         <dl className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 text-sm">
           <div className="border border-[var(--color-line)] bg-[var(--color-paper)] px-3 py-2.5">
@@ -108,7 +108,7 @@ export default function BuildTemplate({ t }: { t: Template }) {
         <ToolSelector />
 
         <h2 className="mt-8 text-lg font-semibold">What it does</h2>
-        <p className="mt-2 text-sm text-[var(--color-ink-2)]">{t.description}</p>
+        <p data-style-skip="artefact" className="mt-2 text-sm text-[var(--color-ink-2)]">{t.description}</p>
 
         <h2 className="mt-6 text-lg font-semibold">What you get</h2>
         <p className="mt-2 text-sm text-[var(--color-ink-2)]">
@@ -117,7 +117,7 @@ export default function BuildTemplate({ t }: { t: Template }) {
         </p>
 
         <h2 className="mt-8 text-lg font-semibold">The full instruction, section by section</h2>
-        <div className="mt-3 divide-y divide-[var(--color-line)] border-y border-[var(--color-line)]">
+        <div data-style-skip="artefact" className="mt-3 divide-y divide-[var(--color-line)] border-y border-[var(--color-line)]">
           {t.sections.map((s) => (
             <details key={s.heading} className="py-3">
               <summary className="cursor-pointer text-sm font-medium">{s.heading}</summary>
