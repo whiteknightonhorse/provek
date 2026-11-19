@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-11-17T03:43:04.461663+00:00",
-    "valid_until": "2026-12-17T03:43:04.461663+00:00",
+    "issued_at": "2026-11-19T03:43:04.857484+00:00",
+    "valid_until": "2026-12-19T03:43:04.857484+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -17,8 +17,8 @@
       "evidence_window_days": 30
     },
     "evidence_window": {
-      "start": "2026-10-18T03:43:04.461663+00:00",
-      "end": "2026-11-17T03:43:04.461663+00:00"
+      "start": "2026-10-20T03:43:04.857484+00:00",
+      "end": "2026-11-19T03:43:04.857484+00:00"
     },
     "verified": {
       "operations": [
@@ -65,14 +65,14 @@
           "absent_reason": null
         },
         "workflow_runs": {
-          "value": null,
-          "measured": false,
-          "absent_reason": "apparatus_absent"
+          "value": 1,
+          "measured": true,
+          "absent_reason": null
         },
         "scheduled_runs_in_window": {
-          "value": null,
-          "measured": false,
-          "absent_reason": "apparatus_absent"
+          "value": 0,
+          "measured": true,
+          "absent_reason": null
         },
         "identity_window_closed": {
           "value": false,
