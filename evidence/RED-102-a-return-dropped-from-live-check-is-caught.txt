@@ -1,0 +1,31 @@
+RED-102 - a return dropped from live_check.py is caught (T-CQ-01, 2026-11-23)
+tree: 0fccd5ad62d7350cbb7c044f871f185be974cc00 (dirty)
+command: python -m pytest -q tests/test_live_check.py (46 tests), run in a copy of scripts/live_check.py and tests/test_live_check.py outside the tree, one bare return deleted per run
+2026-11-23T04:21:28Z
+first run, attempt 1 (44 tests, before test_t3b_a_non_200_answer_is_exactly_one_failure existed): line 370 deleted -> 44 passed, the mutant was not caught; that green run is why the test was added
+
+== mutant: line 306 deleted (bare return after self.row_github(...))
+FAILED tests/test_live_check.py::test_t6_no_token_no_header - AssertionError:...
+FAILED tests/test_live_check.py::test_t7_token_from_the_home_env_file - Asser...
+FAILED tests/test_live_check.py::test_t9_rejected_token_is_not_measured - ass...
+12 failed, 34 passed in 27.12s
+== mutant: line 310 deleted (bare return after "target * is only for lacks")
+tests/test_live_check.py:202: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_live_check.py::test_star_target_with_another_kind_is_exactly_one_failure
+1 failed, 45 passed in 25.31s
+== mutant: line 363 deleted (bare return after "token rejected")
+tests/test_live_check.py:358: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_live_check.py::test_t9_rejected_token_is_not_measured - ass...
+1 failed, 45 passed in 24.18s
+== mutant: line 367 deleted (bare return after "rate limit")
+FAILED tests/test_live_check.py::test_t1_rate_limit_403_is_not_measured - ass...
+FAILED tests/test_live_check.py::test_t2_rate_limit_429_retry_after_is_not_measured
+FAILED tests/test_live_check.py::test_t4_failure_wins_over_not_measured - Ass...
+3 failed, 43 passed in 24.29s
+== mutant: line 370 deleted (bare return after "api.github.com answered")
+=========================== short test summary info ============================
+FAILED tests/test_live_check.py::test_t3b_a_non_200_answer_is_exactly_one_failure[403-json]
+FAILED tests/test_live_check.py::test_t3b_a_non_200_answer_is_exactly_one_failure[502-html]
+2 failed, 44 passed in 23.93s

@@ -197,6 +197,11 @@ def test_row_kind_fails(world, capsys, kind):
     assert rc == 1 and "FAIL claims r:" in out, out
 
 
+def test_star_target_with_another_kind_is_exactly_one_failure(world, capsys):
+    rc, out = world.run(rows=row("r", "*", "has", "alpha"), capsys=capsys)
+    assert rc == 1 and out.count("FAIL claims r:") == 1 and "target * is only for lacks" in out
+
+
 def test_header_row(world, capsys):
     world.state["pages"]["/a.txt"] = (200, {"Content-Type": "text/markdown; charset=utf-8"}, b"alpha\n")
     rc, out = world.run(rows=row("r", "/a.txt", "header", "content-type: text/markdown", "text/markdown"), capsys=capsys)
@@ -273,6 +278,16 @@ def test_t3_plain_403_is_a_failure(world, capsys):
     _api(world, 403)
     rc, out = world.run(rows=ABOUT, capsys=capsys)
     assert rc == 1 and "FAIL claims about-r: api.github.com answered 403" in out and "NOT-MEASURED" not in out
+
+
+@pytest.mark.parametrize("code, body", [(403, b"{}"), (502, b"<html>bad gateway</html>")],
+                         ids=["403-json", "502-html"])
+def test_t3b_a_non_200_answer_is_exactly_one_failure(world, capsys, code, body):
+    world.state["api_reply"] = (code, {}, body)
+    rc, out = world.run(rows=ABOUT, capsys=capsys)
+    assert rc == 1 and out.count("FAIL claims about-r:") == 1, out
+    assert f"FAIL claims about-r: api.github.com answered {code}" in out
+    assert out.rstrip().splitlines()[-1] == "live-check: 1 failure(s)"
 
 
 def test_t4_failure_wins_over_not_measured(world, capsys):

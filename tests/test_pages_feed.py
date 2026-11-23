@@ -84,6 +84,7 @@ def test_exclamation_and_three_em_dashes_make_a_paragraph_ineligible():
 
 def test_style_lint_is_the_sales_file_verbatim():
     assert hashlib.md5(LINT.read_bytes()).hexdigest() == SALES_MD5
+    sales: bytes | None = None
     try:
         sales = SALES_LINT.read_bytes()
     except OSError:

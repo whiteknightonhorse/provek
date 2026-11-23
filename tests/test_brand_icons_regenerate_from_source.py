@@ -21,7 +21,8 @@ def test_favicon_svg_is_the_source_byte_for_byte():
 
 def test_rasters_are_renders_of_the_source():
     for name, size in (("apple-touch-icon.png", 180), ("icon-192.png", 192), ("icon-512.png", 512)):
-        assert _same(Image.open(PUBLIC / name), b.render(size)), f"{name} is stale against the SVG"
+        with Image.open(PUBLIC / name) as shipped:
+            assert _same(shipped, b.render(size)), f"{name} is stale against the SVG"
 
 
 def test_favicon_ico_carries_16_32_48_of_the_source():

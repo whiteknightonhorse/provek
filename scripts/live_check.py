@@ -302,10 +302,12 @@ class Checker:
 
     def row(self, ident, target, kind, text, accept, sitemap) -> None:
         if target.startswith("gh:"):
-            return self.row_github(ident, target[3:], kind, text)
+            self.row_github(ident, target[3:], kind, text)
+            return
         if target == "*":
             if kind != "lacks":
-                return self.fail("claims", ident, "target * is only for lacks")
+                self.fail("claims", ident, "target * is only for lacks")
+                return
             for u in sitemap:
                 r = self.get(u, accept)
                 if text in r.text:
@@ -357,12 +359,15 @@ class Checker:
         elif kind == "about":
             r = self.get(GITHUB_API + repo)
             if r.status == 401 and r.carried_token:
-                return self.not_measured_row("claims", ident, "token rejected", r.status)
+                self.not_measured_row("claims", ident, "token rejected", r.status)
+                return
             if r.status in (403, 429) and (r.headers.get("x-ratelimit-remaining", "").strip() == "0"
                                            or r.headers.get("retry-after") is not None):
-                return self.not_measured_row("claims", ident, "rate limit", r.status)
+                self.not_measured_row("claims", ident, "rate limit", r.status)
+                return
             if r.status != 200:
-                return self.fail("claims", ident, f"api.github.com answered {r.status}")
+                self.fail("claims", ident, f"api.github.com answered {r.status}")
+                return
             desc = json.loads(r.text).get("description") or ""
             if text not in desc:
                 self.fail("claims", ident, f"description of {repo} is {desc[:80]!r}, want it to contain {text!r}")

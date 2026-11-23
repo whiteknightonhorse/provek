@@ -375,3 +375,78 @@ the push, and the edit that should close one is not the instrument that does. Un
 `GET /code-scanning/alerts?state=open` no longer lists `#80` (or shows it `fixed`), it is
 `not_measured`, not `clean`. That reading, and the push itself, are the dispatcher's, per
 `GL-NIGHTLY-collision ruling-1` (this task ran in a worktree on its own branch, not on `main`).
+
+## Sixth triage act, 2026-11-23 (T-CQ-01) — four alerts repaired, two given a basis for dismissal
+
+Source: `~/taskloop/disputes/PROVEK-CODEQL-1123.ruling-1.md` and `ruling-2.md` (Fable). This act is scoped to six alerts
+(`#84`, `#86`, `#87`, `#88`, `#90`, `#91`). The open and dismissed totals were not re-read here;
+whatever the live count is, `GET /code-scanning/alerts?state=open` is the reading that settles it,
+not this file.
+
+**`#90`, `#91` `py/mixed-returns`, `scripts/live_check.py`, methods `row` and `row_github`.** Both
+are declared `-> None`, and five of their branches wrote `return self.fail(...)`,
+`return self.not_measured_row(...)` or `return self.row_github(...)`: a value return in a function
+that has none. Each is now the same call on one line and a bare `return` on the next; no other line
+of the file changed and no behaviour changed, since every callee already returned `None`.
+
+Each of the five bare `return` lines was then deleted, one at a time, and `tests/test_live_check.py`
+was run against the mutant. Two branches needed a test first. `target * is only for lacks` had no
+test at all; new `test_star_target_with_another_kind_is_exactly_one_failure` asserts exactly one
+`FAIL claims r:` line for a `*` row of kind `has`. `api.github.com answered <status>` had tests
+that looked for its line and did not count the lines: on the first mutant run deleting its `return`
+left all 44 tests green, because the code then goes on to read a description out of the error
+answer. New `test_t3b_a_non_200_answer_is_exactly_one_failure` asserts exactly one
+`FAIL claims about-r:` line, for a 403 with a JSON body and for a 502 with an HTML body. With both
+tests in place each of the five mutants ends with a failed test. The five tails, and a note of
+that first green run, are in `evidence/RED-102-a-return-dropped-from-live-check-is-caught.txt`.
+
+**`#88` `py/uninitialized-local-variable`, `tests/test_pages_feed.py`, `sales`.** The same shape as
+`#53` and `#80`: `sales` is bound only inside the `try`, and the `except OSError` branch is safe
+only because `pytest.skip` does not return. Measured with a skip that does return, before the edit:
+
+```
+UnboundLocalError cannot access local variable 'sales' where it is not associated with a value
+```
+
+The line `sales: bytes | None = None` now sits above the `try`. The same probe after the edit:
+
+```
+AssertionError
+```
+
+**`#84` `py/side-effect-in-assert`, `tests/test_brand_icons_regenerate_from_source.py`.** The query
+most likely matches the attribute name `open` in `Image.open` inside an `assert`. There was no harm,
+but the repair is two lines: `with Image.open(...) as shipped:` and the assert on `shipped`, which
+also closes the file, as the old form did not.
+
+**`#86` `py/non-iterable-in-for-loop`, `tests/test_method_page_states_the_coded_rules.py:60` —
+`false positive`.** `NotMeasured` is `class NotMeasured(str, Enum)`. Measured:
+
+```
+$ python -c "from src.abs_profile.measured import NotMeasured; print(type(NotMeasured).__name__, len(list(NotMeasured)))"
+EnumType 6
+```
+
+Same cause as `#12` and `#43`: the class is iterable and yields its six members.
+
+**`#87` `py/bad-tag-filter`, `tests/test_public_surface_sets_no_tracking_cookie.py:54` —
+`false positive`.** The judge of lines 53-57 was run against three planted pages (the beacon tag in
+lower case, in upper case, and absent):
+
+```
+lower PASS
+upper FAIL beacon missing, doubled or tokenless in 3 page(s): {'index.html': 1, '
+absent FAIL beacon missing, doubled or tokenless in 3 page(s): {'index.html': 0, '
+```
+
+The regex is a locator, not a filter: it removes nothing from the page. The verdict needs
+`n == 1 and len(tags) == 1`, where `n` counts the beacon URL in the raw text, so a tag the regex
+misses leaves `len(tags) == 0` and the test FAILS rather than passes. `used in tests` was
+available and is not used, for the reason the third act gave: that a defect sits in `tests/` says
+where it is, not whether the instrument lies. `#40` and `#51` were different, because there the
+filter did cut tags out.
+
+**What is not claimed.** What closes a code-scanning alert is the SCAN, which runs after the push.
+Until `GET /code-scanning/alerts?state=open` no longer lists `#84`, `#88`, `#90` and `#91`, they
+are `not_measured`, not `clean`. The dismissal of `#86` and `#87` is the dispatcher's act, after
+this file is on main, and is not claimed here.
