@@ -4534,6 +4534,8 @@ Date: 2026-11-17. Source: the 2026-11-17 landing of nine Dependabot merges, ruli
 
 **As of 2026-11-17.** The write path through the relay (`writeContract` with the fixed fee object) is `check_did_not_run` under rc.3 until the first live request after the deploy; this measurement made no write. Nothing installs automatically after a fast-forward, so the door is red after an auto-merged npm bump until `npm ci --ignore-scripts` is run on the host.
 
+As of 2026-11-24 the second sentence above is superseded by D-88: after a fast-forward the host installs what the lockfiles name. The first sentence stands.
+
 **Supersedes.** D-55's statement that an auto-merged bump "reaches the site", for npm dependencies only; D-55 carries the marker. The rule of D-55 stands.
 
 Evidence: `evidence/RED-096-site-not-built-from-the-lock.txt`, `evidence/MEASURED-032-genlayer-js-rc3-reads.txt`.
@@ -4552,3 +4554,19 @@ Evidence: `evidence/RED-096-site-not-built-from-the-lock.txt`, `evidence/MEASURE
 **The next lapse stops the door again.** On 2027-02-16 the same test goes red and the night stops again. The renewal is owed before that date, as a decision entry like this one, not as a new date typed to make the build green.
 
 **Supersedes.** D-23's statement that `self-mandate-0002` is the active mandate; D-23 carries an "as of 2026-11-18" line. `evidence/PROBE-001.txt` is dated evidence and is not edited.
+
+## D-88. Dependabot's weekly window is named and sits before the night, and after a fast-forward the host installs what the lockfiles name; D-86's "nothing installs automatically" is superseded
+
+Date: 2026-11-24. Source: PROVEK-1117 ruling-4 (T-DEP-07) and ruling-5 (T-DEP-08, T-DEP-09).
+
+**Measured.** Until this entry `.github/dependabot.yml` said only `interval: weekly`. The commits of Dependabot's merges on `main` since 2026-10-20 fall on five days, each a Tuesday, each between 05:18 and 05:27 UTC: 2026-10-27, 11-03, 11-10, 11-17 and 11-24 (`evidence/MEASURED-033-dependabot-merges-fell-on-tuesday-after-the-night.txt`). The nightly re-measure starts at 03:43 UTC, so each of those bumps reached `origin/main` after the night, and the host stayed behind until a person synced it. On 2026-11-17 that left the door red at step 6/9 (D-86). On 2026-11-24 the bump of `ruff` to 0.17.6 in `requirements/ci-lint.txt` left the host's lint environment at 0.17.5 until the dispatcher installed the new pin by hand (the dispatcher's record of that day, `taskloop/disputes/PROVEK-1117.q-5.md`). The working notes of both days called the window a Monday; the commit dates say Tuesday.
+
+**Decision.** *The window.* Every `updates` entry names `day: tuesday` and `time: "02:00"` and no `timezone`, so the time is UTC, the default GitHub documents. That is 1 h 43 min before the night. The auto-merge workflow waits at most 600 s for a pull request's checks (`WAIT_LIMIT_SECONDS`), and the widest of the five measured windows spread its merges over 7 min 25 s. *The host installs.* After its `scripts/sync_main.sh` and before anything is measured or pushed, the nightly run and the day push each call two host scripts. The first (since 2026-11-24) compares `web/node_modules` with `web/package-lock.json` and runs `npm ci --ignore-scripts` on drift. The second (since 2026-11-24) compares the three Python environments the door uses with `requirements/ci-lint.txt`, `requirements/ci-tests.txt` and `requirements/ci-genlayer.txt` and installs from the hash-pinned file on drift. The trigger is the comparison, not the fast-forward. A reading that is `not_measured`, or an install that does not end in a match, stops the run by name before `cohort.py` spends anything. The publish script refuses a drifted web install and installs nothing. *The door is unchanged.* It compares and refuses; it installs nothing (D-86).
+
+**Not changed.** The fast-forward of D-55 and `scripts/sync_main.sh`. D-86's comparison at step 6/9 and its rule for an exact pin. The hash-pinned sets of D-30. A major bump stays open for a human.
+
+**As of 2026-11-24.** Whether Dependabot keeps the named time is `check_did_not_run`: no window has passed under this file; the first is 2026-12-01, and the merge commits of that day are the measurement. The door itself compares only `ruff` and `mypy` with their pins (step 5/9); the test and GenLayer environments are compared with their locks by the host's installer, not by the door. A merge that reaches `origin/main` while the night is running still makes the night's push non-fast-forward; the window makes that case unlikely, it does not remove it.
+
+**Supersedes.** In D-86, the sentence "Nothing installs automatically after a fast-forward, so the door is red after an auto-merged npm bump until `npm ci --ignore-scripts` is run on the host."; D-86 carries the marker. The other sentence of that paragraph, about the relay's write path, is not touched by this entry.
+
+Evidence: `evidence/RED-103-dependabot-window-was-not-named.txt`, `evidence/MEASURED-033-dependabot-merges-fell-on-tuesday-after-the-night.txt`.

@@ -1,0 +1,53 @@
+RED-103 - Dependabot's window was not named: every updates entry said only 'interval: weekly' (T-DEP-09, 2026-11-24)
+tree: 9d67c04d062c41b28f91de0f2b9b3a3499d386ef (dirty)
+command: ~/orchestra/testenv/bin/python -m pytest -q -vv tests/test_dependabot_auto_merge_polling.py, run BEFORE .github/dependabot.yml was edited
+2026-11-24T08:20:53Z
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- /home/incubator/orchestra/testenv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/incubator/incubator
+configfile: pyproject.toml
+plugins: cov-7.1.0
+collecting ... collected 15 items
+
+tests/test_dependabot_auto_merge_polling.py::test_all_green_merges_and_excludes_only_the_self_run PASSED [  6%]
+tests/test_dependabot_auto_merge_polling.py::test_a_red_check_blocks_the_merge_and_names_it PASSED [ 13%]
+tests/test_dependabot_auto_merge_polling.py::test_checks_never_registered_times_out_instead_of_merging PASSED [ 20%]
+tests/test_dependabot_auto_merge_polling.py::test_checks_pending_past_the_ceiling_times_out_with_its_own_reason PASSED [ 26%]
+tests/test_dependabot_auto_merge_polling.py::test_checks_appearing_after_an_empty_first_poll_still_merge PASSED [ 33%]
+tests/test_dependabot_auto_merge_polling.py::test_a_stale_auto_merge_run_from_an_earlier_trigger_does_not_block_the_merge PASSED [ 40%]
+tests/test_dependabot_auto_merge_polling.py::test_major_bumps_never_reach_the_merge_step PASSED [ 46%]
+tests/test_dependabot_auto_merge_polling.py::test_an_exact_pin_never_reaches_the_merge_step PASSED [ 53%]
+tests/test_dependabot_auto_merge_polling.py::test_every_update_entry_names_the_weekly_window FAILED [ 60%]
+tests/test_dependabot_auto_merge_polling.py::test_the_window_check_can_fail[no-day] PASSED [ 66%]
+tests/test_dependabot_auto_merge_polling.py::test_the_window_check_can_fail[no-time] PASSED [ 73%]
+tests/test_dependabot_auto_merge_polling.py::test_the_window_check_can_fail[time-as-int] PASSED [ 80%]
+tests/test_dependabot_auto_merge_polling.py::test_the_window_check_can_fail[timezone] PASSED [ 86%]
+tests/test_dependabot_auto_merge_polling.py::test_the_window_check_can_fail[monday] PASSED [ 93%]
+tests/test_dependabot_auto_merge_polling.py::test_the_window_check_can_fail[no-updates] PASSED [100%]
+
+=================================== FAILURES ===================================
+_______________ test_every_update_entry_names_the_weekly_window ________________
+
+    def test_every_update_entry_names_the_weekly_window():
+        """D-88. Dependabot's window is Tuesday 02:00 UTC: before the 03:43 UTC night, so the night
+        takes the bumps itself (the merges used to land on Tuesdays around 05:20 UTC, after it). There
+        is no `timezone` key because UTC is the default GitHub documents, and `time` is a quoted string
+        because YAML reads an unquoted 02:00 as the number 120."""
+        cfg = yaml.safe_load((ROOT / ".github" / "dependabot.yml").read_text())
+>       assert _window_problems(cfg) == []
+E       assert ["npm /web: s...e': '02:00'}"] == []
+E         
+E         Left contains 5 more items, first extra item: "npm /web: schedule {'interval': 'weekly'} is not {'interval': 'weekly', 'day': 'tuesday', 'time': '02:00'}"
+E         
+E         Full diff:
+E         - []
+E         + [
+E         +     "npm /web: schedule {'interval': 'weekly'} is not {'interval': 'weekly', "...
+E         
+E         ...Full output truncated (10 lines hidden), use '-vv' to show
+
+tests/test_dependabot_auto_merge_polling.py:293: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_dependabot_auto_merge_polling.py::test_every_update_entry_names_the_weekly_window
+========================= 1 failed, 14 passed in 8.01s =========================

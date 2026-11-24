@@ -27,12 +27,14 @@ this host.
 """
 from __future__ import annotations
 
+import copy
 import json
 import os
 import pathlib
 import re
 import subprocess
 
+import pytest
 import yaml
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -264,3 +266,55 @@ def test_an_exact_pin_never_reaches_the_merge_step():
         "steps.metadata.outputs.update-type == 'version-update:semver-minor')"
         + "".join(f" && !contains(steps.metadata.outputs.dependency-names, '{n}')" for n in names))
     assert step["if"] == expected, f"the merge step's `if:` is not the exact-pin exclusion:\n{step['if']}\n!=\n{expected}"
+
+
+_WINDOW = {"interval": "weekly", "day": "tuesday", "time": "02:00"}
+
+
+def _window_problems(cfg: dict) -> list[str]:
+    """One sentence per `updates` entry whose `schedule` is not exactly the named window.
+    Exact equality is the point: a `timezone` key, a missing key, or a `time` that YAML read as a
+    number are each a problem. No entries at all is its own sentence, not an empty pass (invariant 1)."""
+    updates = cfg.get("updates") or []
+    if not updates:
+        return ["no updates entry: nothing was measured"]
+    return [
+        f"{u.get('package-ecosystem')} {u.get('directory')}: schedule {u.get('schedule')!r} is not {_WINDOW!r}"
+        for u in updates if u.get("schedule") != _WINDOW
+    ]
+
+
+def test_every_update_entry_names_the_weekly_window():
+    """D-88. Dependabot's window is Tuesday 02:00 UTC: before the 03:43 UTC night, so the night
+    takes the bumps itself (the merges used to land on Tuesdays around 05:20 UTC, after it). There
+    is no `timezone` key because UTC is the default GitHub documents, and `time` is a quoted string
+    because YAML reads an unquoted 02:00 as the number 120."""
+    cfg = yaml.safe_load((ROOT / ".github" / "dependabot.yml").read_text())
+    assert _window_problems(cfg) == []
+
+
+def _mutations():
+    cfg = yaml.safe_load((ROOT / ".github" / "dependabot.yml").read_text())
+
+    def make(fn):
+        c = copy.deepcopy(cfg)
+        fn(c["updates"][0])
+        return c
+
+    return [
+        pytest.param(make(lambda u: u["schedule"].pop("day", None)), True, id="no-day"),
+        pytest.param(make(lambda u: u["schedule"].pop("time", None)), True, id="no-time"),
+        pytest.param(make(lambda u: u["schedule"].update(time=120)), True, id="time-as-int"),
+        pytest.param(make(lambda u: u["schedule"].update(timezone="Europe/Berlin")), True, id="timezone"),
+        pytest.param(make(lambda u: u["schedule"].update(day="monday")), True, id="monday"),
+        pytest.param({**copy.deepcopy(cfg), "updates": []}, False, id="no-updates"),
+    ]
+
+
+@pytest.mark.parametrize("cfg,names_entry", _mutations())
+def test_the_window_check_can_fail(cfg, names_entry):
+    problems = _window_problems(cfg)
+    assert problems
+    if names_entry:
+        first = cfg["updates"][0]
+        assert any(first["package-ecosystem"] in p and first["directory"] in p for p in problems)

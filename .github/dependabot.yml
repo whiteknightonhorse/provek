@@ -7,28 +7,36 @@
 #
 # Every manifest in the tree is listed. A partial list would be worse than none: it reports
 # coverage it does not have, which is the failure this project exists to name.
+#
+# The weekly window is named, not inferred (D-88): Tuesday 02:00 UTC. There is no `timezone`
+# key: UTC is the default GitHub documents, and a second clock here is one more thing to get
+# wrong. Until this line existed the schedule said only `weekly`, and the merges landed on
+# Tuesdays around 05:20 UTC, after the nightly re-measure (03:43 UTC), so the host stayed
+# behind origin until a person synced it. At 02:00 the bumps are merged before the night: the
+# night fast-forwards, installs what the lockfiles name, measures and publishes. `time` is
+# quoted because YAML reads an unquoted 02:00 as the number 120.
 version: 2
 updates:
   # The shipped site. `web-1.0` is the frozen predecessor and still builds, so it is watched too:
   # an unwatched tree that can still be built is an unwatched tree that can still be deployed.
   - package-ecosystem: npm
     directory: /web
-    schedule: { interval: weekly }
+    schedule: { interval: weekly, day: tuesday, time: "02:00" }
     open-pull-requests-limit: 5
   - package-ecosystem: npm
     directory: /web-1.0
-    schedule: { interval: weekly }
+    schedule: { interval: weekly, day: tuesday, time: "02:00" }
     open-pull-requests-limit: 3
   - package-ecosystem: npm
     directory: /demo/amadeus
-    schedule: { interval: weekly }
+    schedule: { interval: weekly, day: tuesday, time: "02:00" }
     open-pull-requests-limit: 3
 
   # Python requirements are pip-compile outputs. Dependabot edits the .txt lockfiles; the .in
   # files stay authored by hand, so a bumped pin never silently widens a declared constraint.
   - package-ecosystem: pip
     directory: /requirements
-    schedule: { interval: weekly }
+    schedule: { interval: weekly, day: tuesday, time: "02:00" }
     open-pull-requests-limit: 5
 
   # The workflows themselves. An action pinned to a moved tag is a supply-chain path into CI,
@@ -41,7 +49,7 @@ updates:
   # The `groups` key below makes Dependabot open one PR for both lines together.
   - package-ecosystem: github-actions
     directory: /
-    schedule: { interval: weekly }
+    schedule: { interval: weekly, day: tuesday, time: "02:00" }
     open-pull-requests-limit: 5
     groups:
       codeql-action:
