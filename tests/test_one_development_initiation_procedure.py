@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-import src.abs_profile.ladder as ladder
+from src.abs_profile import ladder
 from src.abs_profile.ladder import FEW_AUTHORS_FOR_L3, SIGNED_SHARE_FOR_L4, L, development_initiation_level
 from src.abs_profile.measured import Measurement, NotMeasured
 from src.pipeline import _observed_level

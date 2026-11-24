@@ -218,7 +218,6 @@ def test_a_derived_sibling_loses_no_visible_word():
     to apply, which is that page's entire content for an agent. A promise in a comment is not a
     mechanism (LAW #ALLOWLIST-WHAT-YOU-INSPECT: a checker that skips what it does not recognise
     reports success on what it cannot handle)."""
-    import re
 
     def strip(h):
         return re.sub(r"<svg\b[^>]*>.*?</svg>", " ",

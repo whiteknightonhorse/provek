@@ -94,7 +94,7 @@ def test_seconds_per_subject_and_zero_subjects_stay_none_not_a_zero_division():
 
 
 # --- T-GHB-01 (PROVEK-GH-BUDGET-1116 ruling-1): wait when the night needs more than is left -------
-import scripts.budget_journal as bj  # noqa: E402  (attribute access, so each test fails on its own)
+from scripts import budget_journal as bj  # noqa: E402  (attribute access, so each test fails on its own)
 
 
 def _core(remaining: int, limit: int = 60, reset: int = 1_001_500) -> dict:

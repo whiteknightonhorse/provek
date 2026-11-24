@@ -81,8 +81,6 @@ def test_an_unknown_binary_format_is_not_admitted(tmp_path):
 
 def test_the_shipped_icons_are_what_they_claim(tmp_path):
     """The live artefacts, not a fixture: these are the files that made the gate refuse."""
-    import pathlib
-
     from scripts.ratchet_language import ROOT, proven_binary
     for name in ("favicon.ico", "apple-touch-icon.png", "icon-192.png", "icon-512.png"):
         p = pathlib.Path(ROOT) / "web/public" / name

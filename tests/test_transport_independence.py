@@ -1,6 +1,5 @@
 """T-TRANSPORT-2 - proof that the methodology has not fused with a Draft standard."""
 import ast
-import pathlib
 import tempfile
 from pathlib import Path
 
@@ -26,7 +25,7 @@ def test_methodology_modules_do_not_import_any_transport():
     methodology = ["src/verify/scorer.py", "src/verify/control_map.py",
                    "src/passport/passport.py", "src/abs_profile/ladder.py"]
     for path in methodology:
-        tree = ast.parse(pathlib.Path(path).read_text(encoding="utf-8"))
+        tree = ast.parse(Path(path).read_text(encoding="utf-8"))
         names = []
         for n in ast.walk(tree):
             if isinstance(n, ast.Import):
