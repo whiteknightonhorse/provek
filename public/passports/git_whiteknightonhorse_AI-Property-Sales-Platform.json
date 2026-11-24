@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-11-22T03:43:04.508359+00:00",
-    "valid_until": "2026-12-22T03:43:04.508359+00:00",
+    "issued_at": "2026-11-24T03:43:05.158977+00:00",
+    "valid_until": "2026-12-24T03:43:05.158977+00:00",
     "status": "unverified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -17,8 +17,8 @@
       "evidence_window_days": 30
     },
     "evidence_window": {
-      "start": "2026-10-23T03:43:04.508359+00:00",
-      "end": "2026-11-22T03:43:04.508359+00:00"
+      "start": "2026-10-25T03:43:05.158977+00:00",
+      "end": "2026-11-24T03:43:05.158977+00:00"
     },
     "verified": {
       "operations": [
