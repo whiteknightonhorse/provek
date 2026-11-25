@@ -8,8 +8,8 @@
     "binding_flags": [
       "revocable"
     ],
-    "issued_at": "2026-11-24T03:43:05.158977+00:00",
-    "valid_until": "2026-12-24T03:43:05.158977+00:00",
+    "issued_at": "2026-11-25T03:43:05.720492+00:00",
+    "valid_until": "2026-12-25T03:43:05.720492+00:00",
     "status": "verified",
     "provenance": {
       "protocol_version": "1.0.0",
@@ -17,8 +17,8 @@
       "evidence_window_days": 30
     },
     "evidence_window": {
-      "start": "2026-10-25T03:43:05.158977+00:00",
-      "end": "2026-11-24T03:43:05.158977+00:00"
+      "start": "2026-10-26T03:43:05.720492+00:00",
+      "end": "2026-11-25T03:43:05.720492+00:00"
     },
     "verified": {
       "operations": [
@@ -28,7 +28,8 @@
           "measured": true,
           "confidence": "inferred",
           "limiters_applied": [
-            "O1:mixed_classes->inferred"
+            "O1:mixed_classes->inferred",
+            "O2:no_scheduled_run_in_window->capped_L2"
           ]
         },
         {
@@ -75,7 +76,7 @@
           "absent_reason": null
         },
         "identity_window_closed": {
-          "value": false,
+          "value": true,
           "measured": true,
           "absent_reason": null
         },
@@ -89,7 +90,7 @@
           "measured": true,
           "absent_reason": null
         },
-        "head_sha": "65ab16ebe2d004b61e51ba295e5d67a1f2484956"
+        "head_sha": "4d3203e0661cc92b2e85c67c2a51800fb50a65a5"
       },
       "control_map_valid": true,
       "control_map_cap": 5,
@@ -112,7 +113,7 @@
       "private": false,
       "declaration": {
         "present": true,
-        "pinned_sha": "65ab16ebe2d004b61e51ba295e5d67a1f2484956",
+        "pinned_sha": "4d3203e0661cc92b2e85c67c2a51800fb50a65a5",
         "schema_version": "1.0.0"
       }
     },
